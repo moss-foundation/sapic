@@ -3,7 +3,7 @@
   "name": "Sapic",
   "out": "./autodocs",
   "entryPoints": [
-    "crates/moss-app",
+    "crates/window",
     "crates/moss-activity-broadcaster",
     "crates/moss-project",
     "crates/moss-environment",

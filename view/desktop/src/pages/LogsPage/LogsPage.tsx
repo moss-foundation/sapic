@@ -12,7 +12,7 @@ import {
   LogEntryInfo,
   ON_DID_APPEND_LOG_ENTRY_CHANNEL,
   UpdateProfileInput,
-} from "@repo/moss-app";
+} from "@repo/window";
 import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";

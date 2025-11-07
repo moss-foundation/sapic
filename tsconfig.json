@@ -2,7 +2,7 @@
   "files": [],
   "references": [
     {
-      "path": "crates/moss-app"
+      "path": "crates/window"
     },
     {
       "path": "crates/moss-api"

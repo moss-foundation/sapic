@@ -1,6 +1,6 @@
 import { AppService } from "@/lib/services";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ListColorThemesOutput } from "@repo/moss-app";
+import { ListColorThemesOutput } from "@repo/window";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_COLOR_THEMES_QUERY_KEY = "listColorThemes";

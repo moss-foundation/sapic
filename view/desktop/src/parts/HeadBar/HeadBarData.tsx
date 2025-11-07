@@ -1,5 +1,5 @@
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
-import { ListWorkspacesOutput } from "@repo/moss-app";
+import { ListWorkspacesOutput } from "@repo/window";
 
 const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
   const idPrefix = prefix ? `${prefix}-` : "";

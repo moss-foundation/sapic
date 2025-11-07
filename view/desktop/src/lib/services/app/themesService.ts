@@ -1,5 +1,5 @@
 import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
-import { GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput } from "@repo/moss-app";
+import { GetColorThemeInput, GetColorThemeOutput, ListColorThemesOutput } from "@repo/window";
 
 export const themesService = {
   describeColorTheme: async (themeId: string) => {

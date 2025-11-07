@@ -1,5 +1,5 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { CloseWorkspaceOutput, DescribeAppOutput } from "@repo/moss-app";
+import { CloseWorkspaceOutput, DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, USE_STREAM_PROJECTS_QUERY_KEY } from "..";

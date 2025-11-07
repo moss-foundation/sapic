@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { AddAccountParams } from "@repo/moss-app";
+import { AddAccountParams } from "@repo/window";
 
 interface GitProviderStore {
   gitProvider: AddAccountParams | null;

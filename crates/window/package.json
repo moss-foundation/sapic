@@ -1,0 +1,24 @@
+{
+    "name": "@repo/window",
+    "exports": {
+      ".": "./index.ts"
+    },
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
+    },
+    "devDependencies": {
+      "@repo/typescript-config": "workspace:*",
+      "@repo/moss-bindingutils": "workspace:*",
+      "@repo/moss-workspace": "workspace:*",
+      "@repo/moss-user": "workspace:*",
+      "@repo/moss-theme": "workspace:*",
+      "@repo/moss-configuration": "workspace:*",
+      "@repo/moss-language": "workspace:*",
+      "@repo/moss-extension": "workspace:*"
+    },
+    "dependencies": {
+      "typescript": "5.9.2",
+      "zod": "3.25.32"
+    }
+  }

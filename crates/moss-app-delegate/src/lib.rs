@@ -13,16 +13,20 @@ pub mod broadcast {
 #[derive(Deref)]
 pub struct AppDelegate<R: AppRuntime> {
     #[deref]
-    app_handle: TauriAppHandle<R::EventLoop>,
+    tao_handle: TauriAppHandle<R::EventLoop>,
     broadcaster: AppActivityBroadcaster<R::EventLoop>,
 }
 
 impl<R: AppRuntime> AppDelegate<R> {
     pub fn new(app_handle: TauriAppHandle<R::EventLoop>) -> Self {
         Self {
-            app_handle: app_handle.clone(),
+            tao_handle: app_handle.clone(),
             broadcaster: AppActivityBroadcaster::new(app_handle),
         }
+    }
+
+    pub fn handle(&self) -> TauriAppHandle<R::EventLoop> {
+        self.tao_handle.clone()
     }
 
     #[cfg(debug_assertions)]
@@ -113,14 +117,14 @@ impl<R: AppRuntime> AppDelegate<R> {
     where
         T: Send + Sync + 'static,
     {
-        self.app_handle.state::<T>().inner()
+        self.tao_handle.state::<T>().inner()
     }
 
     pub fn set_global<T>(&self, value: T)
     where
         T: Send + Sync + 'static,
     {
-        self.app_handle.manage(value);
+        self.tao_handle.manage(value);
     }
 
     pub fn emit_oneshot(&self, to: ToLocation<'_>) -> joinerror::Result<()> {
@@ -138,7 +142,7 @@ impl<R: AppRuntime> AppDelegate<R> {
 impl<R: AppRuntime> Clone for AppDelegate<R> {
     fn clone(&self) -> Self {
         Self {
-            app_handle: self.app_handle.clone(),
+            tao_handle: self.tao_handle.clone(),
             broadcaster: self.broadcaster.clone(),
         }
     }
@@ -155,12 +159,12 @@ pub mod test {
 impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
     pub fn set_resource_dir(&self, resource_dir: PathBuf) {
-        self.app_handle.manage(test::ResourceDir(resource_dir));
+        self.tao_handle.manage(test::ResourceDir(resource_dir));
     }
 
     #[cfg(feature = "integration-tests")]
     pub fn resource_dir(&self) -> PathBuf {
-        self.app_handle
+        self.tao_handle
             .state::<test::ResourceDir>()
             .inner()
             .0
@@ -169,12 +173,12 @@ impl<R: AppRuntime> AppDelegate<R> {
 
     #[cfg(feature = "integration-tests")]
     pub fn set_user_dir(&self, user_dir: PathBuf) {
-        self.app_handle.manage(test::UserDir(user_dir));
+        self.tao_handle.manage(test::UserDir(user_dir));
     }
 
     #[cfg(feature = "integration-tests")]
     pub fn user_dir(&self) -> PathBuf {
-        self.app_handle.state::<test::UserDir>().inner().0.clone()
+        self.tao_handle.state::<test::UserDir>().inner().0.clone()
     }
 
     #[cfg(feature = "integration-tests")]

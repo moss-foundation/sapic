@@ -16,9 +16,13 @@ pub async fn update_layout<'a, R: tauri::Runtime>(
     input: UpdateLayoutInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.update_layout(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.update_layout(&ctx, input).await },
+    )
     .await
 }
 
@@ -30,9 +34,13 @@ pub async fn describe_workspace<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<DescribeWorkspaceOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.describe_workspace(&ctx).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.describe_workspace(&ctx).await },
+    )
     .await
 }
 
@@ -45,9 +53,13 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
 ) -> TauriResult<StreamEnvironmentsOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.stream_environments(&ctx, channel).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.stream_environments(&ctx, channel).await },
+    )
     .await
 }
 
@@ -60,9 +72,13 @@ pub async fn stream_projects<'a, R: tauri::Runtime>(
     channel: TauriChannel<StreamProjectsEvent>,
     options: Options,
 ) -> TauriResult<StreamProjectsOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.stream_projects(&ctx, channel).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.stream_projects(&ctx, channel).await },
+    )
     .await
 }
 
@@ -75,9 +91,13 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
     input: DescribeProjectInput,
     options: Options,
 ) -> TauriResult<DescribeProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.describe_project(&ctx, &input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.describe_project(&ctx, &input).await },
+    )
     .await
 }
 
@@ -93,6 +113,7 @@ pub async fn create_project<'a, R: tauri::Runtime>(
     super::with_workspace_timeout(
         ctx.inner(),
         app,
+        window,
         options,
         |ctx, app_delegate, workspace| async move {
             workspace.create_project(&ctx, &app_delegate, &input).await
@@ -113,6 +134,7 @@ pub async fn import_project<'a, R: tauri::Runtime>(
     super::with_workspace_timeout(
         ctx.inner(),
         app,
+        window,
         options,
         |ctx, app_delegate, workspace| async move {
             workspace.import_project(&ctx, &app_delegate, &input).await
@@ -130,9 +152,13 @@ pub async fn export_project<'a, R: tauri::Runtime>(
     input: ExportProjectInput,
     options: Options,
 ) -> TauriResult<ExportProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.export_project(&ctx, &input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.export_project(&ctx, &input).await },
+    )
     .await
 }
 
@@ -145,9 +171,13 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
     input: DeleteProjectInput,
     options: Options,
 ) -> TauriResult<DeleteProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.delete_project(&ctx, &input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.delete_project(&ctx, &input).await },
+    )
     .await
 }
 
@@ -160,9 +190,13 @@ pub async fn update_project<'a, R: tauri::Runtime>(
     input: UpdateProjectInput,
     options: Options,
 ) -> TauriResult<UpdateProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.update_project(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.update_project(&ctx, input).await },
+    )
     .await
 }
 
@@ -175,9 +209,13 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
     input: ArchiveProjectInput,
     options: Options,
 ) -> TauriResult<ArchiveProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.archive_project(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.archive_project(&ctx, input).await },
+    )
     .await
 }
 
@@ -190,9 +228,13 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
     input: UnarchiveProjectInput,
     options: Options,
 ) -> TauriResult<UnarchiveProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.unarchive_project(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.unarchive_project(&ctx, input).await },
+    )
     .await
 }
 
@@ -205,9 +247,13 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
     input: BatchUpdateProjectInput,
     options: Options,
 ) -> TauriResult<BatchUpdateProjectOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.batch_update_project(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.batch_update_project(&ctx, input).await },
+    )
     .await
 }
 
@@ -219,9 +265,13 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
     window: Window<R>,
     options: Options,
 ) -> TauriResult<ListChangesOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.list_changes(&ctx).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.list_changes(&ctx).await },
+    )
     .await
 }
 
@@ -234,9 +284,13 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
     input: ActivateEnvironmentInput,
     options: Options,
 ) -> TauriResult<ActivateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.activate_environment(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.activate_environment(&ctx, input).await },
+    )
     .await
 }
 
@@ -249,9 +303,13 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
     input: CreateEnvironmentInput,
     options: Options,
 ) -> TauriResult<CreateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.create_environment(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.create_environment(&ctx, input).await },
+    )
     .await
 }
 
@@ -264,9 +322,13 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentInput,
     options: Options,
 ) -> TauriResult<UpdateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.update_environment(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.update_environment(&ctx, input).await },
+    )
     .await
 }
 
@@ -279,9 +341,13 @@ pub async fn batch_update_environment<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentInput,
     options: Options,
 ) -> TauriResult<BatchUpdateEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.batch_update_environment(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.batch_update_environment(&ctx, input).await },
+    )
     .await
 }
 
@@ -294,9 +360,13 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
     input: DeleteEnvironmentInput,
     options: Options,
 ) -> TauriResult<DeleteEnvironmentOutput> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.delete_environment(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.delete_environment(&ctx, input).await },
+    )
     .await
 }
 
@@ -309,9 +379,13 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentGroupInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
-        workspace.update_environment_group(&ctx, input).await
-    })
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, workspace| async move { workspace.update_environment_group(&ctx, input).await },
+    )
     .await
 }
 
@@ -324,7 +398,10 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentGroupInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_workspace_timeout(ctx.inner(), app, options, |ctx, _, workspace| async move {
+    super::with_workspace_timeout(ctx.inner(), app,
+        window,
+        options,
+        |ctx, _, workspace| async move {
         workspace.batch_update_environment_group(&ctx, input).await
     })
     .await

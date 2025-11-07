@@ -119,40 +119,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-app:
-    dependencies:
-      typescript:
-        specifier: 5.9.2
-        version: 5.9.2
-      zod:
-        specifier: 3.25.32
-        version: 3.25.32
-    devDependencies:
-      '@repo/moss-bindingutils':
-        specifier: workspace:*
-        version: link:../moss-bindingutils
-      '@repo/moss-configuration':
-        specifier: workspace:*
-        version: link:../moss-configuration
-      '@repo/moss-extension':
-        specifier: workspace:*
-        version: link:../moss-extension
-      '@repo/moss-language':
-        specifier: workspace:*
-        version: link:../moss-language
-      '@repo/moss-theme':
-        specifier: workspace:*
-        version: link:../moss-theme
-      '@repo/moss-user':
-        specifier: workspace:*
-        version: link:../moss-user
-      '@repo/moss-workspace':
-        specifier: workspace:*
-        version: link:../moss-workspace
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
   crates/moss-bindingutils:
     dependencies:
       typescript:
@@ -339,6 +305,40 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  crates/window:
+    dependencies:
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      zod:
+        specifier: 3.25.32
+        version: 3.25.32
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
+      '@repo/moss-configuration':
+        specifier: workspace:*
+        version: link:../moss-configuration
+      '@repo/moss-extension':
+        specifier: workspace:*
+        version: link:../moss-extension
+      '@repo/moss-language':
+        specifier: workspace:*
+        version: link:../moss-language
+      '@repo/moss-theme':
+        specifier: workspace:*
+        version: link:../moss-theme
+      '@repo/moss-user':
+        specifier: workspace:*
+        version: link:../moss-user
+      '@repo/moss-workspace':
+        specifier: workspace:*
+        version: link:../moss-workspace
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   packages/config-eslint:
     devDependencies:
       '@typescript-eslint/parser':
@@ -482,9 +482,6 @@ importers:
       '@repo/moss-activity-broadcaster':
         specifier: workspace:*
         version: link:../../crates/moss-activity-broadcaster
-      '@repo/moss-app':
-        specifier: workspace:*
-        version: link:../../crates/moss-app
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../../crates/moss-bindingutils
@@ -503,6 +500,9 @@ importers:
       '@repo/shared-storage':
         specifier: workspace:*
         version: link:../../plugins/shared_storage
+      '@repo/window':
+        specifier: workspace:*
+        version: link:../../crates/window
       '@tanstack/react-pacer':
         specifier: 0.16.1
         version: 0.16.1(react-dom@19.2.0(react@19.2.0))(react@19.2.0)

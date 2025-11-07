@@ -130,7 +130,7 @@ jobs:
       - name: Verify that bindings are updated
         run: |
           make gen-${{matrix.crate}}-bindings
-          git diff --exit-code -- crates/moss-${{matrix.crate}}/bindings/**
+          git diff --exit-code -- crates/${{matrix.crate}}/bindings/**
 
   rust-general-workflows:
     name: Rust General Workflows
@@ -185,12 +185,13 @@ jobs:
       fail-fast: false
       matrix:
         package:
+          - app
+          - window
           - moss_git
           - moss_git_hosting_provider
           - moss_api
           - moss_text
           - moss_project
-          - moss_app
           - moss_applib
           - moss_db
           - moss_fs
@@ -302,12 +303,14 @@ jobs:
       fail-fast: false
       matrix:
         package:
+          - app
+          - window
+
           - moss_git
           - moss_git_hosting_provider
           - moss_api
           - moss_text
           - moss_project
-          - moss_app
           - moss_applib
           - moss_db
           - moss_fs

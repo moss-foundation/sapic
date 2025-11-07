@@ -1,5 +1,5 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/moss-app";
+import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useRemoveBottomPanel } from "../sharedStorage/layout/bottomPanel/useRemoveBottomPanel";
