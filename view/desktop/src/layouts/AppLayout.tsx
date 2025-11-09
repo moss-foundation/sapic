@@ -3,12 +3,9 @@ import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks";
-import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
-import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
-import { useActivityBarStore } from "@/store/activityBar";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";
@@ -21,65 +18,118 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const mainResizableRef = useRef<AllotmentHandle>(null);
   const verticalResizableRef = useRef<AllotmentHandle>(null);
 
+  const { data: appState } = useDescribeApp();
   const { activeWorkspaceId } = useActiveWorkspace();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
 
-  const { position } = useActivityBarStore();
-
-  const { data: sideBar } = useGetSidebarPanel();
-  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
-
-  const { data: bottomPane } = useGetBottomPanel();
-  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
-
-  const handleSidebarEdgeHandlerClick = () => {
-    if (!sideBar?.visible && activeWorkspaceId) updateSidebarPanel({ visible: true, workspaceId: activeWorkspaceId });
-  };
-
-  const handleBottomPaneEdgeHandlerClick = () => {
-    if (!bottomPane?.visible && activeWorkspaceId) updateBottomPanel({ visible: true, workspaceId: activeWorkspaceId });
-  };
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
 
   useEffect(() => {
     verticalResizableRef?.current?.reset();
     mainResizableRef?.current?.reset();
-    // We want to run this effect(resetting the layout) when the workspace changes, because different workspaces have different layouts.
+    // We want to run this effect(resetting the layout) when the workspace changes
+    // because different workspaces have different layouts.
   }, [activeWorkspaceId]);
+
+  const handleSidebarEdgeHandlerClick = () => {
+    if (!layout?.sidebarState.visible && activeWorkspaceId) {
+      updateLayout({
+        layout: {
+          sidebarState: {
+            visible: true,
+          },
+        },
+        workspaceId: activeWorkspaceId,
+      });
+    }
+  };
+
+  const handleBottomPaneEdgeHandlerClick = () => {
+    if (!layout?.bottomPanelState.visible && activeWorkspaceId) {
+      updateLayout({
+        layout: {
+          bottomPanelState: {
+            visible: true,
+          },
+        },
+        workspaceId: activeWorkspaceId,
+      });
+    }
+  };
 
   return (
     <div className="AppLayout flex h-full w-full">
-      {position === ACTIVITYBAR_POSITION.DEFAULT && sideBar?.position === SIDEBAR_POSITION.LEFT && <ActivityBar />}
+      {activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT &&
+        appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT && <ActivityBar />}
       <div className="relative flex h-full w-full">
         {/* FIXME: we can hide the sidebar when out of workspace, but cannot shot it back */}
-        {!sideBar?.visible && sideBar?.position === SIDEBAR_POSITION.LEFT && (
-          <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
-        )}
+        {!layout?.sidebarState.visible &&
+          appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT && (
+            <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
+          )}
 
         <Resizable
           ref={mainResizableRef}
           proportionalLayout={false}
           onDragEnd={(sizes) => {
-            if (sideBar?.position === SIDEBAR_POSITION.LEFT) {
+            if (!activeWorkspaceId) return;
+
+            if (appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT) {
               const [leftPanelSize, _mainPanelSize] = sizes;
-              updateSidebarPanel({ size: leftPanelSize, visible: leftPanelSize > 0, workspaceId: activeWorkspaceId });
+              if (leftPanelSize <= 0) {
+                updateLayout({
+                  layout: { sidebarState: { visible: false } },
+                  workspaceId: activeWorkspaceId,
+                });
+              } else {
+                updateLayout({
+                  layout: { sidebarState: { width: leftPanelSize } },
+                  workspaceId: activeWorkspaceId,
+                });
+              }
             }
-            if (sideBar?.position === SIDEBAR_POSITION.RIGHT) {
+            if (appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT) {
               const [_mainPanelSize, rightPanelSize] = sizes;
-              updateSidebarPanel({ size: rightPanelSize, visible: rightPanelSize > 0, workspaceId: activeWorkspaceId });
+              if (rightPanelSize <= 0) {
+                updateLayout({
+                  layout: { sidebarState: { visible: false } },
+                  workspaceId: activeWorkspaceId,
+                });
+              } else {
+                updateLayout({
+                  layout: { sidebarState: { width: rightPanelSize } },
+                  workspaceId: activeWorkspaceId,
+                });
+              }
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (sideBar?.position === SIDEBAR_POSITION.LEFT && index === 0)
-              updateSidebarPanel({ visible, size: sideBar?.size ?? 0 });
-            if (sideBar?.position === SIDEBAR_POSITION.RIGHT && index === 1)
-              updateSidebarPanel({ visible, size: sideBar?.size ?? 0 });
+            if (!activeWorkspaceId) return;
+
+            if (appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0) {
+              updateLayout({
+                layout: { sidebarState: { visible: visible } },
+                workspaceId: activeWorkspaceId,
+              });
+            }
+            if (appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT && index === 1) {
+              updateLayout({
+                layout: { sidebarState: { visible: visible } },
+                workspaceId: activeWorkspaceId,
+              });
+            }
           }}
         >
-          {sideBar?.position === SIDEBAR_POSITION.LEFT && (
+          {appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT && (
             <ResizablePanel
-              preferredSize={sideBar?.size}
-              visible={sideBar?.visible && sideBar?.position === SIDEBAR_POSITION.LEFT}
-              minSize={sideBar?.minWidth}
-              maxSize={sideBar?.maxWidth}
+              preferredSize={layout?.sidebarState.width}
+              visible={
+                layout?.sidebarState.visible &&
+                appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.LEFT
+              }
+              minSize={layout?.sidebarState.minWidth}
+              maxSize={layout?.sidebarState.maxWidth}
               snap
               className="background-(--moss-primary-background)"
             >
@@ -92,34 +142,57 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               className="relative"
               vertical
               onDragEnd={(sizes) => {
+                if (!activeWorkspaceId) return;
+
                 const [_mainPanelSize, bottomPaneSize] = sizes;
-                if (activeWorkspaceId) updateBottomPanel({ height: bottomPaneSize });
+
+                if (bottomPaneSize <= 0) {
+                  updateLayout({
+                    layout: { bottomPanelState: { visible: false } },
+                    workspaceId: activeWorkspaceId,
+                  });
+                } else {
+                  updateLayout({
+                    layout: { bottomPanelState: { height: bottomPaneSize } },
+                    workspaceId: activeWorkspaceId,
+                  });
+                }
               }}
               onVisibleChange={(_, visible) => {
-                if (activeWorkspaceId) updateBottomPanel({ visible });
+                if (!activeWorkspaceId) return;
+
+                updateLayout({
+                  layout: {
+                    bottomPanelState: { visible },
+                  },
+                  workspaceId: activeWorkspaceId,
+                });
               }}
             >
               <ResizablePanel>{children ?? <MainContent />}</ResizablePanel>
               <ResizablePanel
-                preferredSize={bottomPane?.height}
-                visible={bottomPane?.visible}
-                minSize={bottomPane?.minHeight}
+                preferredSize={layout?.bottomPanelState.height}
+                visible={layout?.bottomPanelState.visible}
+                minSize={layout?.bottomPanelState.minHeight}
                 snap
               >
                 <BottomPaneContent />
               </ResizablePanel>
             </Resizable>
-            {!bottomPane?.visible && (
+            {!layout?.bottomPanelState.visible && (
               <SidebarEdgeHandler alignment="bottom" onClick={handleBottomPaneEdgeHandlerClick} />
             )}
           </ResizablePanel>
 
-          {sideBar?.position === SIDEBAR_POSITION.RIGHT && (
+          {appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT && (
             <ResizablePanel
-              preferredSize={sideBar?.size}
-              visible={sideBar?.visible && sideBar?.position === SIDEBAR_POSITION.RIGHT}
-              minSize={sideBar?.minWidth}
-              maxSize={sideBar?.maxWidth}
+              preferredSize={layout?.sidebarState.width}
+              visible={
+                layout?.sidebarState.visible &&
+                appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT
+              }
+              minSize={layout?.sidebarState.width}
+              maxSize={layout?.sidebarState.width}
               snap
               className="background-(--moss-primary-background)"
             >
@@ -128,12 +201,14 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           )}
         </Resizable>
 
-        {!sideBar?.visible && sideBar?.position === SIDEBAR_POSITION.RIGHT && (
-          <SidebarEdgeHandler alignment="right" onClick={handleSidebarEdgeHandlerClick} />
-        )}
+        {!layout?.sidebarState.visible &&
+          appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT && (
+            <SidebarEdgeHandler alignment="right" onClick={handleSidebarEdgeHandlerClick} />
+          )}
       </div>
 
-      {position === ACTIVITYBAR_POSITION.DEFAULT && sideBar?.position === SIDEBAR_POSITION.RIGHT && <ActivityBar />}
+      {activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT &&
+        appState?.configuration.contents.sideBarPosition === SIDEBAR_POSITION.RIGHT && <ActivityBar />}
     </div>
   );
 };

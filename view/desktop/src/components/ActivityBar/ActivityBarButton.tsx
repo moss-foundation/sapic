@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Icon } from "@/lib/ui/Icon";
-import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
+import { ActivityBarItemProps } from "@/store/activityBar";
 import { cn } from "@/utils";
 import {
   attachClosestEdge,
@@ -22,7 +24,6 @@ import { IconInline } from "../IconInline";
 export const ActivityBarButton = ({
   icon,
   iconActive,
-  isActive,
   isVisible: _,
   isDraggable = true,
   ...props
@@ -32,9 +33,13 @@ export const ActivityBarButton = ({
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
-  const { position, setActiveItem } = useActivityBarStore();
-  const { data: sideBar } = useGetSidebarPanel();
-  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
+  const { activeWorkspaceId } = useActiveWorkspace();
+  const { data: appState } = useDescribeApp();
+
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const isActive = props.id === layout?.activitybarState.activeContainerId;
 
   useEffect(() => {
     const element = ref.current;
@@ -66,7 +71,7 @@ export const ActivityBarButton = ({
               element,
               input,
               allowedEdges:
-                position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM
+                activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM
                   ? ["right", "left"]
                   : ["top", "bottom"],
             }
@@ -99,14 +104,41 @@ export const ActivityBarButton = ({
         },
       })
     );
-  }, [position, icon, props, isDraggable]);
+  }, [activityBarPosition, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
-    if (isActive && position === ACTIVITYBAR_POSITION.DEFAULT && sideBar?.visible) {
-      updateSidebarPanel({ visible: false });
+    console.log("handleClick");
+    if (isActive && layout?.sidebarState.visible) {
+      console.log("handleClick 1", {
+        id,
+        isActive,
+        layout: layout?.sidebarState.visible,
+      });
+      updateLayout({
+        layout: {
+          sidebarState: {
+            visible: false,
+          },
+        },
+        workspaceId: activeWorkspaceId,
+      });
     } else {
-      setActiveItem(id);
-      updateSidebarPanel({ visible: true });
+      console.log("handleClick 2", {
+        id,
+        isActive,
+        layout: layout?.sidebarState.visible,
+      });
+      updateLayout({
+        layout: {
+          activitybarState: {
+            activeContainerId: id,
+          },
+          sidebarState: {
+            visible: true,
+          },
+        },
+        workspaceId: activeWorkspaceId,
+      });
     }
   };
 
@@ -114,14 +146,14 @@ export const ActivityBarButton = ({
     <button
       ref={ref}
       className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
-        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !sideBar?.visible,
-        "background-(--moss-accent-secondary)": isActive && sideBar?.visible,
-        "background-(--moss-activityBarItem-background)": !isActive || !sideBar?.visible,
+        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !layout?.sidebarState.visible,
+        "background-(--moss-accent-secondary)": isActive && layout?.sidebarState.visible,
+        "background-(--moss-activityBarItem-background)": !isActive || !layout?.sidebarState.visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      {isActive && sideBar?.visible ? (
+      {isActive && layout?.sidebarState.visible ? (
         <IconInline icon={iconActive} className="size-4.5" />
       ) : (
         <Icon icon={icon} className="size-4.5" />
@@ -135,7 +167,6 @@ export const ActivityBarButton = ({
             {...props}
             icon={icon}
             iconActive={iconActive}
-            isActive={false}
             className="background-(--moss-activityBarItem-background-hover) rounded-md p-1"
           />,
           preview

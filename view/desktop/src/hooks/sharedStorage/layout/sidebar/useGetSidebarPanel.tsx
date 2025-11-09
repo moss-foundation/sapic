@@ -8,7 +8,7 @@ export const USE_GET_SIDEBAR_PANEL_QUERY_KEY = "getSidebarPanel";
 
 export interface SidebarPanel {
   position: SidebarPosition;
-  size: number;
+  width: number;
   visible: boolean;
   minWidth: number;
   maxWidth: number;
@@ -18,7 +18,7 @@ const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
   if (!activeWorkspaceId) {
     return {
       position: defaultSidebarPanel.position,
-      size: defaultSidebarPanel.size,
+      width: defaultSidebarPanel.width,
       visible: defaultSidebarPanel.visible,
       minWidth: defaultSidebarPanel.minWidth,
       maxWidth: defaultSidebarPanel.maxWidth,
@@ -28,7 +28,7 @@ const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
   const sidebarPosition = (await sharedStorageService.getItem("sidebarPosition", activeWorkspaceId))?.value as
     | SidebarPosition
     | undefined;
-  const sidebarSize = (await sharedStorageService.getItem("sidebarSize", activeWorkspaceId))?.value as
+  const sidebarWidth = (await sharedStorageService.getItem("sidebarWidth", activeWorkspaceId))?.value as
     | number
     | undefined;
   const sidebarVisible = (await sharedStorageService.getItem("sidebarVisible", activeWorkspaceId))?.value as
@@ -37,7 +37,7 @@ const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
 
   return {
     position: sidebarPosition ?? defaultSidebarPanel.position,
-    size: sidebarSize ?? defaultSidebarPanel.size,
+    width: sidebarWidth ?? defaultSidebarPanel.width,
     visible: sidebarVisible ?? defaultSidebarPanel.visible,
     minWidth: defaultSidebarPanel.minWidth,
     maxWidth: defaultSidebarPanel.maxWidth,

@@ -1,20 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 import { useActiveWorkspace } from "@/hooks";
-import { useGetTabbedPane } from "@/hooks/sharedStorage/layout/tabbedPane/useGetTabbedPane";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 export const useResetGridStateOnWorkspaceChange = () => {
   const { activeWorkspaceId } = useActiveWorkspace();
   const { api, addOrFocusPanel } = useTabbedPaneStore();
-  const { data: tabbedPane } = useGetTabbedPane();
+  const { data: layout } = useGetLayout();
 
-  useEffect(() => {
-    if (!api || !tabbedPane?.gridState) return;
+  const updateGridState = useEffectEvent((activeWorkspaceId) => {
+    if (!api || !layout?.tabbedPaneState.gridState) return;
 
     try {
-      // api.clear();
-      api.fromJSON(tabbedPane.gridState);
+      api.clear();
+      api.fromJSON(layout?.tabbedPaneState.gridState);
 
       if (!activeWorkspaceId) {
         addOrFocusPanel({
@@ -26,5 +26,9 @@ export const useResetGridStateOnWorkspaceChange = () => {
     } catch (error) {
       console.error("Error resetting grid state on workspace change:", error);
     }
-  }, [activeWorkspaceId, addOrFocusPanel, api, tabbedPane]);
+  });
+
+  useEffect(() => {
+    updateGridState(activeWorkspaceId);
+  }, [activeWorkspaceId]);
 };

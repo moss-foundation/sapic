@@ -1,4 +1,9 @@
-import { defaultBottomPanePanel, defaultSidebarPanel, emptyGridState } from "@/constants/layoutPositions";
+import {
+  defaultBottomPanePanel,
+  defaultLayout,
+  defaultSidebarPanel,
+  emptyGridState,
+} from "@/constants/layoutPositions";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import {
   CreateWorkspaceInput,
@@ -13,6 +18,7 @@ import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
 import { useUpdateBottomPanel } from "../sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
 import { useUpdateSidebarPanel } from "../sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { useUpdateTabbedPane } from "../sharedStorage/layout/tabbedPane/useUpdateTabbedPane";
+import { useUpdateLayout } from "../sharedStorage/layout/useUpdateLayout";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
@@ -34,6 +40,8 @@ export const useCreateWorkspace = () => {
   const { mutateAsync: updateBottomPanel } = useUpdateBottomPanel();
   const { mutateAsync: updateSidebarPanel } = useUpdateSidebarPanel();
 
+  const { mutateAsync: updateLayout } = useUpdateLayout();
+
   return useMutation<CreateWorkspaceOutput, Error, CreateWorkspaceInput>({
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
@@ -47,6 +55,8 @@ export const useCreateWorkspace = () => {
       await updateTabbedPane({ gridState: emptyGridState, workspaceId: newWorkspace.id });
       await updateBottomPanel({ ...defaultBottomPanePanel, workspaceId: newWorkspace.id });
       await updateSidebarPanel({ ...defaultSidebarPanel, workspaceId: newWorkspace.id });
+
+      await updateLayout({ layout: defaultLayout, workspaceId: newWorkspace.id });
 
       queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (oldData) => {
         if (!oldData) return [newWorkspace];

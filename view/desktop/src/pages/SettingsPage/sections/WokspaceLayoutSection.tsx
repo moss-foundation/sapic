@@ -1,11 +1,13 @@
 import SelectOutlined from "@/components/SelectOutlined";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
 import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
 import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
 import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
-import { useActivityBarStore } from "@/store/activityBar";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
@@ -36,9 +38,9 @@ export const WorkspaceLayoutSection = () => {
 };
 
 const SidebarTypeSection = () => {
-  const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
-  const { data: sideBar } = useGetSidebarPanel();
-  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
+  const { hasActiveWorkspace } = useActiveWorkspace();
+  const { data: appState } = useDescribeApp();
+  const { mutate: updateConfiguration } = useUpdateConfiguration();
 
   const sidebarTypeItems: MenuItemProps[] = [
     {
@@ -56,7 +58,16 @@ const SidebarTypeSection = () => {
   ];
 
   const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
-    updateSidebarPanel({ position: value, workspaceId: activeWorkspaceId });
+    console.log({
+      key: "sidebarPosition",
+      value: value,
+      target: "WORKSPACE",
+    });
+    updateConfiguration({
+      key: "sidebarPosition",
+      value: value,
+      target: "WORKSPACE",
+    });
   };
 
   return (
@@ -64,7 +75,7 @@ const SidebarTypeSection = () => {
       <h3 className="mb-2 font-medium">Sidebar Type</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={sideBar?.position || SIDEBAR_POSITION.LEFT}
+          value={(appState?.configuration.contents.sidebarPosition as SIDEBAR_POSITION) || SIDEBAR_POSITION.LEFT}
           onValueChange={handleSidebarTypeChange}
           disabled={!hasActiveWorkspace}
         >
@@ -84,8 +95,8 @@ const SidebarTypeSection = () => {
 
 const SidebarVisibilitySection = () => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
-  const { data: sideBar } = useGetSidebarPanel();
-  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
 
   const visibilityItems: MenuItemProps[] = [
     {
@@ -103,7 +114,7 @@ const SidebarVisibilitySection = () => {
   ];
 
   const handleSidebarVisibilityChange = (value: string) => {
-    updateSidebarPanel({ visible: value === "visible", workspaceId: activeWorkspaceId });
+    updateLayout({ layout: { sidebarState: { visible: value === "visible" } }, workspaceId: activeWorkspaceId });
   };
 
   return (
@@ -111,7 +122,7 @@ const SidebarVisibilitySection = () => {
       <h3 className="mb-2 font-medium">Sidebar Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={sideBar?.visible ? "visible" : "hidden"}
+          value={layout?.sidebarState.visible ? "visible" : "hidden"}
           onValueChange={handleSidebarVisibilityChange}
           disabled={!hasActiveWorkspace}
         >
@@ -131,13 +142,13 @@ const SidebarVisibilitySection = () => {
 
 const BottomPaneVisibilitySection = () => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
-  const { data: bottomPane } = useGetBottomPanel();
-  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
 
   const handleBottomPaneVisibilityChange = (value: string) => {
     const visibility = value === "visible";
-    if (activeWorkspaceId && bottomPane) {
-      updateBottomPanel({ visible: visibility, workspaceId: activeWorkspaceId });
+    if (activeWorkspaceId && layout?.bottomPanelState.visible) {
+      updateLayout({ layout: { bottomPanelState: { visible: visibility } }, workspaceId: activeWorkspaceId });
     }
   };
 
@@ -161,7 +172,7 @@ const BottomPaneVisibilitySection = () => {
       <h3 className="mb-2 font-medium">Bottom Pane Visibility</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={bottomPane?.visible ? "visible" : "hidden"}
+          value={layout?.bottomPanelState.visible ? "visible" : "hidden"}
           onValueChange={handleBottomPaneVisibilityChange}
           disabled={!hasActiveWorkspace}
         >
@@ -186,7 +197,12 @@ const BottomPaneVisibilitySection = () => {
 };
 
 const ActivityBarPositionSection = () => {
-  const { setPosition, position } = useActivityBarStore();
+  const { data: appState } = useDescribeApp();
+  //TODO later we should handle the JsonValue differently
+  const activityBarPosition =
+    (appState?.configuration.contents.activityBarPosition as ActivitybarPosition) || ACTIVITYBAR_POSITION.DEFAULT;
+
+  const { mutate: updateConfiguration } = useUpdateConfiguration();
 
   const activityBarPositionItems: MenuItemProps[] = [
     {
@@ -217,7 +233,16 @@ const ActivityBarPositionSection = () => {
 
   const handleActivityBarPositionChange = (value: string) => {
     const position = value as ActivitybarPosition;
-    setPosition(position);
+    console.log({
+      key: "activityBarPosition",
+      value: position,
+      target: "WORKSPACE",
+    });
+    updateConfiguration({
+      key: "activityBarPosition",
+      value: position,
+      target: "WORKSPACE",
+    });
   };
 
   return (
@@ -225,7 +250,7 @@ const ActivityBarPositionSection = () => {
       <h3 className="mb-2 font-medium">ActivityBar Position</h3>
       <div className="w-[200px]">
         <SelectOutlined.Root
-          value={position || ACTIVITYBAR_POSITION.DEFAULT}
+          value={activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT}
           onValueChange={handleActivityBarPositionChange}
         >
           <SelectOutlined.Trigger />

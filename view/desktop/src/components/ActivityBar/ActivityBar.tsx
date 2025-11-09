@@ -1,25 +1,26 @@
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
-import { useActivityBarStore } from "@/store/activityBar";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
 
 import { ActivityBarFirstItems } from "./ActivityBarFirstItems";
 import { ActivityBarLastItems } from "./ActivityBarLastItems";
 
 export const ActivityBar = () => {
-  const { position } = useActivityBarStore();
-  const { data: sideBar } = useGetSidebarPanel();
+  const { data: appState } = useDescribeApp();
+
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
 
   return (
     <div
       className={cn("background-(--moss-activityBar-background) flex items-center justify-between gap-3", {
-        "border-b-(--moss-border) w-full border-b px-1.5": position === ACTIVITYBAR_POSITION.TOP,
-        "border-t-(--moss-border) w-full border-t px-1.5": position === ACTIVITYBAR_POSITION.BOTTOM,
-        "h-full flex-col py-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-        "hidden": position === ACTIVITYBAR_POSITION.HIDDEN,
+        "border-b-(--moss-border) w-full border-b px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.TOP,
+        "border-t-(--moss-border) w-full border-t px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
+        "h-full flex-col py-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+        "hidden": activityBarPosition === ACTIVITYBAR_POSITION.HIDDEN,
 
         "border-l-(--moss-border) border-l":
-          sideBar?.position === SIDEBAR_POSITION.RIGHT && position === ACTIVITYBAR_POSITION.DEFAULT,
+          sideBarPosition === SIDEBAR_POSITION.RIGHT && activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
       })}
     >
       <ActivityBarFirstItems />

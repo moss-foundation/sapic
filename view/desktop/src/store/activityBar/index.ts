@@ -17,7 +17,6 @@ export interface ActivityBarItemProps extends ComponentPropsWithoutRef<"button">
   iconActive?: IconInlineType;
   title: string;
   order: number;
-  isActive: boolean;
   isVisible?: boolean;
   isDraggable?: boolean;
 }
@@ -28,9 +27,7 @@ export interface ActivityBarStore {
   lastActiveContainerId: string | undefined;
   setPosition: (position: ActivitybarPosition) => void;
   setItems: (items: ActivityBarItemProps[]) => void;
-  getActiveItem: () => ActivityBarItemProps | undefined;
   updateFromWorkspaceState: (activitybarState: ActivitybarPartStateInfo) => void;
-  setActiveItem: (itemId: string) => void;
   toWorkspaceState: () => ActivitybarPartStateInfo;
   resetToDefaults: () => void;
 }
@@ -42,7 +39,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "order": 1,
     "icon": "Home",
     "iconActive": "HomeActive",
-    "isActive": true,
     "isVisible": true,
   },
   {
@@ -51,7 +47,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "order": 2,
     "icon": "JsonPath",
     "iconActive": "JsonPathActive",
-    "isActive": false,
     "isVisible": true,
   },
   {
@@ -60,7 +55,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "order": 3,
     "icon": "WebServer",
     "iconActive": "WebServerActive",
-    "isActive": false,
     "isVisible": true,
   },
   {
@@ -69,7 +63,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "order": 4,
     "icon": "Wrench",
     "iconActive": "WrenchActive",
-    "isActive": false,
     "isVisible": true,
   },
   {
@@ -78,7 +71,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "order": 5,
     "icon": "Commit",
     "iconActive": "CommitActive",
-    "isActive": false,
     "isVisible": true,
   },
 ];
@@ -91,17 +83,6 @@ export const useActivityBarStore = create<ActivityBarStore>((set, get) => ({
     set({ position });
   },
   setItems: (items: ActivityBarItemProps[]) => set({ items }),
-  getActiveItem: () => {
-    return get().items.find((item) => item.isActive);
-  },
-  setActiveItem: (itemId: string) => {
-    const currentItems = get().items;
-    const updatedItems = currentItems.map((item) => ({
-      ...item,
-      isActive: item.id === itemId,
-    }));
-    set({ items: updatedItems, lastActiveContainerId: itemId });
-  },
   resetToDefaults: () => {
     set({
       items: [...defaultItems],

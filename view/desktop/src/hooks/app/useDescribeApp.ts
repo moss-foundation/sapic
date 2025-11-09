@@ -16,6 +16,6 @@ const describeAppFn = async () => {
 export const useDescribeApp = () => {
   return useQuery({
     queryKey: [USE_DESCRIBE_APP_QUERY_KEY],
-    queryFn: () => describeAppFn(),
+    queryFn: describeAppFn,
   });
 };

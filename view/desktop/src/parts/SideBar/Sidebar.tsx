@@ -4,8 +4,8 @@ import { ActivityBar } from "@/components";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";
 import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
@@ -18,14 +18,15 @@ export interface BaseSidebarProps {
 }
 
 export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const { data: sideBar } = useGetSidebarPanel();
+  const { data: appState } = useDescribeApp();
+  const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
 
   return (
     <div
       className={cn(
         "background-(--moss-secondary-background) flex h-full grow flex-col",
         {
-          "border-(--moss-border) border-l": sideBar?.position === SIDEBAR_POSITION.LEFT,
+          "border-(--moss-border) border-l": sideBarPosition === SIDEBAR_POSITION.LEFT,
         },
         className
       )}
@@ -83,11 +84,12 @@ export const Sidebar = () => {
     return () => clearTimeout(timeoutId);
   }, [activeWorkspaceId, workspaceState?.layouts.activitybar, isFetched, isSuccess, updateFromWorkspaceState]);
 
-  const { position } = useActivityBarStore();
+  const { data: appState } = useDescribeApp();
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
 
-  const activeItem = useActivityBarStore((state) => state.getActiveItem());
+  const { data: layout } = useGetLayout();
 
-  const activeGroupId = activeItem?.id || "default";
+  const activeGroupId = layout?.activitybarState.activeContainerId;
 
   const sidebarContent = hasActiveWorkspace ? (
     <SidebarWorkspaceContent groupId={activeGroupId} />
@@ -95,7 +97,7 @@ export const Sidebar = () => {
     <EmptyWorkspace inSidebar={true} />
   );
 
-  if (position === ACTIVITYBAR_POSITION.TOP) {
+  if (activityBarPosition === ACTIVITYBAR_POSITION.TOP) {
     return (
       <BaseSidebar>
         <ActivityBar />
@@ -109,7 +111,7 @@ export const Sidebar = () => {
     );
   }
 
-  if (position === ACTIVITYBAR_POSITION.BOTTOM) {
+  if (activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM) {
     return (
       <BaseSidebar>
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>

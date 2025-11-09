@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 import { swapListById } from "@/utils/swapListById";
@@ -13,7 +13,7 @@ import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
   const { items, position, setItems } = useActivityBarStore();
-  const { data: sideBar } = useGetSidebarPanel();
+  const { data: layout } = useGetLayout();
 
   useEffect(() => {
     return monitorForElements({
@@ -48,19 +48,22 @@ export const ActivityBarFirstItems = () => {
     >
       {items
         .filter((item) => item.isVisible !== false)
-        .map((item) => (
-          <div
-            key={item.id}
-            className={cn("relative flex flex-col", {
-              "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-              "py-[3px]": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
-            })}
-          >
-            <ActivityBarButton key={item.id} {...item} />
+        .map((item) => {
+          const isActive = item.id === layout?.activitybarState.activeContainerId;
+          return (
+            <div
+              key={item.id}
+              className={cn("relative flex flex-col", {
+                "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
+                "py-[3px]": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+              })}
+            >
+              <ActivityBarButton key={item.id} {...item} />
 
-            {item.isActive && sideBar?.visible && <ActivityBarButtonIndicator />}
-          </div>
-        ))}
+              {isActive && layout?.sidebarState.visible && <ActivityBarButtonIndicator />}
+            </div>
+          );
+        })}
     </div>
   );
 };

@@ -1,5 +1,7 @@
 import { Orientation, SerializedDockview } from "moss-tabs";
 
+import { LayoutOutput } from "@/hooks/sharedStorage/layout/types";
+
 export enum ACTIVITYBAR_POSITION {
   DEFAULT = "DEFAULT",
   TOP = "TOP",
@@ -14,7 +16,7 @@ export enum SIDEBAR_POSITION {
 
 export const defaultSidebarPanel = {
   position: SIDEBAR_POSITION.LEFT,
-  size: 255,
+  width: 255,
   visible: true,
   minWidth: 100,
   maxWidth: 400,
@@ -42,3 +44,15 @@ export const emptyGridState: SerializedDockview = {
   floatingGroups: [],
   popoutGroups: [],
 } as const;
+
+export const defaultLayout: LayoutOutput = {
+  sidebarState: defaultSidebarPanel,
+  bottomPanelState: defaultBottomPanePanel,
+  tabbedPaneState: {
+    gridState: emptyGridState,
+  },
+  activitybarState: {
+    position: ACTIVITYBAR_POSITION.DEFAULT,
+    activeContainerId: "",
+  },
+};

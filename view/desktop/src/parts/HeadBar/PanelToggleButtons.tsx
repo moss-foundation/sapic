@@ -1,10 +1,8 @@
 import { ActionButton } from "@/components/ActionButton";
 import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useActiveWorkspace } from "@/hooks";
-import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
-import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
 import { cn } from "@/utils";
 
 export interface PanelToggleButtonsProps {
@@ -12,28 +10,34 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { data: bottomPane } = useGetBottomPanel();
-  const { mutate: updateBottomPanel } = useUpdateBottomPanel();
-
+  const { data: appState } = useDescribeApp();
   const { activeWorkspaceId } = useActiveWorkspace();
-  const { data: sideBar } = useGetSidebarPanel();
-  const { mutate: updateSidebarPanel } = useUpdateSidebarPanel();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
+
+  const sideBarPosition = appState?.configuration.contents.sidebarPosition as SIDEBAR_POSITION;
 
   const toggleSidebar = () => {
-    updateSidebarPanel({ visible: !sideBar?.visible, workspaceId: activeWorkspaceId });
+    updateLayout({
+      layout: { sidebarState: { visible: !layout?.sidebarState.visible } },
+      workspaceId: activeWorkspaceId,
+    });
   };
 
   const toggleBottomPane = () => {
     if (!activeWorkspaceId) return;
-    updateBottomPanel({ visible: !bottomPane?.visible, workspaceId: activeWorkspaceId });
+    updateLayout({
+      layout: { bottomPanelState: { visible: !layout?.bottomPanelState.visible } },
+      workspaceId: activeWorkspaceId,
+    });
   };
 
   return (
     <div className={cn("flex -space-x-0.5", className)}>
-      {sideBar?.position === SIDEBAR_POSITION.LEFT && (
+      {sideBarPosition === SIDEBAR_POSITION.LEFT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar?.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+          icon={layout?.sidebarState.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
           onClick={toggleSidebar}
           title="Toggle Left Sidebar"
         />
@@ -41,15 +45,15 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
       <ActionButton
         iconClassName="!size-4.5"
-        icon={bottomPane?.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+        icon={layout?.bottomPanelState.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
         onClick={toggleBottomPane}
         title="Toggle Bottom Panel"
       />
 
-      {sideBar?.position === SIDEBAR_POSITION.RIGHT && (
+      {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar?.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+          icon={layout?.sidebarState.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
           onClick={toggleSidebar}
           title="Toggle Right Sidebar"
         />

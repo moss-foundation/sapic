@@ -16,6 +16,7 @@ import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
+  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
   const { displayMode } = useWorkspaceModeStore();
 
   useProjectDragAndDropHandler();
@@ -49,8 +50,6 @@ export const ProjectTreesView = () => {
       },
     });
   }, []);
-
-  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
 
   return (
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">

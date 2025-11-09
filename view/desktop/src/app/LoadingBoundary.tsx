@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { useDescribeApp, useDescribeColorTheme, useDescribeWorkspaceState } from "@/hooks";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 
 import { initializeI18n } from "./i18n";
 
@@ -15,6 +16,7 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     enabled: !!appState?.configuration.contents.colorTheme,
   });
   const { isFetching: isFetchingWorkspace } = useDescribeWorkspaceState();
+  const { isLoading: isLoadingLayout } = useGetLayout();
 
   const langCode = appState?.configuration.contents.language as string;
 
@@ -25,7 +27,8 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
 
   const [isFirstWorkspaceFetch, setIsFirstWorkspaceFetch] = useState(true);
 
-  const isLoading = isFetchingApp || isFetchingTheme || (isFetchingWorkspace && isFirstWorkspaceFetch);
+  const isLoading =
+    isFetchingApp || isFetchingTheme || (isFetchingWorkspace && isFirstWorkspaceFetch) || isLoadingLayout;
 
   if (isSuccess) {
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future

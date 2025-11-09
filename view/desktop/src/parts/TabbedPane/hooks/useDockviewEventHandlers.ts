@@ -1,7 +1,7 @@
 import { SerializedDockview } from "moss-tabs";
 import React from "react";
 
-import { useUpdateTabbedPane } from "@/hooks/sharedStorage/layout/tabbedPane/useUpdateTabbedPane";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -13,7 +13,7 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
   const { setActivePanelId, api } = useTabbedPaneStore();
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 
-  const { mutate: updateTabbedPane } = useUpdateTabbedPane();
+  const { mutate: updateLayout } = useUpdateLayout();
 
   React.useEffect(() => {
     if (!api) return;
@@ -23,7 +23,15 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
         if (!hasActiveWorkspace) return;
 
         const newGridState = api.toJSON();
-        updateTabbedPane({ gridState: newGridState as unknown as SerializedDockview, workspaceId: activeWorkspaceId });
+        console.log("newGridState", newGridState);
+        updateLayout({
+          layout: {
+            tabbedPaneState: {
+              gridState: newGridState as unknown as SerializedDockview,
+            },
+          },
+          workspaceId: activeWorkspaceId,
+        });
       }),
       api.onDidActivePanelChange((event) => {
         setActivePanelId(event?.id);
@@ -41,5 +49,5 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
     return () => {
       disposables.forEach((disposable) => disposable.dispose());
     };
-  }, [api, setActivePanelId, canPragmaticDrop, updateTabbedPane, activeWorkspaceId, hasActiveWorkspace]);
+  }, [api, setActivePanelId, canPragmaticDrop, updateLayout, activeWorkspaceId, hasActiveWorkspace]);
 };

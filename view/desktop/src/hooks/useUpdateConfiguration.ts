@@ -13,6 +13,9 @@ export const useUpdateConfiguration = () => {
     },
     onSuccess: (_, variables) => {
       queryClient.setQueryData<DescribeAppOutput>([USE_DESCRIBE_APP_QUERY_KEY], (old) => {
+        console.log({
+          variables,
+        });
         const newKeys = old?.configuration.keys ?? [];
 
         if (!newKeys.includes(variables.key)) {

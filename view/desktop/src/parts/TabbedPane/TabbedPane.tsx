@@ -2,6 +2,7 @@ import { DockviewDidDropEvent, DockviewReact, DockviewReadyEvent, positionToDire
 import { useRef, useState } from "react";
 
 import { DropNode } from "@/components/ProjectTree/types";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
@@ -23,6 +24,7 @@ const TabbedPane = () => {
   const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  const { data: layout } = useGetLayout();
 
   useTabbedPaneEventHandlers({ canPragmaticDrop: canDrop });
   //TODO check if this is needed
@@ -32,6 +34,10 @@ const TabbedPane = () => {
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
+
+    if (layout?.tabbedPaneState.gridState) {
+      event.api.fromJSON(layout.tabbedPaneState.gridState);
+    }
   };
 
   const onDidDrop = (event: DockviewDidDropEvent) => {
