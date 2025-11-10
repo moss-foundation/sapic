@@ -6,17 +6,17 @@ import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { initializeI18n } from "./i18n";
 
 export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => {
-  const { data: appState, isFetching: isFetchingApp } = useDescribeApp();
+  const { data: appState, isPending: isPendingApp } = useDescribeApp();
   const {
     data: colorThemeCss,
-    isSuccess,
-    isFetching: isFetchingTheme,
+    isSuccess: isSuccessTheme,
+    isPending: isPendingTheme,
   } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
     enabled: !!appState?.configuration.contents.colorTheme,
   });
-  const { isFetching: isFetchingWorkspace } = useDescribeWorkspaceState();
-  const { isLoading: isLoadingLayout } = useGetLayout();
+  const { isPending: isPendingWorkspace } = useDescribeWorkspaceState();
+  const { isPending: isPendingLayout } = useGetLayout();
 
   const langCode = appState?.configuration.contents.language as string;
 
@@ -27,10 +27,9 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
 
   const [isFirstWorkspaceFetch, setIsFirstWorkspaceFetch] = useState(true);
 
-  const isLoading =
-    isFetchingApp || isFetchingTheme || (isFetchingWorkspace && isFirstWorkspaceFetch) || isLoadingLayout;
+  const isPending = isPendingApp || isPendingTheme || (isPendingWorkspace && isFirstWorkspaceFetch) || isPendingLayout;
 
-  if (isSuccess) {
+  if (isSuccessTheme) {
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
 
     if (colorThemeId && colorThemeCss) {
@@ -38,7 +37,7 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     }
   }
 
-  if (isLoading) {
+  if (isPending) {
     return null;
   }
 
