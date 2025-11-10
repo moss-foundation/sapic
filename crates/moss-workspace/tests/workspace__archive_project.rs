@@ -13,7 +13,7 @@ pub mod shared;
 
 #[tokio::test]
 pub async fn archive_project_success() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let id = workspace
@@ -54,7 +54,7 @@ pub async fn archive_project_success() {
 
 #[tokio::test]
 pub async fn archive_project_already_archived() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let id = workspace
@@ -96,7 +96,7 @@ pub async fn archive_project_already_archived() {
 
 #[tokio::test]
 pub async fn archived_project_nonexistent() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
 
     let result = workspace
         .archive_project(

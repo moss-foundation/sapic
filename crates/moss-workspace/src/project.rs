@@ -632,7 +632,7 @@ impl<R: AppRuntime> ProjectService<R> {
             .await
         {
             session::warn!(format!(
-                "failed to update database after updating project",
+                "failed to update database after updating project: {}",
                 e
             ));
         }

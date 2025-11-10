@@ -311,6 +311,7 @@ where
                 }
             };
 
+            dbg!(&active_environments);
             let mut state_lock = state_clone.write().await;
             (*state_lock).active_environments = active_environments;
 
@@ -587,7 +588,7 @@ where
 
             // FIXME: For now we will still use old storage's variable stores
             // We will fix it once we update moss-environment
-
+            dbg!("begin");
             let mut txn = match self.storage_old.begin_write(ctx).await {
                 Ok(txn) => txn,
                 Err(e) => {
@@ -595,6 +596,7 @@ where
                     return Ok(());
                 }
             };
+            dbg!("transaction");
             // Remove all variables belonging to the deleted environment
             let store = self.storage_old.variable_store();
             for id in desc.variables.keys() {
@@ -614,6 +616,7 @@ where
                         e.to_string()
                     ));
                 }
+                dbg!("var local value in transaction");
 
                 let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
                 if let Err(e) =
@@ -625,6 +628,13 @@ where
                         e.to_string()
                     ));
                 }
+                dbg!("var order in transaction");
+            }
+            if let Err(e) = txn.commit() {
+                session::warn!(format!(
+                    "failed to commit transaction to the database: {}",
+                    e.to_string()
+                ));
             }
         }
         Ok(())

@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
@@ -10,23 +11,24 @@ use moss_environment::{
     },
 };
 use moss_storage::storage::operations::GetItem;
+use moss_storage2::Storage;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
         operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
+    storage::key_environment_order,
     storage_old::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 
-use crate::shared::setup_test_workspace;
-
 // TODO: Test updating collection_id once it's implemented
+// TODO: Update test once we switch variable store to new database
 
 #[tokio::test]
 async fn update_environment_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let old_environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -79,19 +81,18 @@ async fn update_environment_success() {
     let env_description = environment.describe(&ctx).await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
-    // Check environment cache is updated with new order and expanded
-    let item_store = workspace.db().item_store();
 
     let id = create_environment_output.id.clone();
-    let stored_env_order: isize = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_ENVIRONMENT.join(id.as_str()).join("order"),
-    )
-    .await
-    .unwrap()
-    .deserialize()
-    .unwrap();
+    // Check db is updated
+    let storage = <dyn Storage>::global(&app_delegate);
+    // Check environment cache is updated with new order and expanded
+    let stored_env_order_value = storage
+        .get(storage_scope.clone(), &key_environment_order(&id))
+        .await
+        .unwrap()
+        .unwrap();
+    let stored_env_order: isize = serde_json::from_value(stored_env_order_value).unwrap();
+
     assert_eq!(stored_env_order, 42);
 
     let color = env_description.color;
@@ -102,7 +103,7 @@ async fn update_environment_success() {
 
 #[tokio::test]
 async fn update_environment_add_variables() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -189,7 +190,7 @@ async fn update_environment_add_variables() {
 
 #[tokio::test]
 async fn update_environment_update_variables() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -310,7 +311,7 @@ async fn update_environment_update_variables() {
 async fn update_environment_update_variables_nonexistent() {
     // Trying to update a nonexistent variable should raise an error
 
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -362,7 +363,7 @@ async fn update_environment_update_variables_nonexistent() {
 
 #[tokio::test]
 async fn update_environment_delete_variables() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
@@ -459,7 +460,7 @@ async fn update_environment_delete_variables() {
 async fn update_environment_delete_variables_nonexistent() {
     // Delete a nonexistent variable should be a no-op
 
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(

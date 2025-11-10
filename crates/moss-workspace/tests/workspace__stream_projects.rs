@@ -16,7 +16,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_projects_empty_workspace() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -42,7 +42,7 @@ async fn stream_projects_empty_workspace() {
 
 #[tokio::test]
 async fn stream_projects_single_project() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let project_order = 42;
@@ -99,7 +99,7 @@ async fn stream_projects_single_project() {
 
 #[tokio::test]
 async fn stream_projects_multiple_projects() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let mut expected_projects = Vec::new();
 
@@ -167,7 +167,7 @@ async fn stream_projects_multiple_projects() {
 
 #[tokio::test]
 async fn stream_projects_with_icon() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let project_order = 200;
@@ -228,7 +228,7 @@ async fn stream_projects_with_icon() {
 
 #[tokio::test]
 async fn stream_projects_mixed_configurations() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     // Create icon file
     let icon_path = workspace.abs_path().join("mixed_test_icon.png");
@@ -320,7 +320,7 @@ async fn stream_projects_mixed_configurations() {
 
 #[tokio::test]
 async fn stream_projects_order_verification() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let orders = vec![10, 5, 20, 1, 15];
     let mut expected_projects = Vec::new();

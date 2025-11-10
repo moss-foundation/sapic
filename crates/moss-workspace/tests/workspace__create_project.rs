@@ -2,21 +2,23 @@
 
 pub mod shared;
 
+use crate::shared::{generate_random_icon, setup_test_workspace};
+use moss_fs::fs_watcher::global;
 use moss_storage::storage::operations::GetItem;
+use moss_storage2::Storage;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
+    storage::{KEY_EXPANDED_ITEMS, key_project_order},
     storage_old::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use serde_json::Value as JsonValue;
-use std::path::Path;
+use std::{collections::HashSet, path::Path};
 use tauri::ipc::Channel;
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_project_success() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_output = workspace
@@ -44,27 +46,25 @@ async fn create_project_success() {
     // Verify the directory was created
     assert!(create_project_output.abs_path.exists());
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
-
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope.clone(), &key_project_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -72,7 +72,7 @@ async fn create_project_success() {
 
 #[tokio::test]
 async fn create_project_empty_name() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
 
     let project_name = "".to_string();
     let create_project_result = workspace
@@ -98,7 +98,7 @@ async fn create_project_empty_name() {
 
 #[tokio::test]
 async fn create_project_special_chars() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let project_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -127,27 +127,27 @@ async fn create_project_special_chars() {
         // Verify the directory was created
         assert!(create_project_output.abs_path.exists());
 
-        // Verify the db entries were created
         let id = create_project_output.id;
-        let item_store = workspace.db().item_store();
 
+        // Verify the db entries were created
+        let storage = <dyn Storage>::global(&app_delegate);
         // Check order was stored
-        let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-        let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        let order_value = storage
+            .get(storage_scope.clone(), &key_project_order(&id))
             .await
+            .unwrap()
             .unwrap();
-        let stored_order: usize = order_value.deserialize().unwrap();
-        assert_eq!(stored_order, 0);
+        let order: isize = serde_json::from_value(order_value).unwrap();
 
+        assert_eq!(order, 0);
         // Check expanded_items contains the project id
-        let expanded_items_value = GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-        )
-        .await
-        .unwrap();
-        let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+        let expanded_items_value = storage
+            .get(storage_scope.clone(), KEY_EXPANDED_ITEMS)
+            .await
+            .unwrap()
+            .unwrap();
+        let expanded_items: HashSet<ProjectId> =
+            serde_json::from_value(expanded_items_value).unwrap();
         assert!(expanded_items.contains(&id));
     }
 
@@ -161,7 +161,7 @@ async fn create_project_special_chars() {
 
 #[tokio::test]
 async fn create_project_with_order() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_result = workspace
@@ -189,27 +189,26 @@ async fn create_project_with_order() {
     // Verify the directory was created
     assert!(create_project_output.abs_path.exists());
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope.clone(), &key_project_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 42);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 42);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -217,7 +216,7 @@ async fn create_project_with_order() {
 
 #[tokio::test]
 async fn create_project_with_icon() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let input_icon_path = workspace.abs_path().join("test_icon.png");
@@ -255,25 +254,24 @@ async fn create_project_with_icon() {
     let project = workspace.project(&id).await.unwrap();
     assert!(project.icon_path().is_some());
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let item_store = workspace.db().item_store();
-
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope.clone(), &key_project_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -281,7 +279,7 @@ async fn create_project_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_projects_expanded_items() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     // Create first project
     let project_name1 = random_project_name();
@@ -322,15 +320,14 @@ async fn create_multiple_projects_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both project ids
-    let item_store = workspace.db().item_store();
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let storage = <dyn Storage>::global(&app_delegate);
+    // Check expanded_items contains the project id
+    let expanded_items_value = storage
+        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
 
     assert_eq!(expanded_items.len(), 2);
     assert!(expanded_items.contains(&create_result1.id));
@@ -341,7 +338,7 @@ async fn create_multiple_projects_expanded_items() {
 
 #[tokio::test]
 async fn create_project_external_success() {
-    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -400,27 +397,26 @@ async fn create_project_external_success() {
     let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope.clone(), &key_project_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     tokio::fs::remove_dir_all(&external_path).await.unwrap();

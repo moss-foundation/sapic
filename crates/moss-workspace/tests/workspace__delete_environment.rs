@@ -1,5 +1,7 @@
+// TODO: Update the tests after changing the variable store to the new database
 #![cfg(feature = "integration-tests")]
 
+use crate::shared::setup_test_workspace;
 use moss_environment::{
     AnyEnvironment,
     models::{
@@ -9,23 +11,23 @@ use moss_environment::{
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
+use moss_storage2::Storage;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
         operations::{CreateEnvironmentInput, DeleteEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
+    storage::key_environment_order,
     storage_old::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;
 
-use crate::shared::setup_test_workspace;
-
 mod shared;
 #[tokio::test]
 async fn delete_environment_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
 
     // Create a custom environment with a variable
     let environment_name = random_environment_name();
@@ -105,20 +107,18 @@ async fn delete_environment_success() {
     assert!(!create_environment_output.abs_path.exists());
 
     // Check the environment is removed from the database
-    let item_store = workspace.db().item_store();
+    let storage = <dyn Storage>::global(&app_delegate);
 
-    assert!(
-        GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_ENVIRONMENT
-                .join(environment_id.as_str())
-                .join("order")
+    let env_order_result = storage
+        .get(
+            storage_scope.clone(),
+            &key_environment_order(&environment_id),
         )
         .await
-        .is_err()
-    );
+        .unwrap();
+    assert!(env_order_result.is_none());
 
+    // TODO: Update variable storage
     // Check variables associated with the environment are removed from the database
     let variable_store = workspace.db().variable_store();
 
@@ -143,7 +143,7 @@ async fn delete_environment_success() {
 
 #[tokio::test]
 async fn delete_environment_nonexistent() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
 
     let result = workspace
         .delete_environment(

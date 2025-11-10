@@ -9,7 +9,8 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
-use moss_testutils::random_name::random_workspace_name;
+use moss_storage2::{AppStorage, AppStorageOptions, Storage, models::primitives::StorageScope};
+use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_user::profile::Profile;
 use moss_workspace::{
     Workspace,
@@ -47,17 +48,25 @@ pub async fn setup_test_workspace() -> (
     AppDelegate<MockAppRuntime>,
     Workspace<MockAppRuntime>,
     CleanupFn,
+    StorageScope,
 ) {
     dotenvy::dotenv().ok();
+
     let abs_path: Arc<Path> = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
         .join("data")
-        .join("workspaces")
-        .join(random_workspace_name())
+        .join(random_string(10))
         .into();
     let tmp_path = abs_path.join("tmp");
+    let globals_path = abs_path.join("globals");
+    let workspaces_path = abs_path.join("workspaces");
+    let workspace_name = random_workspace_name();
+    let test_workspace_path = workspaces_path.join(&workspace_name);
+
     fs::create_dir_all(&abs_path).unwrap();
     fs::create_dir_all(&tmp_path).unwrap();
+    fs::create_dir_all(&globals_path).unwrap();
+    fs::create_dir_all(&test_workspace_path).unwrap();
 
     let fs = Arc::new(RealFileSystem::new(&tmp_path));
     let mock_app = tauri::test::mock_app();
@@ -75,7 +84,23 @@ pub async fn setup_test_workspace() -> (
         tao_app_handle.manage(github_client);
         tao_app_handle.manage(gitlab_client);
     }
-    let app_delegate = AppDelegate::new(tao_app_handle.clone());
+
+    let app_storage = AppStorage::new(
+        &globals_path,
+        workspaces_path,
+        AppStorageOptions {
+            in_memory: Some(false),
+            busy_timeout: Some(Duration::from_secs(5)),
+        }
+        .into(),
+    )
+    .await
+    .unwrap();
+    let app_delegate = {
+        let delegate = AppDelegate::new(tao_app_handle.clone());
+        <dyn Storage>::set_global(&delegate, app_storage.clone());
+        delegate
+    };
 
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
@@ -85,14 +110,15 @@ pub async fn setup_test_workspace() -> (
     );
 
     let ctx = ctx.freeze();
+    let storage_scope = StorageScope::Workspace(workspace_name.clone().into());
     let workspace: Workspace<MockAppRuntime> =
-        WorkspaceBuilder::new(fs.clone(), active_profile.into())
+        WorkspaceBuilder::new(fs.clone(), active_profile.into(), storage_scope.clone())
             .create(
                 &ctx,
                 &app_delegate,
                 CreateWorkspaceParams {
                     name: random_workspace_name(),
-                    abs_path: abs_path.clone(),
+                    abs_path: test_workspace_path.clone().into(),
                 },
             )
             .await
@@ -109,7 +135,13 @@ pub async fn setup_test_workspace() -> (
         }
     });
 
-    (ctx, app_delegate, workspace, cleanup_fn)
+    // Add workspace storage
+    <dyn Storage>::global(&app_delegate)
+        .add_workspace(workspace_name.clone().into())
+        .await
+        .unwrap();
+
+    (ctx, app_delegate, workspace, cleanup_fn, storage_scope)
 }
 
 // Suppress false warning
