@@ -3,6 +3,8 @@ import { DescribeAppOutput, OpenWorkspaceOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
+import { USE_STREAM_PROJECTS_QUERY_KEY } from "../project/useStreamProjects";
+import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "../workspace";
 import { useListWorkspaces } from "./useListWorkspaces";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
@@ -38,6 +40,9 @@ export const useOpenWorkspace = () => {
           workspace: openedWorkspace,
         };
       });
+
+      queryClient.resetQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY] });
+      queryClient.resetQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
     },
   });
 };
