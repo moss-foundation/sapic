@@ -35,7 +35,6 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
       api.onDidActivePanelChange((event) => {
         setActivePanelId(event?.id);
       }),
-
       api.onUnhandledDragOverEvent((event) => {
         event.accept();
       }),

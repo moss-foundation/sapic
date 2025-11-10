@@ -3,6 +3,7 @@ import { useRef, useState } from "react";
 
 import { DropNode } from "@/components/ProjectTree/types";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
@@ -22,21 +23,27 @@ const TabbedPane = () => {
   const [pragmaticDropElement, setPragmaticDropElement] = useState<DropNode | null>(null);
 
   const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
-
-  const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
+  const { hasActiveWorkspace } = useActiveWorkspace();
   const { data: layout } = useGetLayout();
 
+  const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
   useTabbedPaneEventHandlers({ canPragmaticDrop: canDrop });
-  //TODO check if this is needed
   useTabbedPaneResizeObserver({ containerRef: dockviewRefWrapper });
-
   useResetGridStateOnWorkspaceChange();
 
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
-    if (layout?.tabbedPaneState.gridState) {
-      event.api.fromJSON(layout.tabbedPaneState.gridState);
+    if (!hasActiveWorkspace) {
+      event.api.addPanel({
+        id: "Welcome",
+        component: "Welcome",
+        title: "Welcome",
+      });
+    } else {
+      if (layout?.tabbedPaneState.gridState) {
+        event.api.fromJSON(layout?.tabbedPaneState.gridState);
+      }
     }
   };
 

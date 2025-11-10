@@ -14,6 +14,7 @@ const queryFn = async (activeWorkspaceId?: string): Promise<LayoutStateOutput> =
 
   const layout = (await sharedStorageService.getItem("layout", activeWorkspaceId))
     ?.value as unknown as LayoutStateOutput;
+
   return layout;
 };
 
