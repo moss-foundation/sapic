@@ -2,7 +2,7 @@ import { SerializedDockview } from "moss-tabs";
 
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
-export interface LayoutOutput {
+export interface LayoutStateOutput {
   sidebarState: {
     width: number;
     visible: boolean;
@@ -27,4 +27,4 @@ export interface LayoutOutput {
 type DeepPartial<T> = T extends object ? { [K in keyof T]?: DeepPartial<T[K]> } : T;
 type Simplify<T> = { [K in keyof T]: T[K] } & {};
 
-export type LayoutInput = Simplify<DeepPartial<LayoutOutput>>;
+export type LayoutStateInput = Simplify<DeepPartial<LayoutStateOutput>>;

@@ -1,4 +1,4 @@
-import { defaultBottomPanePanel } from "@/constants/layoutPositions";
+import { defaultBottomPanePanelState } from "@/constants/layoutPositions";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -29,10 +29,10 @@ export const useUpdateBottomPanel = () => {
       queryClient.setQueryData<BottomPanel>([USE_GET_BOTTOM_PANEL_QUERY_KEY, variables.workspaceId], (old) => {
         return {
           ...old,
-          height: variables.height ?? old?.height ?? defaultBottomPanePanel.height,
-          visible: variables.visible ?? old?.visible ?? defaultBottomPanePanel.visible,
-          minHeight: old?.minHeight ?? defaultBottomPanePanel.minHeight,
-          maxHeight: old?.maxHeight ?? defaultBottomPanePanel.maxHeight,
+          height: variables.height ?? old?.height ?? defaultBottomPanePanelState.height,
+          visible: variables.visible ?? old?.visible ?? defaultBottomPanePanelState.visible,
+          minHeight: old?.minHeight ?? defaultBottomPanePanelState.minHeight,
+          maxHeight: old?.maxHeight ?? defaultBottomPanePanelState.maxHeight,
         };
       });
     },

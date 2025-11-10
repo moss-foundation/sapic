@@ -1,7 +1,7 @@
 import {
-  defaultBottomPanePanel,
-  defaultLayout,
-  defaultSidebarPanel,
+  defaultBottomPanePanelState,
+  defaultLayoutState,
+  defaultSidebarPanelState,
   emptyGridState,
 } from "@/constants/layoutPositions";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
@@ -53,10 +53,10 @@ export const useCreateWorkspace = () => {
       };
 
       await updateTabbedPane({ gridState: emptyGridState, workspaceId: newWorkspace.id });
-      await updateBottomPanel({ ...defaultBottomPanePanel, workspaceId: newWorkspace.id });
-      await updateSidebarPanel({ ...defaultSidebarPanel, workspaceId: newWorkspace.id });
+      await updateBottomPanel({ ...defaultBottomPanePanelState, workspaceId: newWorkspace.id });
+      await updateSidebarPanel({ ...defaultSidebarPanelState, workspaceId: newWorkspace.id });
 
-      await updateLayout({ layout: defaultLayout, workspaceId: newWorkspace.id });
+      await updateLayout({ layout: defaultLayoutState, workspaceId: newWorkspace.id });
 
       queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (oldData) => {
         if (!oldData) return [newWorkspace];

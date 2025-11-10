@@ -1,6 +1,6 @@
 import { Orientation, SerializedDockview } from "moss-tabs";
 
-import { LayoutOutput } from "@/hooks/sharedStorage/layout/types";
+import { LayoutStateOutput } from "@/hooks/sharedStorage/layout/types";
 
 export enum ACTIVITYBAR_POSITION {
   DEFAULT = "DEFAULT",
@@ -14,7 +14,7 @@ export enum SIDEBAR_POSITION {
   RIGHT = "RIGHT",
 }
 
-export const defaultSidebarPanel = {
+export const defaultSidebarPanelState = {
   position: SIDEBAR_POSITION.LEFT,
   width: 255,
   visible: true,
@@ -22,11 +22,16 @@ export const defaultSidebarPanel = {
   maxWidth: 400,
 } as const;
 
-export const defaultBottomPanePanel = {
+export const defaultBottomPanePanelState = {
   height: 333,
   minHeight: 100,
   maxHeight: Infinity,
   visible: false,
+} as const;
+
+export const defaultActivityBarState = {
+  position: ACTIVITYBAR_POSITION.DEFAULT,
+  activeContainerId: "workbench.view.projects",
 } as const;
 
 export const emptyGridState: SerializedDockview = {
@@ -45,14 +50,11 @@ export const emptyGridState: SerializedDockview = {
   popoutGroups: [],
 } as const;
 
-export const defaultLayout: LayoutOutput = {
-  sidebarState: defaultSidebarPanel,
-  bottomPanelState: defaultBottomPanePanel,
+export const defaultLayoutState: LayoutStateOutput = {
+  sidebarState: defaultSidebarPanelState,
+  bottomPanelState: defaultBottomPanePanelState,
   tabbedPaneState: {
     gridState: emptyGridState,
   },
-  activitybarState: {
-    position: ACTIVITYBAR_POSITION.DEFAULT,
-    activeContainerId: "",
-  },
+  activitybarState: defaultActivityBarState,
 };

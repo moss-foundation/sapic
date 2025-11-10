@@ -1,4 +1,4 @@
-import { defaultBottomPanePanel } from "@/constants/layoutPositions";
+import { defaultBottomPanePanelState } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useQuery } from "@tanstack/react-query";
@@ -15,10 +15,10 @@ export interface BottomPanel {
 const queryFn = async (activeWorkspaceId?: string): Promise<BottomPanel> => {
   if (!activeWorkspaceId) {
     return {
-      height: defaultBottomPanePanel.height,
-      visible: defaultBottomPanePanel.visible,
-      minHeight: defaultBottomPanePanel.minHeight,
-      maxHeight: defaultBottomPanePanel.maxHeight,
+      height: defaultBottomPanePanelState.height,
+      visible: defaultBottomPanePanelState.visible,
+      minHeight: defaultBottomPanePanelState.minHeight,
+      maxHeight: defaultBottomPanePanelState.maxHeight,
     };
   }
 
@@ -30,10 +30,10 @@ const queryFn = async (activeWorkspaceId?: string): Promise<BottomPanel> => {
     | undefined;
 
   return {
-    height: bottomPaneHeight ?? defaultBottomPanePanel.height,
-    visible: bottomPaneVisible ?? defaultBottomPanePanel.visible,
-    minHeight: defaultBottomPanePanel.minHeight,
-    maxHeight: defaultBottomPanePanel.maxHeight,
+    height: bottomPaneHeight ?? defaultBottomPanePanelState.height,
+    visible: bottomPaneVisible ?? defaultBottomPanePanelState.visible,
+    minHeight: defaultBottomPanePanelState.minHeight,
+    maxHeight: defaultBottomPanePanelState.maxHeight,
   };
 };
 

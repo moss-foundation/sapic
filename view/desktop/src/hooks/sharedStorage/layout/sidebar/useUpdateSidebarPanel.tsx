@@ -1,4 +1,4 @@
-import { defaultSidebarPanel } from "@/constants/layoutPositions";
+import { defaultSidebarPanelState } from "@/constants/layoutPositions";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { SidebarPosition } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,11 +31,11 @@ export const useUpdateSidebarPanel = () => {
       queryClient.setQueryData<SidebarPanel>([USE_GET_SIDEBAR_PANEL_QUERY_KEY, variables.workspaceId], (old) => {
         return {
           ...old,
-          position: variables.position ?? old?.position ?? defaultSidebarPanel.position,
-          size: variables.size ?? old?.size ?? defaultSidebarPanel.size,
-          visible: variables.visible ?? old?.visible ?? defaultSidebarPanel.visible,
-          minWidth: old?.minWidth ?? defaultSidebarPanel.minWidth,
-          maxWidth: old?.maxWidth ?? defaultSidebarPanel.maxWidth,
+          position: variables.position ?? old?.position ?? defaultSidebarPanelState.position,
+          size: variables.size ?? old?.size ?? defaultSidebarPanelState.size,
+          visible: variables.visible ?? old?.visible ?? defaultSidebarPanelState.visible,
+          minWidth: old?.minWidth ?? defaultSidebarPanelState.minWidth,
+          maxWidth: old?.maxWidth ?? defaultSidebarPanelState.maxWidth,
         };
       });
     },

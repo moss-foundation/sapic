@@ -1,4 +1,4 @@
-import { defaultSidebarPanel } from "@/constants/layoutPositions";
+import { defaultSidebarPanelState } from "@/constants/layoutPositions";
 import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { SidebarPosition } from "@repo/moss-workspace";
@@ -17,11 +17,11 @@ export interface SidebarPanel {
 const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
   if (!activeWorkspaceId) {
     return {
-      position: defaultSidebarPanel.position,
-      width: defaultSidebarPanel.width,
-      visible: defaultSidebarPanel.visible,
-      minWidth: defaultSidebarPanel.minWidth,
-      maxWidth: defaultSidebarPanel.maxWidth,
+      position: defaultSidebarPanelState.position,
+      width: defaultSidebarPanelState.width,
+      visible: defaultSidebarPanelState.visible,
+      minWidth: defaultSidebarPanelState.minWidth,
+      maxWidth: defaultSidebarPanelState.maxWidth,
     };
   }
 
@@ -36,11 +36,11 @@ const queryFn = async (activeWorkspaceId?: string): Promise<SidebarPanel> => {
     | undefined;
 
   return {
-    position: sidebarPosition ?? defaultSidebarPanel.position,
-    width: sidebarWidth ?? defaultSidebarPanel.width,
-    visible: sidebarVisible ?? defaultSidebarPanel.visible,
-    minWidth: defaultSidebarPanel.minWidth,
-    maxWidth: defaultSidebarPanel.maxWidth,
+    position: sidebarPosition ?? defaultSidebarPanelState.position,
+    width: sidebarWidth ?? defaultSidebarPanelState.width,
+    visible: sidebarVisible ?? defaultSidebarPanelState.visible,
+    minWidth: defaultSidebarPanelState.minWidth,
+    maxWidth: defaultSidebarPanelState.maxWidth,
   };
 };
 
