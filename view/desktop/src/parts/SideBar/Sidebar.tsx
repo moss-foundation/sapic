@@ -5,7 +5,6 @@ import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { cn } from "@/utils";
 
@@ -36,16 +35,10 @@ export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 export const Sidebar = () => {
   const { data: appState } = useDescribeApp();
   const { hasActiveWorkspace } = useActiveWorkspace();
-  const { data: layout } = useGetLayout();
 
   const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
-  const activeGroupId = layout?.activitybarState.activeContainerId;
 
-  const sidebarContent = hasActiveWorkspace ? (
-    <SidebarWorkspaceContent groupId={activeGroupId} />
-  ) : (
-    <EmptyWorkspace inSidebar={true} />
-  );
+  const sidebarContent = hasActiveWorkspace ? <SidebarWorkspaceContent /> : <EmptyWorkspace inSidebar={true} />;
 
   if (activityBarPosition === ACTIVITYBAR_POSITION.TOP) {
     return (
