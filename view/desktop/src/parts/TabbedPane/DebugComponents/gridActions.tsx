@@ -1,7 +1,8 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { useUpdateEditorPartState } from "@/hooks/app/useUpdateEditorPartState";
+import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
@@ -74,7 +75,9 @@ function usePopover() {
 
 export const GridActions = () => {
   const { api, watermark, setWatermark } = useTabbedPaneStore();
-  const { mutate: updateEditorPartState } = useUpdateEditorPartState();
+  const { mutate: updateLayout } = useUpdateLayout();
+
+  const { activeWorkspaceId } = useActiveWorkspace();
 
   const hasCustomWatermark = watermark;
   const toggleCustomWatermark = () => {
@@ -98,7 +101,7 @@ export const GridActions = () => {
 
   const onSave = () => {
     if (api) {
-      updateEditorPartState(api.toJSON());
+      updateLayout({ layout: { tabbedPaneState: { gridState: api.toJSON() } }, workspaceId: activeWorkspaceId });
     }
   };
 
