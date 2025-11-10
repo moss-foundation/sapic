@@ -135,6 +135,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               <SidebarContent />
             </ResizablePanel>
           )}
+
           <ResizablePanel priority={LayoutPriority.High}>
             <Resizable
               ref={verticalResizableRef}
