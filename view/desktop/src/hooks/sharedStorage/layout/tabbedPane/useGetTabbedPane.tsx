@@ -1,6 +1,6 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { emptyGridState } from "@/constants/layoutPositions";
+import { emptyGridState } from "@/constants/layoutStates";
 import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useQuery } from "@tanstack/react-query";

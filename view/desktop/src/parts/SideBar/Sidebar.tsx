@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useRef } from "react";
 import { ActivityBar } from "@/components";
 import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useGetProjectSessionState } from "@/hooks/useProjectSession";

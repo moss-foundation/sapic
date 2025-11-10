@@ -1,10 +1,6 @@
 import SelectOutlined from "@/components/SelectOutlined";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useGetBottomPanel";
-import { useUpdateBottomPanel } from "@/hooks/sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
-import { useUpdateSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";

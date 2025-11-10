@@ -8,7 +8,6 @@ import { useActiveWorkspace } from "../workspace";
 export const USE_STREAM_PROJECTS_QUERY_KEY = "streamProjects";
 
 const startStreamProjects = async (): Promise<StreamProjectsEvent[]> => {
-  console.log("startStreamProjects");
   const projects: StreamProjectsEvent[] = [];
 
   const onProjectEvent = new Channel<StreamProjectsEvent>();

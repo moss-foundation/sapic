@@ -1,4 +1,4 @@
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
 

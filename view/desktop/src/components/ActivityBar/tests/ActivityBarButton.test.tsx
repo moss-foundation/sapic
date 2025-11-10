@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { useAppResizableLayoutStore, type AppResizableLayoutStore } from "@/store/appResizableLayout";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";

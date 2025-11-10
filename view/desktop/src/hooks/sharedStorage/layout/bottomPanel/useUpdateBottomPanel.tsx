@@ -1,4 +1,4 @@
-import { defaultBottomPanePanelState } from "@/constants/layoutPositions";
+import { defaultBottomPanePanelState } from "@/constants/layoutStates";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

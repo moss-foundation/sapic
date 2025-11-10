@@ -3,7 +3,7 @@ import {
   defaultLayoutState,
   defaultSidebarPanelState,
   emptyGridState,
-} from "@/constants/layoutPositions";
+} from "@/constants/layoutStates";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import {
   CreateWorkspaceInput,

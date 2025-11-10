@@ -1,4 +1,4 @@
-import { defaultSidebarPanelState } from "@/constants/layoutPositions";
+import { defaultSidebarPanelState } from "@/constants/layoutStates";
 import { useActiveWorkspace } from "@/hooks/workspace";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { SidebarPosition } from "@repo/moss-workspace";

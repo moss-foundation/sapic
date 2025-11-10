@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { sharedStorageService } from "@/lib/services";
 import { SidebarPosition } from "@repo/moss-workspace";
 

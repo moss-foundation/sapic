@@ -1,4 +1,4 @@
-import { defaultLayoutState } from "@/constants/layoutPositions";
+import { defaultLayoutState } from "@/constants/layoutStates";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { useQuery } from "@tanstack/react-query";

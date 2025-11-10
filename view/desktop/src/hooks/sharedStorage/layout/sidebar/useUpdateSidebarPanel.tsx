@@ -1,4 +1,4 @@
-import { defaultSidebarPanelState } from "@/constants/layoutPositions";
+import { defaultSidebarPanelState } from "@/constants/layoutStates";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { SidebarPosition } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

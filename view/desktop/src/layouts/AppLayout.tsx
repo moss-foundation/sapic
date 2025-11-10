@@ -2,7 +2,7 @@ import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";

@@ -1,7 +1,7 @@
 import { toMerged } from "es-toolkit";
 import { SerializedDockview } from "moss-tabs";
 
-import { defaultLayoutState } from "@/constants/layoutPositions";
+import { defaultLayoutState } from "@/constants/layoutStates";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

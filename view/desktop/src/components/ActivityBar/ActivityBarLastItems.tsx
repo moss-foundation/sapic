@@ -1,4 +1,4 @@
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
 import { useActivityBarStore } from "@/store/activityBar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";

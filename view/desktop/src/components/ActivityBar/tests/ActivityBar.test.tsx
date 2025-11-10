@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
 import { useActivityBarStore } from "@/store/activityBar";
 import { AppResizableLayoutStore, useAppResizableLayoutStore } from "@/store/appResizableLayout";

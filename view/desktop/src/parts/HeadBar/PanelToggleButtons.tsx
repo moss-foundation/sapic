@@ -1,5 +1,5 @@
 import { ActionButton } from "@/components/ActionButton";
-import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
+import { SIDEBAR_POSITION } from "@/constants/layoutStates";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
