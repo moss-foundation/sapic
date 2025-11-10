@@ -1,11 +1,8 @@
 import SelectOutlined from "@/components/SelectOutlined";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
-import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
-import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";
-import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";
 
@@ -24,68 +21,10 @@ export const WorkspaceLayoutSection = () => {
           </div>
         )}
 
-        <SidebarTypeSection />
         <SidebarVisibilitySection />
         <BottomPaneVisibilitySection />
-        <ActivityBarPositionSection />
       </div>
     </Section>
-  );
-};
-
-const SidebarTypeSection = () => {
-  const { hasActiveWorkspace } = useActiveWorkspace();
-  const { data: appState } = useDescribeApp();
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
-
-  const sidebarTypeItems: MenuItemProps[] = [
-    {
-      id: "sidebar-left",
-      type: "radio",
-      label: "Left",
-      value: SIDEBAR_POSITION.LEFT,
-    },
-    {
-      id: "sidebar-right",
-      type: "radio",
-      label: "Right",
-      value: SIDEBAR_POSITION.RIGHT,
-    },
-  ];
-
-  const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
-    console.log({
-      key: "sidebarPosition",
-      value: value,
-      target: "WORKSPACE",
-    });
-    updateConfiguration({
-      key: "sidebarPosition",
-      value: value,
-      target: "WORKSPACE",
-    });
-  };
-
-  return (
-    <div>
-      <h3 className="mb-2 font-medium">Sidebar Type</h3>
-      <div className="w-[200px]">
-        <SelectOutlined.Root
-          value={(appState?.configuration.contents.sidebarPosition as SIDEBAR_POSITION) || SIDEBAR_POSITION.LEFT}
-          onValueChange={handleSidebarTypeChange}
-          disabled={!hasActiveWorkspace}
-        >
-          <SelectOutlined.Trigger />
-          <SelectOutlined.Content>
-            {sidebarTypeItems.map((item) => (
-              <SelectOutlined.Item key={item.id} value={item.value!}>
-                {item.label}
-              </SelectOutlined.Item>
-            ))}
-          </SelectOutlined.Content>
-        </SelectOutlined.Root>
-      </div>
-    </div>
   );
 };
 
@@ -175,83 +114,6 @@ const BottomPaneVisibilitySection = () => {
           <SelectOutlined.Trigger />
           <SelectOutlined.Content>
             {visibilityItems.map((item) => {
-              if (item.type === "separator") {
-                return <SelectOutlined.Separator key={item.id} />;
-              }
-
-              return (
-                <SelectOutlined.Item key={item.id} value={item.value!}>
-                  {item.label}
-                </SelectOutlined.Item>
-              );
-            })}
-          </SelectOutlined.Content>
-        </SelectOutlined.Root>
-      </div>
-    </div>
-  );
-};
-
-const ActivityBarPositionSection = () => {
-  const { data: appState } = useDescribeApp();
-  //TODO later we should handle the JsonValue differently
-  const activityBarPosition =
-    (appState?.configuration.contents.activityBarPosition as ActivitybarPosition) || ACTIVITYBAR_POSITION.DEFAULT;
-
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
-
-  const activityBarPositionItems: MenuItemProps[] = [
-    {
-      id: ACTIVITYBAR_POSITION.DEFAULT,
-      type: "radio",
-      label: "Default",
-      value: ACTIVITYBAR_POSITION.DEFAULT,
-    },
-    {
-      id: ACTIVITYBAR_POSITION.TOP,
-      type: "radio",
-      label: "Top",
-      value: ACTIVITYBAR_POSITION.TOP,
-    },
-    {
-      id: ACTIVITYBAR_POSITION.BOTTOM,
-      type: "radio",
-      label: "Bottom",
-      value: ACTIVITYBAR_POSITION.BOTTOM,
-    },
-    {
-      id: ACTIVITYBAR_POSITION.HIDDEN,
-      type: "radio",
-      label: "Hidden",
-      value: ACTIVITYBAR_POSITION.HIDDEN,
-    },
-  ];
-
-  const handleActivityBarPositionChange = (value: string) => {
-    const position = value as ActivitybarPosition;
-    console.log({
-      key: "activityBarPosition",
-      value: position,
-      target: "WORKSPACE",
-    });
-    updateConfiguration({
-      key: "activityBarPosition",
-      value: position,
-      target: "WORKSPACE",
-    });
-  };
-
-  return (
-    <div>
-      <h3 className="mb-2 font-medium">ActivityBar Position</h3>
-      <div className="w-[200px]">
-        <SelectOutlined.Root
-          value={activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT}
-          onValueChange={handleActivityBarPositionChange}
-        >
-          <SelectOutlined.Trigger />
-          <SelectOutlined.Content>
-            {activityBarPositionItems.map((item) => {
               if (item.type === "separator") {
                 return <SelectOutlined.Separator key={item.id} />;
               }

@@ -63,7 +63,7 @@ describe("ActivityBar", () => {
 
   const setup = (
     activityBarPosition: ActivitybarPosition = ACTIVITYBAR_POSITION.DEFAULT,
-    sidebarPositionValue: SidebarPosition = SIDEBAR_POSITION.LEFT
+    sideBarPositionValue: SidebarPosition = SIDEBAR_POSITION.LEFT
   ) => {
     mockUseActivityBarStore.mockReturnValue({
       position: activityBarPosition,
@@ -84,7 +84,7 @@ describe("ActivityBar", () => {
           keys: ["activityBarPosition", "sideBarPosition"],
           contents: {
             activityBarPosition,
-            sideBarPosition: sidebarPositionValue,
+            sideBarPosition: sideBarPositionValue,
           },
         },
       },

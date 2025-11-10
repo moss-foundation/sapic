@@ -15,7 +15,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
-  const sideBarPosition = appState?.configuration.contents.sidebarPosition as SIDEBAR_POSITION;
+  const sideBarPosition = appState?.configuration.contents.sideBarPosition as SIDEBAR_POSITION;
 
   const toggleSidebar = () => {
     updateLayout({
