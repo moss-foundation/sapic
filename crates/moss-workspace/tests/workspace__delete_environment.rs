@@ -19,7 +19,6 @@ use moss_workspace::{
         types::UpdateEnvironmentParams,
     },
     storage::key_environment_order,
-    storage_old::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;

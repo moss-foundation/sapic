@@ -215,7 +215,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let storage_service_old: Arc<StorageService<R>> =
             StorageService::new(&params.abs_path)?.into();
         let layout_service = LayoutService::new(storage_service_old.clone());
-        let collection_service: Arc<ProjectService<R>> = ProjectService::new(
+        let project_service: Arc<ProjectService<R>> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
@@ -243,7 +243,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let edit = WorkspaceEdit::new(self.fs.clone(), params.abs_path.join(MANIFEST_FILE_NAME));
 
         let on_did_add_collection = Workspace::on_did_add_project(
-            collection_service.clone(),
+            project_service.clone(),
             environment_service.clone(),
             &on_did_add_collection_event,
         )
@@ -259,7 +259,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             abs_path: params.abs_path,
             edit,
             layout_service,
-            project_service: collection_service,
+            project_service,
             environment_service,
             storage_service_old,
             active_profile: self.active_profile,

@@ -4,28 +4,18 @@ pub mod segments;
 use anyhow::{Context as _, Result};
 use moss_applib::AppRuntime;
 use moss_db::{Transaction, primitives::AnyValue};
-use moss_environment::models::primitives::EnvironmentId;
 use moss_storage::{
     WorkspaceStorage,
     common::VariableStore,
     primitives::segkey::SegKeyBuf,
-    storage::operations::{
-        GetItem, ListByPrefix, PutItem, TransactionalPutItem, TransactionalRemoveByPrefix,
-    },
+    storage::operations::{ListByPrefix, TransactionalPutItem},
     workspace_storage::{WorkspaceStorageImpl, stores::WorkspaceItemStore},
 };
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
-    sync::Arc,
-};
+use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::{
-    models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition},
-    storage_old::{
-        entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
-        segments::{SEGKEY_COLLECTION, SEGKEY_ENVIRONMENT, SEGKEY_EXPANDED_ENVIRONMENT_GROUPS},
-    },
+    models::primitives::{ActivitybarPosition, SidebarPosition},
+    storage_old::entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
 };
 
 pub(crate) struct StorageService<R: AppRuntime> {

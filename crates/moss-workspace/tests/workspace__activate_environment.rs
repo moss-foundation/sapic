@@ -17,8 +17,6 @@ use std::{
 };
 use tauri::ipc::{Channel, InvokeResponseBody};
 
-use moss_storage2::{FlushMode, Storage};
-
 use crate::shared::setup_test_workspace;
 
 pub mod shared;
@@ -154,7 +152,7 @@ async fn activate_environment_collection() {
 
 #[tokio::test]
 async fn activate_environment_currently_active() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace

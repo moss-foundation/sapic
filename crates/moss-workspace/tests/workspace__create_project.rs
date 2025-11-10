@@ -2,19 +2,17 @@
 
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
-use moss_fs::fs_watcher::global;
-use moss_storage::storage::operations::GetItem;
 use moss_storage2::Storage;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
-    storage_old::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use serde_json::Value as JsonValue;
 use std::{collections::HashSet, path::Path};
 use tauri::ipc::Channel;
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_project_success() {

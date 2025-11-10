@@ -123,13 +123,16 @@ impl<R: AppRuntime> ProjectService<R> {
             storage.get(storage_scope.clone(), KEY_EXPANDED_ITEMS).await
         {
             let items: HashSet<ProjectId> =
-                serde_json::from_value(expanded_items).unwrap_or_else(|err| HashSet::new());
+                serde_json::from_value(expanded_items).unwrap_or_else(|err| {
+                    session::warn!(format!("failed to deserialized expandedItems: {}", err));
+                    HashSet::new()
+                });
             items
         } else {
             HashSet::new()
         };
 
-        let collections = restore_projects(
+        let projects = restore_projects(
             ctx,
             app_delegate,
             &abs_path,
@@ -140,7 +143,7 @@ impl<R: AppRuntime> ProjectService<R> {
         .await
         .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
 
-        for (id, collection) in collections.iter() {
+        for (id, collection) in projects.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
         }
 
@@ -149,7 +152,7 @@ impl<R: AppRuntime> ProjectService<R> {
             fs,
             storage_scope,
             state: Arc::new(RwLock::new(ServiceState {
-                projects: collections,
+                projects,
                 expanded_items,
             })),
             app_delegate: app_delegate.clone(),
@@ -506,7 +509,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn delete_project(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>> {
         let id_str = id.to_string();
@@ -578,7 +581,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn update_project(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ProjectId,
         params: UpdateProjectParams,
     ) -> joinerror::Result<()> {
@@ -998,7 +1001,7 @@ impl<R: AppRuntime> ProjectService<R> {
     }
 }
 async fn restore_projects<R: AppRuntime>(
-    ctx: &R::AsyncContext,
+    _ctx: &R::AsyncContext,
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,

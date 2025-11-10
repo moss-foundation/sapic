@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_storage::storage::operations::{GetItem, ListByPrefix};
 use moss_storage2::Storage;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{

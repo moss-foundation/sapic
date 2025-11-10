@@ -1,10 +1,8 @@
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::OptionExt;
-use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_db::primitives::AnyValue;
 use moss_environment::{
     AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
@@ -38,8 +36,8 @@ use crate::{
     },
     storage::{
         KEY_ACTIVE_ENVIRONMENTS, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
-        KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group,
-        key_environment_group_order, key_environment_order,
+        KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,
+        key_environment_order,
     },
     storage_old::StorageService,
 };
@@ -158,7 +156,7 @@ where
 
     pub async fn update_environment_group(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: UpdateEnvironmentGroupParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -210,7 +208,7 @@ where
 
     pub async fn list_environment_groups(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
         let expanded_groups_result = self
             .storage
@@ -637,7 +635,7 @@ where
 
     pub async fn activate_environment(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: ActivateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;

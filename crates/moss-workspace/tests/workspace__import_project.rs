@@ -5,9 +5,7 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
-use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_applib::context::AnyAsyncContext;
-use moss_storage::storage::operations::GetItem;
 use moss_storage2::Storage;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
@@ -17,10 +15,11 @@ use moss_workspace::{
         types::{ImportDiskParams, ImportGitHubParams, ImportProjectParams, ImportProjectSource},
     },
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
-    storage_old::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
 };
 use std::{collections::HashSet, env, ops::Deref};
 use tauri::ipc::Channel;
+
+use crate::shared::{setup_external_project, setup_test_workspace};
 
 pub mod shared;
 

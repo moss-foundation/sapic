@@ -10,7 +10,6 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams, VariableOptions},
     },
 };
-use moss_storage::storage::operations::GetItem;
 use moss_storage2::Storage;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
@@ -19,7 +18,6 @@ use moss_workspace::{
         types::UpdateEnvironmentParams,
     },
     storage::key_environment_order,
-    storage_old::segments::SEGKEY_ENVIRONMENT,
 };
 use serde_json::Value as JsonValue;
 
