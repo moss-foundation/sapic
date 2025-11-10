@@ -107,13 +107,7 @@ export const ActivityBarButton = ({
   }, [activityBarPosition, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
-    console.log("handleClick");
     if (isActive && layout?.sidebarState.visible) {
-      console.log("handleClick 1", {
-        id,
-        isActive,
-        layout: layout?.sidebarState.visible,
-      });
       updateLayout({
         layout: {
           sidebarState: {
@@ -123,11 +117,6 @@ export const ActivityBarButton = ({
         workspaceId: activeWorkspaceId,
       });
     } else {
-      console.log("handleClick 2", {
-        id,
-        isActive,
-        layout: layout?.sidebarState.visible,
-      });
       updateLayout({
         layout: {
           activitybarState: {
