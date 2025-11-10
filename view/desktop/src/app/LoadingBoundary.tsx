@@ -1,12 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
+import { PageLoader } from "@/components";
 import { useDescribeApp, useDescribeColorTheme } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 
 import { initializeI18n } from "./i18n";
 
 export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => {
+  const [isInitializing, setIsInitializing] = useState(true);
+
   const { data: appState, isPending: isPendingApp } = useDescribeApp();
+
   const {
     data: colorThemeCss,
     isSuccess: isSuccessTheme,
@@ -15,6 +19,7 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
     enabled: !!appState?.configuration.contents.colorTheme,
   });
+
   const { isPending: isPendingLayout } = useGetLayout();
 
   const langCode = appState?.configuration.contents.language as string;
@@ -26,6 +31,15 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
 
   const isPending = isPendingApp || isPendingTheme || isPendingLayout;
 
+  const handleInitializing = useEffectEvent(() => {
+    setIsInitializing(false);
+  });
+
+  useEffect(() => {
+    if (isPending) return;
+    handleInitializing();
+  }, [isPending]);
+
   if (isSuccessTheme) {
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
 
@@ -34,11 +48,11 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     }
   }
 
-  if (isPending) {
-    return null;
+  if (isInitializing && isPending) {
+    return <PageLoader className="bg-red-200" />;
+  } else {
+    return <>{children}</>;
   }
-
-  return <>{children}</>;
 };
 
 const applyThemeStyles = (id: string, css: string): void => {
