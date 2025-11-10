@@ -28,7 +28,7 @@ use crate::{
 #[async_trait]
 pub trait Storage: Send + Sync {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
-    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
+    async fn remove_workspace(&self, workspace_id: Arc<String>);
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
@@ -132,10 +132,8 @@ impl Storage for AppStorage {
         Ok(())
     }
 
-    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
+    async fn remove_workspace(&self, workspace_id: Arc<String>) {
         self.workspaces.write().await.remove(&workspace_id);
-
-        Ok(())
     }
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {

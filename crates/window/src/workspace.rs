@@ -308,12 +308,23 @@ impl<R: AppRuntime> WorkspaceService<R> {
             )));
         }
 
+        let storage = <dyn Storage>::global(app_delegate);
         {
             let mut state_lock = self.state.write().await;
             if let Some(previous_workspace) = state_lock.active_workspace.take() {
                 previous_workspace.dispose().await;
+                storage
+                    .remove_workspace(previous_workspace.id.inner())
+                    .await;
                 drop(previous_workspace);
             }
+        }
+
+        if let Err(e) = <dyn Storage>::global(app_delegate)
+            .add_workspace(id.inner())
+            .await
+        {
+            return Err(e.join::<()>("failed to add workspace to the storage"));
         }
 
         let last_opened_at = Utc::now().timestamp();
@@ -348,13 +359,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 }
                 .into(),
             );
-        }
-
-        if let Err(e) = <dyn Storage>::global(app_delegate)
-            .add_workspace(id.inner())
-            .await
-        {
-            return Err(e.join::<()>("failed to add workspace to the storage"));
         }
 
         let storage = <dyn Storage>::global(app_delegate);
@@ -399,8 +403,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
             <dyn Storage>::global(app_delegate)
                 .remove_workspace(workspace.id.inner())
-                .await
-                .join_err::<()>("failed to remove workspace from the storage")?;
+                .await;
         }
 
         let storage = <dyn Storage>::global(app_delegate);
