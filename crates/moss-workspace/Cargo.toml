@@ -68,4 +68,5 @@ integration-tests = [
   "moss_git_hosting_provider/integration-tests",
   "oauth2",
   "moss_keyring/test",
+  "moss_storage2/integration-tests",
 ]

@@ -147,5 +147,7 @@ async fn import_external_project_success() {
     let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
+    tokio::fs::remove_dir_all(&external_path).await.unwrap();
+
     cleanup().await;
 }

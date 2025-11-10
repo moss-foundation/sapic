@@ -96,6 +96,7 @@ pub async fn setup_test_workspace() -> (
     )
     .await
     .unwrap();
+
     let app_delegate = {
         let delegate = AppDelegate::new(tao_app_handle.clone());
         <dyn Storage>::set_global(&delegate, app_storage.clone());
@@ -126,8 +127,12 @@ pub async fn setup_test_workspace() -> (
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();
+        let app_storage_clone = app_storage.clone();
         move || {
             Box::pin(async move {
+                app_storage_clone.cleanup().await;
+                // Looks like some delay is necessary to release SQLite file handle
+                tokio::time::sleep(Duration::from_millis(100)).await;
                 if let Err(e) = tokio::fs::remove_dir_all(&abs_path_clone).await {
                     eprintln!("Failed to clean up test workspace directory: {}", e);
                 }

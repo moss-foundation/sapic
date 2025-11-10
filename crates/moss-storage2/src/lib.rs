@@ -101,6 +101,14 @@ pub struct AppStorage {
     last_checkpoint: RwLock<Option<Instant>>,
 }
 
+#[cfg(feature = "integration-tests")]
+impl AppStorage {
+    pub async fn cleanup(&self) {
+        self.application.cleanup().await;
+        self.workspaces.write().await.clear();
+    }
+}
+
 #[async_trait]
 impl Storage for AppStorage {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {

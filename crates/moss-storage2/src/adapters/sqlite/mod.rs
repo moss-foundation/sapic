@@ -113,6 +113,14 @@ impl SqliteStorage {
     }
 }
 
+// We need to close the database connections when cleaning up after tests
+#[cfg(feature = "integration-tests")]
+impl SqliteStorage {
+    pub async fn cleanup(&self) {
+        self.pool.close().await;
+    }
+}
+
 #[async_trait]
 impl KeyedStorage for SqliteStorage {
     async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {

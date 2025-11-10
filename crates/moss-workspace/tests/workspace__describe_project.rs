@@ -54,7 +54,6 @@ async fn describe_project_with_repository() {
         .await
         .unwrap();
 
-    dbg!(&description);
     assert_eq!(description.name, "New Project");
 
     let vcs = description.vcs.unwrap();

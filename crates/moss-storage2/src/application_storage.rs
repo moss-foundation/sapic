@@ -63,3 +63,12 @@ impl ApplicationStorageBackend {
         Ok(storage.clone())
     }
 }
+
+#[cfg(feature = "integration-tests")]
+impl ApplicationStorageBackend {
+    pub async fn cleanup(&self) {
+        if let Some(storage) = self.storage.get() {
+            storage.cleanup().await;
+        }
+    }
+}
