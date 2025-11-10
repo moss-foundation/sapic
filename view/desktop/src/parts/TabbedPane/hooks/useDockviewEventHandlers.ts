@@ -23,7 +23,6 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
         if (!hasActiveWorkspace) return;
 
         const newGridState = api.toJSON();
-        console.log("newGridState", newGridState);
         updateLayout({
           layout: {
             tabbedPaneState: {

@@ -26,14 +26,12 @@ export const useUpdateLayout = () => {
     mutationFn: async ({ layout: newLayout, workspaceId }: UseUpdateLayoutProps): Promise<void> => {
       if (!newLayout) return;
 
-      console.log("newLayout", newLayout);
       const updatedLayout = toMerged(currentLayout ?? defaultLayoutState, newLayout);
 
       if (newLayout.tabbedPaneState?.gridState) {
         updatedLayout.tabbedPaneState.gridState = newLayout.tabbedPaneState.gridState as unknown as SerializedDockview;
       }
 
-      console.log("updatedLayout 2", updatedLayout);
       return await sharedStorageService.putItem("layout", updatedLayout as unknown as JsonValue, workspaceId);
     },
     onSuccess: (_, { layout: newLayout, workspaceId }) => {
