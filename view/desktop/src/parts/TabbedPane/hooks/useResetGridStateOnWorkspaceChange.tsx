@@ -13,6 +13,7 @@ export const useResetGridStateOnWorkspaceChange = () => {
     if (!api || !layout?.tabbedPaneState.gridState) return;
 
     try {
+      api.clear();
       if (!activeWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
@@ -20,7 +21,6 @@ export const useResetGridStateOnWorkspaceChange = () => {
           title: "Welcome",
         });
       } else {
-        api.clear();
         api.fromJSON(layout?.tabbedPaneState.gridState);
       }
     } catch (error) {
