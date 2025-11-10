@@ -32,6 +32,7 @@ export const useUpdateLayout = () => {
         updatedLayout.tabbedPaneState.gridState = newLayout.tabbedPaneState.gridState as unknown as SerializedDockview;
       }
 
+      if (!workspaceId) return;
       return await sharedStorageService.putItem("layout", updatedLayout as unknown as JsonValue, workspaceId);
     },
     onMutate(variables) {

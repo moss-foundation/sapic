@@ -35,7 +35,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   }, [activeWorkspaceId]);
 
   const handleSidebarEdgeHandlerClick = () => {
-    if (!layout?.sidebarState.visible && activeWorkspaceId) {
+    if (!layout?.sidebarState.visible) {
       updateLayout({
         layout: {
           sidebarState: {
@@ -48,7 +48,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   const handleBottomPaneEdgeHandlerClick = () => {
-    if (!layout?.bottomPanelState.visible && activeWorkspaceId) {
+    if (!layout?.bottomPanelState.visible) {
       updateLayout({
         layout: {
           bottomPanelState: {
@@ -61,12 +61,11 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   };
 
   return (
-    <div className="AppLayout flex h-full w-full">
+    <div className="flex h-full w-full">
       {activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT && sideBarPosition === SIDEBAR_POSITION.LEFT && (
         <ActivityBar />
       )}
       <div className="relative flex h-full w-full">
-        {/* FIXME: we can hide the sidebar when out of workspace, but cannot shot it back */}
         {!layout?.sidebarState.visible && sideBarPosition === SIDEBAR_POSITION.LEFT && (
           <SidebarEdgeHandler alignment="left" onClick={handleSidebarEdgeHandlerClick} />
         )}
@@ -75,40 +74,22 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
           ref={mainResizableRef}
           proportionalLayout={false}
           onDragEnd={(sizes) => {
-            if (!activeWorkspaceId) return;
+            const [leftPanelSize, rightPanelSize] = sizes;
+            const updatedWidth = sideBarPosition === SIDEBAR_POSITION.LEFT ? leftPanelSize : rightPanelSize;
 
-            if (sideBarPosition === SIDEBAR_POSITION.LEFT) {
-              const [leftPanelSize, _mainPanelSize] = sizes;
-              if (leftPanelSize <= 0) {
-                updateLayout({
-                  layout: { sidebarState: { visible: false } },
-                  workspaceId: activeWorkspaceId,
-                });
-              } else {
-                updateLayout({
-                  layout: { sidebarState: { width: leftPanelSize } },
-                  workspaceId: activeWorkspaceId,
-                });
-              }
-            }
-            if (sideBarPosition === SIDEBAR_POSITION.RIGHT) {
-              const [_mainPanelSize, rightPanelSize] = sizes;
-              if (rightPanelSize <= 0) {
-                updateLayout({
-                  layout: { sidebarState: { visible: false } },
-                  workspaceId: activeWorkspaceId,
-                });
-              } else {
-                updateLayout({
-                  layout: { sidebarState: { width: rightPanelSize } },
-                  workspaceId: activeWorkspaceId,
-                });
-              }
+            if (updatedWidth <= 0) {
+              updateLayout({
+                layout: { sidebarState: { visible: false } },
+                workspaceId: activeWorkspaceId,
+              });
+            } else {
+              updateLayout({
+                layout: { sidebarState: { width: updatedWidth } },
+                workspaceId: activeWorkspaceId,
+              });
             }
           }}
           onVisibleChange={(index, visible) => {
-            if (!activeWorkspaceId) return;
-
             if (sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0) {
               updateLayout({
                 layout: { sidebarState: { visible: visible } },
@@ -142,8 +123,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
               className="relative"
               vertical
               onDragEnd={(sizes) => {
-                if (!activeWorkspaceId) return;
-
                 const [_mainPanelSize, bottomPaneSize] = sizes;
 
                 if (bottomPaneSize <= 0) {
@@ -159,8 +138,6 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                 }
               }}
               onVisibleChange={(_, visible) => {
-                if (!activeWorkspaceId) return;
-
                 updateLayout({
                   layout: {
                     bottomPanelState: { visible },
@@ -174,6 +151,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                 preferredSize={layout?.bottomPanelState.height}
                 visible={layout?.bottomPanelState.visible}
                 minSize={layout?.bottomPanelState.minHeight}
+                maxSize={layout?.bottomPanelState.maxHeight}
                 snap
               >
                 <BottomPaneContent />
