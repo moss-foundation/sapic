@@ -3,7 +3,6 @@ import { PageContent } from "@/components";
 import { AppLayoutSection } from "./sections/AppLayoutSection";
 import { LanguageSection } from "./sections/LanguageSection";
 import { ThemeSection } from "./sections/ThemeSection";
-import { WorkspaceLayoutSection } from "./sections/WokspaceLayoutSection";
 
 export const Settings = () => {
   return (
@@ -11,7 +10,6 @@ export const Settings = () => {
       <LanguageSection />
       <ThemeSection />
       <AppLayoutSection />
-      <WorkspaceLayoutSection />
     </PageContent>
   );
 };
