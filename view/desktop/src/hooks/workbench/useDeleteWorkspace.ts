@@ -2,9 +2,7 @@ import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useRemoveBottomPanel } from "../sharedStorage/layout/bottomPanel/useRemoveBottomPanel";
-import { useRemoveSidebarPanel } from "../sharedStorage/layout/sidebar/useRemoveSidebarPanel";
-import { useRemoveTabbedPane } from "../sharedStorage/layout/tabbedPane/useRemoveTabbedPane";
+import { useRemoveLayout } from "../sharedStorage/layout";
 import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
 import { useCloseWorkspace } from "./useCloseWorkspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
@@ -27,9 +25,7 @@ export const useDeleteWorkspace = () => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { mutateAsync: closeWorkspace } = useCloseWorkspace();
 
-  const { mutateAsync: removeSidebarPanel } = useRemoveSidebarPanel();
-  const { mutateAsync: removeTabbedPane } = useRemoveTabbedPane();
-  const { mutateAsync: removeBottomPanel } = useRemoveBottomPanel();
+  const { mutateAsync: removeLayout } = useRemoveLayout();
 
   return useMutation<DeleteWorkspaceOutput, Error, DeleteWorkspaceInput>({
     mutationKey: [USE_DELETE_WORKSPACE_MUTATION_KEY],
@@ -49,9 +45,7 @@ export const useDeleteWorkspace = () => {
         return oldData.filter((workspace) => workspace.id !== variables.id);
       });
 
-      await removeSidebarPanel(variables.id);
-      await removeTabbedPane(variables.id);
-      await removeBottomPanel(variables.id);
+      await removeLayout({ workspaceId: variables.id });
     },
   });
 };

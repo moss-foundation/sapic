@@ -1,9 +1,4 @@
-import {
-  defaultBottomPanePanelState,
-  defaultLayoutState,
-  defaultSidebarPanelState,
-  emptyGridState,
-} from "@/constants/layoutStates";
+import { defaultLayoutState } from "@/constants/layoutStates";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import {
   CreateWorkspaceInput,
@@ -15,9 +10,6 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
-import { useUpdateBottomPanel } from "../sharedStorage/layout/bottomPanel/useUpdateBottomPanel";
-import { useUpdateSidebarPanel } from "../sharedStorage/layout/sidebar/useUpdateSidebarPanel";
-import { useUpdateTabbedPane } from "../sharedStorage/layout/tabbedPane/useUpdateTabbedPane";
 import { useUpdateLayout } from "../sharedStorage/layout/useUpdateLayout";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
@@ -36,10 +28,6 @@ const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWor
 export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
 
-  const { mutateAsync: updateTabbedPane } = useUpdateTabbedPane();
-  const { mutateAsync: updateBottomPanel } = useUpdateBottomPanel();
-  const { mutateAsync: updateSidebarPanel } = useUpdateSidebarPanel();
-
   const { mutateAsync: updateLayout } = useUpdateLayout();
 
   return useMutation<CreateWorkspaceOutput, Error, CreateWorkspaceInput>({
@@ -51,10 +39,6 @@ export const useCreateWorkspace = () => {
         name: variables.name,
         lastOpenedAt: undefined,
       };
-
-      await updateTabbedPane({ gridState: emptyGridState, workspaceId: newWorkspace.id });
-      await updateBottomPanel({ ...defaultBottomPanePanelState, workspaceId: newWorkspace.id });
-      await updateSidebarPanel({ ...defaultSidebarPanelState, workspaceId: newWorkspace.id });
 
       await updateLayout({ layout: defaultLayoutState, workspaceId: newWorkspace.id });
 
