@@ -3,19 +3,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore, type AppResizableLayoutStore } from "@/store/appResizableLayout";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ActivityBarButton } from "../ActivityBarButton";
 
-vi.mock("@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel", () => ({
-  useGetSidebarPanel: vi.fn(() => ({
-    data: { position: "LEFT", size: 255, visible: true, minWidth: 130, maxWidth: 400 },
-  })),
-}));
-vi.mock("@/hooks/sharedStorage/layout/sidebar/useUpdateSidebarPanel", () => ({
-  useUpdateSidebarPanel: vi.fn(() => ({
-    mutate: vi.fn(),
+vi.mock("@/hooks/sharedStorage/layout/useGetLayout", () => ({
+  useGetLayout: vi.fn(() => ({
+    data: {
+      sidebarState: { visible: true },
+      activitybarState: { activeContainerId: "test", position: ACTIVITYBAR_POSITION.DEFAULT },
+    },
   })),
 }));
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", async (importOriginal) => {
@@ -30,11 +27,9 @@ vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", async (importOrigin
 });
 
 vi.mock("@/store/activityBar");
-vi.mock("@/store/appResizableLayout");
 
 const mockedDropTarget = vi.mocked(dropTargetForElements);
 const mockedUseActivityBarStore = vi.mocked(useActivityBarStore);
-const mockedUseAppResizableLayoutStore = vi.mocked(useAppResizableLayoutStore);
 
 describe("ActivityBarButton › dropTargetForElements", () => {
   const defaultProps: ActivityBarItemProps = {
@@ -43,38 +38,19 @@ describe("ActivityBarButton › dropTargetForElements", () => {
     iconActive: "AddCircleActive",
     title: "Test Button",
     order: 1,
-    isActive: false,
   };
 
   const setupMocks = () => {
     mockedUseActivityBarStore.mockReturnValue({
       position: ACTIVITYBAR_POSITION.DEFAULT,
-      setActiveItem: vi.fn(),
+      items: [],
+      lastActiveContainerId: null,
+      setPosition: vi.fn(),
+      setItems: vi.fn(),
+      updateFromWorkspaceState: vi.fn(),
+      toWorkspaceState: vi.fn(),
+      resetToDefaults: vi.fn(),
     });
-
-    mockedUseAppResizableLayoutStore.mockImplementation((selector: (state: AppResizableLayoutStore) => unknown) =>
-      selector({
-        sideBar: {
-          visible: true,
-          setVisible: vi.fn(),
-          width: 200,
-          minWidth: 100,
-          maxWidth: 400,
-          setWidth: vi.fn(),
-        },
-        sideBarPosition: "LEFT",
-        setSideBarPosition: vi.fn(),
-        bottomPane: {
-          height: 200,
-          setHeight: vi.fn(),
-          visible: true,
-          setVisible: vi.fn(),
-          minHeight: 100,
-          maxHeight: 400,
-        },
-        initialize: vi.fn(),
-      })
-    );
   };
 
   beforeEach(() => {

@@ -1,23 +1,66 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
-import { useGetSidebarPanel } from "@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel";
+import { ACTIVITYBAR_POSITION, emptyGridState, SIDEBAR_POSITION } from "@/constants/layoutStates";
+import { useDescribeApp } from "@/hooks/app/useDescribeApp";
+import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useActivityBarStore } from "@/store/activityBar";
-import { AppResizableLayoutStore, useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
 
 import { ActivityBar } from "../ActivityBar";
 
 vi.mock("@/store/activityBar");
-vi.mock("@/store/appResizableLayout");
-vi.mock("@/hooks/sharedStorage/layout/sidebar/useGetSidebarPanel");
+vi.mock("@/hooks");
+vi.mock("@/hooks/app/useDescribeApp");
+vi.mock("@/hooks/sharedStorage/layout/useGetLayout");
 
 const mockUseActivityBarStore = vi.mocked(useActivityBarStore);
-const mockUseAppResizableLayoutStore = vi.mocked(useAppResizableLayoutStore);
-const mockUseGetSidebarPanel = vi.mocked(useGetSidebarPanel);
+const mockUseGetLayout = vi.mocked(useGetLayout);
+const mockUseDescribeApp = vi.mocked(useDescribeApp);
 
 describe("ActivityBar", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+
+    // Set up default mocks
+    mockUseActivityBarStore.mockReturnValue({
+      position: ACTIVITYBAR_POSITION.DEFAULT,
+      items: [],
+      lastActiveContainerId: null,
+      setPosition: vi.fn(),
+      setItems: vi.fn(),
+      getActiveItem: vi.fn(),
+      updateFromWorkspaceState: vi.fn(),
+      setActiveItem: vi.fn(),
+      toWorkspaceState: vi.fn(),
+      resetToDefaults: vi.fn(),
+    });
+
+    mockUseGetLayout.mockReturnValue({
+      data: {
+        sidebarState: {
+          visible: true,
+          width: 255,
+          minWidth: 130,
+          maxWidth: 400,
+        },
+        activitybarState: {
+          activeContainerId: "1",
+          position: ACTIVITYBAR_POSITION.DEFAULT,
+        },
+        bottomPanelState: {
+          visible: false,
+          height: 333,
+          minHeight: 100,
+          maxHeight: Infinity,
+        },
+        tabbedPaneState: {
+          gridState: emptyGridState,
+        },
+      },
+    } as any);
+  });
+
   const setup = (
     activityBarPosition: ActivitybarPosition = ACTIVITYBAR_POSITION.DEFAULT,
     sidebarPositionValue: SidebarPosition = SIDEBAR_POSITION.LEFT
@@ -35,65 +78,20 @@ describe("ActivityBar", () => {
       resetToDefaults: vi.fn(),
     });
 
-    mockUseAppResizableLayoutStore.mockImplementation((selector?: (state: AppResizableLayoutStore) => any) => {
-      const mockState: AppResizableLayoutStore = {
-        sideBarPosition: sidebarPositionValue,
-        setSideBarPosition: vi.fn(),
-        initialize: vi.fn(),
-        sideBar: {
-          minWidth: 130,
-          maxWidth: 400,
-          width: 255,
-          visible: true,
-          setWidth: vi.fn(),
-          setVisible: vi.fn(),
+    mockUseDescribeApp.mockReturnValue({
+      data: {
+        configuration: {
+          keys: ["activityBarPosition", "sideBarPosition"],
+          contents: {
+            activityBarPosition,
+            sideBarPosition: sidebarPositionValue,
+          },
         },
-        bottomPane: {
-          minHeight: 100,
-          maxHeight: Infinity,
-          height: 333,
-          visible: false,
-          setHeight: vi.fn(),
-          setVisible: vi.fn(),
-        },
-      };
-
-      if (selector) {
-        return selector(mockState);
-      }
-      return mockState;
-    });
-
-    mockUseGetSidebarPanel.mockReturnValue({
-      data: { position: sidebarPositionValue, size: 255, visible: true, minWidth: 130, maxWidth: 400 },
-      isLoading: false,
-      isError: false,
-      error: null,
-      isPending: false,
-      isSuccess: true,
-      status: "success",
-      dataUpdatedAt: Date.now(),
-      errorUpdatedAt: 0,
-      failureCount: 0,
-      failureReason: null,
-      fetchStatus: "idle",
-      isFetching: false,
-      isFetched: true,
-      isFetchedAfterMount: true,
-      isInitialLoading: false,
-      isPaused: false,
-      isPlaceholderData: false,
-      isRefetching: false,
-      isStale: false,
-      refetch: vi.fn(),
+      },
     } as any);
 
     return renderWithQueryClient(<ActivityBar />);
   };
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
 
   it("valid: should be hidden when position is HIDDEN", () => {
     const { container } = setup(ACTIVITYBAR_POSITION.HIDDEN);

@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
+import { useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
@@ -12,8 +13,11 @@ import { ActivityBarButton } from "./ActivityBarButton";
 import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
-  const { items, position, setItems } = useActivityBarStore();
+  const { data: appState } = useDescribeApp();
   const { data: layout } = useGetLayout();
+  const { items, setItems } = useActivityBarStore();
+
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
 
   useEffect(() => {
     return monitorForElements({
@@ -42,8 +46,9 @@ export const ActivityBarFirstItems = () => {
   return (
     <div
       className={cn("flex", {
-        "flex-col gap-3": position === ACTIVITYBAR_POSITION.DEFAULT,
-        "flex-row gap-1": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+        "flex-col gap-3": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+        "flex-row gap-1":
+          activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
       {items
@@ -54,8 +59,10 @@ export const ActivityBarFirstItems = () => {
             <div
               key={item.id}
               className={cn("relative flex flex-col", {
-                "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-                "py-[3px]": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+                "px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+                "py-[3px]":
+                  activityBarPosition === ACTIVITYBAR_POSITION.TOP ||
+                  activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
               })}
             >
               <ActivityBarButton key={item.id} {...item} />
