@@ -34,6 +34,23 @@ export const useUpdateLayout = () => {
 
       return await sharedStorageService.putItem("layout", updatedLayout as unknown as JsonValue, workspaceId);
     },
+    onMutate(variables) {
+      queryClient.setQueryData(
+        [USE_GET_LAYOUT_QUERY_KEY, variables.workspaceId],
+        (old: LayoutStateOutput | undefined) => {
+          if (!old) return defaultLayoutState;
+
+          const updatedLayout = toMerged(old ?? defaultLayoutState, variables.layout);
+
+          return updatedLayout;
+        }
+      );
+      return { previousLayout: currentLayout };
+    },
+    onError(error, variables, context) {
+      console.error("useUpdateLayout error: ", error.message, variables, context);
+      queryClient.setQueryData([USE_GET_LAYOUT_QUERY_KEY, variables.workspaceId], context?.previousLayout);
+    },
     onSuccess: (_, { layout: newLayout, workspaceId }) => {
       queryClient.setQueryData([USE_GET_LAYOUT_QUERY_KEY, workspaceId], (old: LayoutStateOutput | undefined) => {
         if (!old) return defaultLayoutState;
