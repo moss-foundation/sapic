@@ -49,7 +49,7 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
   }
 
   if (isInitializing && isPending) {
-    return <PageLoader className="bg-red-200" />;
+    return <PageLoader className="bg-green-200" />;
   } else {
     return <>{children}</>;
   }

@@ -11,10 +11,9 @@ const tips = [
 
 interface PageLoaderProps {
   className?: string;
-  children?: React.ReactNode;
 }
 
-export const PageLoader = ({ className, children }: PageLoaderProps) => {
+export const PageLoader = ({ className }: PageLoaderProps) => {
   const [tip, setTip] = useState(tips[0]);
 
   useEffect(() => {
@@ -39,8 +38,6 @@ export const PageLoader = ({ className, children }: PageLoaderProps) => {
       </div>
 
       <div className="pb-4 text-xs text-[#525252]">This may take a few seconds.</div>
-
-      <div className="sr-only">{children}</div>
     </div>
   );
 };
