@@ -349,7 +349,6 @@ impl AppStorage {
 
         Ok(workspaces
             .get(&workspace_id)
-            .cloned()
             .ok_or_join_err::<()>("workspace not found")?
             .storage()
             .await?)
