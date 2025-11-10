@@ -2,17 +2,17 @@ import { IDockviewPanelProps } from "moss-tabs";
 
 import { PageView } from "@/components";
 import { PageWrapper } from "@/components/PageView/PageWrapper";
+import { useDescribeApp } from "@/hooks";
 
 import { ProfilePageBody } from "./components/ProfilePageBody";
 import { ProfilePageHeader } from "./components/ProfilePageHeader";
-import { useProfileData } from "./hooks/useProfileData";
 
 export type ProfilePageProps = Record<string, never>;
 
 const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
-  const { profile, isLoading, error, refetch } = useProfileData();
+  const { data: appState, isLoading, error, refetch } = useDescribeApp();
+  const profile = appState?.profile;
 
-  // Add error boundary protection
   if (error) {
     console.error("ProfilePage error:", error);
   }
@@ -23,7 +23,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-foreground)">Loading profile...</p>
+              <p className="text-(--moss-secondary-foreground) mb-4 text-sm">Loading profile...</p>
             </div>
           </div>
         </PageWrapper>
@@ -37,7 +37,7 @@ const ProfilePage = ({ ...props }: IDockviewPanelProps<ProfilePageProps>) => {
         <PageWrapper>
           <div className="flex flex-1 items-center justify-center">
             <div className="text-center">
-              <p className="mb-4 text-sm text-(--moss-secondary-foreground)">
+              <p className="text-(--moss-secondary-foreground) mb-4 text-sm">
                 {error ? "Error loading profile" : "No profile found"}
               </p>
             </div>
