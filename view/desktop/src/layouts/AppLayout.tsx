@@ -187,8 +187,8 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
             <ResizablePanel
               preferredSize={layout?.sidebarState.width}
               visible={layout?.sidebarState.visible && sideBarPosition === SIDEBAR_POSITION.RIGHT}
-              minSize={layout?.sidebarState.width}
-              maxSize={layout?.sidebarState.width}
+              minSize={layout?.sidebarState.minWidth}
+              maxSize={layout?.sidebarState.maxWidth}
               snap
               className="background-(--moss-primary-background)"
             >
