@@ -3,7 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
 use std::{cell::LazyCell, path::Path, sync::Arc};

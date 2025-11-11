@@ -9,7 +9,7 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
-use moss_storage2::{AppStorage, AppStorageOptions, Storage, models::primitives::StorageScope};
+use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_user::profile::Profile;
 use moss_workspace::{
@@ -18,7 +18,7 @@ use moss_workspace::{
     models::{
         events::StreamProjectsEvent,
         operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
-        primitives::{EditorGridOrientation, PanelRenderer, ProjectId},
+        primitives::{EditorGridOrientation, PanelRenderer, ProjectId, WorkspaceId},
         types::{
             CreateProjectParams, EditorGridLeafData, EditorGridNode, EditorGridState,
             EditorPanelState, EditorPartStateInfo,
@@ -48,7 +48,7 @@ pub async fn setup_test_workspace() -> (
     AppDelegate<MockAppRuntime>,
     Workspace<MockAppRuntime>,
     CleanupFn,
-    StorageScope,
+    WorkspaceId,
 ) {
     dotenvy::dotenv().ok();
 
@@ -60,8 +60,8 @@ pub async fn setup_test_workspace() -> (
     let tmp_path = abs_path.join("tmp");
     let globals_path = abs_path.join("globals");
     let workspaces_path = abs_path.join("workspaces");
-    let workspace_name = random_workspace_name();
-    let test_workspace_path = workspaces_path.join(&workspace_name);
+    let workspace_id = WorkspaceId::new();
+    let test_workspace_path = workspaces_path.join(workspace_id.as_str());
 
     fs::create_dir_all(&abs_path).unwrap();
     fs::create_dir_all(&tmp_path).unwrap();
@@ -111,9 +111,8 @@ pub async fn setup_test_workspace() -> (
     );
 
     let ctx = ctx.freeze();
-    let storage_scope = StorageScope::Workspace(workspace_name.clone().into());
     let workspace: Workspace<MockAppRuntime> =
-        WorkspaceBuilder::new(fs.clone(), active_profile.into(), storage_scope.clone())
+        WorkspaceBuilder::new(fs.clone(), active_profile.into(), workspace_id.clone())
             .create(
                 &ctx,
                 &app_delegate,
@@ -142,11 +141,11 @@ pub async fn setup_test_workspace() -> (
 
     // Add workspace storage
     <dyn Storage>::global(&app_delegate)
-        .add_workspace(workspace_name.clone().into())
+        .add_workspace(workspace_id.inner())
         .await
         .unwrap();
 
-    (ctx, app_delegate, workspace, cleanup_fn, storage_scope)
+    (ctx, app_delegate, workspace, cleanup_fn, workspace_id)
 }
 
 // Suppress false warning

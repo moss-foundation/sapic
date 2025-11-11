@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -18,7 +18,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_output = workspace
@@ -55,14 +55,20 @@ async fn delete_project_success() {
     // Check that project-specific entries are removed
     let project_prefix = key_project(&id);
     let list_result = storage
-        .get_batch_by_prefix(storage_scope.clone(), &project_prefix)
+        .get_batch_by_prefix(
+            StorageScope::Workspace(workspace_id.inner()),
+            &project_prefix,
+        )
         .await
         .unwrap();
     assert!(list_result.is_empty());
 
     // Check that expanded_items no longer contains the deleted project
     let expanded_items_value = storage
-        .get(storage_scope.clone(), KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();

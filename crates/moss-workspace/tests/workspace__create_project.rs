@@ -2,7 +2,7 @@
 
 pub mod shared;
 
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
@@ -16,7 +16,7 @@ use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_output = workspace
@@ -49,7 +49,10 @@ async fn create_project_success() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -58,7 +61,10 @@ async fn create_project_success() {
     assert_eq!(order, 0);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();
@@ -96,7 +102,7 @@ async fn create_project_empty_name() {
 
 #[tokio::test]
 async fn create_project_special_chars() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name_list = FILENAME_SPECIAL_CHARS
         .into_iter()
@@ -131,7 +137,10 @@ async fn create_project_special_chars() {
         let storage = <dyn Storage>::global(&app_delegate);
         // Check order was stored
         let order_value = storage
-            .get(storage_scope.clone(), &key_project_order(&id))
+            .get(
+                StorageScope::Workspace(workspace_id.inner()),
+                &key_project_order(&id),
+            )
             .await
             .unwrap()
             .unwrap();
@@ -140,7 +149,10 @@ async fn create_project_special_chars() {
         assert_eq!(order, 0);
         // Check expanded_items contains the project id
         let expanded_items_value = storage
-            .get(storage_scope.clone(), KEY_EXPANDED_ITEMS)
+            .get(
+                StorageScope::Workspace(workspace_id.inner()),
+                KEY_EXPANDED_ITEMS,
+            )
             .await
             .unwrap()
             .unwrap();
@@ -159,7 +171,7 @@ async fn create_project_special_chars() {
 
 #[tokio::test]
 async fn create_project_with_order() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_result = workspace
@@ -193,7 +205,10 @@ async fn create_project_with_order() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -202,7 +217,10 @@ async fn create_project_with_order() {
     assert_eq!(order, 42);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();
@@ -214,7 +232,7 @@ async fn create_project_with_order() {
 
 #[tokio::test]
 async fn create_project_with_icon() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let input_icon_path = workspace.abs_path().join("test_icon.png");
@@ -256,7 +274,10 @@ async fn create_project_with_icon() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -265,7 +286,10 @@ async fn create_project_with_icon() {
     assert_eq!(order, 0);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();
@@ -277,7 +301,7 @@ async fn create_project_with_icon() {
 
 #[tokio::test]
 async fn create_multiple_projects_expanded_items() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     // Create first project
     let project_name1 = random_project_name();
@@ -321,7 +345,10 @@ async fn create_multiple_projects_expanded_items() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();
@@ -336,7 +363,7 @@ async fn create_multiple_projects_expanded_items() {
 
 #[tokio::test]
 async fn create_project_external_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -401,7 +428,10 @@ async fn create_project_external_success() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -410,7 +440,10 @@ async fn create_project_external_success() {
     assert_eq!(order, 0);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();

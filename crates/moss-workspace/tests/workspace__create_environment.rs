@@ -4,7 +4,7 @@ use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
 };
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     models::{
@@ -22,7 +22,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn create_environment_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -57,7 +57,10 @@ async fn create_environment_success() {
     // Check the newly created environment is stored in the db
     let storage = <dyn Storage>::global(&app_delegate);
     let stored_env_order_value = storage
-        .get(storage_scope, &key_environment_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_environment_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -111,7 +114,7 @@ async fn create_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let collection_name = random_project_name();
     let collection_id = workspace
@@ -166,7 +169,10 @@ async fn create_collection_environment_success() {
     // Check the newly created environment is stored in the db
     let storage = <dyn Storage>::global(&app_delegate);
     let stored_env_order_value = storage
-        .get(storage_scope, &key_environment_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_environment_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -240,7 +246,7 @@ async fn create_collection_environment_already_exists() {
 
 #[tokio::test]
 async fn create_collection_environment_same_name_as_workspace_environment() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let collection_name = random_project_name();
     let collection_id = workspace
@@ -306,7 +312,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     let storage = <dyn Storage>::global(&app_delegate);
     let stored_project_env_order_value = storage
         .get(
-            storage_scope.clone(),
+            StorageScope::Workspace(workspace_id.inner()),
             &key_environment_order(&project_env_id),
         )
         .await
@@ -317,7 +323,10 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     assert_eq!(stored_project_env_order, 42);
 
     let stored_workspace_env_order_value = storage
-        .get(storage_scope, &key_environment_order(&workspace_env_id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_environment_order(&workspace_env_id),
+        )
         .await
         .unwrap()
         .unwrap();

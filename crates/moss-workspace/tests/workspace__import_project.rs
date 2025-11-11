@@ -6,7 +6,7 @@
 // Since it requires authentication and env variables
 
 use moss_applib::context::AnyAsyncContext;
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
@@ -26,7 +26,7 @@ pub mod shared;
 #[ignore]
 #[tokio::test]
 async fn clone_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     dotenvy::dotenv().ok();
 
@@ -70,7 +70,10 @@ async fn clone_project_success() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -79,7 +82,10 @@ async fn clone_project_success() {
     assert_eq!(order, 0);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();
@@ -92,7 +98,7 @@ async fn clone_project_success() {
 #[tokio::test]
 async fn import_external_project_success() {
     // Create an external project and import it
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let (project_name, external_path) =
         setup_external_project(&ctx, &app_delegate, &workspace).await;
@@ -130,7 +136,10 @@ async fn import_external_project_success() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
-        .get(storage_scope.clone(), &key_project_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_project_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();
@@ -139,7 +148,10 @@ async fn import_external_project_success() {
     assert_eq!(order, 0);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
-        .get(storage_scope, KEY_EXPANDED_ITEMS)
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_EXPANDED_ITEMS,
+        )
         .await
         .unwrap()
         .unwrap();

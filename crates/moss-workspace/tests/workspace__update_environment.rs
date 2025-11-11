@@ -10,7 +10,7 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams, VariableOptions},
     },
 };
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -20,13 +20,12 @@ use moss_workspace::{
     storage::key_environment_order,
 };
 use serde_json::Value as JsonValue;
-
 // TODO: Test updating collection_id once it's implemented
 // TODO: Update test once we switch variable store to new database
 
 #[tokio::test]
 async fn update_environment_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     let old_environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -85,7 +84,10 @@ async fn update_environment_success() {
     let storage = <dyn Storage>::global(&app_delegate);
     // Check environment cache is updated with new order and expanded
     let stored_env_order_value = storage
-        .get(storage_scope.clone(), &key_environment_order(&id))
+        .get(
+            StorageScope::Workspace(workspace_id.inner()),
+            &key_environment_order(&id),
+        )
         .await
         .unwrap()
         .unwrap();

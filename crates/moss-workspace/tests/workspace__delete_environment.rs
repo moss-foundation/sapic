@@ -11,7 +11,7 @@ use moss_environment::{
     segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
 };
 use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
-use moss_storage2::Storage;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -26,7 +26,7 @@ use tauri::ipc::Channel;
 mod shared;
 #[tokio::test]
 async fn delete_environment_success() {
-    let (ctx, app_delegate, workspace, cleanup, storage_scope) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
 
     // Create a custom environment with a variable
     let environment_name = random_environment_name();
@@ -110,7 +110,7 @@ async fn delete_environment_success() {
 
     let env_order_result = storage
         .get(
-            storage_scope.clone(),
+            StorageScope::Workspace(workspace_id.inner()),
             &key_environment_order(&environment_id),
         )
         .await

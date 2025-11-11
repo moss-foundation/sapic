@@ -329,20 +329,18 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         let last_opened_at = Utc::now().timestamp();
         let abs_path: Arc<Path> = self.absolutize(&id.to_string()).into();
-        let workspace = WorkspaceBuilder::new(
-            self.fs.clone(),
-            active_profile,
-            StorageScope::Workspace(id.inner()),
-        )
-        .load(
-            ctx,
-            app_delegate,
-            LoadWorkspaceParams {
-                abs_path: abs_path.clone(),
-            },
-        )
-        .await
-        .join_err_with::<()>(|| format!("failed to load the workspace, {}", abs_path.display()))?;
+        let workspace = WorkspaceBuilder::new(self.fs.clone(), active_profile, id.clone())
+            .load(
+                ctx,
+                app_delegate,
+                LoadWorkspaceParams {
+                    abs_path: abs_path.clone(),
+                },
+            )
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to load the workspace, {}", abs_path.display())
+            })?;
 
         {
             let mut state_lock = self.state.write().await;
