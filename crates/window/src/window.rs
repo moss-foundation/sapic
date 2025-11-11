@@ -15,6 +15,13 @@ use crate::{
     workspace::WorkspaceService,
 };
 
+#[derive(Default)]
+pub enum TitleBarStyle {
+    #[default]
+    Visible,
+    Overlay,
+}
+
 pub struct OnWindowReadyOptions {
     pub restore_last_workspace: bool,
 }

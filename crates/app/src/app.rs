@@ -18,7 +18,10 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
 use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
-use sapic_window::{Window, WindowBuilder, window::OnWindowReadyOptions};
+use sapic_window::{
+    Window, WindowBuilder,
+    window::{OnWindowReadyOptions, TitleBarStyle},
+};
 use std::{
     ops::{Deref, DerefMut},
     sync::{
@@ -94,10 +97,13 @@ impl<R: AppRuntime> App<R> {
             self.next_window_id.fetch_add(1, Ordering::Relaxed)
         );
 
-        let (url, title) = match params {
-            CreateWindowParams::WelcomeWindow => ("/".to_string(), "Welcome".to_string()),
+        let (url, title) = match &params {
+            CreateWindowParams::WelcomeWindow => {
+                ("welcomeIndex.html".to_string(), "Welcome".to_string())
+            }
             CreateWindowParams::WorkspaceWindow { id, name, .. } => {
-                (format!("/workspace/{}", id), name)
+                // (format!("/workspace/{}", id), name.clone())
+                ("index.html".to_string(), name.clone())
             }
         };
 
@@ -114,6 +120,10 @@ impl<R: AppRuntime> App<R> {
             title.as_str(),
             (800.0, 600.0),
             (100.0, 100.0),
+            match &params {
+                CreateWindowParams::WelcomeWindow => TitleBarStyle::Visible,
+                CreateWindowParams::WorkspaceWindow { .. } => TitleBarStyle::Overlay,
+            },
         )
         .await?;
         window

@@ -11,6 +11,8 @@ use moss_theme::registry::ThemeRegistry;
 use std::{marker::PhantomData, path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager, Runtime as TauriRuntime};
 
+#[cfg(target_os = "macos")]
+use crate::window::TitleBarStyle;
 use crate::{
     configuration::ConfigurationService,
     dirs,
@@ -55,6 +57,7 @@ impl WindowBuilder {
         title: &str,
         inner_size: (f64, f64),
         position: (f64, f64),
+        title_bar_style: TitleBarStyle,
     ) -> joinerror::Result<Window<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
@@ -116,8 +119,16 @@ impl WindowBuilder {
                 .await
                 .expect("Failed to create workspace service");
 
-        let webview = create_window(&tao_handle, url, label, title, inner_size, position)
-            .join_err::<()>("failed to create webview window")?;
+        let webview = create_window(
+            &tao_handle,
+            url,
+            label,
+            title,
+            inner_size,
+            position,
+            title_bar_style,
+        )
+        .join_err::<()>("failed to create webview window")?;
 
         Ok(Window {
             webview,
@@ -160,6 +171,7 @@ pub fn create_window<R: TauriRuntime>(
     title: &str,
     inner_size: (f64, f64),
     position: (f64, f64),
+    title_bar_style: TitleBarStyle,
 ) -> joinerror::Result<tauri::WebviewWindow<R>> {
     let win_builder =
         tauri::WebviewWindowBuilder::new(app_handle, label, tauri::WebviewUrl::App(url.into()))
@@ -181,8 +193,14 @@ pub fn create_window<R: TauriRuntime>(
 
     #[cfg(target_os = "macos")]
     let win_builder = win_builder
-        .hidden_title(true)
-        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .hidden_title(match title_bar_style {
+            TitleBarStyle::Visible => false,
+            TitleBarStyle::Overlay => true,
+        })
+        .title_bar_style(match title_bar_style {
+            TitleBarStyle::Visible => tauri::TitleBarStyle::Visible,
+            TitleBarStyle::Overlay => tauri::TitleBarStyle::Overlay,
+        })
         .transparent(false)
         .decorations(true);
 
