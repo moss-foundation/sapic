@@ -6,7 +6,14 @@ mod layout;
 mod manifest;
 pub mod models;
 mod project;
+
 pub mod storage;
+
+// FIXME: Remove it once we switch environment to new db
+#[cfg(not(feature = "integration-tests"))]
+mod storage_old;
+#[cfg(feature = "integration-tests")]
+pub mod storage_old;
 pub mod workspace;
 
 use moss_applib::AppRuntime;

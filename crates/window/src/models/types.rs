@@ -2,6 +2,7 @@ use moss_configuration::models::primitives::ConfigurationTarget;
 use moss_logging::models::primitives::LogEntryId;
 use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::{AccountId, AccountKind};
+use moss_workspace::models::primitives::WorkspaceId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{

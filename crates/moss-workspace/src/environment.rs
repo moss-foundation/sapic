@@ -3,7 +3,6 @@ use futures::Stream;
 use joinerror::OptionExt;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_db::primitives::AnyValue;
 use moss_environment::{
     AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
@@ -15,11 +14,10 @@ use moss_environment::{
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
 use moss_storage::{
-    WorkspaceStorage,
-    common::VariableStore,
-    primitives::segkey::SegKeyBuf,
-    storage::operations::{ListByPrefix, TransactionalRemoveByPrefix, TransactionalRemoveItem},
+    WorkspaceStorage, common::VariableStore, primitives::segkey::SegKeyBuf,
+    storage::operations::TransactionalRemoveItem,
 };
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
     collections::{HashMap, HashSet},
@@ -33,10 +31,15 @@ use crate::{
     dirs,
     errors::ErrorNotFound,
     models::{
-        primitives::ProjectId,
+        primitives::{ProjectId, WorkspaceId},
         types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     },
-    storage::{StorageService, segments},
+    storage::{
+        KEY_ACTIVE_ENVIRONMENTS, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
+        KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,
+        key_environment_order,
+    },
+    storage_old::StorageService,
 };
 
 const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
@@ -46,7 +49,7 @@ pub struct ActivateEnvironmentItemParams {
 }
 
 pub struct CreateEnvironmentItemParams {
-    pub collection_id: Option<ProjectId>,
+    pub project_id: Option<ProjectId>,
     pub name: String,
     pub order: isize,
     pub color: Option<String>,
@@ -59,7 +62,7 @@ where
     R: AppRuntime,
 {
     pub id: EnvironmentId,
-    pub collection_id: Option<Arc<String>>,
+    pub project_id: Option<Arc<String>>,
     pub order: Option<isize>,
 
     #[deref]
@@ -68,7 +71,7 @@ where
 
 pub struct EnvironmentItemDescription {
     pub id: EnvironmentId,
-    pub collection_id: Option<Arc<String>>,
+    pub project_id: Option<Arc<String>>,
     pub is_active: bool,
     pub display_name: String,
     pub order: Option<isize>,
@@ -97,7 +100,11 @@ where
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
-    storage: Arc<StorageService<R>>,
+    // FIXME: Temporarily provide the old variable store to environment
+    // To avoid updating the environment crate, which is used also by moss-project
+    storage_old: Arc<StorageService<R>>,
+    storage: Arc<dyn Storage>,
+    workspace_id: WorkspaceId,
 }
 
 impl<R> EnvironmentService<R>
@@ -108,7 +115,9 @@ where
     pub async fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService<R>>,
+        storage_old: Arc<StorageService<R>>,
+        storage: Arc<dyn Storage>,
+        workspace_id: WorkspaceId,
         sources: FxHashMap<Arc<String>, PathBuf>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
@@ -124,7 +133,9 @@ where
             fs,
             abs_path,
             state,
+            storage_old,
             storage,
+            workspace_id,
         })
     }
 
@@ -145,34 +156,51 @@ where
 
     pub async fn update_environment_group(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: UpdateEnvironmentGroupParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
 
-        // TODO: Make database errors not fail the operation
-        let mut txn = self.storage.storage.begin_write_with_context(ctx).await?;
+        let mut batch_input = vec![];
 
-        let collection_id_inner = params.project_id.inner();
+        let project_id = params.project_id;
+        let group_order_key = key_environment_group_order(&project_id);
+
         if let Some(expanded) = params.expanded {
             if expanded {
-                state.expanded_groups.insert(collection_id_inner.clone());
+                state.expanded_groups.insert(project_id.inner());
             } else {
-                state.expanded_groups.remove(&collection_id_inner);
+                state.expanded_groups.remove(&project_id.inner());
             }
 
-            self.storage
-                .put_expanded_groups_txn(ctx, &mut txn, &state.expanded_groups)
-                .await?;
+            batch_input.push((
+                KEY_EXPANDED_ENVIRONMENT_GROUPS,
+                serde_json::to_value(state.expanded_groups.clone())?,
+            ));
         }
 
         if let Some(order) = params.order {
-            self.storage
-                .put_environment_group_order_txn(ctx, &mut txn, collection_id_inner, order)
-                .await?;
+            batch_input.push((&group_order_key, serde_json::to_value(order)?));
         }
 
-        txn.commit()?;
+        if batch_input.is_empty() {
+            return Ok(());
+        }
+
+        if let Err(e) = self
+            .storage
+            .put_batch(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &batch_input,
+            )
+            .await
+        {
+            session::warn!(format!(
+                "failed to update environment group `{}`: {}",
+                project_id, e
+            ));
+        }
+
         Ok(())
     }
 
@@ -183,15 +211,26 @@ where
 
     pub async fn list_environment_groups(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
-        let expanded_groups = match self.storage.get_expanded_groups(ctx).await {
-            Ok(expanded_groups) => expanded_groups,
+        let expanded_groups_result = self
+            .storage
+            .get(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_EXPANDED_ENVIRONMENT_GROUPS,
+            )
+            .await;
+
+        let expanded_groups: HashSet<_> = match expanded_groups_result {
+            Ok(Some(expanded_groups)) => {
+                serde_json::from_value(expanded_groups).unwrap_or_default()
+            }
+            Ok(None) => HashSet::new(),
             Err(e) => {
-                session::warn!(
-                    "failed to get expanded groups from the db: {}",
-                    e.to_string()
-                );
+                session::warn!(format!(
+                    "failed to get expanded environment groups from the database: {}",
+                    e
+                ));
                 HashSet::new()
             }
         };
@@ -199,36 +238,28 @@ where
         let mut state = self.state.write().await;
         state.expanded_groups = expanded_groups;
 
-        let data: FxHashMap<String, AnyValue> = self
+        let metadata = self
             .storage
-            .list_environment_groups_metadata(ctx)
+            .get_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ENVIRONMENT_GROUP_PREFIX,
+            )
             .await
             .unwrap_or_else(|e| {
                 session::warn!(format!("failed to get environment group metadata: {}", e));
-                HashMap::new()
+                Vec::new()
             })
             .into_iter()
-            .map(|(k, v)| (k.to_string(), v))
-            .collect();
+            .collect::<FxHashMap<_, _>>();
 
         let mut groups = Vec::with_capacity(state.groups.len());
-        let base_key = segments::SEGKEY_ENVIRONMENT_GROUP
-            .to_segkey_buf()
-            .to_string();
 
         for group_id in state.groups.iter() {
-            let group_id_str = group_id.as_str();
-            let order = data
-                .get(&format!("{base_key}:{}:order", group_id_str))
-                .map(|v| v.deserialize::<isize>())
-                .transpose()
-                .unwrap_or_else(|e| {
-                    session::warn!(format!(
-                        "failed to deserialize order for environment group `{}`: {}",
-                        group_id_str, e
-                    ));
-                    None
-                });
+            let group_order_key = key_environment_group_order(&ProjectId::from(group_id.clone()));
+
+            let order: Option<isize> = metadata
+                .get(&group_order_key)
+                .and_then(|v| serde_json::from_value(v.clone()).ok());
 
             groups.push(EnvironmentGroup {
                 project_id: group_id.clone(),
@@ -246,15 +277,19 @@ where
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let ctx = ctx.clone();
         let state_clone = self.state.clone();
-        let storage_clone = self.storage.storage.clone();
+        let storage = self.storage.clone();
+        let storage_old = self.storage_old.storage.clone();
         let sources_clone = state_clone.read().await.sources.clone();
 
         Box::pin(async_stream::stream! {
+            let storage_clone = storage.clone();
             let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem<R>, DescribeEnvironment)>();
             let scanner = EnvironmentSourceScanner {
                 fs: self.fs.clone(),
                 sources: sources_clone,
-                storage: storage_clone,
+                storage_old,
+                storage: storage_clone.clone(),
+                workspace_id: self.workspace_id.clone(),
                 tx,
             };
 
@@ -267,10 +302,21 @@ where
                 })
             };
 
-            let active_environments = self.storage.get_active_environments(&ctx).await.unwrap_or_else(|e| {
-                session::warn!(format!("failed to get activated environments from the db: {}", e));
-                HashMap::new()
-            });
+            let active_environments_result = storage.get(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ACTIVE_ENVIRONMENTS
+            ).await;
+
+            let active_environments: HashMap<_, _> = match active_environments_result {
+                Ok(Some(active_environments)) => {
+                    serde_json::from_value(active_environments).unwrap_or_default()
+                },
+                Ok(None) => HashMap::new(),
+                Err(e) => {
+                    session::warn!(format!("failed to get activated environments from the db: {}", e));
+                    HashMap::new()
+                }
+            };
 
             let mut state_lock = state_clone.write().await;
             (*state_lock).active_environments = active_environments;
@@ -281,13 +327,13 @@ where
 
             while let Some((item, desc)) = rx.recv().await {
                 let id = item.id.clone();
-                let group_key = item.collection_id.clone().unwrap_or_else(|| {
+                let group_key = item.project_id.clone().unwrap_or_else(|| {
                     GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
                 });
 
                 let desc = EnvironmentItemDescription {
                     id: id.clone(),
-                    collection_id: item.collection_id.clone(),
+                    project_id: item.project_id.clone(),
                     is_active: state_lock.active_environments.get(&group_key) == Some(&desc.id),
                     display_name: desc.name,
                     order: item.order.clone(),
@@ -297,7 +343,7 @@ where
                 };
 
                 {
-                    let group_id = item.collection_id.clone();
+                    let group_id = item.project_id.clone();
                     state_lock.environments.insert(id, item);
 
                     if let Some(group_id) = group_id {
@@ -343,7 +389,11 @@ where
             environment_item.order = Some(order);
             if let Err(e) = self
                 .storage
-                .put_environment_order(ctx, &params.id, order)
+                .put(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &key_environment_order(&params.id),
+                    serde_json::to_value(order)?,
+                )
                 .await
             {
                 session::warn!(format!("failed to put environment order in the db: {}", e));
@@ -358,7 +408,7 @@ where
         ctx: &R::AsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
-        let abs_path = if let Some(collection_id) = params.collection_id.clone() {
+        let abs_path = if let Some(collection_id) = params.project_id.clone() {
             let state_lock = self.state.read().await;
             let collection_id_inner = collection_id.inner();
 
@@ -374,10 +424,11 @@ where
             self.abs_path.clone()
         };
 
+        // FIXME: Switch to new db when refactoring moss-environment
         let environment = EnvironmentBuilder::new(self.fs.clone())
             .create::<R>(
                 ctx,
-                self.storage.variable_store(),
+                self.storage_old.variable_store(),
                 moss_environment::builder::CreateEnvironmentParams {
                     name: params.name.clone(),
                     abs_path: &abs_path,
@@ -388,7 +439,7 @@ where
             .await?;
 
         let abs_path = environment.abs_path().await;
-        let collection_id_inner = params.collection_id.as_ref().map(|id| id.inner());
+        let project_id_inner = params.project_id.as_ref().map(|id| id.inner());
         let desc = environment.describe(ctx).await?;
 
         let mut state = self.state.write().await;
@@ -396,7 +447,7 @@ where
             desc.id.clone(),
             EnvironmentItem {
                 id: desc.id.clone(),
-                collection_id: collection_id_inner.clone(),
+                project_id: project_id_inner.clone(),
                 order: Some(params.order),
                 handle: Arc::new(environment),
             },
@@ -404,7 +455,7 @@ where
 
         let output = EnvironmentItemDescription {
             id: desc.id.clone(),
-            collection_id: collection_id_inner,
+            project_id: project_id_inner,
             // FIXME: Should we provide option to activate an environment upon creation?
             is_active: false,
             display_name: params.name.clone(),
@@ -416,66 +467,55 @@ where
 
         if let Err(e) = self
             .storage
-            .put_environment_order(ctx, &desc.id, params.order)
+            .put(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &key_environment_order(&desc.id),
+                serde_json::to_value(params.order)?,
+            )
             .await
         {
-            session::warn!(format!(
-                "failed to put environment order in the db: {}",
-                e.to_string()
-            ));
-            return Ok(output);
+            session::warn!(format!("failed to put environment order in the db: {}", e));
         }
 
-        let collection_id = if let Some(collection_id) = &params.collection_id {
-            collection_id.inner()
+        let project_id = if let Some(project_id) = &params.project_id {
+            project_id.inner()
         } else {
             return Ok(output);
         };
 
         // Create a new environment group if it doesn't exist
-        if state.groups.contains(&collection_id) {
+        if state.groups.contains(&project_id) {
             return Ok(output);
         }
 
         // FIXME: the order should be the current max group order + 1
         let group_order = (state.groups.len() + 1) as isize;
 
-        state.groups.insert(collection_id.clone());
-        state.expanded_groups.insert(collection_id.clone());
+        state.groups.insert(project_id.clone());
+        state.expanded_groups.insert(project_id.clone());
 
         {
-            let mut txn = match self.storage.begin_write(&ctx).await {
-                Ok(txn) => txn,
-                Err(e) => {
-                    session::warn!(format!("failed to begin write transaction: {}", e));
-                    return Ok(output);
-                }
-            };
+            let group_order_key = key_environment_group_order(&project_id.into());
+            let batch_input = vec![
+                (group_order_key.as_str(), serde_json::to_value(group_order)?),
+                (
+                    KEY_EXPANDED_ENVIRONMENT_GROUPS,
+                    serde_json::to_value(&state.expanded_groups)?,
+                ),
+            ];
 
             if let Err(e) = self
                 .storage
-                .put_expanded_groups_txn(&ctx, &mut txn, &state.expanded_groups)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
-                    "failed to put expanded environment groups in the db: {}",
-                    e
-                ))
-            }
-
-            if let Err(e) = self
-                .storage
-                .put_environment_group_order_txn(&ctx, &mut txn, collection_id, group_order)
-                .await
-            {
-                session::warn!(format!(
-                    "failed to put environment group order in the db: {}",
+                    "failed to update environment groups metadata in database after creating environment: {}",
                     e
                 ));
-            }
-
-            if let Err(e) = txn.commit() {
-                session::warn!(format!("failed to commit transaction: {}", e));
             }
         }
 
@@ -495,7 +535,7 @@ where
 
         // If the environment is currently active, deactivate it
         let env_group_key = environment
-            .collection_id
+            .project_id
             .clone()
             .unwrap_or_else(|| GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into());
 
@@ -526,31 +566,49 @@ where
 
         // Database errors should not fail the operation
         {
-            let mut txn = match self.storage.begin_write(ctx).await {
-                Ok(txn) => txn,
-                Err(e) => {
-                    session::warn!(format!("failed to begin transaction: {}", e.to_string()));
-                    return Ok(());
-                }
-            };
-
             // Clean all the data related to the deleted environment
-            if let Err(e) = TransactionalRemoveByPrefix::remove_by_prefix(
-                self.storage.storage.item_store().as_ref(),
-                ctx,
-                &mut txn,
-                format!("environment:{}", id).as_str(),
-            )
-            .await
+            if let Err(e) = self
+                .storage
+                .remove_batch_by_prefix(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &key_environment(id),
+                )
+                .await
             {
                 session::warn!(format!(
                     "failed to remove environment cache from the db: {}",
                     e
                 ));
             }
+            // Update active environments map
+            if active_environments_updated {
+                if let Err(e) = self
+                    .storage
+                    .put(
+                        StorageScope::Workspace(self.workspace_id.inner()),
+                        KEY_ACTIVE_ENVIRONMENTS,
+                        serde_json::to_value(&state.active_environments)?,
+                    )
+                    .await
+                {
+                    session::warn!(format!(
+                        "failed to update active environments in the database: {}",
+                        e
+                    ));
+                }
+            }
 
+            // FIXME: For now we will still use old storage's variable stores
+            // We will fix it once we update moss-environment
+            let mut txn = match self.storage_old.begin_write(ctx).await {
+                Ok(txn) => txn,
+                Err(e) => {
+                    session::warn!(format!("failed to begin transaction: {}", e.to_string()));
+                    return Ok(());
+                }
+            };
             // Remove all variables belonging to the deleted environment
-            let store = self.storage.variable_store();
+            let store = self.storage_old.variable_store();
             for id in desc.variables.keys() {
                 let segkey_localvalue =
                     SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
@@ -580,32 +638,19 @@ where
                     ));
                 }
             }
-
-            // Update active environments map
-            if active_environments_updated {
-                if let Err(e) = self
-                    .storage
-                    .put_active_environments_txn(&ctx, &mut txn, &state.active_environments)
-                    .await
-                {
-                    session::warn!(format!(
-                        "failed to put active environments in the db: {}",
-                        e
-                    ));
-                }
-            }
-
             if let Err(e) = txn.commit() {
-                session::warn!(format!("failed to commit transaction: {}", e.to_string()));
+                session::warn!(format!(
+                    "failed to commit transaction to the database: {}",
+                    e.to_string()
+                ));
             }
         }
-
         Ok(())
     }
 
     pub async fn activate_environment(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: ActivateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -617,7 +662,7 @@ where
                 format!("environment {} not found", params.environment_id)
             })?;
 
-        let env_group_key = if let Some(group_id) = &environment_item.collection_id {
+        let env_group_key = if let Some(group_id) = &environment_item.project_id {
             group_id.clone()
         } else {
             GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
@@ -627,30 +672,21 @@ where
             .active_environments
             .insert(env_group_key.clone(), params.environment_id);
 
+        if let Err(e) = self
+            .storage
+            .put(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ACTIVE_ENVIRONMENTS,
+                serde_json::to_value(&state.active_environments)?,
+            )
+            .await
         {
-            let mut txn = match self.storage.begin_write(ctx).await {
-                Ok(txn) => txn,
-                Err(e) => {
-                    session::warn!(format!("failed to start a write transaction: {}", e));
-                    return Ok(());
-                }
-            };
-
-            if let Err(e) = self
-                .storage
-                .put_active_environments_txn(ctx, &mut txn, &state.active_environments)
-                .await
-            {
-                session::warn!(format!(
-                    "failed to put active environments in the db: {}",
-                    e
-                ))
-            }
-
-            if let Err(e) = txn.commit() {
-                session::warn!(format!("failed to commit transaction: {}", e.to_string()));
-            }
+            session::warn!(format!(
+                "failed to put active environments in the database: {}",
+                e
+            ));
         }
+
         Ok(())
     }
 }
@@ -664,7 +700,10 @@ struct ScanSourceJob<R: AppRuntime> {
 struct EnvironmentSourceScanner<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     sources: FxHashMap<Arc<String>, PathBuf>,
-    storage: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
+    // FIXME: Remove old storage when refactoring moss-environment
+    storage_old: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
+    storage: Arc<dyn Storage>,
+    workspace_id: WorkspaceId,
     tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
 }
 
@@ -677,14 +716,22 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
     async fn scan(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
-        // TODO: make database errors not fail the operation
-
-        let data =
-            ListByPrefix::list_by_prefix(self.storage.item_store().as_ref(), ctx, "environment")
-                .await?
-                .into_iter()
-                .map(|(k, v)| (k.to_string(), v))
-                .collect::<FxHashMap<_, _>>();
+        let data = self
+            .storage
+            .get_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ENVIRONMENT_PREFIX,
+            )
+            .await
+            .unwrap_or_else(|e| {
+                session::warn!(format!(
+                    "failed to get environment cache from the database: {}",
+                    e
+                ));
+                Vec::new()
+            })
+            .into_iter()
+            .collect::<HashMap<_, _>>();
 
         let (provider_tx, mut provider_rx) =
             mpsc::unbounded_channel::<(Option<Arc<String>>, Environment<R>)>();
@@ -693,7 +740,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
 
         for (source_id, source) in self.sources.iter() {
             let provider_tx_clone = provider_tx.clone();
-            let storage_clone = self.storage.variable_store();
+            let storage_clone = self.storage_old.variable_store();
             let source_id_clone = source_id.clone();
             let source_clone = source.clone();
             let fs_clone = self.fs.clone();
@@ -743,10 +790,9 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                 }
             };
 
-            let order = if let Ok(order) = data
-                .get(format!("environment:{}:order", desc.id).as_str())
-                .map(|v| v.deserialize::<isize>())
-                .transpose()
+            let order: Option<isize> = if let Some(order) = data
+                .get(&key_environment_order(&desc.id))
+                .and_then(|v| serde_json::from_value(v.clone()).ok())
             {
                 order
             } else {
@@ -756,7 +802,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
 
             let environment_item = EnvironmentItem {
                 id: desc.id.clone(),
-                collection_id,
+                project_id: collection_id,
                 order,
                 handle: Arc::new(environment),
             };

@@ -20,9 +20,9 @@ use crate::{
     environment::EnvironmentService,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::ProjectId,
+    models::primitives::{ProjectId, WorkspaceId},
     project::ProjectService,
-    storage::StorageService,
+    storage_old::StorageService,
 };
 
 pub struct WorkspaceSummary {
@@ -60,14 +60,15 @@ pub trait AnyWorkspace<R: AppRuntime> {
 }
 
 pub struct Workspace<R: AppRuntime> {
+    pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile<R>>,
     pub(super) layout_service: LayoutService<R>,
     pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
-    pub(super) storage_service: Arc<StorageService<R>>,
-
+    // FIXME: Remove after removing the layout functionalities from the backend
+    pub(super) storage_service_old: Arc<StorageService<R>>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
     pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }
@@ -122,6 +123,9 @@ impl<R: AppRuntime> Workspace<R> {
 }
 
 impl<R: AppRuntime> Workspace<R> {
+    pub fn id(&self) -> WorkspaceId {
+        self.id.clone()
+    }
     pub fn abs_path(&self) -> &Path {
         &self.abs_path
     }
@@ -169,6 +173,6 @@ impl<R: AppRuntime> Workspace<R> {
 #[cfg(any(test, feature = "integration-tests"))]
 impl<R: AppRuntime> Workspace<R> {
     pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
-        self.storage_service.storage()
+        self.storage_service_old.storage()
     }
 }

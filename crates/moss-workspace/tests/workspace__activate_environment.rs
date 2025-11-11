@@ -196,6 +196,7 @@ async fn activate_environment_currently_active() {
 
     assert!(events_map.get(&id).unwrap().is_active);
 
+    drop(workspace);
     cleanup().await;
 }
 

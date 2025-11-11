@@ -10,8 +10,8 @@ impl<R: AppRuntime> Workspace<R> {
         &self,
         ctx: &R::AsyncContext,
     ) -> joinerror::Result<DescribeWorkspaceOutput> {
-        // HACK: cache here is a temporary solution
-        let mut cache = self.storage_service.get_layout_cache(ctx).await?;
+        // FIXME: Remove once layout is managed by the frontend
+        let mut cache = self.storage_service_old.get_layout_cache(ctx).await?;
 
         let editor_state = self.layout_service.get_editor_layout_state(&mut cache)?;
         let sidebar_state = self.layout_service.get_sidebar_layout_state(&mut cache)?;

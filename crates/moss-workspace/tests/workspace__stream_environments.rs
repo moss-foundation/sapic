@@ -317,8 +317,8 @@ async fn stream_environments_with_variables() {
     let variables = (0..5)
         .map(|i| AddVariableParams {
             name: format!("variable{}", i),
-            global_value: JsonValue::Number(i.into()),
-            local_value: JsonValue::Number(i.into()),
+            global_value: JsonValue::Number(i.clone().into()),
+            local_value: JsonValue::Number(i.clone().into()),
             order: i,
             desc: None,
             options: VariableOptions { disabled: false },

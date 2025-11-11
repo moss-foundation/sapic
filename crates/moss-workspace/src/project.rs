@@ -19,8 +19,10 @@ use moss_project::{
     git::GitClient,
     vcs::VcsSummary,
 };
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
+use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -33,15 +35,14 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
     models::{
-        primitives::ProjectId,
+        primitives::{ProjectId, WorkspaceId},
         types::{
             CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
             UpdateProjectParams,
         },
     },
-    storage::{StorageService, segments::SEGKEY_COLLECTION},
+    storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project, key_project_order},
 };
-// TODO: Rename all collections to projects
 
 pub(crate) struct ProjectItemCloneParams {
     pub order: isize,
@@ -78,7 +79,6 @@ pub(crate) struct ProjectItemDescription {
     pub order: Option<isize>,
     pub expanded: bool,
     pub vcs: Option<VcsSummary>,
-    // pub repository: Option<String>,
 
     // FIXME: Do we need this field?
     pub icon_path: Option<PathBuf>,
@@ -96,7 +96,7 @@ struct ServiceState<R: AppRuntime> {
 pub struct ProjectService<R: AppRuntime> {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService<R>>,
+    workspace_id: WorkspaceId,
     state: Arc<RwLock<ServiceState<R>>>,
     app_delegate: AppDelegate<R>,
     on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
@@ -109,36 +109,54 @@ impl<R: AppRuntime> ProjectService<R> {
         app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService<R>>,
+        workspace_id: WorkspaceId,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         active_profile: &Arc<Profile<R>>,
         on_project_did_delete_emitter: EventEmitter<OnDidDeleteProject>,
         on_project_did_add_emitter: EventEmitter<OnDidAddProject>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::PROJECTS_DIR);
-        let expanded_items = if let Ok(expanded_items) = storage.get_expanded_items(ctx).await {
-            expanded_items.into_iter().collect::<HashSet<_>>()
+
+        let storage = <dyn Storage>::global(app_delegate);
+
+        let expanded_items = if let Ok(Some(expanded_items)) = storage
+            .get(
+                StorageScope::Workspace(workspace_id.inner()),
+                KEY_EXPANDED_ITEMS,
+            )
+            .await
+        {
+            let items: HashSet<ProjectId> =
+                serde_json::from_value(expanded_items).unwrap_or_else(|err| {
+                    session::warn!(format!("failed to deserialized expandedItems: {}", err));
+                    HashSet::new()
+                });
+            items
         } else {
             HashSet::new()
         };
 
-        let collections =
-            restore_collections(ctx, app_delegate, &abs_path, &fs, &storage, active_profile)
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to restore collections, {}", abs_path.display())
-                })?;
+        let projects = restore_projects(
+            ctx,
+            app_delegate,
+            &abs_path,
+            &fs,
+            workspace_id.clone(),
+            active_profile,
+        )
+        .await
+        .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
 
-        for (id, collection) in collections.iter() {
+        for (id, collection) in projects.iter() {
             environment_sources.insert(id.clone().inner(), collection.environments_path());
         }
 
         Ok(Self {
             abs_path,
             fs,
-            storage,
+            workspace_id,
             state: Arc::new(RwLock::new(ServiceState {
-                projects: collections,
+                projects,
                 expanded_items,
             })),
             app_delegate: app_delegate.clone(),
@@ -322,35 +340,28 @@ impl<R: AppRuntime> ProjectService<R> {
         {
             let state_lock = self.state.read().await;
 
-            let mut txn = match self.storage.begin_write(ctx).await {
-                Ok(txn) => txn,
-                Err(e) => {
-                    session::warn!(format!("failed to begin write transaction: {}", e));
-                    return Ok(desc);
-                }
-            };
+            let storage = <dyn Storage>::global(app_delegate);
 
-            if let Err(e) = self
-                .storage
-                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
+            let order_key = key_project_order(id);
+            let batch_input = vec![
+                (order_key.as_str(), JsonValue::Number(params.order.into())),
+                (
+                    KEY_EXPANDED_ITEMS,
+                    serde_json::to_value(&state_lock.expanded_items)?,
+                ),
+            ];
+
+            if let Err(e) = storage
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
-                session::warn!(format!("failed to put item order in the db: {}", e));
-                return Ok(desc);
-            }
-
-            if let Err(e) = self
-                .storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await
-            {
-                session::warn!(format!("failed to put expanded items in the db: {}", e));
-                return Ok(desc);
-            }
-
-            if let Err(e) = txn.commit() {
-                session::warn!(format!("failed to commit transaction: {}", e));
-                return Ok(desc);
+                session::warn!(format!(
+                    "failed to update database after creating project: {}",
+                    e
+                ));
             }
         }
 
@@ -458,25 +469,33 @@ impl<R: AppRuntime> ProjectService<R> {
                 id.clone(),
                 ProjectItem {
                     id: id.clone(),
-                    order: Some(params.order),
+                    order: Some(params.order.clone()),
                     handle: Arc::new(collection),
                 },
             );
-            // TODO: Make database errors not fail the operation
-            let mut txn = self
-                .storage
-                .begin_write(ctx)
+            let storage = <dyn Storage>::global(app_delegate);
+            let order_key = key_project_order(id);
+
+            let batch_input = vec![
+                (order_key.as_str(), JsonValue::Number(params.order.into())),
+                (
+                    KEY_EXPANDED_ITEMS,
+                    serde_json::to_value(&state_lock.expanded_items)?,
+                ),
+            ];
+
+            if let Err(e) = storage
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
-                .join_err::<()>("failed to start transaction")?;
-
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, &id, params.order)
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
+            {
+                session::warn!(format!(
+                    "failed to update database after cloning project: {}",
+                    e
+                ));
+            }
         }
 
         self.on_did_add_project_emitter
@@ -500,7 +519,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn delete_project(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>> {
         let id_str = id.to_string();
@@ -531,18 +550,33 @@ impl<R: AppRuntime> ProjectService<R> {
 
         state_lock.expanded_items.remove(&id);
 
+        let storage = <dyn Storage>::global(&self.app_delegate);
+
+        if let Err(e) = storage
+            .remove_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &key_project(id),
+            )
+            .await
         {
-            // TODO: Make database errors not fail the operation
-            let mut txn = self.storage.begin_write(ctx).await?;
+            session::warn!(format!(
+                "failed to remove project `{}` from storage: {}",
+                id, e
+            ));
+        }
 
-            self.storage
-                .remove_item_metadata_txn(ctx, &mut txn, SEGKEY_COLLECTION.join(&id.to_string()))
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
+        if let Err(e) = storage
+            .put(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_EXPANDED_ITEMS,
+                serde_json::to_value(&state_lock.expanded_items)?,
+            )
+            .await
+        {
+            session::warn!(format!(
+                "failed to updated expanded_items after deleting project: {}",
+                e
+            ));
         }
 
         self.on_did_delete_project_emitter
@@ -560,7 +594,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn update_project(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ProjectId,
         params: UpdateProjectParams,
     ) -> joinerror::Result<()> {
@@ -572,13 +606,13 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
-        // TODO: Make database errors not fail the operation
-        let mut txn = self.storage.begin_write(ctx).await?;
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let project_order_key = key_project_order(id);
+        let mut batch_input = vec![];
+
         if let Some(order) = params.order {
-            item.order = Some(order);
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, id, order)
-                .await?;
+            item.order = Some(order.clone());
+            batch_input.push((project_order_key.as_str(), serde_json::to_value(&order)?));
         }
 
         // TODO: Implement relinking and unlinking remote repo when the user update it
@@ -599,13 +633,28 @@ impl<R: AppRuntime> ProjectService<R> {
             } else {
                 state_lock.expanded_items.remove(id);
             }
-
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
+            batch_input.push((
+                KEY_EXPANDED_ITEMS,
+                serde_json::to_value(&state_lock.expanded_items)?,
+            ));
         }
 
-        txn.commit()?;
+        if batch_input.is_empty() {
+            return Ok(());
+        }
+
+        if let Err(e) = storage
+            .put_batch(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &batch_input,
+            )
+            .await
+        {
+            session::warn!(format!(
+                "failed to update database after updating project: {}",
+                e
+            ));
+        }
 
         Ok(())
     }
@@ -755,25 +804,33 @@ impl<R: AppRuntime> ProjectService<R> {
                 id.clone(),
                 ProjectItem {
                     id: id.clone(),
-                    order: Some(params.order),
+                    order: Some(params.order.clone()),
                     handle: Arc::new(collection),
                 },
             );
-            // TODO: Make database errors not fail the operation
-            let mut txn = self
-                .storage
-                .begin_write(ctx)
+
+            let storage = <dyn Storage>::global(&self.app_delegate);
+            let order_key = key_project_order(id);
+            let batch_input = vec![
+                (order_key.as_str(), serde_json::to_value(params.order)?),
+                (
+                    KEY_EXPANDED_ITEMS,
+                    serde_json::to_value(&state_lock.expanded_items)?,
+                ),
+            ];
+
+            if let Err(e) = storage
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
-                .join_err::<()>("failed to start transaction")?;
-
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, &id, params.order)
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
+            {
+                session::warn!(format!(
+                    "failed to update database after importing archived project: {}",
+                    e
+                ));
+            }
         }
 
         self.on_did_add_project_emitter
@@ -861,7 +918,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 id.to_owned(),
                 ProjectItem {
                     id: id.to_owned(),
-                    order: Some(params.order),
+                    order: Some(params.order.clone()),
                     handle: Arc::new(project),
                 },
             );
@@ -870,22 +927,28 @@ impl<R: AppRuntime> ProjectService<R> {
         {
             let state_lock = self.state.read().await;
 
-            // TODO: Make database errors not fail the operation
+            let storage = <dyn Storage>::global(&self.app_delegate);
+            let order_key = key_project_order(id);
+            let batch_input = vec![
+                (order_key.as_str(), serde_json::to_value(params.order)?),
+                (
+                    KEY_EXPANDED_ITEMS,
+                    serde_json::to_value(&state_lock.expanded_items)?,
+                ),
+            ];
 
-            let mut txn = self
-                .storage
-                .begin_write(ctx)
+            if let Err(e) = storage
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
-                .join_err::<()>("failed to start transaction")?;
-
-            self.storage
-                .put_item_order_txn(ctx, &mut txn, id.as_str(), params.order)
-                .await?;
-            self.storage
-                .put_expanded_items_txn(ctx, &mut txn, &state_lock.expanded_items)
-                .await?;
-
-            txn.commit()?;
+            {
+                session::warn!(format!(
+                    "failed to update database after importing archived project: {}",
+                    e
+                ));
+            }
         }
 
         self.on_did_add_project_emitter
@@ -959,27 +1022,27 @@ impl<R: AppRuntime> ProjectService<R> {
         Ok(changes)
     }
 }
-async fn restore_collections<R: AppRuntime>(
-    ctx: &R::AsyncContext,
+async fn restore_projects<R: AppRuntime>(
+    _ctx: &R::AsyncContext,
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage: &Arc<StorageService<R>>,
+    workspace_id: WorkspaceId,
     active_profile: &Arc<Profile<R>>,
 ) -> joinerror::Result<HashMap<ProjectId, ProjectItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
     }
 
-    let mut collections = Vec::new();
+    let mut projects = Vec::new();
     let mut read_dir = fs
         .read_dir(&abs_path)
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
     let activity_handle = app_delegate.emit_continual(ToLocation::Window {
-        activity_id: "restore_collections",
-        title: "Restoring collections".to_string(),
+        activity_id: "restore_projects",
+        title: "Restoring projects".to_string(),
         detail: None,
     })?;
 
@@ -989,28 +1052,33 @@ async fn restore_collections<R: AppRuntime>(
         }
 
         activity_handle.emit_progress(Some(format!(
-            "Restoring collection `{}`",
+            "Restoring project`{}`",
             entry.file_name().to_string_lossy()
         )))?;
 
         let id_str = entry.file_name().to_string_lossy().to_string();
         let id: ProjectId = id_str.clone().into();
 
-        let collection = {
-            let collection_abs_path: Arc<Path> = entry.path().to_owned().into();
+        let project = {
+            let project_abs_path: Arc<Path> = entry.path().to_owned().into();
             let builder = ProjectBuilder::new(fs.clone()).await;
 
-            let collection_result = builder
+            let project_result = builder
                 .load(ProjectLoadParams {
-                    internal_abs_path: collection_abs_path,
+                    internal_abs_path: project_abs_path,
                 })
                 .await;
-            match collection_result {
-                Ok(collection) => collection,
+            match project_result {
+                Ok(project) => project,
                 Err(e) => {
-                    // TODO: Let the frontend know a collection is invalid
+                    let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                        activity_id: "restore_projects_failed_to_reload",
+                        title: "Failed to reload project".to_string(),
+                        detail: Some(format!("Failed to reload project `{}`: {}", id_str, e)),
+                    });
+
                     session::error!(format!(
-                        "failed to rebuild collection `{}`: {}",
+                        "failed to reload project `{}`: {}",
                         id_str,
                         e.to_string()
                     ));
@@ -1019,13 +1087,13 @@ async fn restore_collections<R: AppRuntime>(
             }
         };
 
-        if collection.is_archived() {
-            collections.push((id, collection));
+        if project.is_archived() {
+            projects.push((id, project));
             continue;
         }
         // Only load the vcs if the collection is not archived
 
-        let details = match collection.details().await {
+        let details = match project.details().await {
             Ok(details) => details,
             Err(e) => {
                 app_delegate.emit_oneshot(ToLocation::Toast {
@@ -1042,7 +1110,7 @@ async fn restore_collections<R: AppRuntime>(
 
         if let (Some(vcs), Some(account_id)) = (details.vcs, details.account_id) {
             let account = continue_if_none!(active_profile.account(&account_id).await, || {
-                collections.push((id, collection));
+                projects.push((id, project));
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_nonexistent_account",
                     title: "A project is associated with a nonexistent account".to_string(),
@@ -1064,7 +1132,7 @@ async fn restore_collections<R: AppRuntime>(
                 },
             };
 
-            if let Err(e) = collection.load_vcs(client).await {
+            if let Err(e) = project.load_vcs(client).await {
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_load_vcs",
                     title: "Failed to load project vcs".to_string(),
@@ -1077,20 +1145,34 @@ async fn restore_collections<R: AppRuntime>(
             };
         }
 
-        collections.push((id, collection));
+        projects.push((id, project));
     }
 
+    let storage = <dyn Storage>::global(app_delegate);
+
     let metadata = storage
-        .list_items_metadata(ctx, SEGKEY_COLLECTION.to_segkey_buf())
-        .await?;
+        .get_batch_by_prefix(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_PROJECT_PREFIX,
+        )
+        .await
+        .unwrap_or_else(|e| {
+            session::warn!(format!(
+                "failed to fetch metadata from database when restoring projects: {}",
+                e
+            ));
+            Vec::new()
+        })
+        .into_iter()
+        .collect::<HashMap<_, _>>();
 
     let mut result = HashMap::new();
-    for (id, collection) in collections {
-        let segkey_prefix = SEGKEY_COLLECTION.join(&id);
+    for (id, collection) in projects {
+        let key_order = key_project_order(&id);
 
-        let order = metadata
-            .get(&segkey_prefix.join("order"))
-            .and_then(|v| v.deserialize().ok());
+        let order: Option<isize> = metadata
+            .get(&key_order)
+            .and_then(|v| serde_json::from_value(v.clone()).ok());
 
         result.insert(
             id.clone(),

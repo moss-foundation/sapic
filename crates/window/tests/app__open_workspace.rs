@@ -4,14 +4,11 @@ pub mod shared;
 
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_workspace_name;
-use moss_workspace::models::primitives::WorkspaceMode;
+use moss_workspace::models::primitives::{WorkspaceId, WorkspaceMode};
 use std::{path::Path, sync::Arc};
 use window::{
     dirs,
-    models::{
-        operations::{CreateWorkspaceInput, OpenWorkspaceInput},
-        primitives::WorkspaceId,
-    },
+    models::operations::{CreateWorkspaceInput, OpenWorkspaceInput},
     storage::{KEY_LAST_ACTIVE_WORKSPACE, key_workspace_last_opened_at},
 };
 

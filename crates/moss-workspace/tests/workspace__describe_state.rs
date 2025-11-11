@@ -1,3 +1,4 @@
+// TODO: Remove once we get rid of layout service
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 

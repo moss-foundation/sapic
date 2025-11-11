@@ -4,12 +4,12 @@ use moss_logging::session;
 use serde_json::Value as JsonValue;
 use sqlx::{
     Row, SqlitePool,
-    sqlite::{SqliteConnectOptions, SqliteJournalMode},
+    sqlite::{SqliteConnectOptions, SqliteJournalMode, SqlitePoolOptions},
 };
 use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
-use crate::adapters::{Flushable, KeyedStorage, Optimizable, Options};
+use crate::adapters::{Closable, Flushable, KeyedStorage, Optimizable, Options};
 
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 const DEFAULT_IN_MEMORY: bool = false;
@@ -62,7 +62,11 @@ impl SqliteStorage {
             .busy_timeout(opts.busy_timeout)
             .foreign_keys(true);
 
-        let pool = SqlitePool::connect_with(options)
+        // TODO: This should solve most lock related issues but is not the most performant approach
+        // We might consider https://github.com/launchbadge/sqlx/issues/459
+        let pool = SqlitePoolOptions::new()
+            .max_connections(1)
+            .connect_with(options)
             .await
             .join_err::<()>("failed to open database")?;
 
@@ -112,7 +116,6 @@ impl SqliteStorage {
         }))
     }
 }
-
 #[async_trait]
 impl KeyedStorage for SqliteStorage {
     async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
@@ -465,6 +468,13 @@ impl Optimizable for SqliteStorage {
             .join_err::<()>("VACUUM failed")?;
 
         Ok(())
+    }
+}
+
+#[async_trait]
+impl Closable for SqliteStorage {
+    async fn close(&self) {
+        self.pool.close().await;
     }
 }
 

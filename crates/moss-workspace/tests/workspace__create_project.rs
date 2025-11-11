@@ -2,14 +2,14 @@
 
 pub mod shared;
 
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
-    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+    storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
 use serde_json::Value as JsonValue;
-use std::path::Path;
+use std::{collections::HashSet, path::Path};
 use tauri::ipc::Channel;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
@@ -44,27 +44,31 @@ async fn create_project_success() {
     // Verify the directory was created
     assert!(create_project_output.abs_path.exists());
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
-
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_project_order(&id),
+        )
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -127,27 +131,33 @@ async fn create_project_special_chars() {
         // Verify the directory was created
         assert!(create_project_output.abs_path.exists());
 
-        // Verify the db entries were created
         let id = create_project_output.id;
-        let item_store = workspace.db().item_store();
 
+        // Verify the db entries were created
+        let storage = <dyn Storage>::global(&app_delegate);
         // Check order was stored
-        let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-        let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+        let order_value = storage
+            .get(
+                StorageScope::Workspace(workspace.id().inner()),
+                &key_project_order(&id),
+            )
             .await
+            .unwrap()
             .unwrap();
-        let stored_order: usize = order_value.deserialize().unwrap();
-        assert_eq!(stored_order, 0);
+        let order: isize = serde_json::from_value(order_value).unwrap();
 
+        assert_eq!(order, 0);
         // Check expanded_items contains the project id
-        let expanded_items_value = GetItem::get(
-            item_store.as_ref(),
-            &ctx,
-            SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-        )
-        .await
-        .unwrap();
-        let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+        let expanded_items_value = storage
+            .get(
+                StorageScope::Workspace(workspace.id().inner()),
+                KEY_EXPANDED_ITEMS,
+            )
+            .await
+            .unwrap()
+            .unwrap();
+        let expanded_items: HashSet<ProjectId> =
+            serde_json::from_value(expanded_items_value).unwrap();
         assert!(expanded_items.contains(&id));
     }
 
@@ -189,27 +199,32 @@ async fn create_project_with_order() {
     // Verify the directory was created
     assert!(create_project_output.abs_path.exists());
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_project_order(&id),
+        )
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 42);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 42);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -255,25 +270,30 @@ async fn create_project_with_icon() {
     let project = workspace.project(&id).await.unwrap();
     assert!(project.icon_path().is_some());
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let item_store = workspace.db().item_store();
-
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_project_order(&id),
+        )
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;
@@ -322,15 +342,17 @@ async fn create_multiple_projects_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both project ids
-    let item_store = workspace.db().item_store();
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let storage = <dyn Storage>::global(&app_delegate);
+    // Check expanded_items contains the project id
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
 
     assert_eq!(expanded_items.len(), 2);
     assert!(expanded_items.contains(&create_result1.id));
@@ -400,27 +422,32 @@ async fn create_project_external_success() {
     let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 1);
 
-    // Verify the db entries were created
     let id = create_project_output.id;
-    let item_store = workspace.db().item_store();
 
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_project_order(&id),
+        )
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 0);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 0);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     tokio::fs::remove_dir_all(&external_path).await.unwrap();

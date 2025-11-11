@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -11,8 +11,9 @@ use moss_workspace::{
             ImportProjectSource,
         },
     },
-    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+    storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use std::collections::HashSet;
 use tauri::ipc::Channel;
 
 use crate::shared::setup_test_workspace;
@@ -86,28 +87,33 @@ pub async fn export_project_success() {
     // Verify the directory was created
     assert!(import_project_output.abs_path.exists());
 
-    // Verify the db entries were created
-    // Verify the db entries were created
     let id = import_project_output.id;
-    let item_store = workspace.db().item_store();
+
+    // Verify the db entries were created
+    let storage = <dyn Storage>::global(&app_delegate);
 
     // Check order was stored
-    let order_key = SEGKEY_COLLECTION.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(item_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_project_order(&id),
+        )
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: usize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 42);
+    let order: isize = serde_json::from_value(order_value).unwrap();
 
+    assert_eq!(order, 42);
     // Check expanded_items contains the project id
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     cleanup().await;

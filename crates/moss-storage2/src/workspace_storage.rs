@@ -9,7 +9,6 @@ use crate::adapters::{Capabilities, KeyedStorage, Options, sqlite::SqliteStorage
 
 const DEFAULT_DB_FILENAME: &str = "state.sqlite3";
 
-#[derive(Clone)]
 pub struct WorkspaceStorageBackend {
     db_path: PathBuf,
     storage_options: Option<Options>,
@@ -39,6 +38,7 @@ impl WorkspaceStorageBackend {
             let capabilities = Capabilities {
                 flushable: Some(storage.clone()),
                 optimizable: Some(storage.clone()),
+                closable: Some(storage.clone()),
             };
 
             self.capabilities

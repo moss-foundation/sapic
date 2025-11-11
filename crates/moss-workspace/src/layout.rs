@@ -25,7 +25,7 @@ use crate::{
             PanelPartStateInfo, SidebarPartStateInfo,
         },
     },
-    storage::{
+    storage_old::{
         StorageService,
         entities::state_store::{EditorGridStateEntity, EditorPanelStateEntity},
         segments::{

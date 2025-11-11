@@ -5,7 +5,7 @@ use ts_rs::TS;
 
 use crate::{
     models::primitives::{EditorGridOrientation, PanelRenderer},
-    storage::entities::state_store::{
+    storage_old::entities::state_store::{
         EditorGridLeafDataEntity, EditorGridNodeEntity, EditorGridStateEntity,
         EditorPanelStateEntity,
     },

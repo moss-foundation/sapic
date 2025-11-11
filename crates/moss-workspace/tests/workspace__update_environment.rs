@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
@@ -9,24 +10,22 @@ use moss_environment::{
         types::{AddVariableParams, UpdateVariableParams, VariableOptions},
     },
 };
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
         operations::{CreateEnvironmentInput, UpdateEnvironmentInput},
         types::UpdateEnvironmentParams,
     },
-    storage::segments::SEGKEY_ENVIRONMENT,
+    storage::key_environment_order,
 };
 use serde_json::Value as JsonValue;
-
-use crate::shared::setup_test_workspace;
-
 // TODO: Test updating collection_id once it's implemented
+// TODO: Update test once we switch variable store to new database
 
 #[tokio::test]
 async fn update_environment_success() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let old_environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -79,19 +78,21 @@ async fn update_environment_success() {
     let env_description = environment.describe(&ctx).await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
-    // Check environment cache is updated with new order and expanded
-    let item_store = workspace.db().item_store();
 
     let id = create_environment_output.id.clone();
-    let stored_env_order: isize = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_ENVIRONMENT.join(id.as_str()).join("order"),
-    )
-    .await
-    .unwrap()
-    .deserialize()
-    .unwrap();
+    // Check db is updated
+    let storage = <dyn Storage>::global(&app_delegate);
+    // Check environment cache is updated with new order and expanded
+    let stored_env_order_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            &key_environment_order(&id),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let stored_env_order: isize = serde_json::from_value(stored_env_order_value).unwrap();
+
     assert_eq!(stored_env_order, 42);
 
     let color = env_description.color;

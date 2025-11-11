@@ -28,7 +28,7 @@ use crate::{
 #[async_trait]
 pub trait Storage: Send + Sync {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
-    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
+    async fn remove_workspace(&self, workspace_id: Arc<String>);
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
@@ -101,6 +101,21 @@ pub struct AppStorage {
     last_checkpoint: RwLock<Option<Instant>>,
 }
 
+#[cfg(feature = "integration-tests")]
+impl AppStorage {
+    pub async fn close(&self) -> joinerror::Result<()> {
+        self.application
+            .capabilities()
+            .await?
+            .closable
+            .expect("Must be closable")
+            .close()
+            .await;
+        self.workspaces.write().await.clear();
+        Ok(())
+    }
+}
+
 #[async_trait]
 impl Storage for AppStorage {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
@@ -124,10 +139,8 @@ impl Storage for AppStorage {
         Ok(())
     }
 
-    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
+    async fn remove_workspace(&self, workspace_id: Arc<String>) {
         self.workspaces.write().await.remove(&workspace_id);
-
-        Ok(())
     }
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
@@ -341,7 +354,6 @@ impl AppStorage {
 
         Ok(workspaces
             .get(&workspace_id)
-            .cloned()
             .ok_or_join_err::<()>("workspace not found")?
             .storage()
             .await?)

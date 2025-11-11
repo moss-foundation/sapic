@@ -1,8 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::setup_test_workspace;
-use moss_storage::storage::operations::{GetItem, ListByPrefix};
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -10,9 +9,12 @@ use moss_workspace::{
         primitives::ProjectId,
         types::CreateProjectParams,
     },
-    storage::segments::{SEGKEY_COLLECTION, SEGKEY_EXPANDED_ITEMS},
+    storage::{KEY_EXPANDED_ITEMS, key_project},
 };
+use std::collections::HashSet;
 use tauri::ipc::Channel;
+
+use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_project_success() {
@@ -47,26 +49,30 @@ async fn delete_project_success() {
     let output = workspace.stream_projects(&ctx, channel).await.unwrap();
     assert_eq!(output.total_returned, 0);
 
-    // Check updating database - project metadata should be removed
-    let item_store = workspace.db().item_store();
+    // Check updating database
+    let storage = <dyn Storage>::global(&app_delegate);
 
     // Check that project-specific entries are removed
-    let project_prefix = SEGKEY_COLLECTION.join(&id.to_string());
-    let list_result =
-        ListByPrefix::list_by_prefix(item_store.as_ref(), &ctx, &project_prefix.to_string())
-            .await
-            .unwrap();
+    let project_prefix = key_project(&id);
+    let list_result = storage
+        .get_batch_by_prefix(
+            StorageScope::Workspace(workspace.id().inner()),
+            &project_prefix,
+        )
+        .await
+        .unwrap();
     assert!(list_result.is_empty());
 
     // Check that expanded_items no longer contains the deleted project
-    let expanded_items_value = GetItem::get(
-        item_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ITEMS.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ProjectId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(
+            StorageScope::Workspace(workspace.id().inner()),
+            KEY_EXPANDED_ITEMS,
+        )
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: HashSet<ProjectId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(!expanded_items.contains(&id));
 
     cleanup().await;

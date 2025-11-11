@@ -1,3 +1,4 @@
+// TODO: Remove this when we get rid of layout service
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
@@ -8,7 +9,7 @@ use moss_workspace::{
         primitives::SidebarPosition,
         types::{PanelPartStateInfo, SidebarPartStateInfo},
     },
-    storage::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
+    storage_old::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
 };
 
 use crate::shared::setup_test_workspace;
