@@ -233,8 +233,6 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
     input: OpenWorkspaceInput,
     options: Options,
 ) -> TauriResult<OpenWorkspaceOutput> {
-    window.destroy().unwrap();
-
     // let window_inner_height = crate::DEFAULT_WINDOW_HEIGHT;
     // let window_inner_width = crate::DEFAULT_WINDOW_WIDTH;
 
@@ -266,6 +264,8 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
     )
     .await
     .unwrap();
+
+    window.close().unwrap();
 
     super::with_window_timeout(
         ctx.inner(),
