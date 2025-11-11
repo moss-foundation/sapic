@@ -127,6 +127,7 @@ impl WindowBuilder {
             title,
             inner_size,
             position,
+            #[cfg(target_os = "macos")]
             title_bar_style,
         )
         .join_err::<()>("failed to create webview window")?;
