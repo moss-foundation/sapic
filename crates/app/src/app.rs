@@ -103,7 +103,7 @@ impl<R: AppRuntime> App<R> {
             }
             CreateWindowParams::WorkspaceWindow { id, name, .. } => {
                 // (format!("/workspace/{}", id), name.clone())
-                (format!("workspace.html?id={}", id), name.to_string())
+                (format!("workspace.html#/{}", id), name.to_string())
             }
         };
 
