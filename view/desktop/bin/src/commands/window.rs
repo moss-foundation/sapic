@@ -1,6 +1,10 @@
+use std::path::Path;
+
 use moss_api::{TauriError, TauriResult};
+use moss_app_delegate::AppDelegate;
+use moss_applib::TauriAppRuntime;
 use sapic_window::models::operations::*;
-use tauri::Window as TauriWindow;
+use tauri::{Manager, Window as TauriWindow};
 
 use crate::commands::primitives::*;
 
@@ -229,12 +233,64 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
     input: OpenWorkspaceInput,
     options: Options,
 ) -> TauriResult<OpenWorkspaceOutput> {
+    window.destroy().unwrap();
+
+    // let window_inner_height = crate::DEFAULT_WINDOW_HEIGHT;
+    // let window_inner_width = crate::DEFAULT_WINDOW_WIDTH;
+
+    // let label = format!("main_{}", 0);
+    // let url = format!("/workspace/{}", input.id);
+    // let config = crate::CreateWindowInput {
+    //     url: url.as_str(),
+    //     label: label.as_str(),
+    //     title: "Welcome",
+    //     inner_size: (window_inner_width, window_inner_height),
+    //     position: (100.0, 100.0),
+    // };
+
+    // crate::create_window(app.app_handle(), config);
+
+    let app_delegate = app
+        .inner()
+        .state::<AppDelegate<TauriAppRuntime<R>>>()
+        .inner()
+        .clone();
+
+    app.create_window(
+        &ctx.clone(),
+        &app_delegate,
+        sapic_app::CreateWindowParams::WorkspaceWindow {
+            id: moss_workspace::models::primitives::WorkspaceId::new(),
+            name: "Hardcoded name".to_string(),
+        },
+    )
+    .await
+    .unwrap();
+
     super::with_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, app| async move { app.open_workspace(&ctx, &app_delegate, &input).await },
+        |ctx, app_delegate, window| async move {
+            // app.create_window(
+            //     &ctx.clone(),
+            //     &app_delegate,
+            //     sapic_app::CreateWindowParams::WorkspaceWindow {
+            //         id: moss_workspace::models::primitives::WorkspaceId::new(),
+            //         name: "Hardcoded name".to_string(),
+            //     },
+            // )
+            // .await
+            // .unwrap();
+
+            Ok(OpenWorkspaceOutput {
+                id: input.id,
+                abs_path: Path::new("/").into(),
+            })
+
+            // window.open_workspace(&ctx, &app_delegate, &input).await
+        },
     )
     .await
 }

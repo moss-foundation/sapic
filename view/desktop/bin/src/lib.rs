@@ -46,7 +46,7 @@ use moss_storage2::{AppStorage, Storage};
 use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
-use sapic_window::app::OnWindowReadyOptions;
+use sapic_window::window::OnWindowReadyOptions;
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -72,7 +72,7 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
+        // .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_opener::init())
         .plugin(shared_storage::init(|app| {
             let handle = app
@@ -317,34 +317,43 @@ pub async fn run<R: TauriRuntime>() {
         .expect("failed to run")
         .run(|app_handle, event| match event {
             RunEvent::Ready => {
-                let webview_window = create_main_window(&app_handle, "/");
-                webview_window
-                    .on_menu_event(move |window, event| menu::handle_event(window, &event));
+                // let webview_window = create_main_window(&app_handle, "/");
+                // webview_window
+                //     .on_menu_event(move |window, event| menu::handle_event(window, &event));
 
                 futures::executor::block_on(async {
-                    let window = app_handle
-                        .state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>()
-                        .window("main_0")
-                        .await
-                        .expect("Failed to get the main window");
+                    // let window = app_handle
+                    //     .state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>()
+                    //     .window("main_0")
+                    //     .await
+                    //     .expect("Failed to get the main window");
 
-                    let ctx =
-                        MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
+                    let app = app_handle.state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>();
                     let app_delegate = app_handle
                         .state::<AppDelegate<TauriAppRuntime<R>>>()
                         .inner()
                         .clone();
+                    let ctx =
+                        MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
-                    window
-                        .on_window_ready(
-                            &ctx,
-                            &app_delegate,
-                            OnWindowReadyOptions {
-                                restore_last_workspace: true,
-                            },
-                        )
-                        .await
-                        .expect("Failed to prepare the app");
+                    app.create_window(
+                        &ctx,
+                        &app_delegate,
+                        sapic_app::CreateWindowParams::WelcomeWindow,
+                    )
+                    .await
+                    .expect("Failed to create the main window");
+
+                    // window
+                    //     .on_window_ready(
+                    //         &ctx,
+                    //         &app_delegate,
+                    //         OnWindowReadyOptions {
+                    //             restore_last_workspace: true,
+                    //         },
+                    //     )
+                    //     .await
+                    //     .expect("Failed to prepare the app");
                 });
             }
 
@@ -365,7 +374,7 @@ fn create_main_window<R: TauriRuntime>(
     let config = CreateWindowInput {
         url,
         label: label.as_str(),
-        title: "Sapic",
+        title: "Welcome",
         inner_size: (window_inner_width, window_inner_height),
         position: (100.0, 100.0),
     };

@@ -5,14 +5,14 @@ use moss_logging::session;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_workspace::models::primitives::WorkspaceId;
 use std::{collections::HashMap, sync::Arc};
-use tauri::AppHandle;
+use tauri::{AppHandle, WebviewWindow};
 use tokio::sync::RwLock;
 
 use crate::{
-    ActiveWorkspace, configuration::ConfigurationService, extension::ExtensionService,
-    language::LanguageService, logging::LogService, models::primitives::SessionId,
-    profile::ProfileService, session::SessionService, storage::KEY_LAST_ACTIVE_WORKSPACE,
-    theme::ThemeService, workspace::WorkspaceService,
+    ActiveWorkspace, configuration::ConfigurationService, language::LanguageService,
+    logging::LogService, models::primitives::SessionId, profile::ProfileService,
+    session::SessionService, storage::KEY_LAST_ACTIVE_WORKSPACE, theme::ThemeService,
+    workspace::WorkspaceService,
 };
 
 pub struct OnWindowReadyOptions {
@@ -21,6 +21,7 @@ pub struct OnWindowReadyOptions {
 
 #[derive(Deref)]
 pub struct Window<R: AppRuntime> {
+    pub(super) webview: WebviewWindow<R::EventLoop>,
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
@@ -31,8 +32,8 @@ pub struct Window<R: AppRuntime> {
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
 
-    #[allow(unused)]
-    pub(super) extension_service: ExtensionService<R>,
+    // #[allow(unused)]
+    // pub(super) extension_service: ExtensionService<R>,
 
     // Store cancellers by the id of API requests
     pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -41,6 +42,10 @@ pub struct Window<R: AppRuntime> {
 impl<R: AppRuntime> Window<R> {
     pub fn session_id(&self) -> &SessionId {
         self.session_service.session_id()
+    }
+
+    pub fn webview(&self) -> &WebviewWindow<R::EventLoop> {
+        &self.webview
     }
 
     pub fn handle(&self) -> AppHandle<R::EventLoop> {

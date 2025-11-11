@@ -5,11 +5,10 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use rustc_hash::FxHashMap;
-use sapic_window::WindowBuilder;
-use std::sync::Arc;
+use std::sync::{Arc, atomic::AtomicUsize};
 use tokio::sync::RwLock;
 
-use crate::{App, AppCommands, command::CommandDecl};
+use crate::{App, AppCommands, command::CommandDecl, extension::ExtensionService};
 
 pub struct AppBuilder<R: AppRuntime> {
     commands: AppCommands<R::EventLoop>,
@@ -40,23 +39,21 @@ impl<R: AppRuntime> AppBuilder<R> {
         self
     }
 
-    pub async fn build(self, ctx: &R::AsyncContext, app_delegate: &AppDelegate<R>) -> App<R> {
-        let default_window = WindowBuilder::new(
-            self.fs,
-            self.keyring,
-            self.auth_api_client,
-            self.extension_points,
-        )
-        .build(ctx, app_delegate)
-        .await;
+    pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
+        let extension_service =
+            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
+                .await
+                .expect("Failed to create extension service");
 
         App {
-            tauri_handle: app_delegate.handle(),
+            tao_handle: delegate.handle(),
+            fs: self.fs,
+            keyring: self.keyring,
+            auth_api_client: self.auth_api_client,
+            extension_service,
             commands: self.commands,
-            windows: RwLock::new(FxHashMap::from_iter([(
-                "main_0".to_string(),
-                Arc::new(default_window),
-            )])),
+            windows: RwLock::new(FxHashMap::default()),
+            next_window_id: AtomicUsize::new(0),
         }
     }
 }

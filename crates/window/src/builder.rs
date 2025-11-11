@@ -1,3 +1,4 @@
+use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_extension::ExtensionPoint;
@@ -7,46 +8,54 @@ use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use moss_theme::registry::ThemeRegistry;
-use std::{path::PathBuf, sync::Arc};
-use tauri::Manager;
+use std::{marker::PhantomData, path::PathBuf, sync::Arc};
+use tauri::{AppHandle as TauriAppHandle, Manager, Runtime as TauriRuntime};
 
 use crate::{
-    app::Window,
     configuration::ConfigurationService,
     dirs,
-    extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
     theme::ThemeService,
+    window::Window,
     workspace::WorkspaceService,
 };
 
-pub struct WindowBuilder<R: AppRuntime> {
+pub const MIN_WINDOW_WIDTH: f64 = 800.0;
+pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
+
+pub struct WindowBuilder {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
-    extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
 
-impl<R: AppRuntime> WindowBuilder<R> {
+impl WindowBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
-        extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     ) -> Self {
         Self {
             fs,
             keyring,
-            extension_points,
             auth_api_client,
         }
     }
 
-    pub async fn build(self, ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> Window<R> {
+    pub async fn build<R: AppRuntime>(
+        self,
+        ctx: &R::AsyncContext,
+        delegate: &AppDelegate<R>,
+        url: &str,
+        label: &str,
+        title: &str,
+        inner_size: (f64, f64),
+        position: (f64, f64),
+    ) -> joinerror::Result<Window<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
@@ -107,12 +116,11 @@ impl<R: AppRuntime> WindowBuilder<R> {
                 .await
                 .expect("Failed to create workspace service");
 
-        let extension_service =
-            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
-                .await
-                .expect("Failed to create extension service");
+        let webview = create_window(&tao_handle, url, label, title, inner_size, position)
+            .join_err::<()>("failed to create webview window")?;
 
-        Window {
+        Ok(Window {
+            webview,
             app_handle: tao_handle.clone(),
             session_service,
             log_service,
@@ -121,9 +129,8 @@ impl<R: AppRuntime> WindowBuilder<R> {
             theme_service,
             profile_service,
             configuration_service,
-            extension_service,
             tracked_cancellations: Default::default(),
-        }
+        })
     }
 
     async fn create_user_dirs_if_not_exists(&self, user_dir: PathBuf) {
@@ -144,4 +151,49 @@ impl<R: AppRuntime> WindowBuilder<R> {
                 .expect("Failed to create app directories");
         }
     }
+}
+
+pub fn create_window<R: TauriRuntime>(
+    app_handle: &TauriAppHandle<R>,
+    url: &str,
+    label: &str,
+    title: &str,
+    inner_size: (f64, f64),
+    position: (f64, f64),
+) -> joinerror::Result<tauri::WebviewWindow<R>> {
+    let win_builder =
+        tauri::WebviewWindowBuilder::new(app_handle, label, tauri::WebviewUrl::App(url.into()))
+            .title(title)
+            .center()
+            .resizable(true)
+            .visible(false)
+            .disable_drag_drop_handler()
+            .inner_size(inner_size.0, inner_size.1)
+            .position(position.0, position.1)
+            .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
+            .zoom_hotkeys_enabled(true);
+
+    #[cfg(target_os = "windows")]
+    let win_builder = win_builder
+        .transparent(false)
+        .shadow(true)
+        .decorations(false);
+
+    #[cfg(target_os = "macos")]
+    let win_builder = win_builder
+        .hidden_title(true)
+        .title_bar_style(tauri::TitleBarStyle::Overlay)
+        .transparent(false)
+        .decorations(true);
+
+    let webview_window = win_builder.build()?;
+
+    if let Err(err) = webview_window.set_focus() {
+        // warn!(
+        //     "Failed to set focus to window {} when creating it: {}",
+        //     input.label, err
+        // );
+    }
+
+    Ok(webview_window)
 }

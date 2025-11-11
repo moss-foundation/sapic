@@ -1,5 +1,4 @@
 pub mod api;
-pub mod app;
 pub mod builder;
 pub mod command;
 pub mod configuration;
@@ -11,6 +10,7 @@ pub mod models;
 mod profile;
 mod session;
 pub mod theme;
+pub mod window;
 mod workspace;
 
 #[cfg(feature = "integration-tests")]
@@ -21,11 +21,11 @@ mod storage;
 #[macro_use]
 extern crate derive_more;
 
-pub use app::Window;
 pub use builder::WindowBuilder;
 use moss_applib::AppRuntime;
 use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::{Workspace, models::primitives::WorkspaceId};
+pub use window::Window;
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))

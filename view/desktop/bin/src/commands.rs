@@ -19,7 +19,7 @@ use moss_applib::{
 use moss_project::Project;
 use moss_workspace::models::primitives::ProjectId;
 use primitives::Options;
-use sapic_window::{ActiveWorkspace, app::Window};
+use sapic_window::{ActiveWorkspace, window::Window};
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
 

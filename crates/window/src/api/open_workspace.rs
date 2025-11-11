@@ -3,8 +3,8 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 
 use crate::{
-    app::Window,
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

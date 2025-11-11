@@ -4,11 +4,11 @@ pub mod shared;
 
 use moss_user::models::primitives::AccountKind;
 use window::{
-    app::OnWindowReadyOptions,
     models::{
         operations::{CreateProfileInput, UpdateProfileInput},
         types::AddAccountParams,
     },
+    window::OnWindowReadyOptions,
 };
 
 use crate::shared::{TEST_GITHUB_USERNAME, TEST_GITLAB_USERNAME, set_up_test_app};

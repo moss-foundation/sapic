@@ -2,9 +2,9 @@ use chrono::NaiveDate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::Window,
     logging::LogFilter,
     models::operations::{ListLogsInput, ListLogsOutput},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {
