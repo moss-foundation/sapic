@@ -1,18 +1,7 @@
 import { Orientation, SerializedDockview } from "moss-tabs";
 
-import { LayoutStateOutput } from "@/hooks/sharedStorage/layout/types";
-
-export enum ACTIVITYBAR_POSITION {
-  DEFAULT = "DEFAULT",
-  TOP = "TOP",
-  BOTTOM = "BOTTOM",
-  HIDDEN = "HIDDEN",
-}
-
-export enum SIDEBAR_POSITION {
-  LEFT = "LEFT",
-  RIGHT = "RIGHT",
-}
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
+import { LayoutStateOutput } from "@/types/layout";
 
 export const defaultSidebarPanelState = {
   position: SIDEBAR_POSITION.LEFT,

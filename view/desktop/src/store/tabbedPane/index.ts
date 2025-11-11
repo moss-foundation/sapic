@@ -2,7 +2,7 @@ import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import { emptyGridState } from "@/constants/layoutStates";
+import { emptyGridState } from "@/defaults/layout";
 import { Icons } from "@/lib/ui";
 import { tabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
 

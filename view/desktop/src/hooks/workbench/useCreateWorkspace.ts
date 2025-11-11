@@ -1,4 +1,4 @@
-import { defaultLayoutState } from "@/constants/layoutStates";
+import { defaultLayoutState } from "@/defaults/layout";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import {
   CreateWorkspaceInput,

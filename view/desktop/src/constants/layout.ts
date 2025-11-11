@@ -1,0 +1,11 @@
+export enum ACTIVITYBAR_POSITION {
+  DEFAULT = "DEFAULT",
+  TOP = "TOP",
+  BOTTOM = "BOTTOM",
+  HIDDEN = "HIDDEN",
+}
+
+export enum SIDEBAR_POSITION {
+  LEFT = "LEFT",
+  RIGHT = "RIGHT",
+}

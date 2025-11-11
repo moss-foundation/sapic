@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { renderWithQueryClient, screen } from "@/components/ActivityBar/tests/test-utils";
-import { ACTIVITYBAR_POSITION, emptyGridState } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION } from "@/constants/layout";
+import { emptyGridState } from "@/defaults/layout";
 import { useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";

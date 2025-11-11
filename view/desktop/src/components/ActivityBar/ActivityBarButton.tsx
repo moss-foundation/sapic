@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";

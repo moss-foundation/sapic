@@ -1,5 +1,5 @@
 import { ActionButton } from "@/components/ActionButton";
-import { SIDEBAR_POSITION } from "@/constants/layoutStates";
+import { SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
@@ -15,6 +15,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
+  //TODO later we should handle the JsonValue differently
   const sideBarPosition = appState?.configuration.contents.sideBarPosition as SIDEBAR_POSITION;
 
   const toggleSidebar = () => {

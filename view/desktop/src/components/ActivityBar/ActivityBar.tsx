@@ -1,4 +1,4 @@
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
 
@@ -8,6 +8,7 @@ import { ActivityBarLastItems } from "./ActivityBarLastItems";
 export const ActivityBar = () => {
   const { data: appState } = useDescribeApp();
 
+  //TODO later we should handle the JsonValue differently
   const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
   const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
 

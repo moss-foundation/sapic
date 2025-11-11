@@ -2,7 +2,7 @@ import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef } from "react";
 
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
@@ -24,6 +24,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
+  //TODO later we should handle the JsonValue differently
   const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
   const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
 

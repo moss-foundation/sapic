@@ -1,5 +1,5 @@
 import SelectOutlined from "@/components/SelectOutlined";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import { MenuItemProps } from "@/utils/renderActionMenuItem";

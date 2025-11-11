@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutStates";
+import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";

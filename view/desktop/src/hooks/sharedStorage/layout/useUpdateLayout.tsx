@@ -1,12 +1,12 @@
 import { toMerged } from "es-toolkit";
 import { SerializedDockview } from "moss-tabs";
 
-import { defaultLayoutState } from "@/constants/layoutStates";
+import { defaultLayoutState } from "@/defaults/layout";
 import { sharedStorageService } from "@/lib/services/sharedStorage";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { LayoutStateInput, LayoutStateOutput } from "./types";
+import { LayoutStateInput, LayoutStateOutput } from "../../../types/layout";
 import { USE_GET_LAYOUT_QUERY_KEY, useGetLayout } from "./useGetLayout";
 
 export const USE_UPDATE_LAYOUT_MUTATION_KEY = "updateLayout";
