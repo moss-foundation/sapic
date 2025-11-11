@@ -57,7 +57,8 @@ impl WindowBuilder {
         title: &str,
         inner_size: (f64, f64),
         position: (f64, f64),
-        title_bar_style: TitleBarStyle,
+
+        #[cfg(target_os = "macos")] title_bar_style: TitleBarStyle,
     ) -> joinerror::Result<Window<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
@@ -171,7 +172,7 @@ pub fn create_window<R: TauriRuntime>(
     title: &str,
     inner_size: (f64, f64),
     position: (f64, f64),
-    title_bar_style: TitleBarStyle,
+    #[cfg(target_os = "macos")] title_bar_style: TitleBarStyle,
 ) -> joinerror::Result<tauri::WebviewWindow<R>> {
     let win_builder =
         tauri::WebviewWindowBuilder::new(app_handle, label, tauri::WebviewUrl::App(url.into()))
