@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import AIDemo from "@/ai/AIDemo.tsx";
+
 import { PageContent } from "@/components";
 import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import GitTest from "@/git/GitTest.tsx";
+import AIDemo from "@/components/AIDemo";
+import GitTest from "@/components/GitTest";
 import { useActivityRouter } from "@/hooks/app";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { ExtensionInfo } from "@repo/moss-extension";
+import { AccountKind } from "@repo/moss-user";
 import {
   AddAccountParams,
   ListExtensionsOutput,
@@ -13,10 +16,8 @@ import {
   ON_DID_APPEND_LOG_ENTRY_CHANNEL,
   UpdateProfileInput,
 } from "@repo/window";
-import { AccountKind } from "@repo/moss-user";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import { ExtensionInfo } from "@repo/moss-extension";
 
 interface CreateProfileData {
   name: string;
