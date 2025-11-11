@@ -1,18 +1,17 @@
-import { lazy, StrictMode, Suspense } from "react";
+import "@/app/i18n";
+
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
-import "@/app/i18n";
 import "./assets/index.css";
-
-import { scan } from "react-scan"; // must be imported before React and React DOM
 
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { RouterProvider } from "@tanstack/react-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
-import App from "./app";
-import { PageLoader } from "./components";
+import { router } from "./routes/router";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
@@ -31,20 +30,8 @@ const queryClient = new QueryClient({
     },
   },
 });
-
-if (import.meta.env.MODE === "development") {
-  const script = document.createElement("script");
-  script.src = "http://localhost:8097";
-  document.head.appendChild(script);
-}
-
-scan({
-  enabled: import.meta.env.MODE === "development",
-});
-
-const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));
+// const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));
 const rootElement = document.getElementById("root") as HTMLElement;
-
 if (rootElement) {
   // Prevent window flickering on startup by only showing the window after the webview is ready
   getCurrentWindow()
@@ -54,11 +41,8 @@ if (rootElement) {
         <StrictMode>
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <Suspense fallback={<PageLoader className="bg-red-300" />}>
-              <App>
-                <Workbench />
-              </App>
-            </Suspense>
+            <h1>Welcome.tsx</h1>
+            <RouterProvider router={router} />
           </QueryClientProvider>
         </StrictMode>
       )

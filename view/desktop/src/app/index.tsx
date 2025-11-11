@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 
+import { Outlet, useParams, useSearch } from "@tanstack/react-router";
+
 import Providers from "./Providers";
 
 interface AppProps {
@@ -7,7 +9,17 @@ interface AppProps {
 }
 
 const App = ({ children }: AppProps) => {
-  return <Providers>{children}</Providers>;
+  const params = useParams({ strict: false });
+  const search = useSearch({ strict: false });
+  console.log({
+    params,
+    search,
+  });
+  return (
+    <Providers>
+      <Outlet />
+    </Providers>
+  );
 };
 
 export default App;

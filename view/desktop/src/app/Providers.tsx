@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
 import ErrorBoundary from "@/app/ErrorBoundary";
+import { Workbench } from "@/components";
 
 import { ActivityRouterProvider } from "./ActivityRouterProvider";
 import { LoadingBoundary } from "./LoadingBoundary";
@@ -11,7 +12,9 @@ const Providers = ({ children }: { children: ReactNode }) => {
     <ErrorBoundary>
       <LoadingBoundary>
         <ActivityRouterProvider>
-          <NotificationsProvider>{children}</NotificationsProvider>
+          <NotificationsProvider>
+            <Workbench />
+          </NotificationsProvider>
         </ActivityRouterProvider>
       </LoadingBoundary>
     </ErrorBoundary>

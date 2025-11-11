@@ -7,6 +7,7 @@ import { useModal } from "@/hooks/useModal";
 import { useDeleteWorkspace } from "@/hooks/workbench";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useParams, useSearch } from "@tanstack/react-router";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
@@ -78,19 +79,23 @@ export const HeadBar = () => {
     }
   };
 
+  const params = useParams({ strict: false });
+  console.log("params", params);
+  const search = useSearch({ strict: false });
+  console.log("search", search);
   return (
     <WorkspaceMenuProvider>
       <header
         data-tauri-drag-region
         className={cn(
-          "header background-(--moss-secondary-background) flex h-full w-screen items-center justify-between border-b border-(--moss-border)"
+          "header background-(--moss-secondary-background) border-(--moss-border) flex h-full w-screen items-center justify-between border-b"
         )}
       >
         {os === "macos" && <Controls os={os} />}
 
         <div
           className={cn("relative flex h-full w-full items-center justify-between overflow-clip", {
-            "mr-2 pr-[4px] pl-2.5": os === "macos",
+            "mr-2 pl-2.5 pr-[4px]": os === "macos",
             "ml-[7px]": os === "windows" || os === "linux",
           })}
           style={{ overflowClipMargin: 4 }}
@@ -101,6 +106,9 @@ export const HeadBar = () => {
             handleWorkspaceMenuAction={handleWorkspaceMenuAction}
             os={os}
           />
+
+          <pre>Params:{JSON.stringify(params, null, 2)}</pre>
+          <pre>Search:{JSON.stringify(search, null, 2)}</pre>
 
           <HeadBarRightItems os={os} />
         </div>
