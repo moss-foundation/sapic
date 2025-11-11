@@ -35,7 +35,7 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
     models::{
-        primitives::ProjectId,
+        primitives::{ProjectId, WorkspaceId},
         types::{
             CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
             UpdateProjectParams,
@@ -96,7 +96,7 @@ struct ServiceState<R: AppRuntime> {
 pub struct ProjectService<R: AppRuntime> {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    storage_scope: StorageScope,
+    workspace_id: WorkspaceId,
     state: Arc<RwLock<ServiceState<R>>>,
     app_delegate: AppDelegate<R>,
     on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
@@ -109,7 +109,7 @@ impl<R: AppRuntime> ProjectService<R> {
         app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage_scope: StorageScope,
+        workspace_id: WorkspaceId,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         active_profile: &Arc<Profile<R>>,
         on_project_did_delete_emitter: EventEmitter<OnDidDeleteProject>,
@@ -119,8 +119,12 @@ impl<R: AppRuntime> ProjectService<R> {
 
         let storage = <dyn Storage>::global(app_delegate);
 
-        let expanded_items = if let Ok(Some(expanded_items)) =
-            storage.get(storage_scope.clone(), KEY_EXPANDED_ITEMS).await
+        let expanded_items = if let Ok(Some(expanded_items)) = storage
+            .get(
+                StorageScope::Workspace(workspace_id.inner()),
+                KEY_EXPANDED_ITEMS,
+            )
+            .await
         {
             let items: HashSet<ProjectId> =
                 serde_json::from_value(expanded_items).unwrap_or_else(|err| {
@@ -137,7 +141,7 @@ impl<R: AppRuntime> ProjectService<R> {
             app_delegate,
             &abs_path,
             &fs,
-            storage_scope.clone(),
+            workspace_id.clone(),
             active_profile,
         )
         .await
@@ -150,7 +154,7 @@ impl<R: AppRuntime> ProjectService<R> {
         Ok(Self {
             abs_path,
             fs,
-            storage_scope,
+            workspace_id,
             state: Arc::new(RwLock::new(ServiceState {
                 projects,
                 expanded_items,
@@ -348,7 +352,10 @@ impl<R: AppRuntime> ProjectService<R> {
             ];
 
             if let Err(e) = storage
-                .put_batch(self.storage_scope.clone(), &batch_input)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
@@ -478,7 +485,10 @@ impl<R: AppRuntime> ProjectService<R> {
             ];
 
             if let Err(e) = storage
-                .put_batch(self.storage_scope.clone(), &batch_input)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
@@ -543,7 +553,10 @@ impl<R: AppRuntime> ProjectService<R> {
         let storage = <dyn Storage>::global(&self.app_delegate);
 
         if let Err(e) = storage
-            .remove_batch_by_prefix(self.storage_scope.clone(), &key_project(id))
+            .remove_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &key_project(id),
+            )
             .await
         {
             session::warn!(format!(
@@ -554,7 +567,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
         if let Err(e) = storage
             .put(
-                self.storage_scope.clone(),
+                StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_EXPANDED_ITEMS,
                 serde_json::to_value(&state_lock.expanded_items)?,
             )
@@ -631,7 +644,10 @@ impl<R: AppRuntime> ProjectService<R> {
         }
 
         if let Err(e) = storage
-            .put_batch(self.storage_scope.clone(), &batch_input)
+            .put_batch(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -804,7 +820,10 @@ impl<R: AppRuntime> ProjectService<R> {
             ];
 
             if let Err(e) = storage
-                .put_batch(self.storage_scope.clone(), &batch_input)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
@@ -919,7 +938,10 @@ impl<R: AppRuntime> ProjectService<R> {
             ];
 
             if let Err(e) = storage
-                .put_batch(self.storage_scope.clone(), &batch_input)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
@@ -1005,7 +1027,7 @@ async fn restore_projects<R: AppRuntime>(
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
-    storage_scope: StorageScope,
+    workspace_id: WorkspaceId,
     active_profile: &Arc<Profile<R>>,
 ) -> joinerror::Result<HashMap<ProjectId, ProjectItem<R>>> {
     if !abs_path.exists() {
@@ -1129,7 +1151,10 @@ async fn restore_projects<R: AppRuntime>(
     let storage = <dyn Storage>::global(app_delegate);
 
     let metadata = storage
-        .get_batch_by_prefix(storage_scope, KEY_PROJECT_PREFIX)
+        .get_batch_by_prefix(
+            StorageScope::Workspace(workspace_id.inner()),
+            KEY_PROJECT_PREFIX,
+        )
         .await
         .unwrap_or_else(|e| {
             session::warn!(format!(

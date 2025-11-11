@@ -31,7 +31,7 @@ use crate::{
     dirs,
     errors::ErrorNotFound,
     models::{
-        primitives::ProjectId,
+        primitives::{ProjectId, WorkspaceId},
         types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     },
     storage::{
@@ -104,7 +104,7 @@ where
     // To avoid updating the environment crate, which is used also by moss-project
     storage_old: Arc<StorageService<R>>,
     storage: Arc<dyn Storage>,
-    storage_scope: StorageScope,
+    workspace_id: WorkspaceId,
 }
 
 impl<R> EnvironmentService<R>
@@ -117,7 +117,7 @@ where
         fs: Arc<dyn FileSystem>,
         storage_old: Arc<StorageService<R>>,
         storage: Arc<dyn Storage>,
-        storage_scope: StorageScope,
+        workspace_id: WorkspaceId,
         sources: FxHashMap<Arc<String>, PathBuf>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
@@ -135,7 +135,7 @@ where
             state,
             storage_old,
             storage,
-            storage_scope,
+            workspace_id,
         })
     }
 
@@ -189,7 +189,10 @@ where
 
         if let Err(e) = self
             .storage
-            .put_batch(self.storage_scope.clone(), &batch_input)
+            .put_batch(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -212,7 +215,10 @@ where
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
         let expanded_groups_result = self
             .storage
-            .get(self.storage_scope.clone(), KEY_EXPANDED_ENVIRONMENT_GROUPS)
+            .get(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_EXPANDED_ENVIRONMENT_GROUPS,
+            )
             .await;
 
         let expanded_groups: HashSet<_> = match expanded_groups_result {
@@ -234,7 +240,10 @@ where
 
         let metadata = self
             .storage
-            .get_batch_by_prefix(self.storage_scope.clone(), KEY_ENVIRONMENT_GROUP_PREFIX)
+            .get_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ENVIRONMENT_GROUP_PREFIX,
+            )
             .await
             .unwrap_or_else(|e| {
                 session::warn!(format!("failed to get environment group metadata: {}", e));
@@ -280,7 +289,7 @@ where
                 sources: sources_clone,
                 storage_old,
                 storage: storage_clone.clone(),
-                storage_scope: self.storage_scope.clone(),
+                workspace_id: self.workspace_id.clone(),
                 tx,
             };
 
@@ -294,7 +303,7 @@ where
             };
 
             let active_environments_result = storage.get(
-                self.storage_scope.clone(),
+                StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ACTIVE_ENVIRONMENTS
             ).await;
 
@@ -381,7 +390,7 @@ where
             if let Err(e) = self
                 .storage
                 .put(
-                    self.storage_scope.clone(),
+                    StorageScope::Workspace(self.workspace_id.inner()),
                     &key_environment_order(&params.id),
                     serde_json::to_value(order)?,
                 )
@@ -459,7 +468,7 @@ where
         if let Err(e) = self
             .storage
             .put(
-                self.storage_scope.clone(),
+                StorageScope::Workspace(self.workspace_id.inner()),
                 &key_environment_order(&desc.id),
                 serde_json::to_value(params.order)?,
             )
@@ -497,7 +506,10 @@ where
 
             if let Err(e) = self
                 .storage
-                .put_batch(self.storage_scope.clone(), &batch_input)
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &batch_input,
+                )
                 .await
             {
                 session::warn!(format!(
@@ -557,7 +569,10 @@ where
             // Clean all the data related to the deleted environment
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(self.storage_scope.clone(), &key_environment(id))
+                .remove_batch_by_prefix(
+                    StorageScope::Workspace(self.workspace_id.inner()),
+                    &key_environment(id),
+                )
                 .await
             {
                 session::warn!(format!(
@@ -570,7 +585,7 @@ where
                 if let Err(e) = self
                     .storage
                     .put(
-                        self.storage_scope.clone(),
+                        StorageScope::Workspace(self.workspace_id.inner()),
                         KEY_ACTIVE_ENVIRONMENTS,
                         serde_json::to_value(&state.active_environments)?,
                     )
@@ -660,7 +675,7 @@ where
         if let Err(e) = self
             .storage
             .put(
-                self.storage_scope.clone(),
+                StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ACTIVE_ENVIRONMENTS,
                 serde_json::to_value(&state.active_environments)?,
             )
@@ -688,7 +703,7 @@ struct EnvironmentSourceScanner<R: AppRuntime> {
     // FIXME: Remove old storage when refactoring moss-environment
     storage_old: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
     storage: Arc<dyn Storage>,
-    storage_scope: StorageScope,
+    workspace_id: WorkspaceId,
     tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
 }
 
@@ -703,7 +718,10 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     async fn scan(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
         let data = self
             .storage
-            .get_batch_by_prefix(self.storage_scope.clone(), KEY_ENVIRONMENT_PREFIX)
+            .get_batch_by_prefix(
+                StorageScope::Workspace(self.workspace_id.inner()),
+                KEY_ENVIRONMENT_PREFIX,
+            )
             .await
             .unwrap_or_else(|e| {
                 session::warn!(format!(

@@ -14,7 +14,7 @@ use crate::{
     environment::EnvironmentService,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::ProjectId,
+    models::primitives::{ProjectId, WorkspaceId},
     project::ProjectService,
     storage_old::StorageService,
 };
@@ -44,7 +44,7 @@ pub struct CreateWorkspaceParams {
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     active_profile: Arc<Profile<R>>,
-    storage_scope: StorageScope,
+    workspace_id: WorkspaceId,
 }
 
 #[derive(Clone)]
@@ -64,12 +64,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         active_profile: Arc<Profile<R>>,
-        storage_scope: StorageScope,
+        workspace_id: WorkspaceId,
     ) -> Self {
         Self {
             fs,
             active_profile,
-            storage_scope,
+            workspace_id,
         }
     }
 
@@ -138,7 +138,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
-            self.storage_scope.clone(),
+            self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
             on_did_delete_collection_emitter,
@@ -153,7 +153,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.fs.clone(),
             storage_service_old.clone(),
             <dyn Storage>::global(app_delegate),
-            self.storage_scope.clone(),
+            self.workspace_id.clone(),
             environment_sources,
         )
         .await
@@ -220,7 +220,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
-            self.storage_scope.clone(),
+            self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
             on_did_delete_collection_emitter,
@@ -234,7 +234,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.fs.clone(),
             storage_service_old.clone(),
             <dyn Storage>::global(app_delegate),
-            self.storage_scope.clone(),
+            self.workspace_id.clone(),
             environment_sources,
         )
         .await?
