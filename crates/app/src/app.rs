@@ -103,7 +103,7 @@ impl<R: AppRuntime> App<R> {
             }
             CreateWindowParams::WorkspaceWindow { id, name, .. } => {
                 // (format!("/workspace/{}", id), name.clone())
-                ("index.html".to_string(), name.clone())
+                ("index.html".to_string(), name.to_string())
             }
         };
 
@@ -120,10 +120,6 @@ impl<R: AppRuntime> App<R> {
             title.as_str(),
             (800.0, 600.0),
             (100.0, 100.0),
-            match &params {
-                CreateWindowParams::WelcomeWindow => TitleBarStyle::Visible,
-                CreateWindowParams::WorkspaceWindow { .. } => TitleBarStyle::Overlay,
-            },
         )
         .await?;
         window
