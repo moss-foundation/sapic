@@ -13,7 +13,9 @@ import { ActivityBar } from "../ActivityBar";
 vi.mock("@/store/activityBar");
 vi.mock("@/hooks");
 vi.mock("@/hooks/app/useDescribeApp");
-vi.mock("@/hooks/sharedStorage/layout/useGetLayout");
+vi.mock("@/hooks/workbench/layout/useGetLayout", () => ({
+  useGetLayout: vi.fn(),
+}));
 
 const mockUseActivityBarStore = vi.mocked(useActivityBarStore);
 const mockUseGetLayout = vi.mocked(useGetLayout);
@@ -25,16 +27,8 @@ describe("ActivityBar", () => {
 
     // Set up default mocks
     mockUseActivityBarStore.mockReturnValue({
-      position: ACTIVITYBAR_POSITION.DEFAULT,
       items: [],
-      lastActiveContainerId: null,
-      setPosition: vi.fn(),
       setItems: vi.fn(),
-      getActiveItem: vi.fn(),
-      updateFromWorkspaceState: vi.fn(),
-      setActiveItem: vi.fn(),
-      toWorkspaceState: vi.fn(),
-      resetToDefaults: vi.fn(),
     });
 
     mockUseGetLayout.mockReturnValue({
@@ -67,16 +61,8 @@ describe("ActivityBar", () => {
     sideBarPositionValue: SidebarPosition = SIDEBAR_POSITION.LEFT
   ) => {
     mockUseActivityBarStore.mockReturnValue({
-      position: activityBarPosition,
       items: [],
-      lastActiveContainerId: null,
-      setPosition: vi.fn(),
       setItems: vi.fn(),
-      getActiveItem: vi.fn(),
-      updateFromWorkspaceState: vi.fn(),
-      setActiveItem: vi.fn(),
-      toWorkspaceState: vi.fn(),
-      resetToDefaults: vi.fn(),
     });
 
     mockUseDescribeApp.mockReturnValue({

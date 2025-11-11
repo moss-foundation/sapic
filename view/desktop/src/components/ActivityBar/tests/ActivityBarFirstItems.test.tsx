@@ -13,7 +13,9 @@ import { ActivityBarFirstItems } from "../ActivityBarFirstItems";
 
 vi.mock("@/store/activityBar");
 vi.mock("@/hooks");
-vi.mock("@/hooks/sharedStorage/layout/useGetLayout");
+vi.mock("@/hooks/workbench/layout/useGetLayout", () => ({
+  useGetLayout: vi.fn(),
+}));
 vi.mock("@atlaskit/pragmatic-drag-and-drop/element/adapter", () => ({
   monitorForElements: vi.fn(),
   draggable: vi.fn(() => () => {}),

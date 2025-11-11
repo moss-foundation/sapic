@@ -7,7 +7,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ActivityBarButton } from "../ActivityBarButton";
 
-vi.mock("@/hooks/sharedStorage/layout/useGetLayout", () => ({
+vi.mock("@/hooks/workbench/layout/useGetLayout", () => ({
   useGetLayout: vi.fn(() => ({
     data: {
       sidebarState: { visible: true },
