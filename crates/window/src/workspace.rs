@@ -18,11 +18,11 @@ use std::{
 };
 
 use moss_storage2::models::primitives::StorageScope;
+use moss_workspace::models::primitives::WorkspaceId;
 use tokio::sync::RwLock;
 
 use crate::{
     ActiveWorkspace, dirs,
-    models::primitives::WorkspaceId,
     storage::{
         KEY_LAST_ACTIVE_WORKSPACE, KEY_WORKSPACE_PREFIX, key_workspace,
         key_workspace_last_opened_at,

@@ -3,22 +3,16 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
 use moss_logging::session;
 use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_workspace::models::primitives::WorkspaceId;
 use std::{collections::HashMap, sync::Arc};
 use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
-    ActiveWorkspace,
-    configuration::ConfigurationService,
-    extension::ExtensionService,
-    language::LanguageService,
-    logging::LogService,
-    models::primitives::{SessionId, WorkspaceId},
-    profile::ProfileService,
-    session::SessionService,
-    storage::KEY_LAST_ACTIVE_WORKSPACE,
-    theme::ThemeService,
-    workspace::WorkspaceService,
+    ActiveWorkspace, configuration::ConfigurationService, extension::ExtensionService,
+    language::LanguageService, logging::LogService, models::primitives::SessionId,
+    profile::ProfileService, session::SessionService, storage::KEY_LAST_ACTIVE_WORKSPACE,
+    theme::ThemeService, workspace::WorkspaceService,
 };
 
 pub struct OnWindowReadyOptions {

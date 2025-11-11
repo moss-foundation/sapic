@@ -4,14 +4,12 @@ use moss_applib::{
     AppRuntime,
     errors::{FailedPrecondition, ValidationResultExt},
 };
+use moss_workspace::models::primitives::WorkspaceId;
 use validator::Validate;
 
 use crate::{
     app::Window,
-    models::{
-        operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
-        primitives::WorkspaceId,
-    },
+    models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
     workspace::WorkspaceItemCreateParams,
 };
 

@@ -1,9 +1,8 @@
 use moss_applib::EventMarker;
 use moss_user::models::primitives::ProfileId;
+use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
-
-use crate::models::primitives::WorkspaceId;
 
 #[derive(Debug, Clone)]
 pub struct OnDidChangeProfile {
