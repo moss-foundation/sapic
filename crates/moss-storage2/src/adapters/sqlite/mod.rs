@@ -9,7 +9,7 @@ use sqlx::{
 use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
 
-use crate::adapters::{Flushable, KeyedStorage, Optimizable, Options};
+use crate::adapters::{Closable, Flushable, KeyedStorage, Optimizable, Options};
 
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 const DEFAULT_IN_MEMORY: bool = false;
@@ -116,15 +116,6 @@ impl SqliteStorage {
         }))
     }
 }
-
-// We need to close the database connections when cleaning up after tests
-#[cfg(feature = "integration-tests")]
-impl SqliteStorage {
-    pub async fn cleanup(&self) {
-        self.pool.close().await;
-    }
-}
-
 #[async_trait]
 impl KeyedStorage for SqliteStorage {
     async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
@@ -477,6 +468,13 @@ impl Optimizable for SqliteStorage {
             .join_err::<()>("VACUUM failed")?;
 
         Ok(())
+    }
+}
+
+#[async_trait]
+impl Closable for SqliteStorage {
+    async fn close(&self) {
+        self.pool.close().await;
     }
 }
 

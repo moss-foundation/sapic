@@ -14,6 +14,7 @@ pub struct Options {
 pub struct Capabilities {
     pub flushable: Option<Arc<dyn Flushable>>,
     pub optimizable: Option<Arc<dyn Optimizable>>,
+    pub closable: Option<Arc<dyn Closable>>,
 }
 
 #[async_trait]
@@ -32,6 +33,13 @@ pub trait Flushable: Send + Sync {
     /// Strong checkpoint intended for shutdown or context switches.
     /// Tries to truncate WAL to minimize startup cost.
     async fn flush(&self) -> joinerror::Result<()>;
+}
+
+#[async_trait]
+pub trait Closable: Send + Sync {
+    /// Close the underlying database connection
+    /// Right now only useful for proper cleanup after tests
+    async fn close(&self);
 }
 
 #[async_trait]

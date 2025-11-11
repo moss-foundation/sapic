@@ -38,6 +38,7 @@ impl WorkspaceStorageBackend {
             let capabilities = Capabilities {
                 flushable: Some(storage.clone()),
                 optimizable: Some(storage.clone()),
+                closable: Some(storage.clone()),
             };
 
             self.capabilities

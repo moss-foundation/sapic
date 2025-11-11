@@ -701,8 +701,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
     async fn scan(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
-        // TODO: make database errors not fail the operation
-
         let data = self
             .storage
             .get_batch_by_prefix(self.storage_scope.clone(), KEY_ENVIRONMENT_PREFIX)

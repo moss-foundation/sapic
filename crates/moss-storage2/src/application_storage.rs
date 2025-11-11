@@ -38,6 +38,7 @@ impl ApplicationStorageBackend {
             let capabilities = Capabilities {
                 flushable: Some(storage.clone()),
                 optimizable: Some(storage.clone()),
+                closable: Some(storage.clone()),
             };
 
             self.capabilities
@@ -61,14 +62,5 @@ impl ApplicationStorageBackend {
             .await;
 
         Ok(storage.clone())
-    }
-}
-
-#[cfg(feature = "integration-tests")]
-impl ApplicationStorageBackend {
-    pub async fn cleanup(&self) {
-        if let Some(storage) = self.storage.get() {
-            storage.cleanup().await;
-        }
     }
 }

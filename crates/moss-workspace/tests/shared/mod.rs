@@ -130,7 +130,7 @@ pub async fn setup_test_workspace() -> (
         let app_storage_clone = app_storage.clone();
         move || {
             Box::pin(async move {
-                app_storage_clone.cleanup().await;
+                app_storage_clone.close().await.unwrap();
                 // Looks like some delay is necessary to release SQLite file handle
                 tokio::time::sleep(Duration::from_millis(100)).await;
                 if let Err(e) = tokio::fs::remove_dir_all(&abs_path_clone).await {

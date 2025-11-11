@@ -103,9 +103,16 @@ pub struct AppStorage {
 
 #[cfg(feature = "integration-tests")]
 impl AppStorage {
-    pub async fn cleanup(&self) {
-        self.application.cleanup().await;
+    pub async fn close(&self) -> joinerror::Result<()> {
+        self.application
+            .capabilities()
+            .await?
+            .closable
+            .expect("Must be closable")
+            .close()
+            .await;
         self.workspaces.write().await.clear();
+        Ok(())
     }
 }
 
