@@ -2,8 +2,8 @@ import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useRemoveLayout } from "../sharedStorage/layout";
 import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
+import { useRemoveLayout } from "./layout";
 import { useCloseWorkspace } from "./useCloseWorkspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 

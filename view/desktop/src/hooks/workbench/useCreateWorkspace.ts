@@ -10,7 +10,7 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
-import { useUpdateLayout } from "../sharedStorage/layout/useUpdateLayout";
+import { useUpdateLayout } from "./layout/useUpdateLayout";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";

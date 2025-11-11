@@ -1,7 +1,7 @@
 import { SerializedDockview } from "moss-tabs";
 import React from "react";
 
-import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 

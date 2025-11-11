@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Icon } from "@/lib/ui/Icon";
 import { ActivityBarItemProps } from "@/store/activityBar";

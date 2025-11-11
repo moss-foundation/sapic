@@ -4,7 +4,7 @@ import { renderWithQueryClient, screen } from "@/components/ActivityBar/tests/te
 import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { emptyGridState } from "@/defaults/layout";
 import { useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";

@@ -1,5 +1,5 @@
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout";
+import { useGetLayout } from "@/hooks/workbench/layout";
 import { ProjectTreesView } from "@/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
 import {

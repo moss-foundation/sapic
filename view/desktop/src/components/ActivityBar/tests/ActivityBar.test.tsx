@@ -4,7 +4,7 @@ import { renderWithQueryClient } from "@/components/ActivityBar/tests/test-utils
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { emptyGridState } from "@/defaults/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useActivityBarStore } from "@/store/activityBar";
 import { ActivitybarPosition, SidebarPosition } from "@repo/moss-workspace";
 

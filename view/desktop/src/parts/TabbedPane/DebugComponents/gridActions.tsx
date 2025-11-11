@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useTabbedPaneStore } from "@/store/tabbedPane";

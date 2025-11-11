@@ -1,8 +1,8 @@
 import { ActionButton } from "@/components/ActionButton";
 import { SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { cn } from "@/utils";
 
 export interface PanelToggleButtonsProps {

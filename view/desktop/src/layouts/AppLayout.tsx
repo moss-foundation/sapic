@@ -4,8 +4,8 @@ import { ReactNode, useEffect, useRef } from "react";
 import { ActivityBar, BottomPane, Sidebar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/sharedStorage/layout/useUpdateLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 
 import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
 import TabbedPane from "../parts/TabbedPane/TabbedPane";

@@ -2,7 +2,7 @@ import { useEffect } from "react";
 
 import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
 import { cn } from "@/utils";
 import { swapListById } from "@/utils/swapListById";

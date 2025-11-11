@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent, useState } from "react";
 
 import { PageLoader } from "@/components";
 import { useDescribeApp, useDescribeColorTheme } from "@/hooks";
-import { useGetLayout } from "@/hooks/sharedStorage/layout/useGetLayout";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 
 import { initializeI18n } from "./i18n";
 
