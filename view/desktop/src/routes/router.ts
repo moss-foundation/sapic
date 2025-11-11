@@ -1,11 +1,7 @@
 // Create a new router instance
 import App from "@/app";
 import NotFound from "@/app/NotFound";
-import { createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
-
-const rootRoute = createRootRoute({
-  notFoundComponent: NotFound,
-});
+import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -19,20 +15,17 @@ const welcomeRoute = createRoute({
   component: App,
 });
 
-const workspaceRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/workspace.html",
-  component: App,
-});
+const rootRoute = createRootRoute({ notFoundComponent: NotFound });
 
 const workspaceIdRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/workspace.html/$workspaceId",
+  path: "/$workspaceId",
   component: App,
 });
 
 export const router = createRouter({
-  routeTree: rootRoute.addChildren([indexRoute, welcomeRoute, workspaceRoute, workspaceIdRoute]),
+  routeTree: rootRoute.addChildren([indexRoute, welcomeRoute, workspaceIdRoute]),
+  history: createHashHistory(),
 });
 
 // Register the router instance for type safety
