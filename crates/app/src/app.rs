@@ -99,11 +99,11 @@ impl<R: AppRuntime> App<R> {
 
         let (url, title) = match &params {
             CreateWindowParams::WelcomeWindow => {
-                ("welcomeIndex.html".to_string(), "Welcome".to_string())
+                ("welcome.html".to_string(), "Welcome".to_string())
             }
             CreateWindowParams::WorkspaceWindow { id, name, .. } => {
                 // (format!("/workspace/{}", id), name.clone())
-                ("index.html".to_string(), name.to_string())
+                (format!("workspace.html?id={}", id), name.to_string())
             }
         };
 
