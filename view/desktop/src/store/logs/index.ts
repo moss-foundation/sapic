@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { LogEntryInfo } from "@repo/moss-app";
+
+import { LogEntryInfo } from "@repo/window";
 
 interface LogsStore {
   logs: LogEntryInfo[];
