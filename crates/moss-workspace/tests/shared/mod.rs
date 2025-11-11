@@ -48,7 +48,6 @@ pub async fn setup_test_workspace() -> (
     AppDelegate<MockAppRuntime>,
     Workspace<MockAppRuntime>,
     CleanupFn,
-    WorkspaceId,
 ) {
     dotenvy::dotenv().ok();
 
@@ -141,11 +140,11 @@ pub async fn setup_test_workspace() -> (
 
     // Add workspace storage
     <dyn Storage>::global(&app_delegate)
-        .add_workspace(workspace_id.inner())
+        .add_workspace(workspace.id().inner())
         .await
         .unwrap();
 
-    (ctx, app_delegate, workspace, cleanup_fn, workspace_id)
+    (ctx, app_delegate, workspace, cleanup_fn)
 }
 
 // Suppress false warning

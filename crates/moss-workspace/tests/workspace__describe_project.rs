@@ -16,7 +16,7 @@ mod shared;
 #[ignore]
 #[tokio::test]
 async fn describe_project_with_repository() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let account_id = ctx
         .value::<AccountId>("account_id")

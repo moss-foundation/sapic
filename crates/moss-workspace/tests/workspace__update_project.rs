@@ -12,7 +12,7 @@ use moss_workspace::models::{
 
 #[tokio::test]
 async fn rename_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let old_project_name = random_project_name();
     let create_project_output = workspace
@@ -62,7 +62,7 @@ async fn rename_project_success() {
 
 #[tokio::test]
 async fn rename_project_empty_name() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let old_project_name = random_project_name();
     let create_project_output = workspace
@@ -105,7 +105,7 @@ async fn rename_project_empty_name() {
 
 #[tokio::test]
 async fn rename_project_unchanged() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let old_project_name = random_project_name();
     let create_project_output = workspace
@@ -148,7 +148,7 @@ async fn rename_project_unchanged() {
 
 #[tokio::test]
 async fn rename_project_nonexistent_id() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Use a random ID that doesn't exist
     let nonexistent_id = ProjectId::new();
@@ -176,7 +176,7 @@ async fn rename_project_nonexistent_id() {
 
 #[tokio::test]
 async fn update_project_new_icon() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let project_name = random_project_name();
     let id = workspace
         .create_project(
@@ -225,7 +225,7 @@ async fn update_project_new_icon() {
 
 #[tokio::test]
 async fn update_project_remove_icon() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let project_name = random_project_name();
 
     let icon_path = workspace.abs_path().join("test_icon.png");

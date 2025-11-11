@@ -12,7 +12,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn describe_layout_parts_state_empty() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let describe_state_result = workspace.describe_workspace(&ctx).await;
 
@@ -31,7 +31,7 @@ async fn describe_layout_parts_state_empty() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_sidebar_only() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up only the sidebar state
     let sidebar_state = SidebarPartStateInfo {
@@ -75,7 +75,7 @@ async fn describe_layout_parts_state_sidebar_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_panel_only() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up only the panel state
     let panel_state = PanelPartStateInfo {
@@ -117,7 +117,7 @@ async fn describe_layout_parts_state_panel_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_editor_only() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Since EditorPartStateInfo is being removed, this test now just checks
     // that editor state is None when no editor state is set
@@ -136,7 +136,7 @@ async fn describe_layout_parts_state_editor_only() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_all() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // Set up sidebar and panel states (no editor state since it's being removed)
     let sidebar_state = SidebarPartStateInfo {
@@ -202,7 +202,7 @@ async fn describe_layout_parts_state_all() {
 
 #[tokio::test]
 async fn describe_layout_parts_state_after_update() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     // First set sidebar and panel states (no editor state since it's being removed)
     let initial_sidebar_state = SidebarPartStateInfo {

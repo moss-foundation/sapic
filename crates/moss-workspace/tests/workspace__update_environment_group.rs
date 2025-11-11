@@ -13,7 +13,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn update_environment_group_expand() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_project_name();
     let collection_id = workspace
@@ -98,7 +98,7 @@ async fn update_environment_group_expand() {
 
 #[tokio::test]
 async fn update_environment_group_order() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let project_name = random_project_name();
     let project_id = workspace
         .create_project(

@@ -48,7 +48,7 @@ async fn test_stream_environments<R: AppRuntime>(
 
 #[tokio::test]
 async fn activate_environment_global() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -90,7 +90,7 @@ async fn activate_environment_global() {
 
 #[tokio::test]
 async fn activate_environment_collection() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let collection_name = random_project_name();
     let collection_id = workspace
@@ -152,7 +152,7 @@ async fn activate_environment_collection() {
 
 #[tokio::test]
 async fn activate_environment_currently_active() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
@@ -203,7 +203,7 @@ async fn activate_environment_currently_active() {
 // Activating environments for any group (including global) should not affect other groups
 #[tokio::test]
 async fn activate_environment_groups_isolation() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
     let collection_name = random_project_name();
     let collection_id = workspace
         .create_project(
@@ -274,7 +274,7 @@ async fn activate_environment_groups_isolation() {
 
 #[tokio::test]
 async fn activate_environment_nonexistent() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let result = workspace
         .activate_environment(
             &ctx,

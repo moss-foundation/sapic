@@ -176,6 +176,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         .await;
 
         Ok(Workspace {
+            id: self.workspace_id,
             abs_path: params.abs_path,
             edit,
             layout_service,
@@ -256,6 +257,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         .await;
 
         Ok(Workspace {
+            id: self.workspace_id,
             abs_path: params.abs_path,
             edit,
             layout_service,

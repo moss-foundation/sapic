@@ -18,7 +18,7 @@ use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_output = workspace
@@ -56,7 +56,7 @@ async fn delete_project_success() {
     let project_prefix = key_project(&id);
     let list_result = storage
         .get_batch_by_prefix(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             &project_prefix,
         )
         .await
@@ -66,7 +66,7 @@ async fn delete_project_success() {
     // Check that expanded_items no longer contains the deleted project
     let expanded_items_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
         .await
@@ -80,7 +80,7 @@ async fn delete_project_success() {
 
 #[tokio::test]
 async fn delete_project_nonexistent_id() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let id = workspace
@@ -120,7 +120,7 @@ async fn delete_project_nonexistent_id() {
 
 #[tokio::test]
 async fn delete_project_fs_already_deleted() {
-    let (ctx, app_delegate, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let project_name = random_project_name();
     let create_project_output = workspace

@@ -23,7 +23,7 @@ mod shared;
 #[tokio::test]
 pub async fn export_project_success() {
     // Create an archive file from a project and import it back
-    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let destination = workspace.abs_path().to_path_buf();
     let project_name = random_project_name();
@@ -95,7 +95,7 @@ pub async fn export_project_success() {
     // Check order was stored
     let order_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             &key_project_order(&id),
         )
         .await
@@ -107,7 +107,7 @@ pub async fn export_project_success() {
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
         .await

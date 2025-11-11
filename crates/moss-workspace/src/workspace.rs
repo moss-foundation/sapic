@@ -20,7 +20,7 @@ use crate::{
     environment::EnvironmentService,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::ProjectId,
+    models::primitives::{ProjectId, WorkspaceId},
     project::ProjectService,
     storage_old::StorageService,
 };
@@ -60,6 +60,7 @@ pub trait AnyWorkspace<R: AppRuntime> {
 }
 
 pub struct Workspace<R: AppRuntime> {
+    pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile<R>>,
@@ -122,6 +123,9 @@ impl<R: AppRuntime> Workspace<R> {
 }
 
 impl<R: AppRuntime> Workspace<R> {
+    pub fn id(&self) -> WorkspaceId {
+        self.id.clone()
+    }
     pub fn abs_path(&self) -> &Path {
         &self.abs_path
     }

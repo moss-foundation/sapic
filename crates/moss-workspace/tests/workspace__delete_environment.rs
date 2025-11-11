@@ -26,7 +26,7 @@ use tauri::ipc::Channel;
 mod shared;
 #[tokio::test]
 async fn delete_environment_success() {
-    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     // Create a custom environment with a variable
     let environment_name = random_environment_name();
@@ -110,7 +110,7 @@ async fn delete_environment_success() {
 
     let env_order_result = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&environment_id),
         )
         .await
@@ -142,7 +142,7 @@ async fn delete_environment_success() {
 
 #[tokio::test]
 async fn delete_environment_nonexistent() {
-    let (ctx, _, workspace, cleanup, _) = setup_test_workspace().await;
+    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace
         .delete_environment(

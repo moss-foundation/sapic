@@ -26,7 +26,7 @@ pub mod shared;
 #[ignore]
 #[tokio::test]
 async fn clone_project_success() {
-    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     dotenvy::dotenv().ok();
 
@@ -71,7 +71,7 @@ async fn clone_project_success() {
     // Check order was stored
     let order_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             &key_project_order(&id),
         )
         .await
@@ -83,7 +83,7 @@ async fn clone_project_success() {
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
         .await
@@ -98,7 +98,7 @@ async fn clone_project_success() {
 #[tokio::test]
 async fn import_external_project_success() {
     // Create an external project and import it
-    let (ctx, app_delegate, workspace, cleanup, workspace_id) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let (project_name, external_path) =
         setup_external_project(&ctx, &app_delegate, &workspace).await;
@@ -137,7 +137,7 @@ async fn import_external_project_success() {
     // Check order was stored
     let order_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             &key_project_order(&id),
         )
         .await
@@ -149,7 +149,7 @@ async fn import_external_project_success() {
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
-            StorageScope::Workspace(workspace_id.inner()),
+            StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
         .await
