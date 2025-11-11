@@ -33,5 +33,5 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
     );
   }
 
-  return <TabbedPane mode="auto" />;
+  return <TabbedPane />;
 };

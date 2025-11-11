@@ -1,20 +1,26 @@
-import { useEffect, useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
-import { useDescribeApp, useDescribeColorTheme, useDescribeWorkspaceState } from "@/hooks";
+import { PageLoader } from "@/components";
+import { useDescribeApp, useDescribeColorTheme } from "@/hooks";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 
 import { initializeI18n } from "./i18n";
 
 export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => {
-  const { data: appState, isFetching: isFetchingApp } = useDescribeApp();
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  const { data: appState, isPending: isPendingApp } = useDescribeApp();
+
   const {
     data: colorThemeCss,
-    isSuccess,
-    isFetching: isFetchingTheme,
+    isSuccess: isSuccessTheme,
+    isPending: isPendingTheme,
   } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
     enabled: !!appState?.configuration.contents.colorTheme,
   });
-  const { isFetching: isFetchingWorkspace } = useDescribeWorkspaceState();
+
+  const { isPending: isPendingLayout } = useGetLayout();
 
   const langCode = appState?.configuration.contents.language as string;
 
@@ -23,11 +29,18 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     initializeI18n(langCode);
   }, [langCode]);
 
-  const [isFirstWorkspaceFetch, setIsFirstWorkspaceFetch] = useState(true);
+  const isPending = isPendingApp || isPendingTheme || isPendingLayout;
 
-  const isLoading = isFetchingApp || isFetchingTheme || (isFetchingWorkspace && isFirstWorkspaceFetch);
+  const handleInitializing = useEffectEvent(() => {
+    setIsInitializing(false);
+  });
 
-  if (isSuccess) {
+  useEffect(() => {
+    if (isPending) return;
+    handleInitializing();
+  }, [isPending]);
+
+  if (isSuccessTheme) {
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
 
     if (colorThemeId && colorThemeCss) {
@@ -35,15 +48,11 @@ export const LoadingBoundary = ({ children }: { children: React.ReactNode }) => 
     }
   }
 
-  if (isLoading) {
-    return null;
+  if (isInitializing && isPending) {
+    return <PageLoader className="bg-green-200" />;
+  } else {
+    return <>{children}</>;
   }
-
-  if (isFirstWorkspaceFetch) {
-    setIsFirstWorkspaceFetch(false);
-  }
-
-  return <>{children}</>;
 };
 
 const applyThemeStyles = (id: string, css: string): void => {

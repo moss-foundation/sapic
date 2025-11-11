@@ -22,7 +22,7 @@ export const useStreamProjectResources = (projectId: string) => {
   });
 
   const clearResourcesCacheAndRefetch = () => {
-    queryClient.resetQueries({ queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY] });
+    queryClient.resetQueries({ queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, projectId] });
   };
 
   return {

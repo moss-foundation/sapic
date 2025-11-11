@@ -1,11 +1,11 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { ListWorkspacesOutput } from "@repo/window";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_WORKSPACES_QUERY_KEY = "listWorkspaces";
 
 const listWorkspacesFn = async (): Promise<ListWorkspacesOutput> => {
-  const result = await invokeTauriIpc<ListWorkspacesOutput>("list_workspaces");
+  const result = await workspaceService.listWorkspaces();
 
   if (result.status === "error") {
     throw new Error(String(result.error));

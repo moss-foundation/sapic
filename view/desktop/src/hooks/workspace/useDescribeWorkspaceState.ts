@@ -4,6 +4,9 @@ import { useQuery } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "./derived/useActiveWorkspace";
 
+/**
+ * @deprecated we now use shared storage to get layouts
+ */
 export const USE_DESCRIBE_WORKSPACE_STATE_QUERY_KEY = "describeWorkspaceState";
 
 const describeWorkspaceStateFn = async (): Promise<DescribeWorkspaceOutput> => {
@@ -20,6 +23,9 @@ interface UseDescribeWorkspaceStateOptions {
   enabled?: boolean;
 }
 
+/**
+ * @deprecated we now use shared storage to get layouts
+ */
 export const useDescribeWorkspaceState = ({ enabled = true }: UseDescribeWorkspaceStateOptions = {}) => {
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
 

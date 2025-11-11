@@ -1,15 +1,15 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
-import { UpdateWorkspaceInput } from "@repo/window";
+import { workspaceService } from "@/lib/services/workbench/workspaceService";
+import { DescribeAppOutput, ListWorkspacesOutput, UpdateWorkspaceInput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
+import { useActiveWorkspace } from "../workspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
 
 const updateWorkspaceFn = async (input: UpdateWorkspaceInput): Promise<void> => {
-  const result = await invokeTauriIpc<void>("update_workspace", {
-    input: input,
-  });
+  const result = await workspaceService.updateWorkspace(input);
 
   if (result.status === "error") {
     throw new Error(String(result.error));
@@ -19,12 +19,37 @@ const updateWorkspaceFn = async (input: UpdateWorkspaceInput): Promise<void> => 
 };
 
 export const useUpdateWorkspace = () => {
+  const { activeWorkspace } = useActiveWorkspace();
+
   const queryClient = useQueryClient();
   return useMutation<void, Error, UpdateWorkspaceInput>({
     mutationKey: [USE_UPDATE_WORKSPACE_MUTATION_KEY],
     mutationFn: updateWorkspaceFn,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
+    onSuccess: (_, variables) => {
+      queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (old) => {
+        if (!old) return old;
+        return old.map((workspace) => {
+          if (workspace.id === activeWorkspace?.id) {
+            return {
+              ...workspace,
+              name: variables.name ?? workspace.name,
+            };
+          }
+          return workspace;
+        });
+      });
+
+      queryClient.setQueryData<DescribeAppOutput>([USE_DESCRIBE_APP_QUERY_KEY], (old) => {
+        if (!old || !old.workspace) return old;
+
+        return {
+          ...old,
+          workspace: {
+            ...old.workspace,
+            name: variables.name ?? old.workspace.name,
+          },
+        };
+      });
     },
   });
 };

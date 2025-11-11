@@ -1,5 +1,5 @@
-import { useActiveWorkspace } from "@/hooks";
-import { useDescribeWorkspaceState } from "@/hooks/workspace/useDescribeWorkspaceState";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/workbench/layout";
 import { ProjectTreesView } from "@/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/parts/SideBar/SidebarHeader";
 import {
@@ -11,16 +11,16 @@ import {
 import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
 import { SourceControlView } from "../SourceControlView/SourceControlView";
 
-interface SidebarWorkspaceContentProps {
-  // FIXME: remove from props and replace with workspaceState?.sidebar?.treeViewGroupId ?? "default";
-  groupId?: string;
-}
-
-export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspaceContentProps) => {
-  const { data: workspaceState, isLoading: isLoadingWorkspace, error: workspaceError } = useDescribeWorkspaceState();
+export const SidebarWorkspaceContent = () => {
+  const { data: appState, isFetching: isFetchingApp, error: appError } = useDescribeApp();
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
-  if (isLoadingWorkspace) {
+  const { data: layout } = useGetLayout();
+
+  const workspace = appState?.workspace;
+  const activeContainerId = layout?.activitybarState.activeContainerId;
+
+  if (isFetchingApp) {
     return <div className="flex h-full w-full items-center justify-center p-4">Loading...</div>;
   }
 
@@ -28,18 +28,18 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     return <div className="flex h-full w-full items-center justify-center p-4">No workspace selected</div>;
   }
 
-  if (workspaceError) {
+  if (appError) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
           <p className="text-red-600">Error loading workspace: {activeWorkspace?.name}</p>
-          <p className="mt-2 text-sm text-gray-500">{workspaceError?.message || "Unknown error"}</p>
+          <p className="mt-2 text-sm text-gray-500">{appError?.message || "Unknown error"}</p>
         </div>
       </div>
     );
   }
 
-  if (!workspaceState) {
+  if (!workspace) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
@@ -50,7 +50,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
     );
   }
 
-  switch (groupId) {
+  switch (activeContainerId) {
     case TREE_VIEW_GROUP_PROJECTS:
       return (
         <div className="flex h-full flex-col">
@@ -98,7 +98,7 @@ export const SidebarWorkspaceContent = ({ groupId = "default" }: SidebarWorkspac
           <div className="p-4">
             <h3 className="text-lg font-semibold">No content</h3>
             <p className="mt-2 text-sm text-gray-500">No content for this group, showing default view</p>
-            <div>{groupId}</div>
+            <div>{activeContainerId}</div>
           </div>
         </div>
       );

@@ -1,5 +1,5 @@
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
-import { useActivityBarStore } from "@/store/activityBar";
+import { ACTIVITYBAR_POSITION } from "@/constants/layout";
+import { useDescribeApp } from "@/hooks";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
 
@@ -7,17 +7,20 @@ import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
-  const { position } = useActivityBarStore();
+
+  const { data: appState } = useDescribeApp();
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+
   return (
     <div
       className={cn("flex", {
-        "flex-col gap-3": position === ACTIVITYBAR_POSITION.DEFAULT,
-        "flex-row gap-1": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+        "flex-col gap-3": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+        "flex-row gap-1":
+          activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
       <ActivityBarButton
         icon="Person"
-        isActive={false}
         id="1"
         title="Profile"
         order={1}
@@ -31,7 +34,6 @@ export const ActivityBarLastItems = () => {
       />
       <ActivityBarButton
         icon="Settings"
-        isActive={false}
         id="2"
         title="Settings"
         order={2}

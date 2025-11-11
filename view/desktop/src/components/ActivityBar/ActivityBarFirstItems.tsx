@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 
-import { ACTIVITYBAR_POSITION } from "@/constants/layoutPositions";
+import { ACTIVITYBAR_POSITION } from "@/constants/layout";
+import { useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/store/activityBar";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
 import { cn } from "@/utils";
 import { swapListById } from "@/utils/swapListById";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -12,8 +13,12 @@ import { ActivityBarButton } from "./ActivityBarButton";
 import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
-  const { items, position, setItems } = useActivityBarStore();
-  const { visible: isSideBarVisible } = useAppResizableLayoutStore((state) => state.sideBar);
+  const { data: appState } = useDescribeApp();
+  const { data: layout } = useGetLayout();
+  const { items, setItems } = useActivityBarStore();
+
+  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
@@ -41,25 +46,31 @@ export const ActivityBarFirstItems = () => {
   return (
     <div
       className={cn("flex", {
-        "flex-col gap-3": position === ACTIVITYBAR_POSITION.DEFAULT,
-        "flex-row gap-1": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
+        "flex-col gap-3": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+        "flex-row gap-1":
+          activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
       {items
         .filter((item) => item.isVisible !== false)
-        .map((item) => (
-          <div
-            key={item.id}
-            className={cn("relative flex flex-col", {
-              "px-1.5": position === ACTIVITYBAR_POSITION.DEFAULT,
-              "py-[3px]": position === ACTIVITYBAR_POSITION.TOP || position === ACTIVITYBAR_POSITION.BOTTOM,
-            })}
-          >
-            <ActivityBarButton key={item.id} {...item} />
+        .map((item) => {
+          const isActive = item.id === layout?.activitybarState.activeContainerId;
+          return (
+            <div
+              key={item.id}
+              className={cn("relative flex flex-col", {
+                "px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+                "py-[3px]":
+                  activityBarPosition === ACTIVITYBAR_POSITION.TOP ||
+                  activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
+              })}
+            >
+              <ActivityBarButton key={item.id} {...item} />
 
-            {item.isActive && isSideBarVisible && <ActivityBarButtonIndicator />}
-          </div>
-        ))}
+              {isActive && layout?.sidebarState.visible && <ActivityBarButtonIndicator />}
+            </div>
+          );
+        })}
     </div>
   );
 };

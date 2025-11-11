@@ -2,7 +2,9 @@ import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
+import { emptyGridState } from "@/defaults/layout";
 import { Icons } from "@/lib/ui";
+import { tabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
 
 interface AddPanelOptionsWithoutMandatoryComponent
   extends Omit<
@@ -12,65 +14,58 @@ interface AddPanelOptionsWithoutMandatoryComponent
       node?: ProjectTreeNode;
       workspace?: boolean;
     }>,
-    "component"
+    "component" | "floating"
   > {
-  component?: string;
+  component?: keyof typeof tabbedPaneComponents;
 }
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
-  showDebugPanels: boolean;
-  setShowDebugPanels: (show: boolean) => void;
+  setGridState: (state: SerializedDockview) => void;
+
   api?: DockviewApi;
   setApi: (api: DockviewApi) => void;
+
   activePanelId: string | undefined;
   setActivePanelId: (id: string | undefined) => void;
+
   addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
-  setGridState: (state: SerializedDockview) => void;
   openPanel: (panelType: string) => void;
   removePanel: (panelId: string) => void;
+
+  showDebugPanels: boolean;
+  setShowDebugPanels: (show: boolean) => void;
+
+  watermark: boolean;
+  setWatermark: (watermark: boolean) => void;
 }
 
 export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
-  gridState: {
-    grid: {
-      root: {
-        type: "branch",
-        data: [],
-      },
-      height: 0,
-      width: 0,
-      orientation: "horizontal" as SerializedDockview["grid"]["orientation"],
-    },
-    panels: {},
-    activeGroup: undefined,
-    floatingGroups: [],
-    popoutGroups: [],
-  } as SerializedDockview,
+  gridState: emptyGridState,
   setGridState: (state: SerializedDockview) => {
     set({ gridState: state });
   },
-  showDebugPanels: false,
-  setShowDebugPanels: (show: boolean) => set({ showDebugPanels: show }),
+
   api: undefined,
   setApi: (api: DockviewApi) => set({ api }),
+
   activePanelId: undefined,
   setActivePanelId: (id: string | undefined) => set({ activePanelId: id }),
+
   addOrFocusPanel: async (options) => {
     const activePanel = get().api?.getPanel(options.id);
 
-    if (activePanel) {
+    if (activePanel && !activePanel.api.isFocused) {
       activePanel.focus();
-      return;
+    } else {
+      get().api?.addPanel({
+        ...options,
+        component: options.component || "Default",
+        params: {
+          ...options.params,
+        },
+      });
     }
-
-    get().api?.addPanel({
-      ...options,
-      component: options.component || "Default",
-      params: {
-        ...options.params,
-      },
-    } as AddPanelOptions);
   },
   openPanel: (panelType: string) => {
     try {
@@ -103,4 +98,10 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
       get().api?.removePanel(panel);
     }
   },
+
+  showDebugPanels: false,
+  setShowDebugPanels: (show: boolean) => set({ showDebugPanels: show }),
+
+  watermark: false,
+  setWatermark: (watermark: boolean) => set({ watermark }),
 }));

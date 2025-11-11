@@ -54,11 +54,11 @@ if (rootElement) {
         <StrictMode>
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <App>
-              <Suspense fallback={<PageLoader className="bg-red-300" />}>
+            <Suspense fallback={<PageLoader className="bg-red-300" />}>
+              <App>
                 <Workbench />
-              </Suspense>
-            </App>
+              </App>
+            </Suspense>
           </QueryClientProvider>
         </StrictMode>
       )

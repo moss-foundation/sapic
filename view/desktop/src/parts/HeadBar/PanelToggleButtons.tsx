@@ -1,6 +1,8 @@
 import { ActionButton } from "@/components/ActionButton";
-import { SIDEBAR_POSITION } from "@/constants/layoutPositions";
-import { useAppResizableLayoutStore } from "@/store/appResizableLayout";
+import { SIDEBAR_POSITION } from "@/constants/layout";
+import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
+import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { cn } from "@/utils";
 
 export interface PanelToggleButtonsProps {
@@ -8,14 +10,27 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { sideBarPosition, bottomPane, sideBar } = useAppResizableLayoutStore();
+  const { data: appState } = useDescribeApp();
+  const { activeWorkspaceId } = useActiveWorkspace();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
+
+  //TODO later we should handle the JsonValue differently
+  const sideBarPosition = appState?.configuration.contents.sideBarPosition as SIDEBAR_POSITION;
 
   const toggleSidebar = () => {
-    sideBar.setVisible(!sideBar.visible);
+    updateLayout({
+      layout: { sidebarState: { visible: !layout?.sidebarState.visible } },
+      workspaceId: activeWorkspaceId,
+    });
   };
 
   const toggleBottomPane = () => {
-    bottomPane.setVisible(!bottomPane.visible);
+    if (!activeWorkspaceId) return;
+    updateLayout({
+      layout: { bottomPanelState: { visible: !layout?.bottomPanelState.visible } },
+      workspaceId: activeWorkspaceId,
+    });
   };
 
   return (
@@ -23,7 +38,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
       {sideBarPosition === SIDEBAR_POSITION.LEFT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
+          icon={layout?.sidebarState.visible ? "OpenPanelLeftFilled" : "OpenPanelLeft"}
           onClick={toggleSidebar}
           title="Toggle Left Sidebar"
         />
@@ -31,7 +46,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
 
       <ActionButton
         iconClassName="!size-4.5"
-        icon={bottomPane.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
+        icon={layout?.bottomPanelState.visible ? "OpenPanelBottomFilled" : "OpenPanelBottom"}
         onClick={toggleBottomPane}
         title="Toggle Bottom Panel"
       />
@@ -39,7 +54,7 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
       {sideBarPosition === SIDEBAR_POSITION.RIGHT && (
         <ActionButton
           iconClassName="!size-4.5"
-          icon={sideBar.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
+          icon={layout?.sidebarState.visible ? "OpenPanelRightFilled" : "OpenPanelRight"}
           onClick={toggleSidebar}
           title="Toggle Right Sidebar"
         />

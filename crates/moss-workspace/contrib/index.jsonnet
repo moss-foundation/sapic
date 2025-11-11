@@ -1,10 +1,5 @@
 local contrib = import "../../../contrib/index.libsonnet";
 
-local sidebarLocation = {
-  Left: "LEFT",
-  Right: "RIGHT",
-};
-
 contrib.Register(
   configurations = [
     contrib.configuration.Configuration(
@@ -13,11 +8,13 @@ contrib.Register(
       order = 1,
       name = "Workspace",
       description = null,
+
+      # FIXME: panic if `parameters` are empty
+      # message: None, details: "missing field `parameters` at line 6 column 3",
       parameters = [
         contrib.configuration.Parameter(
-          id = "sideBar.location",
-          default = sidebarLocation.Left,
-          enum = std.objectValues(sidebarLocation),
+          id = "<dummy>",
+          default = "anyvalue",
           type = contrib.configuration.ParameterType.String,
         ),
       ],
