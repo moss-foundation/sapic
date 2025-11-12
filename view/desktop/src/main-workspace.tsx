@@ -58,10 +58,6 @@ if (rootElement) {
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
             <Suspense fallback={<PageLoader className="bg-red-300" />}>
-              {/* <App>
-                <Workbench />
-              </App> */}
-              <h1>Workspace.tsx</h1>
               <RouterProvider router={router} />
             </Suspense>
           </QueryClientProvider>

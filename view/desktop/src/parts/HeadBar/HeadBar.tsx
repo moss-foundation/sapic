@@ -7,7 +7,6 @@ import { useModal } from "@/hooks/useModal";
 import { useDeleteWorkspace } from "@/hooks/workbench";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
-import { useParams, useSearch } from "@tanstack/react-router";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";
@@ -79,10 +78,6 @@ export const HeadBar = () => {
     }
   };
 
-  const params = useParams({ strict: false });
-  console.log("params", params);
-  const search = useSearch({ strict: false });
-  console.log("search", search);
   return (
     <WorkspaceMenuProvider>
       <header
@@ -106,9 +101,6 @@ export const HeadBar = () => {
             handleWorkspaceMenuAction={handleWorkspaceMenuAction}
             os={os}
           />
-
-          <pre>Params:{JSON.stringify(params, null, 2)}</pre>
-          <pre>Search:{JSON.stringify(search, null, 2)}</pre>
 
           <HeadBarRightItems os={os} />
         </div>

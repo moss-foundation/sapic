@@ -3,19 +3,12 @@ import App from "@/app";
 import NotFound from "@/app/NotFound";
 import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
+const rootRoute = createRootRoute({ notFoundComponent: NotFound });
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: App,
 });
-
-const welcomeRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/welcome.html",
-  component: App,
-});
-
-const rootRoute = createRootRoute({ notFoundComponent: NotFound });
 
 const workspaceIdRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -24,7 +17,7 @@ const workspaceIdRoute = createRoute({
 });
 
 export const router = createRouter({
-  routeTree: rootRoute.addChildren([indexRoute, welcomeRoute, workspaceIdRoute]),
+  routeTree: rootRoute.addChildren([indexRoute, workspaceIdRoute]),
   history: createHashHistory(),
 });
 

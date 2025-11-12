@@ -7,11 +7,12 @@ import "./assets/index.css";
 
 import { QueryCache, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { RouterProvider } from "@tanstack/react-router";
+import { createHashHistory, createRootRoute, createRoute, createRouter, RouterProvider } from "@tanstack/react-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
-import { router } from "./routes/router";
+import NotFound from "./app/NotFound";
+import { WelcomePage } from "./app/WelcomePage";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
@@ -30,6 +31,18 @@ const queryClient = new QueryClient({
     },
   },
 });
+const rootRoute = createRootRoute({ notFoundComponent: NotFound });
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/",
+  component: WelcomePage,
+});
+
+export const welcomeRouter = createRouter({
+  routeTree: rootRoute.addChildren([indexRoute]),
+  history: createHashHistory(),
+});
+
 // const Workbench = lazy(() => import("@/components/Workbench").then((module) => ({ default: module.Workbench })));
 const rootElement = document.getElementById("root") as HTMLElement;
 if (rootElement) {
@@ -41,8 +54,7 @@ if (rootElement) {
         <StrictMode>
           <QueryClientProvider client={queryClient}>
             {ENABLE_REACT_QUERY_DEVTOOLS && <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-right" />}
-            <h1>Welcome.tsx</h1>
-            <RouterProvider router={router} />
+            <RouterProvider router={welcomeRouter} />
           </QueryClientProvider>
         </StrictMode>
       )
