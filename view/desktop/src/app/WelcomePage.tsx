@@ -19,7 +19,7 @@ export const WelcomePage = () => {
                   onClick={() => openWorkspace(workspace.id)}
                   className="cursor-pointer text-lg text-blue-500 hover:text-blue-600 hover:underline"
                 >
-                  {workspace.name}
+                  {workspace.name} | id: {workspace.id}
                 </button>
               ))}
             </div>

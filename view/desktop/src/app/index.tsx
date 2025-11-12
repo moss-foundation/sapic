@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 
-import { Outlet } from "@tanstack/react-router";
+import { useListWorkspaces } from "@/hooks";
+import { useGetLayout } from "@/workbench/adapters/tanstackQuery/layout";
+import { Outlet, useParams } from "@tanstack/react-router";
 
 import Providers from "./Providers";
 
@@ -9,6 +11,13 @@ interface AppProps {
 }
 
 const App = ({ children }: AppProps) => {
+  const { workspaceId } = useParams({ strict: false });
+
+  const { data: layout } = useGetLayout({ workspaceId });
+  const { data: workspaces } = useListWorkspaces();
+
+  console.log({ params: { workspaceId }, tanstackData: { layout, workspaces } });
+
   return (
     <Providers>
       <Outlet />
