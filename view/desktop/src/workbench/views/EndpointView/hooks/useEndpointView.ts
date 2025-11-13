@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-import { areUrlsEquivalent, parseUrl, reconstructUrl } from "@/views/EndpointView/utils/urlParser";
+import { areUrlsEquivalent, parseUrl, reconstructUrl } from "@/workbench/views/EndpointView/utils/urlParser";
 
 export interface UrlParameter {
   key: string;

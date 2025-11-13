@@ -1,4 +1,4 @@
-const NotFound = () => {
+const NotFoundPage = () => {
   return (
     <div className="flex h-full w-full items-center justify-center bg-gray-100 p-4 text-center">
       <div className="rounded-lg bg-white p-6 shadow-lg">
@@ -8,4 +8,4 @@ const NotFound = () => {
   );
 };
 
-export default NotFound;
+export default NotFoundPage;

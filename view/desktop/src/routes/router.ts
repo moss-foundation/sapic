@@ -1,9 +1,9 @@
 // Create a new router instance
-import NotFound from "@/app/NotFound";
 import Providers from "@/app/Providers";
+import NotFoundPage from "@/pages/NotFoundPage";
 import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
-const rootRoute = createRootRoute({ notFoundComponent: NotFound });
+const rootRoute = createRootRoute({ notFoundComponent: NotFoundPage });
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",

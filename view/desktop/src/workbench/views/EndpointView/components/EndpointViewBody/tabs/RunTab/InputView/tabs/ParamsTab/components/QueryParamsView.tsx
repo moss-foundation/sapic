@@ -6,7 +6,7 @@ import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { EndpointViewContext } from "@/views/EndpointView/EndpointViewContext";
+import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { AddQueryParamParams, QueryParamInfo, UpdateQueryParamParams } from "@repo/moss-project";
 
@@ -14,14 +14,14 @@ import { ParamDragType } from "../constants";
 import { NewParamRowForm } from "./NewParamRowForm";
 import { ParamRow } from "./ParamRow";
 
-export const PathParamsView = () => {
-  const { resourceDescription, resource, projectId } = useContext(EndpointViewContext);
+export const QueryParamsView = () => {
+  const { resourceDescription: entryDescription, resource, projectId } = useContext(EndpointViewContext);
 
   const { mutate: updateProjectResource } = useUpdateProjectResource();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
-    const initialParam = resourceDescription.pathParams.find((param) => param.id === updatedParam.id);
+    const initialParam = entryDescription.queryParams.find((param) => param.id === updatedParam.id);
 
     if (!initialParam) return;
 
@@ -34,11 +34,13 @@ export const PathParamsView = () => {
         updateObj.value = {
           "UPDATE": updated.value,
         };
-      if (initial.order !== updated.order) updateObj.order = updated.order;
+
       if (initial.description !== updated.description && updated.description)
         updateObj.description = {
           "UPDATE": updated.description,
         };
+
+      if (initial.order !== updated.order) updateObj.order = updated.order;
 
       const optionsChanged = initial.disabled !== updated.disabled || initial.propagate !== updated.propagate;
 
@@ -52,20 +54,20 @@ export const PathParamsView = () => {
       return updateObj;
     };
 
-    if (resourceDescription.kind === "Item") {
+    if (entryDescription.kind === "Item") {
       updateProjectResource({
         projectId,
         updatedResource: {
           ITEM: {
             id: resource.id,
+            queryParamsToUpdate: [buildUpdateObject(initialParam, updatedParam)],
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
             pathParamsToAdd: [],
-            pathParamsToUpdate: [buildUpdateObject(initialParam, updatedParam)],
+            pathParamsToUpdate: [],
             pathParamsToRemove: [],
             queryParamsToAdd: [],
-            queryParamsToUpdate: [],
             queryParamsToRemove: [],
           },
         },
@@ -74,18 +76,18 @@ export const PathParamsView = () => {
   };
 
   const handleParamRowDelete = (paramId: string) => {
-    const deletedParam = resourceDescription.pathParams.find((param) => param.id === paramId);
+    const deletedParam = entryDescription.queryParams.find((param) => param.id === paramId);
 
     if (!deletedParam) return;
 
-    const pathParamsToUpdate = resourceDescription.pathParams
+    const queryParamsToUpdate = entryDescription.queryParams
       .filter((param) => param.order! > deletedParam.order!)
       .map((param) => ({
         id: param.id,
         order: param.order! - 1,
       }));
 
-    if (resourceDescription.kind === "Item") {
+    if (entryDescription.kind === "Item") {
       updateProjectResource({
         projectId,
         updatedResource: {
@@ -95,37 +97,37 @@ export const PathParamsView = () => {
             headersToUpdate: [],
             headersToRemove: [],
             pathParamsToAdd: [],
-            pathParamsToUpdate: pathParamsToUpdate,
-            pathParamsToRemove: [paramId],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
             queryParamsToAdd: [],
-            queryParamsToUpdate: [],
-            queryParamsToRemove: [],
+            queryParamsToUpdate: queryParamsToUpdate,
+            queryParamsToRemove: [paramId],
           },
         },
       });
     }
   };
 
-  const handleAddNewRow = (pathParam: QueryParamInfo) => {
-    if (pathParam.name) {
+  const handleAddNewRow = (queryParam: QueryParamInfo) => {
+    if (queryParam.name) {
       setColumnToFocusOnMount("key");
-    } else if (pathParam.value) {
+    } else if (queryParam.value) {
       setColumnToFocusOnMount("value");
     } else {
       setColumnToFocusOnMount(null);
     }
 
-    const newPathParam: AddQueryParamParams = {
-      name: pathParam.name,
-      value: pathParam.value,
-      order: resourceDescription.pathParams.length + 1,
+    const newQueryParam: AddQueryParamParams = {
+      name: queryParam.name,
+      value: queryParam.value,
+      order: entryDescription.queryParams.length + 1,
       options: {
         disabled: false,
         propagate: false,
       },
     };
 
-    if (resourceDescription.kind === "Item") {
+    if (entryDescription.kind === "Item") {
       updateProjectResource({
         projectId,
         updatedResource: {
@@ -134,12 +136,12 @@ export const PathParamsView = () => {
             headersToAdd: [],
             headersToUpdate: [],
             headersToRemove: [],
-            pathParamsToAdd: [newPathParam],
+            pathParamsToAdd: [],
             pathParamsToUpdate: [],
             pathParamsToRemove: [],
             queryParamsToUpdate: [],
             queryParamsToRemove: [],
-            queryParamsToAdd: [],
+            queryParamsToAdd: [newQueryParam],
           },
         },
       });
@@ -154,17 +156,17 @@ export const PathParamsView = () => {
       updatedResource: {
         ITEM: {
           id: resource.id,
-          queryParamsToUpdate: [],
-          headersToAdd: [],
-          headersToUpdate: [],
-          headersToRemove: [],
-          pathParamsToAdd: [],
-          pathParamsToUpdate: resourceDescription.pathParams
+          queryParamsToUpdate: entryDescription.queryParams
             .filter((param) => param.disabled === checked)
             .map((param) => ({
               id: param.id,
               options: { disabled: !checked, propagate: param.propagate },
             })),
+          headersToAdd: [],
+          headersToUpdate: [],
+          headersToRemove: [],
+          pathParamsToAdd: [],
+          pathParamsToUpdate: [],
           pathParamsToRemove: [],
           queryParamsToAdd: [],
           queryParamsToRemove: [],
@@ -173,22 +175,22 @@ export const PathParamsView = () => {
     });
   };
 
-  const allParamsChecked = resourceDescription.pathParams.every((param) => !param.disabled);
-  const someParamsChecked = resourceDescription.pathParams.some((param) => !param.disabled);
-  const howManyParamsChecked = resourceDescription.pathParams.filter((param) => !param.disabled).length;
+  const allParamsChecked = entryDescription.queryParams.every((param) => !param.disabled);
+  const someParamsChecked = entryDescription.queryParams.some((param) => !param.disabled);
+  const howManyParamsChecked = entryDescription.queryParams.filter((param) => !param.disabled).length;
 
   const headerCheckedState = allParamsChecked ? true : someParamsChecked ? "indeterminate" : false;
 
-  const sortedPathParams = sortObjectsByOrder(resourceDescription.pathParams);
+  const sortedQueryParams = sortObjectsByOrder(entryDescription.queryParams);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="border-(--moss-border) flex w-full shrink-0 justify-between border-b px-3 py-[5px]">
+      <div className="border-(--moss-border) flex w-full justify-between border-b px-3 py-[5px]">
         <div className="flex items-center gap-1 overflow-hidden">
           <CheckboxWithLabel
             checked={headerCheckedState}
             onCheckedChange={handleAllParamsCheckedChange}
-            label="Path Params"
+            label="Query Params"
             className="gap-3 truncate"
           />
           <RoundedCounter count={howManyParamsChecked} color="gray" />
@@ -201,8 +203,8 @@ export const PathParamsView = () => {
 
       <Scrollbar className="min-h-0 flex-1">
         <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content_min-content_min-content] gap-2 p-3">
-          {sortedPathParams.map((param, index) => {
-            const isLastRow = index === resourceDescription.pathParams.length - 1;
+          {sortedQueryParams.map((param, index) => {
+            const isLastRow = index === entryDescription.queryParams.length - 1;
             return (
               <ParamRow
                 key={param.id}
@@ -210,11 +212,11 @@ export const PathParamsView = () => {
                 onChange={handleParamRowChange}
                 onDelete={() => handleParamRowDelete(param.id)}
                 keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
-                paramType="path"
+                paramType="query"
               />
             );
           })}
-          <NewParamRowForm onAdd={handleAddNewRow} paramType={ParamDragType.PATH} key={sortedPathParams.length} />
+          <NewParamRowForm onAdd={handleAddNewRow} paramType={ParamDragType.QUERY} key={sortedQueryParams.length} />
         </div>
       </Scrollbar>
     </div>

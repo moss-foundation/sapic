@@ -1,7 +1,7 @@
 import { useContext, useMemo, useState } from "react";
 
 import { FolderTabs, TabItemProps } from "@/lib/ui";
-import { EndpointViewContext } from "@/views/EndpointView/EndpointViewContext";
+import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 
 import {
   AuthTabContent,

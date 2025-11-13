@@ -14,7 +14,7 @@ import {
   SettingsView,
   WelcomeView,
   WorkspaceSettingsView,
-} from "@/views";
+} from "@/workbench/views";
 import { ResourceKind } from "@repo/moss-project";
 
 import Metadata from "./DebugComponents/Metadata";

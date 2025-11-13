@@ -11,8 +11,8 @@ import { createHashHistory, createRootRoute, createRoute, createRouter, RouterPr
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
-import NotFound from "./app/NotFound";
-import { WelcomePage } from "./app/WelcomePage";
+import NotFoundPage from "./pages/NotFoundPage";
+import { WelcomePage } from "./pages/welcome/WelcomePage";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
@@ -31,7 +31,7 @@ const queryClient = new QueryClient({
     },
   },
 });
-const rootRoute = createRootRoute({ notFoundComponent: NotFound });
+const rootRoute = createRootRoute({ notFoundComponent: NotFoundPage });
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",

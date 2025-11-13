@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Icon, Icons } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 
-import * as iconsNames from "../../../assets/icons";
+import * as iconsNames from "../../../../assets/icons";
 import { KitchenSinkSection } from "../KitchenSinkSection";
 
 export const IconsSection = () => {

@@ -7,7 +7,7 @@ import { Icon } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { cn } from "@/utils";
-import { EndpointViewContext } from "@/views/EndpointView/EndpointViewContext";
+import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
 

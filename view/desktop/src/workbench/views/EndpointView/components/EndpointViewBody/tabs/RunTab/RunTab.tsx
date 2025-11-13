@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { cn } from "@/utils/cn";
-import { useEndpointView } from "@/views/EndpointView/hooks/useEndpointView";
+import { useEndpointView } from "@/workbench/views/EndpointView/hooks/useEndpointView";
 
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
