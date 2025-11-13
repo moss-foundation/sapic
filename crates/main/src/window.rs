@@ -2,9 +2,8 @@ pub mod operations;
 
 use async_trait::async_trait;
 use derive_more::Deref;
-use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context::Canceller};
+use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
@@ -80,7 +79,6 @@ impl<R: AppRuntime> MainWindow<R> {
         let win_builder = win_builder
             .hidden_title(true)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
-            .transparent(false)
             .decorations(true);
 
         let webview_window = win_builder

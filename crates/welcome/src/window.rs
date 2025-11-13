@@ -2,9 +2,8 @@ pub mod operations;
 
 use async_trait::async_trait;
 use derive_more::Deref;
-use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context::Canceller};
+use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
 use std::{collections::HashMap, sync::Arc};
 use tauri::WebviewWindow;
 use tokio::sync::RwLock;
@@ -65,7 +64,6 @@ impl<R: AppRuntime> WelcomeWindow<R> {
         let win_builder = win_builder
             .hidden_title(false)
             .title_bar_style(tauri::TitleBarStyle::Transparent)
-            .transparent(false)
             .decorations(true);
 
         let webview_window = win_builder
