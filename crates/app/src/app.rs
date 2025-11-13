@@ -2,10 +2,12 @@ mod extension;
 mod language;
 mod profile;
 mod theme;
+mod workspace;
 
 pub mod builder;
 pub mod command;
 pub mod types;
+pub mod windows;
 
 use derive_more::Deref;
 use joinerror::ResultExt;
@@ -33,7 +35,12 @@ use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
 use tokio::sync::RwLock;
 use tracing::instrument;
 
-use crate::{command::CommandCallback, extension::ExtensionService};
+use crate::{
+    command::CommandCallback,
+    extension::ExtensionService,
+    windows::{WindowManager, welcome::WelcomeWindow},
+    workspace::service::WorkspaceService,
+};
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
 
@@ -57,9 +64,8 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-pub enum CreateWindowParams {
-    WelcomeWindow,
-    WorkspaceWindow { id: WorkspaceId, name: String },
+pub(crate) struct AppServices {
+    pub(crate) workspace_service: Arc<WorkspaceService>,
 }
 
 #[derive(Deref)]
@@ -70,8 +76,8 @@ pub struct App<R: AppRuntime> {
     pub(crate) keyring: Arc<dyn KeyringClient>,
     pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
     pub(crate) commands: AppCommands<R::EventLoop>,
-    pub(crate) windows: RwLock<FxHashMap<String, Arc<Window<R>>>>,
-    pub(crate) next_window_id: AtomicUsize,
+    pub(crate) services: AppServices,
+    pub(crate) windows: WindowManager<R>,
 
     #[allow(unused)]
     pub(crate) extension_service: ExtensionService<R>,
@@ -82,114 +88,76 @@ impl<R: AppRuntime> App<R> {
         self.tao_handle.clone()
     }
 
-    pub async fn window(&self, id: &str) -> Option<Arc<Window<R>>> {
-        self.windows.read().await.get(id).cloned()
+    pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
+        let maybe_welcome_window = self.windows.welcome_window().await;
+        if let Some(welcome_window) = maybe_welcome_window {
+            if let Err(err) = welcome_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to welcome window: {}", err);
+            }
+
+            return Ok(());
+        } else {
+            let welcome_window = self
+                .windows
+                .create_welcome_window(delegate, self.services.workspace_service.clone())
+                .await?;
+            if let Err(err) = welcome_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to welcome window: {}", err);
+            }
+
+            return Ok(());
+        }
     }
 
-    pub async fn create_window(
+    pub async fn ensure_main(
         &self,
         ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-        params: CreateWindowParams,
-    ) -> joinerror::Result<tauri::WebviewWindow<R::EventLoop>> {
-        let label = format!(
-            "main_{}",
-            self.next_window_id.fetch_add(1, Ordering::Relaxed)
-        );
+        workspace_id: WorkspaceId,
+    ) -> joinerror::Result<()> {
+        let label = self.windows.window_label_for_workspace(&workspace_id).await;
 
-        let (url, title) = match &params {
-            CreateWindowParams::WelcomeWindow => {
-                ("welcome.html".to_string(), "Welcome".to_string())
-            }
-            CreateWindowParams::WorkspaceWindow { id, name, .. } => {
-                // (format!("/workspace/{}", id), name.clone())
-                (format!("workspace.html#/{}", id), name.to_string())
-            }
+        let maybe_main_window = if let Some(label) = label {
+            self.windows.main_window(&label).await
+        } else {
+            None
         };
 
-        let window = WindowBuilder::new(
-            self.fs.clone(),
-            self.keyring.clone(),
-            self.auth_api_client.clone(),
-        )
-        .build(
-            ctx,
-            delegate,
-            url.as_str(),
-            label.as_str(),
-            title.as_str(),
-            (800.0, 600.0),
-            (100.0, 100.0),
-        )
-        .await?;
-        window
-            .on_window_ready(
-                &ctx,
-                &delegate,
-                OnWindowReadyOptions {
-                    restore_last_workspace: false, // FIXME: HARDCODE
-                },
+        if let Some(main_window) = maybe_main_window {
+            if let Err(err) = main_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to main window: {}", err);
+            }
+            return Ok(());
+        }
+
+        let main_window = self
+            .windows
+            .create_main_window(
+                ctx,
+                delegate,
+                self.fs.clone(),
+                self.keyring.clone(),
+                self.auth_api_client.clone(),
+                workspace_id,
             )
-            .await
-            .expect("Failed to prepare the app");
+            .await?;
 
-        let webview = window.webview().clone();
+        if let Err(err) = main_window.window.set_focus() {
+            tracing::warn!("Failed to set focus to main window: {}", err);
+        }
 
-        self.windows.write().await.insert(label, Arc::new(window));
+        Ok(())
+    }
 
-        Ok(webview)
+    pub async fn main_window(&self, label: &str) -> Option<Arc<Window<R>>> {
+        self.windows.main_window(label).await.map(|window| window.w)
+    }
+
+    pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {
+        self.windows.welcome_window().await
     }
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 }
-
-// pub const MIN_WINDOW_WIDTH: f64 = 800.0;
-// pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
-
-// #[instrument(level = "debug", skip(app_handle))]
-// pub fn create_window<R: TauriRuntime>(
-//     app_handle: &TauriAppHandle<R>,
-//     url: &str,
-//     label: &str,
-//     title: &str,
-//     inner_size: (f64, f64),
-//     position: (f64, f64),
-// ) -> joinerror::Result<tauri::WebviewWindow<R>> {
-//     let win_builder =
-//         tauri::WebviewWindowBuilder::new(app_handle, label, tauri::WebviewUrl::App(url.into()))
-//             .title(title)
-//             .center()
-//             .resizable(true)
-//             .visible(false)
-//             .disable_drag_drop_handler()
-//             .inner_size(inner_size.0, inner_size.1)
-//             .position(position.0, position.1)
-//             .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
-//             .zoom_hotkeys_enabled(true);
-
-//     #[cfg(target_os = "windows")]
-//     let win_builder = win_builder
-//         .transparent(false)
-//         .shadow(true)
-//         .decorations(false);
-
-//     #[cfg(target_os = "macos")]
-//     let win_builder = win_builder
-//         .hidden_title(true)
-//         .title_bar_style(tauri::TitleBarStyle::Overlay)
-//         .transparent(false)
-//         .decorations(true);
-
-//     let webview_window = win_builder.build()?;
-
-//     if let Err(err) = webview_window.set_focus() {
-//         // warn!(
-//         //     "Failed to set focus to window {} when creating it: {}",
-//         //     input.label, err
-//         // );
-//     }
-
-//     Ok(webview_window)
-// }

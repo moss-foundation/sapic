@@ -195,6 +195,7 @@ dependencies = [
  "moss_keyring",
  "moss_language",
  "moss_server_api",
+ "moss_storage2",
  "moss_text",
  "moss_theme",
  "moss_user",

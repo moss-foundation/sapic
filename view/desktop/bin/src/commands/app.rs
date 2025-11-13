@@ -34,12 +34,14 @@ pub async fn cancel_request<'a, R: tauri::Runtime>(
     input: CancelRequestInput,
     options: Options,
 ) -> TauriResult<()> {
-    Ok(app
-        .window(window.label())
-        .await
-        .ok_or_else(|| {
-            Error::new::<NotFound>(format!("window '{}' is unavailable", window.label()))
-        })?
-        .cancel_request(input)
-        .await?)
+    unimplemented!()
+
+    // Ok(app
+    //     .window(window.label())
+    //     .await
+    //     .ok_or_else(|| {
+    //         Error::new::<NotFound>(format!("window '{}' is unavailable", window.label()))
+    //     })?
+    //     .cancel_request(input)
+    //     .await?)
 }

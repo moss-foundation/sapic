@@ -193,20 +193,40 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_workspaces<'a, R: tauri::Runtime>(
+pub async fn welcome__list_workspaces<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
-    super::with_window_timeout(
+    // super::with_window_timeout(
+    //     ctx.inner(),
+    //     app,
+    //     window,
+    //     options,
+    //     |ctx, _, app| async move { app.list_workspaces(&ctx).await },
+    // )
+    // .await
+
+    super::with_welcome_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.list_workspaces(&ctx).await },
+        |ctx, app_delegate, window| async move { window.list_workspaces(&app_delegate).await },
     )
     .await
+
+    // let app_delegate = app
+    //     .inner()
+    //     .state::<AppDelegate<TauriAppRuntime<R>>>()
+    //     .inner()
+    //     .clone();
+
+    // let window = app.welcome_window().await.unwrap();
+    // let list_workspaces_output = window.list_workspaces(&app_delegate).await.unwrap();
+
+    // Ok(list_workspaces_output)
 }
 
 #[tauri::command(async)]
@@ -254,16 +274,20 @@ pub async fn open_workspace<'a, R: tauri::Runtime>(
         .inner()
         .clone();
 
-    app.create_window(
-        &ctx.clone(),
-        &app_delegate,
-        sapic_app::CreateWindowParams::WorkspaceWindow {
-            id: moss_workspace::models::primitives::WorkspaceId::new(),
-            name: "Hardcoded name".to_string(),
-        },
-    )
-    .await
-    .unwrap();
+    // app.create_window(
+    //     &ctx.clone(),
+    //     &app_delegate,
+    //     sapic_app::CreateWindowParams::WorkspaceWindow {
+    //         id: moss_workspace::models::primitives::WorkspaceId::new(),
+    //         name: "Hardcoded name".to_string(),
+    //     },
+    // )
+    // .await
+    // .unwrap();
+
+    app.ensure_main(&ctx, &app_delegate, input.id.clone())
+        .await
+        .unwrap();
 
     window.close().unwrap();
 

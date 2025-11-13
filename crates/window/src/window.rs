@@ -5,7 +5,7 @@ use moss_logging::session;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_workspace::models::primitives::WorkspaceId;
 use std::{collections::HashMap, sync::Arc};
-use tauri::{AppHandle, WebviewWindow};
+use tauri::AppHandle;
 use tokio::sync::RwLock;
 
 use crate::{
@@ -28,7 +28,6 @@ pub struct OnWindowReadyOptions {
 
 #[derive(Deref)]
 pub struct Window<R: AppRuntime> {
-    pub(super) webview: WebviewWindow<R::EventLoop>,
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
@@ -49,10 +48,6 @@ pub struct Window<R: AppRuntime> {
 impl<R: AppRuntime> Window<R> {
     pub fn session_id(&self) -> &SessionId {
         self.session_service.session_id()
-    }
-
-    pub fn webview(&self) -> &WebviewWindow<R::EventLoop> {
-        &self.webview
     }
 
     pub fn handle(&self) -> AppHandle<R::EventLoop> {

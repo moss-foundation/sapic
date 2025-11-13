@@ -5,6 +5,7 @@ mod workspace;
 
 pub use app::*;
 pub use project::*;
+use sapic_app::windows::welcome::WelcomeWindow;
 pub use window::*;
 pub use workspace::*;
 
@@ -33,6 +34,52 @@ pub mod primitives {
     pub(super) type App<'a, R> = State<'a, Arc<sapic_app::App<moss_applib::TauriAppRuntime<R>>>>;
 }
 
+pub(super) async fn with_welcome_window_timeout<'a, R, T, F, Fut>(
+    ctx: &R::AsyncContext,
+    app: State<'_, Arc<sapic_app::App<R>>>,
+    _window: TauriWindow<R::EventLoop>,
+    options: Options,
+    f: F,
+) -> TauriResult<T>
+where
+    R: AppRuntime,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, WelcomeWindow<R>) -> Fut + Send + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
+{
+    let timeout = options
+        .as_ref()
+        .and_then(|opts| opts.timeout.map(Duration::from_secs))
+        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
+
+    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
+    let request_id = options.and_then(|opts| opts.request_id);
+
+    let window = app
+        .welcome_window()
+        .await
+        .ok_or_join_err_with::<Unavailable>(|| format!("welcome window is unavailable"))?;
+
+    if let Some(request_id) = &request_id {
+        ctx.with_value("request_id", request_id.clone());
+        window
+            .track_cancellation(request_id, ctx.get_canceller())
+            .await;
+    }
+
+    let result = f(
+        ctx.freeze(),
+        app.handle().state::<AppDelegate<R>>().inner().clone(),
+        window.clone(),
+    )
+    .await;
+
+    if let Some(request_id) = &request_id {
+        window.release_cancellation(request_id).await;
+    }
+
+    result.map_err(|e| e.into())
+}
+
 pub(super) async fn with_window_timeout<'a, R, T, F, Fut>(
     ctx: &R::AsyncContext,
     app: State<'_, Arc<sapic_app::App<R>>>,
@@ -53,7 +100,7 @@ where
     let request_id = options.and_then(|opts| opts.request_id);
 
     let window = app
-        .window(window.label())
+        .main_window(window.label())
         .await
         .ok_or_join_err_with::<Unavailable>(|| {
             format!("window '{}' is unavailable", window.label())
@@ -100,7 +147,7 @@ where
 
     let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
     let window = app
-        .window(window.label())
+        .main_window(window.label())
         .await
         .ok_or_join_err_with::<Unavailable>(|| {
             format!("window '{}' is unavailable", window.label())
@@ -151,7 +198,7 @@ where
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let window = app
-        .window(window.label())
+        .main_window(window.label())
         .await
         .ok_or_join_err_with::<Unavailable>(|| {
             format!("window '{}' is unavailable", window.label())

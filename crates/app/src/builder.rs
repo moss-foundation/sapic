@@ -4,11 +4,12 @@ use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use rustc_hash::FxHashMap;
-use std::sync::{Arc, atomic::AtomicUsize};
-use tokio::sync::RwLock;
+use std::sync::Arc;
 
-use crate::{App, AppCommands, command::CommandDecl, extension::ExtensionService};
+use crate::{
+    App, AppCommands, AppServices, command::CommandDecl, extension::ExtensionService,
+    windows::WindowManager, workspace::service::WorkspaceService,
+};
 
 pub struct AppBuilder<R: AppRuntime> {
     commands: AppCommands<R::EventLoop>,
@@ -45,6 +46,10 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create extension service");
 
+        let services = AppServices {
+            workspace_service: Arc::new(WorkspaceService::new(self.fs.clone()).await),
+        };
+
         App {
             tao_handle: delegate.handle(),
             fs: self.fs,
@@ -52,8 +57,8 @@ impl<R: AppRuntime> AppBuilder<R> {
             auth_api_client: self.auth_api_client,
             extension_service,
             commands: self.commands,
-            windows: RwLock::new(FxHashMap::default()),
-            next_window_id: AtomicUsize::new(0),
+            windows: WindowManager::new(),
+            services,
         }
     }
 }

@@ -8,6 +8,7 @@ use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use moss_theme::registry::ThemeRegistry;
+use moss_workspace::{models::primitives::WorkspaceId, workspace};
 use std::{marker::PhantomData, path::PathBuf, sync::Arc};
 use tauri::{AppHandle as TauriAppHandle, Manager, Runtime as TauriRuntime};
 
@@ -28,6 +29,7 @@ pub const MIN_WINDOW_WIDTH: f64 = 800.0;
 pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
 
 pub struct WindowBuilder {
+    workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
@@ -38,8 +40,10 @@ impl WindowBuilder {
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
+        workspace_id: WorkspaceId,
     ) -> Self {
         Self {
+            workspace_id,
             fs,
             keyring,
             auth_api_client,
@@ -50,11 +54,6 @@ impl WindowBuilder {
         self,
         ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-        url: &str,
-        label: &str,
-        title: &str,
-        inner_size: (f64, f64),
-        position: (f64, f64),
     ) -> joinerror::Result<Window<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
@@ -111,16 +110,31 @@ impl WindowBuilder {
         )
         .await
         .expect("Failed to create profile service");
+
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        profile_service.activate_profile().await?;
+
         let workspace_service =
             WorkspaceService::<R>::new(ctx, storage.clone(), self.fs.clone(), &user_dir)
                 .await
                 .expect("Failed to create workspace service");
 
-        let webview = create_window(&tao_handle, url, label, title, inner_size, position)
-            .join_err::<()>("failed to create webview window")?;
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        workspace_service
+            .activate_workspace(
+                ctx,
+                delegate,
+                &self.workspace_id,
+                profile_service.active_profile().await.unwrap(),
+            )
+            .await?;
+
+        // let webview = create_window(&tao_handle, url, label, title, inner_size, position)
+        //     .join_err::<()>("failed to create webview window")?;
 
         Ok(Window {
-            webview,
             app_handle: tao_handle.clone(),
             session_service,
             log_service,

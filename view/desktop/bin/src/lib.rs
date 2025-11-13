@@ -255,7 +255,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::open_workspace,
             commands::update_workspace,
             commands::create_workspace,
-            commands::list_workspaces,
+            commands::welcome__list_workspaces,
             commands::delete_workspace,
             commands::close_workspace,
             commands::cancel_request,
@@ -336,13 +336,15 @@ pub async fn run<R: TauriRuntime>() {
                     let ctx =
                         MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
-                    app.create_window(
-                        &ctx,
-                        &app_delegate,
-                        sapic_app::CreateWindowParams::WelcomeWindow,
-                    )
-                    .await
-                    .expect("Failed to create the main window");
+                    app.ensure_welcome(&app_delegate).await.unwrap();
+
+                    // app.create_window(
+                    //     &ctx,
+                    //     &app_delegate,
+                    //     sapic_app::CreateWindowParams::WelcomeWindow,
+                    // )
+                    // .await
+                    // .expect("Failed to create the main window");
 
                     // window
                     //     .on_window_ready(
