@@ -17,7 +17,6 @@ sapic-ipc = { workspace = true }
 sapic-window = { workspace = true }
 
 moss_applib = { workspace = true }
-moss_theme = { workspace = true }
 moss_language = { workspace = true }
 moss_user = { workspace = true }
 moss_app_delegate = { workspace = true }

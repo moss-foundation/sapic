@@ -200,7 +200,6 @@ dependencies = [
  "moss_server_api",
  "moss_storage2",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
  "runtime",
@@ -1700,7 +1699,6 @@ dependencies = [
  "moss_storage",
  "moss_storage2",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
  "objc",
@@ -3996,7 +3994,6 @@ dependencies = [
  "moss_language",
  "moss_logging",
  "moss_project",
- "moss_theme",
  "runtime",
  "serde",
  "serde_json",
@@ -4249,27 +4246,6 @@ dependencies = [
  "bstr",
  "moss_testutils",
  "serde",
-]
-
-[[package]]
-name = "moss_theme"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "derive_more 2.0.1",
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_extension",
- "moss_fs",
- "moss_id_macro",
- "moss_logging",
- "regorus",
- "serde",
- "serde_json",
- "tokio",
- "ts-rs",
 ]
 
 [[package]]
@@ -9197,7 +9173,6 @@ dependencies = [
  "moss_storage2",
  "moss_testutils",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
  "nanoid",

@@ -195,7 +195,7 @@ jobs:
           - system
           - welcome
           - main
-          
+
           - moss_git
           - moss_git_hosting_provider
           - moss_text
@@ -219,7 +219,6 @@ jobs:
           - moss_server_api
           - moss_extension
           - moss_extension_points
-          - moss_theme
           - moss_configuration
           - moss_language
           - shared-storage
@@ -346,7 +345,6 @@ jobs:
           - moss_server_api
           - moss_extension
           - moss_extension_points
-          - moss_theme
           - moss_configuration
           - moss_language
     steps:

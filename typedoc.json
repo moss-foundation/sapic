@@ -12,7 +12,6 @@
     "crates/moss-bindingutils",
     "crates/ipc",
     "crates/moss-git",
-    "crates/moss-theme",
     "crates/moss-language",
     "crates/moss-user",
     "crates/moss-configuration",
