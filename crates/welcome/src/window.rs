@@ -1,12 +1,15 @@
 pub mod operations;
 
+mod color_theme_ops;
 mod workspace_ops;
 
 use derive_more::Deref;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
-use sapic_system::services::workspace_service::WorkspaceService;
+use sapic_system::{
+    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+};
 use std::{collections::HashMap, sync::Arc};
 use tauri::WebviewWindow;
 use tokio::sync::RwLock;
@@ -16,7 +19,7 @@ use sapic_window2::{
     defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
 };
 
-use crate::workspace_ops::WelcomeWorkspaceOps;
+use crate::{color_theme_ops::WelcomeColorThemeOps, workspace_ops::WelcomeWorkspaceOps};
 
 pub const WELCOME_WINDOW_LABEL: &str = "welcome";
 const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
@@ -27,6 +30,7 @@ pub struct WelcomeWindow<R: AppRuntime> {
     #[deref]
     pub window: WebviewWindow<R::EventLoop>,
     pub(crate) workspace_ops: Arc<WelcomeWorkspaceOps>,
+    pub(crate) color_theme_ops: Arc<WelcomeColorThemeOps>,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -37,6 +41,7 @@ impl<R: AppRuntime> Clone for WelcomeWindow<R> {
         Self {
             window: self.window.clone(),
             workspace_ops: self.workspace_ops.clone(),
+            color_theme_ops: self.color_theme_ops.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
@@ -46,6 +51,7 @@ impl<R: AppRuntime> WelcomeWindow<R> {
     pub async fn new(
         delegate: &AppDelegate<R>,
         workspace_service: Arc<WorkspaceService>,
+        color_theme_service: Arc<ThemeService>,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
         let win_builder = tauri::WebviewWindowBuilder::new(
@@ -81,10 +87,12 @@ impl<R: AppRuntime> WelcomeWindow<R> {
             .join_err::<()>("failed to build welcome window")?;
 
         let workspace_ops = WelcomeWorkspaceOps::new(workspace_service);
+        let color_theme_ops = WelcomeColorThemeOps::new(color_theme_service);
 
         Ok(Self {
             window: webview_window,
             workspace_ops: Arc::new(workspace_ops),
+            color_theme_ops: Arc::new(color_theme_ops),
             tracked_cancellations: Default::default(),
         })
     }

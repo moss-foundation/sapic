@@ -1,4 +1,3 @@
 pub mod get_color_theme;
 pub mod list_color_themes;
 pub mod list_workspaces;
-pub mod open_workspace;

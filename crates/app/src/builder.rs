@@ -4,7 +4,11 @@ use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use sapic_system::services::workspace_service::WorkspaceService;
+use moss_storage2::Storage;
+use sapic_runtime::globals::GlobalThemeRegistry;
+use sapic_system::{
+    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+};
 use std::sync::Arc;
 
 use crate::{
@@ -47,8 +51,24 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create extension service");
 
+        let storage = <dyn Storage>::global(&delegate);
+
         let services = AppServices {
-            workspace_service: Arc::new(WorkspaceService::new(self.fs.clone()).await),
+            workspace_service: WorkspaceService::new(
+                self.fs.clone(),
+                storage.clone(),
+                delegate.workspaces_dir(),
+            )
+            .await
+            .into(),
+            theme_service: ThemeService::new(
+                delegate.resource_dir(),
+                self.fs.clone(),
+                GlobalThemeRegistry::get(delegate),
+            )
+            .await
+            .expect("Failed to create theme service")
+            .into(),
         };
 
         App {

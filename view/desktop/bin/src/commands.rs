@@ -19,8 +19,9 @@ use moss_applib::{
 use moss_project::Project;
 use moss_workspace::models::primitives::ProjectId;
 use primitives::Options;
+use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
-use sapic_window::{ActiveWorkspace, window::Window};
+use sapic_window::ActiveWorkspace;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
 
@@ -29,7 +30,7 @@ pub mod primitives {
 
     use tauri::State;
 
-    pub(super) type Options = Option<moss_api::models::types::Options>;
+    pub(super) type Options = Option<moss_api::contracts::Options>;
     pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
     pub(super) type App<'a, R> = State<'a, Arc<sapic_app::App<moss_applib::TauriAppRuntime<R>>>>;
 }
@@ -43,7 +44,9 @@ pub(super) async fn with_welcome_window_timeout<'a, R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, WelcomeWindow<R>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, WelcomeWindow<R>) -> Fut
+        + Send
+        + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -66,12 +69,8 @@ where
             .await;
     }
 
-    let result = f(
-        ctx.freeze(),
-        app.handle().state::<AppDelegate<R>>().inner().clone(),
-        window.clone(),
-    )
-    .await;
+    let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
+    let result = f(ctx.freeze(), app.inner().clone(), delegate, window.clone()).await;
 
     if let Some(request_id) = &request_id {
         window.release_cancellation(request_id).await;
@@ -80,7 +79,7 @@ where
     result.map_err(|e| e.into())
 }
 
-pub(super) async fn with_window_timeout<'a, R, T, F, Fut>(
+pub(super) async fn with_main_window_timeout<'a, R, T, F, Fut>(
     ctx: &R::AsyncContext,
     app: State<'_, Arc<sapic_app::App<R>>>,
     window: TauriWindow<R::EventLoop>,
@@ -89,7 +88,7 @@ pub(super) async fn with_window_timeout<'a, R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Window<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, MainWindow<R>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -154,6 +153,7 @@ where
         })?;
 
     let workspace = window
+        .inner()
         .workspace()
         .await
         .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
@@ -205,6 +205,7 @@ where
         })?;
 
     let workspace = window
+        .inner()
         .workspace()
         .await
         .ok_or_join_err::<FailedPrecondition>("no active workspace")?;

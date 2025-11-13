@@ -1,4 +1,3 @@
-use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_storage2::{Storage, models::primitives::StorageScope};
@@ -6,7 +5,10 @@ use moss_workspace::{models::primitives::WorkspaceId, workspace::WorkspaceSummar
 use rustc_hash::FxHashMap;
 
 use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 // static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
@@ -27,21 +29,27 @@ pub struct WorkspaceItem {
 }
 
 pub struct WorkspaceService {
+    workspaces_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn Storage>,
 }
 
 impl WorkspaceService {
-    pub async fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
+    pub async fn new(
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn Storage>,
+        workspaces_dir: PathBuf,
+    ) -> Self {
+        Self {
+            fs,
+            storage,
+            workspaces_dir,
+        }
     }
 
-    pub async fn known_workspaces<R: AppRuntime>(
-        &self,
-        delegate: &AppDelegate<R>,
-    ) -> joinerror::Result<Vec<WorkspaceItem>> {
-        let storage = <dyn Storage>::global(delegate);
-
-        let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = storage
+    pub async fn known_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+        let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
+            .storage
             .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
             .await
         {
@@ -50,7 +58,7 @@ impl WorkspaceService {
             FxHashMap::default()
         };
 
-        let mut read_dir = self.fs.read_dir(&delegate.workspaces_dir()).await?;
+        let mut read_dir = self.fs.read_dir(&self.workspaces_dir).await?;
 
         let mut workspaces = vec![];
         while let Some(entry) = read_dir.next_entry().await? {

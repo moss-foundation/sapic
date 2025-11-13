@@ -43,9 +43,10 @@ use moss_server_api::{
     extension_registry::{AppExtensionRegistryApiClient, ExtensionRegistryApiClient},
 };
 use moss_storage2::{AppStorage, Storage};
-use moss_theme::registry::{AppThemeRegistry, ThemeRegistry};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
+use sapic_runtime::globals::GlobalThemeRegistry;
+use sapic_system::theme::theme_registry::{AppThemeRegistry, ThemeRegistry};
 use sapic_window::window::OnWindowReadyOptions;
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
@@ -179,7 +180,7 @@ pub async fn run<R: TauriRuntime>() {
                     let http_header_registry =
                         AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
-                    <dyn ThemeRegistry>::set_global(&delegate, theme_registry);
+                    GlobalThemeRegistry::set(&delegate, theme_registry);
                     <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
                     <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);

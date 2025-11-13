@@ -8,6 +8,7 @@ description = "Main window controller for the application"
 path = "src/window.rs"
 
 [dependencies]
+sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
 
@@ -29,3 +30,4 @@ moss_keyring = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
 joinerror = { workspace = true }
+tokio = { workspace = true }

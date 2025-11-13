@@ -7,6 +7,7 @@ edition = "2024"
 path = "src/app.rs"
 
 [dependencies]
+sapic-runtime = { workspace = true }
 sapic-system = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }

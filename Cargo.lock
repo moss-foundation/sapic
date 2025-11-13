@@ -201,6 +201,7 @@ dependencies = [
  "moss_theme",
  "moss_user",
  "moss_workspace",
+ "runtime",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -1702,9 +1703,11 @@ dependencies = [
  "objc",
  "rand 0.9.2",
  "reqwest",
+ "runtime",
  "serde_json",
  "shared-storage",
  "strum",
+ "system",
  "tauri",
  "tauri-build",
  "tauri-plugin-fs",
@@ -3636,6 +3639,7 @@ dependencies = [
 name = "main"
 version = "0.1.0"
 dependencies = [
+ "base",
  "derive_more 2.0.1",
  "joinerror",
  "moss_activity_broadcaster",
@@ -3652,6 +3656,7 @@ dependencies = [
  "moss_workspace",
  "system",
  "tauri",
+ "tokio",
  "window",
  "window2",
 ]
@@ -3811,6 +3816,7 @@ name = "moss_api"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "base",
  "joinerror",
  "moss_applib",
  "moss_common",
@@ -3975,6 +3981,7 @@ name = "moss_extension_points"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base",
  "inventory",
  "joinerror",
  "moss_app_delegate",
@@ -3985,8 +3992,10 @@ dependencies = [
  "moss_logging",
  "moss_project",
  "moss_theme",
+ "runtime",
  "serde",
  "serde_json",
+ "system",
  "tokio",
 ]
 
@@ -6025,6 +6034,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "runtime"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "derive_more 2.0.1",
+ "inventory",
+ "moss_app_delegate",
+ "moss_applib",
+ "serde",
+ "serde_json",
+ "system",
+ "tokio",
+]
+
+[[package]]
 name = "rust_decimal"
 version = "1.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7082,7 +7106,6 @@ dependencies = [
  "async-trait",
  "base",
  "joinerror",
- "moss_app_delegate",
  "moss_applib",
  "moss_fs",
  "moss_storage2",
@@ -9015,8 +9038,10 @@ dependencies = [
 name = "welcome"
 version = "0.1.0"
 dependencies = [
+ "base",
  "derive_more 2.0.1",
  "joinerror",
+ "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_fs",

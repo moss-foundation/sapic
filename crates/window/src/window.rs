@@ -11,8 +11,7 @@ use tokio::sync::RwLock;
 use crate::{
     ActiveWorkspace, configuration::ConfigurationService, language::LanguageService,
     logging::LogService, models::primitives::SessionId, profile::ProfileService,
-    session::SessionService, storage::KEY_LAST_ACTIVE_WORKSPACE, theme::ThemeService,
-    workspace::WorkspaceService,
+    session::SessionService, storage::KEY_LAST_ACTIVE_WORKSPACE, workspace::WorkspaceService,
 };
 
 #[derive(Default)]
@@ -34,7 +33,7 @@ pub struct Window<R: AppRuntime> {
     pub(super) log_service: LogService,
     pub(super) workspace_service: WorkspaceService<R>,
     pub(super) language_service: LanguageService,
-    pub(super) theme_service: ThemeService,
+    // pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
     pub(super) configuration_service: ConfigurationService,
 

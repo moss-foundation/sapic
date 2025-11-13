@@ -1,4 +1,4 @@
-pub mod models;
+pub mod contracts;
 
 use serde::Serialize;
 use thiserror::Error;

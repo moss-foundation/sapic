@@ -1,15 +1,26 @@
+pub mod operations;
+
+mod color_theme_ops;
+mod workspace_ops;
+
 use derive_more::Deref;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, context::Canceller};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
+use sapic_system::{
+    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+};
 use sapic_window::WindowBuilder;
 use sapic_window2::constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
-use std::sync::Arc;
+use std::{collections::HashMap, sync::Arc};
 use tauri::WebviewWindow;
+use tokio::sync::RwLock;
+
+use crate::{color_theme_ops::MainColorThemeOps, workspace_ops::MainWorkspaceOps};
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
@@ -20,9 +31,15 @@ pub struct MainWindow<R: AppRuntime> {
     #[deref]
     pub window: WebviewWindow<R::EventLoop>,
 
+    pub(crate) workspace_ops: Arc<MainWorkspaceOps>,
+    pub(crate) color_theme_ops: Arc<MainColorThemeOps>,
+
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    pub w: Arc<sapic_window::Window<R>>,
+    w: Arc<sapic_window::Window<R>>,
+
+    // Store cancellers by the id of API requests
+    pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
 
 impl<R: AppRuntime> Clone for MainWindow<R> {
@@ -30,6 +47,9 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
         Self {
             window: self.window.clone(),
             w: self.w.clone(),
+            workspace_ops: self.workspace_ops.clone(),
+            color_theme_ops: self.color_theme_ops.clone(),
+            tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
 }
@@ -43,6 +63,8 @@ impl<R: AppRuntime> MainWindow<R> {
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         window_id: usize,
         workspace_id: WorkspaceId,
+        workspace_service: Arc<WorkspaceService>,
+        color_theme_service: Arc<ThemeService>,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
         let w = WindowBuilder::new(fs, keyring, auth_api_client, workspace_id.clone())
@@ -79,6 +101,27 @@ impl<R: AppRuntime> MainWindow<R> {
         Ok(Self {
             window: webview_window,
             w: Arc::new(w),
+            workspace_ops: Arc::new(MainWorkspaceOps::new(workspace_service)),
+            color_theme_ops: Arc::new(MainColorThemeOps::new(color_theme_service)),
+            tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
+    }
+
+    // HACK: this is a temporary solution until we migrate all the necessary
+    // functionality and fully get rid of the separate `window` crate.
+    pub fn inner(&self) -> &sapic_window::Window<R> {
+        &self.w
+    }
+
+    pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.insert(request_id.to_string(), canceller);
+    }
+
+    pub async fn release_cancellation(&self, request_id: &str) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.remove(request_id);
     }
 }

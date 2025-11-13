@@ -62,7 +62,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts",
+    "tools/cargo-new-ts", "crates/runtime",
 ]
 
 [workspace.dependencies]
@@ -78,6 +78,7 @@ static_json = { path = "libs/static-json" }
 sapic-app = { path = "crates/app", package = "app" }
 sapic-system = { path = "crates/system", package = "system" }
 sapic-welcome = { path = "crates/welcome", package = "welcome" }
+sapic-runtime = { path = "crates/runtime", package = "runtime" }
 sapic-main = { path = "crates/main", package = "main" }
 sapic-window2 = { path = "crates/window2", package = "window2" }
 sapic-base = { path = "crates/base", package = "base" }

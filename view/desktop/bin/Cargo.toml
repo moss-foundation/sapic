@@ -27,6 +27,8 @@ sapic-app = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
 sapic-window = { workspace = true }
+sapic-system = { workspace = true }
+sapic-runtime = { workspace = true }
 
 moss_app_delegate.workspace = true
 moss_server_api.workspace = true

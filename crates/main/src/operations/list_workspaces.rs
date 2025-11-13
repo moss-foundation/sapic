@@ -2,12 +2,11 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use sapic_window::models::{operations::ListWorkspacesOutput, types::WorkspaceInfo};
 
-use crate::WelcomeWindow;
+use crate::MainWindow;
 
-impl<R: AppRuntime> WelcomeWindow<R> {
+impl<R: AppRuntime> MainWindow<R> {
     pub async fn list_workspaces(
         &self,
-        _ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
     ) -> joinerror::Result<ListWorkspacesOutput> {
         let workspaces = self
