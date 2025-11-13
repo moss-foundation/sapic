@@ -13,7 +13,7 @@
  */
 
 import { existsSync, readdirSync, statSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { basename, join, relative, resolve } from "node:path";
 import { ExportDeclaration, Project, SourceFile } from "ts-morph";
 
 interface Config {
@@ -69,17 +69,28 @@ class TypeScriptExportsInjector {
   }
 
   /**
-   * Discovers TypeScript files in the bindings directory
+   * Discovers TypeScript files in the bindings directory (recursively)
+   * Returns both regular .ts files and .zod.ts files
    */
   private discoverBindingFiles(): string[] {
     const bindingsPath = join(this.config.targetPath, this.config.bindingsDirectoryName);
 
     try {
-      const files = readdirSync(bindingsPath, { withFileTypes: true })
-        .filter(
-          (dirent) => dirent.isFile() && dirent.name.endsWith(this.config.fileExtension) && !dirent.name.startsWith(".")
-        )
-        .map((dirent) => dirent.name)
+      const files = readdirSync(bindingsPath, { recursive: true, withFileTypes: true })
+        .filter((dirent) => {
+          if (!dirent.isFile()) return false;
+          if (!dirent.name.endsWith(this.config.fileExtension)) return false;
+          if (dirent.name.startsWith(".")) return false;
+          return true;
+        })
+        .map((dirent) => {
+          // Handle nested directories - construct relative path from bindings directory
+          const parentPath = dirent.parentPath || bindingsPath;
+          const fullPath = join(parentPath, dirent.name);
+          const relativePath = relative(bindingsPath, fullPath);
+          // Normalize path separators for cross-platform compatibility (use forward slashes for TypeScript imports)
+          return relativePath.replace(/\\/g, "/");
+        })
         .sort(); // Ensure consistent ordering
 
       console.log(`🔍 Found ${files.length} TypeScript binding files`);
@@ -112,16 +123,27 @@ class TypeScriptExportsInjector {
    * Adds new export declarations for discovered binding files
    */
   private addNewBindingExports(indexFile: SourceFile, bindingFiles: string[]): void {
-    bindingFiles.forEach((fileName) => {
-      const moduleName = basename(fileName, this.config.fileExtension);
-      const moduleSpecifier = `./${this.config.bindingsDirectoryName}/${moduleName}`;
+    bindingFiles.forEach((filePath) => {
+      // Handle both regular .ts files and .zod.ts files
+      // For .zod.ts files, the module specifier should end with .zod (without .ts)
+      // For regular .ts files, just remove .ts extension
+      let modulePath: string;
+      if (filePath.endsWith(".zod.ts")) {
+        // For .zod.ts files: "theme/primitives.zod.ts" -> "theme/primitives.zod"
+        modulePath = filePath.replace(".zod.ts", ".zod");
+      } else {
+        // For regular .ts files: "theme/primitives.ts" -> "theme/primitives"
+        modulePath = filePath.replace(this.config.fileExtension, "");
+      }
+
+      const moduleSpecifier = `./${this.config.bindingsDirectoryName}/${modulePath}`;
 
       // Create export * from syntax directly
       indexFile.addExportDeclaration({
         moduleSpecifier,
       });
 
-      console.log(`📤 Added export for: ${moduleName}`);
+      console.log(`📤 Added export for: ${modulePath}`);
     });
   }
 
