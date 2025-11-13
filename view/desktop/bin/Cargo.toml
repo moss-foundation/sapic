@@ -24,6 +24,8 @@ devtools = ["tauri/devtools"]
 
 [dependencies]
 sapic-app = { workspace = true }
+sapic-welcome = { workspace = true }
+sapic-main = { workspace = true }
 sapic-window = { workspace = true }
 
 moss_app_delegate.workspace = true

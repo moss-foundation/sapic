@@ -2,7 +2,6 @@ mod extension;
 mod language;
 mod profile;
 mod theme;
-mod workspace;
 
 pub mod builder;
 pub mod command;
@@ -10,37 +9,24 @@ pub mod types;
 pub mod windows;
 
 use derive_more::Deref;
-use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::TauriResultExt as _};
-use moss_extension::ExtensionPoint;
+use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
 use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
-use sapic_window::{
-    Window, WindowBuilder,
-    window::{OnWindowReadyOptions, TitleBarStyle},
-};
+use sapic_system::services::workspace_service::WorkspaceService;
+use sapic_welcome::WelcomeWindow;
+use sapic_window::Window;
 use std::{
     ops::{Deref, DerefMut},
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering},
-    },
+    sync::Arc,
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
-use tokio::sync::RwLock;
-use tracing::instrument;
 
-use crate::{
-    command::CommandCallback,
-    extension::ExtensionService,
-    windows::{WindowManager, welcome::WelcomeWindow},
-    workspace::service::WorkspaceService,
-};
+use crate::{command::CommandCallback, extension::ExtensionService, windows::WindowManager};
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
 

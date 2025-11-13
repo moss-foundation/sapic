@@ -1,26 +1,24 @@
 pub mod operations;
 
-mod workspace_service;
-
-use std::{collections::HashMap, sync::Arc};
+mod workspace_ops;
 
 use derive_more::Deref;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller};
+use sapic_system::services::workspace_service::WorkspaceService;
+use std::{collections::HashMap, sync::Arc};
 use tauri::WebviewWindow;
 use tokio::sync::RwLock;
 
-use crate::{
-    windows::{
-        constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
-        defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
-        welcome::workspace_service::WelcomeWorkspaceOps,
-    },
-    workspace::service::WorkspaceService,
+use sapic_window2::{
+    constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
+    defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
 };
 
-pub(super) const WELCOME_WINDOW_LABEL: &str = "welcome";
+use crate::workspace_ops::WelcomeWorkspaceOps;
+
+pub const WELCOME_WINDOW_LABEL: &str = "welcome";
 const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
 
 /// Welcome window controller

@@ -52,15 +52,15 @@ impl AppThemeRegistry {
     }
 }
 
-#[derive(Deref, Clone)]
-pub struct GlobalThemeRegistry(Arc<dyn ThemeRegistry>);
+// #[derive(Deref, Clone)]
+// pub struct GlobalThemeRegistry(Arc<dyn ThemeRegistry>);
 
-impl dyn ThemeRegistry {
-    pub fn global<R: AppRuntime>(delegate: &AppDelegate<R>) -> Arc<dyn ThemeRegistry> {
-        delegate.global::<GlobalThemeRegistry>().0.clone()
-    }
+// impl dyn ThemeRegistry {
+//     pub fn global<R: AppRuntime>(delegate: &AppDelegate<R>) -> Arc<dyn ThemeRegistry> {
+//         delegate.global::<GlobalThemeRegistry>().0.clone()
+//     }
 
-    pub fn set_global<R: AppRuntime>(delegate: &AppDelegate<R>, v: Arc<dyn ThemeRegistry>) {
-        delegate.set_global(GlobalThemeRegistry(v));
-    }
-}
+//     pub fn set_global<R: AppRuntime>(delegate: &AppDelegate<R>, v: Arc<dyn ThemeRegistry>) {
+//         delegate.set_global(GlobalThemeRegistry(v));
+//     }
+// }

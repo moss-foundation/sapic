@@ -212,7 +212,7 @@ pub async fn set_up_test_app() -> (
         }
     });
 
-    let app = WindowBuilder::<MockAppRuntime>::new(fs.clone(), keyring, auth_api_client, vec![])
+    let app = WindowBuilder::new(fs.clone(), keyring, auth_api_client, vec![])
         .build(&ctx, &app_delegate)
         .await;
 

@@ -4,11 +4,12 @@ use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use sapic_system::services::workspace_service::WorkspaceService;
 use std::sync::Arc;
 
 use crate::{
     App, AppCommands, AppServices, command::CommandDecl, extension::ExtensionService,
-    windows::WindowManager, workspace::service::WorkspaceService,
+    windows::WindowManager,
 };
 
 pub struct AppBuilder<R: AppRuntime> {

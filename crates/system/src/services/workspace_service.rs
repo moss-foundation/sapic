@@ -8,8 +8,8 @@ use rustc_hash::FxHashMap;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
-pub static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
-pub static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
+// static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
+static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
 pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
     format!("{KEY_WORKSPACE_PREFIX}.{}.lastOpenedAt", id.to_string())

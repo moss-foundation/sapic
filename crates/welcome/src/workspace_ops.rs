@@ -1,8 +1,7 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
+use sapic_system::services::workspace_service::{WorkspaceItem, WorkspaceService};
 use std::sync::Arc;
-
-use crate::workspace::service::{WorkspaceItem, WorkspaceService};
 
 pub struct WelcomeWorkspaceOps {
     workspace_service: Arc<WorkspaceService>,

@@ -7,10 +7,9 @@ use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
 use sapic_window::WindowBuilder;
+use sapic_window2::constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
 use std::sync::Arc;
 use tauri::WebviewWindow;
-
-use crate::windows::constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
@@ -36,7 +35,7 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
 }
 
 impl<R: AppRuntime> MainWindow<R> {
-    pub(crate) async fn new(
+    pub async fn new(
         ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,

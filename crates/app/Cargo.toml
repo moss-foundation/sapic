@@ -7,6 +7,10 @@ edition = "2024"
 path = "src/app.rs"
 
 [dependencies]
+sapic-system = { workspace = true }
+sapic-welcome = { workspace = true }
+sapic-main = { workspace = true }
+
 sapic-window = { workspace = true }
 
 moss_applib = { workspace = true }

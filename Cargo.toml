@@ -12,6 +12,12 @@ members = [
     #
     "crates/app",
     "crates/window",
+    "crates/welcome",
+    "crates/main",
+    "crates/system",
+    "crates/base", 
+    "crates/platform",
+    "crates/window2",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -70,6 +76,12 @@ static_json = { path = "libs/static-json" }
 # Internal crates
 #
 sapic-app = { path = "crates/app", package = "app" }
+sapic-system = { path = "crates/system", package = "system" }
+sapic-welcome = { path = "crates/welcome", package = "welcome" }
+sapic-main = { path = "crates/main", package = "main" }
+sapic-window2 = { path = "crates/window2", package = "window2" }
+sapic-base = { path = "crates/base", package = "base" }
+sapic-platform = { path = "crates/platform", package = "platform" }
 sapic-window = { path = "crates/window", package = "window" }
 
 

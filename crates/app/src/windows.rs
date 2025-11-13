@@ -1,6 +1,3 @@
-pub mod main;
-pub mod welcome;
-
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
@@ -8,29 +5,14 @@ use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
+use sapic_main::MainWindow;
+use sapic_system::services::workspace_service::WorkspaceService;
+use sapic_welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow};
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
 use tokio::sync::RwLock;
-
-use crate::{
-    windows::{
-        main::MainWindow,
-        welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow},
-    },
-    workspace::service::WorkspaceService,
-};
-
-pub(crate) mod constants {
-    pub const MIN_WINDOW_WIDTH: f64 = 800.0;
-    pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
-}
-
-pub(crate) mod defaults {
-    pub const DEFAULT_WINDOW_POSITION_X: f64 = 100.0;
-    pub const DEFAULT_WINDOW_POSITION_Y: f64 = 100.0;
-}
 
 pub(crate) type WindowLabel = String;
 
@@ -49,13 +31,6 @@ impl<R: AppRuntime> Clone for AppWindow<R> {
 }
 
 impl<R: AppRuntime> AppWindow<R> {
-    fn label(&self) -> &str {
-        match self {
-            AppWindow::Welcome(window) => window.label(),
-            AppWindow::Main(window) => window.label(),
-        }
-    }
-
     fn as_welcome(&self) -> Option<&WelcomeWindow<R>> {
         match self {
             AppWindow::Welcome(window) => Some(window),
