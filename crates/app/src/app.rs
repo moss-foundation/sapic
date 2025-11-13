@@ -3,6 +3,7 @@ mod profile;
 
 pub mod builder;
 pub mod command;
+pub mod operations;
 pub mod windows;
 
 use derive_more::Deref;
@@ -19,6 +20,7 @@ use sapic_system::{
     theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
 };
 use sapic_welcome::WelcomeWindow;
+use sapic_window2::WindowApi;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -74,6 +76,13 @@ impl<R: AppRuntime> App<R> {
         self.tao_handle.clone()
     }
 
+    pub async fn window(&self, label: &str) -> Option<Box<dyn WindowApi>> {
+        self.windows
+            .window(label)
+            .await
+            .map(|window| Box::new(window) as Box<dyn WindowApi>)
+    }
+
     pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
         let maybe_welcome_window = self.windows.welcome_window().await;
         if let Some(welcome_window) = maybe_welcome_window {
@@ -83,14 +92,7 @@ impl<R: AppRuntime> App<R> {
 
             return Ok(());
         } else {
-            let welcome_window = self
-                .windows
-                .create_welcome_window(
-                    delegate,
-                    self.services.workspace_service.clone(),
-                    self.services.theme_service.clone(),
-                )
-                .await?;
+            let welcome_window = self.windows.create_welcome_window(delegate).await?;
             if let Err(err) = welcome_window.window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
@@ -129,8 +131,6 @@ impl<R: AppRuntime> App<R> {
                 self.keyring.clone(),
                 self.auth_api_client.clone(),
                 workspace_id,
-                self.services.workspace_service.clone(),
-                self.services.theme_service.clone(),
             )
             .await?;
 

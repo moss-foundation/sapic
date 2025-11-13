@@ -11,9 +11,11 @@ sapic-runtime = { workspace = true }
 sapic-system = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
+sapic-window2 = { workspace = true }
 
 sapic-window = { workspace = true }
 
+moss_api = { workspace = true }
 moss_applib = { workspace = true }
 moss_theme = { workspace = true }
 moss_language = { workspace = true }
@@ -32,6 +34,7 @@ tauri = { workspace = true }
 tokio = { workspace = true }
 rustc-hash = { workspace = true }
 joinerror = { workspace = true }
+async-trait = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 ts-rs = { workspace = true }

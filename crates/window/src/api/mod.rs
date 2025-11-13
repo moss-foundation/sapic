@@ -1,4 +1,3 @@
-pub mod cancel_request;
 pub mod close_workspace;
 pub mod create_profile;
 pub mod create_workspace;

@@ -1,11 +1,7 @@
-use moss_api::{TauriError, TauriResult, contracts::theme::*};
-use moss_app_delegate::AppDelegate;
-use moss_applib::TauriAppRuntime;
-use sapic_window::models::operations::*;
-use std::path::Path;
-use tauri::{Manager, Window as TauriWindow};
-
 use crate::commands::primitives::*;
+use moss_api::{TauriError, TauriResult, contracts::theme::*};
+use sapic_window::models::operations::*;
+use tauri::Window as TauriWindow;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
@@ -96,12 +92,12 @@ pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     input: GetColorThemeInput,
     options: Options,
 ) -> TauriResult<GetColorThemeOutput> {
-    super::with_main_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.get_color_theme(&ctx, &input).await },
+        |ctx, app, _| async move { app.get_color_theme(&ctx, &input).await },
     )
     .await
 }
@@ -114,12 +110,12 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListColorThemesOutput> {
-    super::with_main_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.list_color_themes(&ctx).await },
+        |ctx, app, _| async move { app.list_color_themes(&ctx).await },
     )
     .await
 }
@@ -209,21 +205,20 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     .await
 }
 
-#[allow(non_snake_case)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn welcome__list_workspaces<'a, R: tauri::Runtime>(
+pub async fn list_workspaces<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
-    super::with_welcome_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app_delegate, window| async move { window.list_workspaces(&ctx, &app_delegate).await },
+        |ctx, app, app_delegate| async move { app.list_workspaces(&ctx, &app_delegate).await },
     )
     .await
 }
@@ -280,49 +275,6 @@ pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
         },
     )
     .await
-
-    // ----
-
-    // let app_delegate = app
-    //     .inner()
-    //     .state::<AppDelegate<TauriAppRuntime<R>>>()
-    //     .inner()
-    //     .clone();
-
-    // app.ensure_main_for_workspace(&ctx, &app_delegate, input.id.clone())
-    //     .await
-    //     .unwrap();
-
-    // window.close().unwrap();
-
-    // ----
-
-    // super::with_main_window_timeout(
-    //     ctx.inner(),
-    //     app,
-    //     window,
-    //     options,
-    //     |ctx, app_delegate, window| async move {
-    //         // app.create_window(
-    //         //     &ctx.clone(),
-    //         //     &app_delegate,
-    //         //     sapic_app::CreateWindowParams::WorkspaceWindow {
-    //         //         id: moss_workspace::models::primitives::WorkspaceId::new(),
-    //         //         name: "Hardcoded name".to_string(),
-    //         //     },
-    //         // )
-    //         // .await
-    //         // .unwrap();
-
-    //         Ok(OpenWorkspaceOutput {
-    //             id: input.id,
-    //             abs_path: Path::new("/").into(),
-    //         })
-
-    //         // window.open_workspace(&ctx, &app_delegate, &input).await
-    //     },
-    // )
-    // .await
 }
 
 #[tauri::command(async)]

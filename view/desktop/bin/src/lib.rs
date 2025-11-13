@@ -3,7 +3,6 @@ mod constants;
 mod mem;
 mod menu;
 mod plugins;
-mod window;
 
 #[macro_use]
 extern crate tracing;
@@ -46,18 +45,13 @@ use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
 use sapic_runtime::globals::GlobalThemeRegistry;
-use sapic_system::theme::theme_registry::{AppThemeRegistry, ThemeRegistry};
-use sapic_window::window::OnWindowReadyOptions;
+use sapic_system::theme::theme_registry::AppThemeRegistry;
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
-use tauri::{
-    AppHandle as TauriAppHandle, Emitter, Manager, RunEvent, Runtime as TauriRuntime,
-    WebviewWindow, WindowEvent,
-};
+use tauri::{Emitter, Manager, RunEvent, Runtime as TauriRuntime, WindowEvent};
 use tauri_plugin_os;
-use window::{CreateWindowInput, create_window};
 
 use crate::{constants::*, plugins::*};
 
@@ -256,11 +250,18 @@ pub async fn run<R: TauriRuntime>() {
             commands::welcome__open_workspace,
             commands::update_workspace,
             commands::create_workspace,
-            commands::welcome__list_workspaces,
+            commands::list_workspaces,
             commands::delete_workspace,
             commands::close_workspace,
-            commands::cancel_request,
             commands::update_profile,
+            //
+            // Main
+            //
+            commands::main__cancel_request,
+            //
+            // Welcome
+            //
+            commands::welcome__cancel_request,
             //
             // Workspace
             //
@@ -318,45 +319,14 @@ pub async fn run<R: TauriRuntime>() {
         .expect("failed to run")
         .run(|app_handle, event| match event {
             RunEvent::Ready => {
-                // let webview_window = create_main_window(&app_handle, "/");
-                // webview_window
-                //     .on_menu_event(move |window, event| menu::handle_event(window, &event));
-
                 futures::executor::block_on(async {
-                    // let window = app_handle
-                    //     .state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>()
-                    //     .window("main_0")
-                    //     .await
-                    //     .expect("Failed to get the main window");
-
                     let app = app_handle.state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>();
                     let app_delegate = app_handle
                         .state::<AppDelegate<TauriAppRuntime<R>>>()
                         .inner()
                         .clone();
-                    let ctx =
-                        MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
 
                     app.ensure_welcome(&app_delegate).await.unwrap();
-
-                    // app.create_window(
-                    //     &ctx,
-                    //     &app_delegate,
-                    //     sapic_app::CreateWindowParams::WelcomeWindow,
-                    // )
-                    // .await
-                    // .expect("Failed to create the main window");
-
-                    // window
-                    //     .on_window_ready(
-                    //         &ctx,
-                    //         &app_delegate,
-                    //         OnWindowReadyOptions {
-                    //             restore_last_workspace: true,
-                    //         },
-                    //     )
-                    //     .await
-                    //     .expect("Failed to prepare the app");
                 });
             }
 
@@ -364,23 +334,4 @@ pub async fn run<R: TauriRuntime>() {
 
             _ => {}
         });
-}
-
-fn create_main_window<R: TauriRuntime>(
-    app_handle: &TauriAppHandle<R>,
-    url: &str,
-) -> WebviewWindow<R> {
-    let window_inner_height = DEFAULT_WINDOW_HEIGHT;
-    let window_inner_width = DEFAULT_WINDOW_WIDTH;
-
-    let label = format!("{MAIN_WINDOW_PREFIX}{}", 0);
-    let config = CreateWindowInput {
-        url,
-        label: label.as_str(),
-        title: "Welcome",
-        inner_size: (window_inner_width, window_inner_height),
-        position: (100.0, 100.0),
-    };
-
-    create_window(app_handle, config)
 }

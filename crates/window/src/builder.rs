@@ -138,7 +138,7 @@ impl WindowBuilder {
             // theme_service,
             profile_service,
             configuration_service,
-            tracked_cancellations: Default::default(),
+            // tracked_cancellations: Default::default(),
         })
     }
 

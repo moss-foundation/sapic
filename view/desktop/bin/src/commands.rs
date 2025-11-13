@@ -1,10 +1,14 @@
 mod app;
+mod main;
 mod project;
+mod welcome;
 mod window;
 mod workspace;
 
 pub use app::*;
+pub use main::*;
 pub use project::*;
+pub use welcome::*;
 pub use window::*;
 pub use workspace::*;
 
@@ -22,6 +26,7 @@ use primitives::Options;
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
 use sapic_window::ActiveWorkspace;
+use sapic_window2::WindowApi;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
 
@@ -33,6 +38,50 @@ pub mod primitives {
     pub(super) type Options = Option<moss_api::contracts::Options>;
     pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
     pub(super) type App<'a, R> = State<'a, Arc<sapic_app::App<moss_applib::TauriAppRuntime<R>>>>;
+}
+
+pub(super) async fn with_app_timeout<'a, R, T, F, Fut>(
+    ctx: &R::AsyncContext,
+    app: State<'_, Arc<sapic_app::App<R>>>,
+    window: TauriWindow<R::EventLoop>,
+    options: Options,
+    f: F,
+) -> TauriResult<T>
+where
+    R: AppRuntime,
+    F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>) -> Fut + Send + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
+{
+    let timeout = options
+        .as_ref()
+        .and_then(|opts| opts.timeout.map(Duration::from_secs))
+        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
+
+    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
+    let request_id = options.and_then(|opts| opts.request_id);
+
+    let window = app
+        .window(window.label())
+        .await
+        .ok_or_join_err_with::<Unavailable>(|| {
+            format!("window '{}' is unavailable", window.label())
+        })?;
+
+    if let Some(request_id) = &request_id {
+        ctx.with_value("request_id", request_id.clone());
+        window
+            .track_cancellation(request_id, ctx.get_canceller())
+            .await;
+    }
+
+    let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
+    let result = f(ctx.freeze(), app.inner().clone(), delegate).await;
+
+    if let Some(request_id) = &request_id {
+        window.release_cancellation(request_id).await;
+    }
+
+    result.map_err(|e| e.into())
 }
 
 pub(super) async fn with_welcome_window_timeout<'a, R, T, F, Fut>(
