@@ -1,6 +1,6 @@
 use joinerror::Error;
-use moss_api::contracts::other::CancelRequestInput;
 use moss_applib::AppRuntime;
+use sapic_ipc::contracts::other::CancelRequestInput;
 
 use crate::WelcomeWindow;
 

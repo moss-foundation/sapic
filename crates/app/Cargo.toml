@@ -12,10 +12,10 @@ sapic-system = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
 sapic-window2 = { workspace = true }
+sapic-ipc = { workspace = true }
 
 sapic-window = { workspace = true }
 
-moss_api = { workspace = true }
 moss_applib = { workspace = true }
 moss_theme = { workspace = true }
 moss_language = { workspace = true }

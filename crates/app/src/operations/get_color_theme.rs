@@ -1,5 +1,5 @@
-use moss_api::contracts::theme::{GetColorThemeInput, GetColorThemeOutput};
 use moss_applib::AppRuntime;
+use sapic_ipc::contracts::theme::{GetColorThemeInput, GetColorThemeOutput};
 
 use crate::App;
 

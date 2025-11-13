@@ -25,7 +25,7 @@ const KNOWN_PACKAGES = [
   "moss-project",
   "moss-activity-broadcaster",
   "moss-bindingutils",
-  "moss-api",
+  "ipc",
   "moss-git",
   "moss-user",
   "moss-theme",

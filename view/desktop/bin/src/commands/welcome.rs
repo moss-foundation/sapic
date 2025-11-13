@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
-use moss_api::{TauriResult, contracts::other::CancelRequestInput};
 use moss_applib::errors::Unavailable;
+use sapic_ipc::{TauriResult, contracts::other::CancelRequestInput};
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;

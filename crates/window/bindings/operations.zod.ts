@@ -4,14 +4,12 @@ import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { configurationSchemaSchema, configurationTargetSchema } from "@repo/moss-configuration";
 import { extensionInfoSchema } from "@repo/moss-extension";
 import { languageInfoSchema } from "@repo/moss-language";
-import { themeIdSchema } from "@repo/moss-theme";
 import { profileInfoSchema } from "@repo/moss-user";
 import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
 import {
   addAccountParamsSchema,
-  colorThemeInfoSchema,
   configurationSchema,
   logDateSchema,
   logEntryInfoSchema,
@@ -22,10 +20,6 @@ import {
 
 export const batchDeleteLogInputSchema = z.object({
   ids: z.array(z.string()),
-});
-
-export const cancelRequestInputSchema = z.object({
-  request_id: z.string(),
 });
 
 export const closeWorkspaceInputSchema = z.object({
@@ -60,10 +54,6 @@ export const deleteWorkspaceOutputSchema = z.object({
 
 export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
-});
-
-export const getColorThemeOutputSchema = z.object({
-  cssContent: z.string(),
 });
 
 export const getTranslationNamespaceInputSchema = z.object({
@@ -104,15 +94,9 @@ export const describeAppOutputSchema = z.object({
   configuration: configurationSchema,
 });
 
-export const getColorThemeInputSchema = z.object({
-  id: themeIdSchema,
-});
-
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
 });
-
-export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
 
 export const listConfigurationSchemasOutputSchema = z.object({
   schemas: z.array(configurationSchemaSchema),

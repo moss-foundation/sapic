@@ -22,4 +22,4 @@ pub struct GetColorThemeOutput {
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
-pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
+pub struct ListColorThemesOutput(#[ts(type = "Array<ColorThemeInfo>")] pub Vec<ColorThemeInfo>);

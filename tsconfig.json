@@ -8,7 +8,7 @@
       "path": "crates/window"
     },
     {
-      "path": "crates/moss-api"
+      "path": "crates/ipc"
     },
     {
       "path": "crates/moss-project"

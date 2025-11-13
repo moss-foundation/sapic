@@ -1,10 +1,10 @@
 mod models;
 
 use joinerror::{OptionExt, ResultExt};
-use moss_api::TauriResult;
 use moss_applib::{GenericAppHandle, task::Task};
 use moss_logging::session;
 use moss_storage2::{FlushMode, Storage, StorageCapabilities};
+use sapic_ipc::TauriResult;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,

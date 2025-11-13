@@ -17,13 +17,13 @@ members = [
     "crates/system",
     "crates/base", 
     "crates/platform",
+    "crates/ipc",
     "crates/window2",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
-    "crates/moss-api",
     "crates/moss-text",
     "crates/moss-project",
     "crates/moss-db",
@@ -83,10 +83,12 @@ sapic-main = { path = "crates/main", package = "main" }
 sapic-window2 = { path = "crates/window2", package = "window2" }
 sapic-base = { path = "crates/base", package = "base" }
 sapic-platform = { path = "crates/platform", package = "platform" }
+sapic-ipc = { path = "crates/ipc", package = "ipc" }
+
 sapic-window = { path = "crates/window", package = "window" }
 
 
-moss_api = { path = "crates/moss-api" }
+
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }
 moss_db = { path = "crates/moss-db" }

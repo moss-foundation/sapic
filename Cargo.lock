@@ -187,9 +187,9 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
  "main",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
@@ -1677,13 +1677,13 @@ dependencies = [
  "dotenvy",
  "futures",
  "inventory",
+ "ipc",
  "joinerror",
  "log",
  "macos-trampoline",
  "main",
  "mimalloc",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
@@ -3184,6 +3184,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06432fb54d3be7964ecd3649233cddf80db2832f47fec34c01f65b3d9d774983"
 
 [[package]]
+name = "ipc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base",
+ "joinerror",
+ "moss_applib",
+ "moss_common",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "tokio",
+ "ts-rs",
+ "validator",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3646,9 +3663,9 @@ dependencies = [
  "async-trait",
  "base",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
@@ -3814,23 +3831,6 @@ dependencies = [
  "serde",
  "tauri",
  "ts-rs",
-]
-
-[[package]]
-name = "moss_api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base",
- "joinerror",
- "moss_applib",
- "moss_common",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "tokio",
- "ts-rs",
- "validator",
 ]
 
 [[package]]
@@ -4155,7 +4155,6 @@ dependencies = [
  "inventory",
  "joinerror",
  "json-patch 4.1.0",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
@@ -4317,7 +4316,6 @@ dependencies = [
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
@@ -6593,8 +6591,8 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
- "moss_api",
  "moss_applib",
  "moss_logging",
  "moss_storage2",
@@ -9046,8 +9044,8 @@ dependencies = [
  "async-trait",
  "base",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_fs",
@@ -9179,7 +9177,6 @@ dependencies = [
  "joinerror",
  "json-patch 4.1.0",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",

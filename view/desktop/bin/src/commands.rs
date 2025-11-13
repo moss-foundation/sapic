@@ -13,7 +13,6 @@ pub use window::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;
-use moss_api::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -23,6 +22,7 @@ use moss_applib::{
 use moss_project::Project;
 use moss_workspace::models::primitives::ProjectId;
 use primitives::Options;
+use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
 use sapic_window::ActiveWorkspace;
@@ -35,7 +35,7 @@ pub mod primitives {
 
     use tauri::State;
 
-    pub(super) type Options = Option<moss_api::contracts::Options>;
+    pub(super) type Options = Option<sapic_ipc::contracts::Options>;
     pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
     pub(super) type App<'a, R> = State<'a, Arc<sapic_app::App<moss_applib::TauriAppRuntime<R>>>>;
 }

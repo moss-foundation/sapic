@@ -1,7 +1,8 @@
-use crate::commands::primitives::*;
-use moss_api::{TauriError, TauriResult, contracts::theme::*};
+use sapic_ipc::{TauriError, TauriResult, contracts::theme::*};
 use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
+
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]

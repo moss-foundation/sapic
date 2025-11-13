@@ -11,10 +11,9 @@ path = "src/window.rs"
 sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
-
+sapic-ipc = { workspace = true }
 sapic-window = { workspace = true }
 
-moss_api = { workspace = true }
 moss_app_delegate = { workspace = true }
 moss_applib = { workspace = true }
 moss_fs = { workspace = true }

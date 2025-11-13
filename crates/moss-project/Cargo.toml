@@ -10,7 +10,6 @@ serde_json.workspace = true
 [dependencies]
 moss_app_delegate.workspace = true
 moss_user.workspace = true
-moss_api.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
 moss_db.workspace = true

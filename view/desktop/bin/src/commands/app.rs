@@ -1,8 +1,8 @@
 use joinerror::Error;
-use moss_api::TauriResult;
 use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
+use sapic_ipc::TauriResult;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;

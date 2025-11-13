@@ -1,6 +1,6 @@
 import { AppService } from "@/lib/services";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ListColorThemesOutput } from "@repo/window";
+import { ListColorThemesOutput } from "@repo/ipc";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_COLOR_THEMES_QUERY_KEY = "listColorThemes";

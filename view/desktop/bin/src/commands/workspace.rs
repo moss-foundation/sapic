@@ -1,8 +1,8 @@
-use moss_api::TauriResult;
 use moss_workspace::{
     api::BatchUpdateProjectOp,
     models::{events::*, operations::*},
 };
+use sapic_ipc::TauriResult;
 use tauri::{State, Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;

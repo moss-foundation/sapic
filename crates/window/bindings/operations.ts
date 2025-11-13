@@ -3,13 +3,11 @@ import { JsonValue } from "@repo/moss-bindingutils";
 import { ConfigurationSchema, ConfigurationTarget } from "@repo/moss-configuration";
 import { ExtensionInfo } from "@repo/moss-extension";
 import { LanguageInfo } from "@repo/moss-language";
-import { ThemeId } from "@repo/moss-theme";
 import { ProfileInfo } from "@repo/moss-user";
 import { WorkspaceMode } from "@repo/moss-workspace";
 import type { LogLevel } from "./primitives";
 import type {
   AddAccountParams,
-  ColorThemeInfo,
   Configuration,
   LogDate,
   LogEntryInfo,
@@ -27,11 +25,6 @@ export type BatchDeleteLogInput = { ids: Array<string> };
  * @category Operation
  */
 export type BatchDeleteLogOutput = { deletedEntries: Array<LogItemSourceInfo> };
-
-/**
- * @category Operation
- */
-export type CancelRequestInput = { request_id: string };
 
 /**
  * @category Operation
@@ -107,27 +100,12 @@ export type DescribeWorkbenchStateOutput = { prevWorkspaceId?: string };
 /**
  * @category Operation
  */
-export type GetColorThemeInput = { id: ThemeId };
-
-/**
- * @category Operation
- */
-export type GetColorThemeOutput = { cssContent: string };
-
-/**
- * @category Operation
- */
 export type GetTranslationNamespaceInput = { language: string; namespace: string };
 
 /**
  * @category Operation
  */
 export type GetTranslationNamespaceOutput = { contents: JsonValue };
-
-/**
- * @category Operation
- */
-export type ListColorThemesOutput = Array<ColorThemeInfo>;
 
 /**
  * @category Operation
@@ -165,6 +143,7 @@ export type ListWorkspacesOutput = Array<WorkspaceInfo>;
 export type OpenWorkspaceInput = { id: string };
 
 /**
+ * DEPRECATED
  * @category Operation
  */
 export type OpenWorkspaceOutput = { id: string };

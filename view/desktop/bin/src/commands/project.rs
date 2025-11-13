@@ -1,7 +1,7 @@
 use crate::commands::primitives::*;
-use moss_api::TauriResult;
 use moss_project::models::{events::*, operations::*, primitives::ResourceId};
 use moss_workspace::models::primitives::ProjectId;
+use sapic_ipc::TauriResult;
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 #[tauri::command(async)]
