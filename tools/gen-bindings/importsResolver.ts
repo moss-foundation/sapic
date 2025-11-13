@@ -17,6 +17,7 @@ import { join, resolve } from "node:path";
 import { Project, SourceFile } from "ts-morph";
 
 const KNOWN_PACKAGES = [
+  "base",
   "moss-app",
   "moss-common",
   "moss-environment",

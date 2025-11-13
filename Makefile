@@ -43,6 +43,7 @@ MISC_DIR := misc
 SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
+BASE_DIR := crates/base
 BINDINGUTILS_DIR := crates/moss-bindingutils
 WINDOW_MODELS_DIR := crates/window
 PROJECT_MODELS_DIR := crates/moss-project
@@ -155,6 +156,7 @@ $(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
 $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
 $(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,extension,EXTENSION_MODELS_DIR))
+$(eval $(call gen_bindings,base,BASE_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 
@@ -172,6 +174,7 @@ gen-configuration-bindings:
 gen-language-bindings:
 gen-extension-bindings:
 gen-shared-storage-bindings:
+gen-base-bindings:
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
@@ -188,7 +191,8 @@ gen-bindings: \
 	gen-configuration-bindings \
 	gen-language-bindings \
 	gen-extension-bindings \
-	gen-shared-storage-bindings
+	gen-shared-storage-bindings \
+	gen-base-bindings
 
 
 # ======================================================
