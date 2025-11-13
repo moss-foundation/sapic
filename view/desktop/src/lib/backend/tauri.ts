@@ -12,6 +12,8 @@ export type TauriIpcCommand =
   //
   // App
   //
+  | "main__list_workspaces"
+  | "main__open_workspace"
   | "describe_app"
   | "update_configuration"
   | "list_configuration_schemas"
@@ -22,11 +24,9 @@ export type TauriIpcCommand =
   | "list_color_themes"
   | "list_extensions"
   | "create_workspace"
-  | "open_workspace"
-  | "list_workspaces"
+  | "welcome__open_workspace"
   | "welcome__list_workspaces"
-  | "main__list_workspaces"
-  | "open_workspace"
+  | "list_workspaces" // DOES NOT EXIST ANYMORE
   | "delete_workspace"
   | "update_workspace"
   | "close_workspace"

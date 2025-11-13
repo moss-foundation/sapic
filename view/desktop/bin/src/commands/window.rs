@@ -255,7 +255,7 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
 #[allow(non_snake_case)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn open_workspace<'a, R: tauri::Runtime>(
+pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: TauriWindow<R>,
