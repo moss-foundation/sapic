@@ -1,5 +1,5 @@
 use joinerror::OptionExt;
-use moss_applib::{AppRuntime, errors::NotFound};
+use moss_applib::errors::NotFound;
 use moss_fs::FileSystem;
 use sapic_base::theme::types::{ColorThemeInfo, primitives::ThemeId};
 use sapic_platform::theme::loader::ThemeLoader;
