@@ -32,3 +32,6 @@ tauri = { workspace = true }
 joinerror = { workspace = true }
 tokio = { workspace = true }
 async-trait = { workspace = true }
+
+[features]
+integration-tests = []

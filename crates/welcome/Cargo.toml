@@ -28,3 +28,6 @@ rustc-hash = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
 async-trait = { workspace = true }
+
+[features]
+integration-tests = []

@@ -13,3 +13,6 @@ serde_json = { workspace = true }
 joinerror = { workspace = true }
 derive_more = { workspace = true, features = ["deref", "display"] }
 regorus = { workspace = true }
+
+[features]
+integration-tests = []

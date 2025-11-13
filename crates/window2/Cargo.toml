@@ -7,3 +7,6 @@ edition = "2024"
 moss_applib = { workspace = true }
 
 async-trait = { workspace = true }
+
+[features]
+integration-tests = []
