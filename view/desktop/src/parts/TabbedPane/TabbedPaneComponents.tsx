@@ -2,19 +2,19 @@ import { IDockviewPanelProps } from "moss-tabs";
 
 import { PageContent, PageHeader, PageView } from "@/components";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
-import {
-  EndpointPage,
-  FolderSettings,
-  KitchenSink,
-  Logs,
-  ProfilePage,
-  ProjectSettingsPage,
-  Settings,
-  WelcomePage,
-  WorkspaceSettings,
-} from "@/pages";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import {
+  EndpointView,
+  FolderSettingsView,
+  KitchenSinkView,
+  LogsView,
+  ProfileView,
+  ProjectSettingsView,
+  SettingsView,
+  WelcomeView,
+  WorkspaceSettingsView,
+} from "@/views";
 import { ResourceKind } from "@repo/moss-project";
 
 import Metadata from "./DebugComponents/Metadata";
@@ -56,25 +56,25 @@ export const tabbedPaneComponents = {
       projectId: string;
       iconType: ResourceKind;
     }>
-  ) => <EndpointPage {...props} />,
+  ) => <EndpointView {...props} />,
   ProjectSettings: (
     props: IDockviewPanelProps<{
       node: ProjectTreeNode;
       projectId: string;
       iconType: ResourceKind;
     }>
-  ) => <ProjectSettingsPage {...props} />,
+  ) => <ProjectSettingsView {...props} />,
   FolderSettings: (
     props: IDockviewPanelProps<{
       node: ProjectTreeNode;
       projectId: string;
       iconType: ResourceKind;
     }>
-  ) => <FolderSettings {...props} />,
-  Welcome: () => <WelcomePage />,
-  WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettings {...props} />,
-  KitchenSink: () => <KitchenSink />,
-  Settings: () => <Settings />,
-  Profile: (props: IDockviewPanelProps) => <ProfilePage {...props} />,
-  Logs: () => <Logs />,
+  ) => <FolderSettingsView {...props} />,
+  Welcome: () => <WelcomeView />,
+  WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettingsView {...props} />,
+  KitchenSink: () => <KitchenSinkView />,
+  Settings: () => <SettingsView />,
+  Profile: (props: IDockviewPanelProps) => <ProfileView {...props} />,
+  Logs: () => <LogsView />,
 };
