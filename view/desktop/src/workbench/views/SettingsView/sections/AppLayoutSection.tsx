@@ -1,8 +1,8 @@
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
+import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";

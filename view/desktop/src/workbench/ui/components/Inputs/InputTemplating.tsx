@@ -9,7 +9,7 @@ import {
   getCurrentCursorOffset,
   getTextOffset,
   setCursorPosition,
-} from "@/utils/templating";
+} from "@/workbench/utils/templating";
 
 interface InputTemplatingProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
   size?: "sm" | "md";

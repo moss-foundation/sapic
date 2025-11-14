@@ -2,8 +2,8 @@ import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
 
 import { Icons } from "@/lib/ui";
 import { cn } from "@/utils";
-import { swapListById } from "@/utils/swapListById";
 import { Divider } from "@/workbench/ui/components/Divider";
+import { swapListById } from "@/workbench/utils/swapListById";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { StatusBarActivity } from "./StatusBarActivity";

@@ -1,10 +1,12 @@
-import React, { createContext, useContext, ReactNode } from "react";
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
+import React, { createContext, ReactNode, useContext } from "react";
+
 import { useListWorkspaces } from "@/hooks/workbench/useListWorkspaces";
+import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
+
 import {
-  baseWorkspaceMenuItems,
-  baseSelectedWorkspaceMenuItems,
   additionalSelectedWorkspaceMenuItems,
+  baseSelectedWorkspaceMenuItems,
+  baseWorkspaceMenuItems,
   createAllWorkspacesMenuSection,
 } from "./HeadBarData";
 

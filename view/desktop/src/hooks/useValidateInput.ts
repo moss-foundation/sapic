@@ -1,6 +1,6 @@
 import { MutableRefObject, RefObject, useEffect } from "react";
 
-import { validateValue } from "@/utils/validateValue";
+import { validateValue } from "@/workbench/utils/validateValue";
 
 interface UseValidateInputProps {
   value: string;

@@ -1,4 +1,4 @@
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
+import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 import { ListWorkspacesOutput } from "@repo/window";
 
 const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {

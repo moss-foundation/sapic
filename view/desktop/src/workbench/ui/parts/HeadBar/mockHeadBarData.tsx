@@ -1,4 +1,4 @@
-import { MenuItemProps } from "@/utils/renderActionMenuItem";
+import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 
 // User menu items function that returns appropriate items based on whether a user is selected
 export const userMenuItems: MenuItemProps[] = [

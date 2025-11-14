@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo } from "react";
 
 import { useUpdateProjectResource } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { swapListByIndexWithEdge } from "@/utils/swapListByIndexWithEdge";
+import { swapListByIndexWithEdge } from "@/workbench/utils/swapListByIndexWithEdge";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { AddPathParamParams, AddQueryParamParams } from "@repo/moss-project";
