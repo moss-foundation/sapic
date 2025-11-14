@@ -8,9 +8,10 @@ description = "Welcome window controller for the application"
 path = "src/window.rs"
 
 [dependencies]
+sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
-
+sapic-ipc = { workspace = true }
 sapic-window = { workspace = true }
 
 moss_app_delegate = { workspace = true }
@@ -26,3 +27,7 @@ tokio = { workspace = true }
 rustc-hash = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
+async-trait = { workspace = true }
+
+[features]
+integration-tests = []

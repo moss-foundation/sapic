@@ -109,7 +109,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-activity-broadcaster:
+  crates/ipc:
     dependencies:
       typescript:
         specifier: 5.9.2
@@ -118,11 +118,14 @@ importers:
         specifier: 3.25.32
         version: 3.25.32
     devDependencies:
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../base
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-api:
+  crates/moss-activity-broadcaster:
     dependencies:
       typescript:
         specifier: 5.9.2
@@ -495,6 +498,9 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: 1.2.2
         version: 1.2.2(@types/react@19.2.2)(react@19.2.0)
+      '@repo/ipc':
+        specifier: workspace:*
+        version: link:../../crates/ipc
       '@repo/moss-activity-broadcaster':
         specifier: workspace:*
         version: link:../../crates/moss-activity-broadcaster

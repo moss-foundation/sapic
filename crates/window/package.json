@@ -12,7 +12,6 @@
       "@repo/moss-bindingutils": "workspace:*",
       "@repo/moss-workspace": "workspace:*",
       "@repo/moss-user": "workspace:*",
-      "@repo/moss-theme": "workspace:*",
       "@repo/moss-configuration": "workspace:*",
       "@repo/moss-language": "workspace:*",
       "@repo/moss-extension": "workspace:*"

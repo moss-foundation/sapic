@@ -17,13 +17,13 @@ members = [
     "crates/system",
     "crates/base", 
     "crates/platform",
+    "crates/ipc",
     "crates/window2",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
     "crates/moss-git",
     "crates/moss-git-hosting-provider",
-    "crates/moss-api",
     "crates/moss-text",
     "crates/moss-project",
     "crates/moss-db",
@@ -46,7 +46,6 @@ members = [
     "crates/moss-id-macro",
     "crates/moss-extension",
     "crates/moss-extension-points", 
-    "crates/moss-theme", 
     "crates/moss-configuration",
     "crates/moss-language",
     "crates/moss-storage2",
@@ -62,7 +61,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts",
+    "tools/cargo-new-ts", "crates/runtime",
 ]
 
 [workspace.dependencies]
@@ -78,14 +77,17 @@ static_json = { path = "libs/static-json" }
 sapic-app = { path = "crates/app", package = "app" }
 sapic-system = { path = "crates/system", package = "system" }
 sapic-welcome = { path = "crates/welcome", package = "welcome" }
+sapic-runtime = { path = "crates/runtime", package = "runtime" }
 sapic-main = { path = "crates/main", package = "main" }
 sapic-window2 = { path = "crates/window2", package = "window2" }
 sapic-base = { path = "crates/base", package = "base" }
 sapic-platform = { path = "crates/platform", package = "platform" }
+sapic-ipc = { path = "crates/ipc", package = "ipc" }
+
 sapic-window = { path = "crates/window", package = "window" }
 
 
-moss_api = { path = "crates/moss-api" }
+
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }
 moss_db = { path = "crates/moss-db" }
@@ -113,7 +115,6 @@ moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_extension = { path = "crates/moss-extension" }
 moss_extension_points = { path = "crates/moss-extension-points" }
-moss_theme = { path = "crates/moss-theme" }
 moss_configuration = { path = "crates/moss-configuration" }
 moss_language = { path = "crates/moss-language" }
 moss_storage2 = { path = "crates/moss-storage2" }

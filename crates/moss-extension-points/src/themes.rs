@@ -2,10 +2,9 @@ use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
-use moss_theme::{
-    contribution::ThemeContributionDecl,
-    registry::{GlobalThemeRegistry, ThemeRegistryItem},
-};
+use sapic_base::theme::contribution::ThemeContributionDecl;
+use sapic_runtime::globals::GlobalThemeRegistry;
+use sapic_system::theme::theme_registry::ThemeRegistryItem;
 use serde_json::Value as JsonValue;
 
 const THEMES_KEY: ContributionKey = ContributionKey::new("themes");

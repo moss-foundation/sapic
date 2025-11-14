@@ -1,10 +1,6 @@
-use std::path::Path;
-
-use moss_api::{TauriError, TauriResult};
-use moss_app_delegate::AppDelegate;
-use moss_applib::TauriAppRuntime;
+use sapic_ipc::{TauriError, TauriResult, contracts::theme::*};
 use sapic_window::models::operations::*;
-use tauri::{Manager, Window as TauriWindow};
+use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
 
@@ -16,12 +12,12 @@ pub async fn describe_app<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<DescribeAppOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.describe_app(&ctx).await },
+        |ctx, _, window| async move { window.inner().describe_app(&ctx).await },
     )
     .await
 }
@@ -35,13 +31,16 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
     input: UpdateConfigurationInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, app| async move {
-            app.update_configuration(&ctx, &app_delegate, input).await
+        |ctx, app_delegate, window| async move {
+            window
+                .inner()
+                .update_configuration(&ctx, &app_delegate, input)
+                .await
         },
     )
     .await
@@ -55,12 +54,12 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListConfigurationSchemasOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.list_configuration_schemas(&ctx).await },
+        |ctx, _, window| async move { window.inner().list_configuration_schemas(&ctx).await },
     )
     .await
 }
@@ -73,12 +72,14 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListExtensionsOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, app| async move { app.list_extensions(&ctx, &app_delegate).await },
+        |ctx, app_delegate, window| async move {
+            window.inner().list_extensions(&ctx, &app_delegate).await
+        },
     )
     .await
 }
@@ -92,12 +93,12 @@ pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     input: GetColorThemeInput,
     options: Options,
 ) -> TauriResult<GetColorThemeOutput> {
-    super::with_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.get_color_theme(&ctx, &input).await },
+        |ctx, app, _| async move { app.get_color_theme(&ctx, &input).await },
     )
     .await
 }
@@ -110,12 +111,12 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListColorThemesOutput> {
-    super::with_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.list_color_themes(&ctx).await },
+        |ctx, app, _| async move { app.list_color_themes(&ctx).await },
     )
     .await
 }
@@ -128,12 +129,12 @@ pub async fn list_languages<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListLanguagesOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.list_languages(&ctx).await },
+        |ctx, _, window| async move { window.inner().list_languages(&ctx).await },
     )
     .await
 }
@@ -147,12 +148,12 @@ pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
     input: GetTranslationNamespaceInput,
     options: Options,
 ) -> TauriResult<GetTranslationNamespaceOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.get_translation_namespace(&ctx, &input).await },
+        |ctx, _, window| async move { window.inner().get_translation_namespace(&ctx, &input).await },
     )
     .await
 }
@@ -166,12 +167,17 @@ pub async fn create_workspace<'a, R: tauri::Runtime>(
     input: CreateWorkspaceInput,
     options: Options,
 ) -> TauriResult<CreateWorkspaceOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, app| async move { app.create_workspace(&ctx, &app_delegate, &input).await },
+        |ctx, app_delegate, window| async move {
+            window
+                .inner()
+                .create_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
     )
     .await
 }
@@ -185,48 +191,37 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
     input: CloseWorkspaceInput,
     options: Options,
 ) -> TauriResult<CloseWorkspaceOutput> {
-    super::with_window_timeout(ctx.inner(), app, window, options, |ctx, app_delegate, app| async move {
-        app.close_workspace(&ctx, &app_delegate, &input).await
-    })
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app_delegate, window| async move {
+            window
+                .inner()
+                .close_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
     .await
 }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn welcome__list_workspaces<'a, R: tauri::Runtime>(
+pub async fn list_workspaces<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListWorkspacesOutput> {
-    // super::with_window_timeout(
-    //     ctx.inner(),
-    //     app,
-    //     window,
-    //     options,
-    //     |ctx, _, app| async move { app.list_workspaces(&ctx).await },
-    // )
-    // .await
-
-    super::with_welcome_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move { window.list_workspaces(&app_delegate).await },
+        |ctx, app, app_delegate| async move { app.list_workspaces(&ctx, &app_delegate).await },
     )
     .await
-
-    // let app_delegate = app
-    //     .inner()
-    //     .state::<AppDelegate<TauriAppRuntime<R>>>()
-    //     .inner()
-    //     .clone();
-
-    // let window = app.welcome_window().await.unwrap();
-    // let list_workspaces_output = window.list_workspaces(&app_delegate).await.unwrap();
-
-    // Ok(list_workspaces_output)
 }
 
 #[tauri::command(async)]
@@ -238,82 +233,46 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     input: DeleteWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_window_timeout(ctx.inner(), app, window, options, |ctx, app_delegate, app| async move {
-        app.delete_workspace(&ctx, &app_delegate, &input).await
-    })
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn open_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: OpenWorkspaceInput,
-    options: Options,
-) -> TauriResult<OpenWorkspaceOutput> {
-    // let window_inner_height = crate::DEFAULT_WINDOW_HEIGHT;
-    // let window_inner_width = crate::DEFAULT_WINDOW_WIDTH;
-
-    // let label = format!("main_{}", 0);
-    // let url = format!("/workspace/{}", input.id);
-    // let config = crate::CreateWindowInput {
-    //     url: url.as_str(),
-    //     label: label.as_str(),
-    //     title: "Welcome",
-    //     inner_size: (window_inner_width, window_inner_height),
-    //     position: (100.0, 100.0),
-    // };
-
-    // crate::create_window(app.app_handle(), config);
-
-    let app_delegate = app
-        .inner()
-        .state::<AppDelegate<TauriAppRuntime<R>>>()
-        .inner()
-        .clone();
-
-    // app.create_window(
-    //     &ctx.clone(),
-    //     &app_delegate,
-    //     sapic_app::CreateWindowParams::WorkspaceWindow {
-    //         id: moss_workspace::models::primitives::WorkspaceId::new(),
-    //         name: "Hardcoded name".to_string(),
-    //     },
-    // )
-    // .await
-    // .unwrap();
-
-    app.ensure_main(&ctx, &app_delegate, input.id.clone())
-        .await
-        .unwrap();
-
-    window.close().unwrap();
-
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
         |ctx, app_delegate, window| async move {
-            // app.create_window(
-            //     &ctx.clone(),
-            //     &app_delegate,
-            //     sapic_app::CreateWindowParams::WorkspaceWindow {
-            //         id: moss_workspace::models::primitives::WorkspaceId::new(),
-            //         name: "Hardcoded name".to_string(),
-            //     },
-            // )
-            // .await
-            // .unwrap();
+            window
+                .inner()
+                .delete_workspace(&ctx, &app_delegate, &input)
+                .await
+        },
+    )
+    .await
+}
 
-            Ok(OpenWorkspaceOutput {
-                id: input.id,
-                abs_path: Path::new("/").into(),
-            })
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: OpenWorkspaceInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_welcome_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, app_delegate, _| async move {
+            app.ensure_main_for_workspace(&ctx, &app_delegate, input.id.clone())
+                .await
+                .unwrap();
 
-            // window.open_workspace(&ctx, &app_delegate, &input).await
+            if let Err(err) = app.close_welcome_window().await {
+                tracing::error!("Failed to close welcome window: {}", err);
+            }
+
+            Ok(())
         },
     )
     .await
@@ -328,12 +287,12 @@ pub async fn update_workspace<'a, R: tauri::Runtime>(
     input: UpdateWorkspaceInput,
     options: Options,
 ) -> TauriResult<()> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, app| async move { app.update_workspace(&ctx, &input).await },
+        |ctx, _, window| async move { window.inner().update_workspace(&ctx, &input).await },
     )
     .await
 }
@@ -348,9 +307,18 @@ pub async fn create_profile<'a, R: tauri::Runtime>(
     input: CreateProfileInput,
     options: Options,
 ) -> TauriResult<CreateProfileOutput> {
-    super::with_window_timeout(ctx.inner(), app, window, options, |ctx, app_delegate, app| async move {
-        app.create_profile(&ctx, &app_delegate, input).await
-    })
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app_delegate, window| async move {
+            window
+                .inner()
+                .create_profile(&ctx, &app_delegate, input)
+                .await
+        },
+    )
     .await
 }
 
@@ -363,12 +331,17 @@ pub async fn update_profile<'a, R: tauri::Runtime>(
     input: UpdateProfileInput,
     options: Options,
 ) -> TauriResult<UpdateProfileOutput> {
-    super::with_window_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, app| async move { app.update_profile(&ctx, &app_delegate, input).await },
+        |ctx, app_delegate, window| async move {
+            window
+                .inner()
+                .update_profile(&ctx, &app_delegate, input)
+                .await
+        },
     )
     .await
 }

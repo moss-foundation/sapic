@@ -1,11 +1,9 @@
 mod extension;
-mod language;
 mod profile;
-mod theme;
 
 pub mod builder;
 pub mod command;
-pub mod types;
+pub mod operations;
 pub mod windows;
 
 use derive_more::Deref;
@@ -17,9 +15,12 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
 use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
-use sapic_system::services::workspace_service::WorkspaceService;
+use sapic_main::MainWindow;
+use sapic_system::{
+    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+};
 use sapic_welcome::WelcomeWindow;
-use sapic_window::Window;
+use sapic_window2::WindowApi;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -52,6 +53,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 
 pub(crate) struct AppServices {
     pub(crate) workspace_service: Arc<WorkspaceService>,
+    pub(crate) theme_service: Arc<ThemeService>,
 }
 
 #[derive(Deref)]
@@ -74,6 +76,13 @@ impl<R: AppRuntime> App<R> {
         self.tao_handle.clone()
     }
 
+    pub async fn window(&self, label: &str) -> Option<Box<dyn WindowApi>> {
+        self.windows
+            .window(label)
+            .await
+            .map(|window| Box::new(window) as Box<dyn WindowApi>)
+    }
+
     pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
         let maybe_welcome_window = self.windows.welcome_window().await;
         if let Some(welcome_window) = maybe_welcome_window {
@@ -83,10 +92,7 @@ impl<R: AppRuntime> App<R> {
 
             return Ok(());
         } else {
-            let welcome_window = self
-                .windows
-                .create_welcome_window(delegate, self.services.workspace_service.clone())
-                .await?;
+            let welcome_window = self.windows.create_welcome_window(delegate).await?;
             if let Err(err) = welcome_window.window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
@@ -95,7 +101,7 @@ impl<R: AppRuntime> App<R> {
         }
     }
 
-    pub async fn ensure_main(
+    pub async fn ensure_main_for_workspace(
         &self,
         ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
@@ -135,12 +141,20 @@ impl<R: AppRuntime> App<R> {
         Ok(())
     }
 
-    pub async fn main_window(&self, label: &str) -> Option<Arc<Window<R>>> {
-        self.windows.main_window(label).await.map(|window| window.w)
+    pub async fn main_window(&self, label: &str) -> Option<MainWindow<R>> {
+        self.windows.main_window(label).await
+    }
+
+    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
+        self.windows.close_main_window(label).await
     }
 
     pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {
         self.windows.welcome_window().await
+    }
+
+    pub async fn close_welcome_window(&self) -> joinerror::Result<()> {
+        self.windows.close_welcome_window().await
     }
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {

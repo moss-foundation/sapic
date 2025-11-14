@@ -185,7 +185,9 @@ checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 name = "app"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
  "main",
  "moss_app_delegate",
@@ -198,9 +200,9 @@ dependencies = [
  "moss_server_api",
  "moss_storage2",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
+ "runtime",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -211,6 +213,7 @@ dependencies = [
  "ts-rs",
  "welcome",
  "window",
+ "window2",
 ]
 
 [[package]]
@@ -1673,13 +1676,13 @@ dependencies = [
  "dotenvy",
  "futures",
  "inventory",
+ "ipc",
  "joinerror",
  "log",
  "macos-trampoline",
  "main",
  "mimalloc",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
@@ -1696,15 +1699,16 @@ dependencies = [
  "moss_storage",
  "moss_storage2",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
  "objc",
  "rand 0.9.2",
  "reqwest",
+ "runtime",
  "serde_json",
  "shared-storage",
  "strum",
+ "system",
  "tauri",
  "tauri-build",
  "tauri-plugin-fs",
@@ -1717,6 +1721,7 @@ dependencies = [
  "tracing",
  "welcome",
  "window",
+ "window2",
 ]
 
 [[package]]
@@ -3177,6 +3182,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "06432fb54d3be7964ecd3649233cddf80db2832f47fec34c01f65b3d9d774983"
 
 [[package]]
+name = "ipc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base",
+ "joinerror",
+ "moss_applib",
+ "moss_common",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "tokio",
+ "ts-rs",
+ "validator",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3636,10 +3658,12 @@ dependencies = [
 name = "main"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "base",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
@@ -3652,6 +3676,7 @@ dependencies = [
  "moss_workspace",
  "system",
  "tauri",
+ "tokio",
  "window",
  "window2",
 ]
@@ -3807,22 +3832,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_api"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "joinerror",
- "moss_applib",
- "moss_common",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "tokio",
- "ts-rs",
- "validator",
-]
-
-[[package]]
 name = "moss_app_delegate"
 version = "0.1.0"
 dependencies = [
@@ -3975,6 +3984,7 @@ name = "moss_extension_points"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base",
  "inventory",
  "joinerror",
  "moss_app_delegate",
@@ -3984,9 +3994,10 @@ dependencies = [
  "moss_language",
  "moss_logging",
  "moss_project",
- "moss_theme",
+ "runtime",
  "serde",
  "serde_json",
+ "system",
  "tokio",
 ]
 
@@ -4141,7 +4152,6 @@ dependencies = [
  "inventory",
  "joinerror",
  "json-patch 4.1.0",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
@@ -4239,27 +4249,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_theme"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "derive_more 2.0.1",
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_extension",
- "moss_fs",
- "moss_id_macro",
- "moss_logging",
- "regorus",
- "serde",
- "serde_json",
- "tokio",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_user"
 version = "0.1.0"
 dependencies = [
@@ -4303,7 +4292,6 @@ dependencies = [
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
@@ -6025,6 +6013,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "runtime"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "derive_more 2.0.1",
+ "inventory",
+ "moss_app_delegate",
+ "moss_applib",
+ "serde",
+ "serde_json",
+ "system",
+ "tokio",
+]
+
+[[package]]
 name = "rust_decimal"
 version = "1.39.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6564,8 +6567,8 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
- "moss_api",
  "moss_applib",
  "moss_logging",
  "moss_storage2",
@@ -7082,7 +7085,6 @@ dependencies = [
  "async-trait",
  "base",
  "joinerror",
- "moss_app_delegate",
  "moss_applib",
  "moss_fs",
  "moss_storage2",
@@ -9015,7 +9017,10 @@ dependencies = [
 name = "welcome"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
+ "base",
  "derive_more 2.0.1",
+ "ipc",
  "joinerror",
  "moss_app_delegate",
  "moss_applib",
@@ -9148,7 +9153,6 @@ dependencies = [
  "joinerror",
  "json-patch 4.1.0",
  "moss_activity_broadcaster",
- "moss_api",
  "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
@@ -9169,7 +9173,6 @@ dependencies = [
  "moss_storage2",
  "moss_testutils",
  "moss_text",
- "moss_theme",
  "moss_user",
  "moss_workspace",
  "nanoid",
@@ -9207,6 +9210,10 @@ dependencies = [
 [[package]]
 name = "window2"
 version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "moss_applib",
+]
 
 [[package]]
 name = "windows"

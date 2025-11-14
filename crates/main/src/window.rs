@@ -1,15 +1,21 @@
+pub mod operations;
+
+use async_trait::async_trait;
 use derive_more::Deref;
-use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
 use sapic_window::WindowBuilder;
-use sapic_window2::constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH};
-use std::sync::Arc;
+use sapic_window2::{
+    WindowApi,
+    constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
+};
+use std::{collections::HashMap, sync::Arc};
 use tauri::WebviewWindow;
+use tokio::sync::RwLock;
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
@@ -22,7 +28,10 @@ pub struct MainWindow<R: AppRuntime> {
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    pub w: Arc<sapic_window::Window<R>>,
+    w: Arc<sapic_window::Window<R>>,
+
+    // Store cancellers by the id of API requests
+    pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
 
 impl<R: AppRuntime> Clone for MainWindow<R> {
@@ -30,6 +39,7 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
         Self {
             window: self.window.clone(),
             w: self.w.clone(),
+            tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
 }
@@ -69,7 +79,6 @@ impl<R: AppRuntime> MainWindow<R> {
         let win_builder = win_builder
             .hidden_title(true)
             .title_bar_style(tauri::TitleBarStyle::Overlay)
-            .transparent(false)
             .decorations(true);
 
         let webview_window = win_builder
@@ -79,6 +88,28 @@ impl<R: AppRuntime> MainWindow<R> {
         Ok(Self {
             window: webview_window,
             w: Arc::new(w),
+            tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
+    }
+
+    // HACK: this is a temporary solution until we migrate all the necessary
+    // functionality and fully get rid of the separate `window` crate.
+    pub fn inner(&self) -> &sapic_window::Window<R> {
+        &self.w
+    }
+}
+
+#[async_trait]
+impl<R: AppRuntime> WindowApi for MainWindow<R> {
+    async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.insert(request_id.to_string(), canceller);
+    }
+
+    async fn release_cancellation(&self, request_id: &str) -> () {
+        let mut write = self.tracked_cancellations.write().await;
+
+        write.remove(request_id);
     }
 }

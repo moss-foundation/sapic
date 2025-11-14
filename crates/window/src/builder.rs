@@ -5,7 +5,7 @@ use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
-use moss_theme::registry::ThemeRegistry;
+// use moss_theme::registry::ThemeRegistry;
 use moss_workspace::models::primitives::WorkspaceId;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
@@ -18,7 +18,7 @@ use crate::{
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
-    theme::ThemeService,
+    // theme::ThemeService,
     window::Window,
     workspace::WorkspaceService,
 };
@@ -77,13 +77,13 @@ impl WindowBuilder {
         .await
         .expect("Failed to create configuration service");
 
-        let theme_service = ThemeService::new(
-            &delegate,
-            self.fs.clone(),
-            <dyn ThemeRegistry>::global(&delegate),
-        )
-        .await
-        .expect("Failed to create theme service");
+        // let theme_service = ThemeService::new(
+        //     &delegate,
+        //     self.fs.clone(),
+        //     <dyn ThemeRegistry>::global(&delegate),
+        // )
+        // .await
+        // .expect("Failed to create theme service");
 
         let language_service =
             LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
@@ -135,10 +135,10 @@ impl WindowBuilder {
             log_service,
             workspace_service,
             language_service,
-            theme_service,
+            // theme_service,
             profile_service,
             configuration_service,
-            tracked_cancellations: Default::default(),
+            // tracked_cancellations: Default::default(),
         })
     }
 

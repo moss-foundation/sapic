@@ -32,7 +32,7 @@ export const workspaceService = {
 
   openWorkspace: async (input: OpenWorkspaceInput) => {
     return await invokeTauriServiceIpc<OpenWorkspaceInput, OpenWorkspaceOutput>({
-      cmd: "open_workspace",
+      cmd: "welcome__open_workspace",
       args: {
         input,
       },
@@ -58,7 +58,7 @@ export const workspaceService = {
 
   listWorkspaces: async () => {
     return await invokeTauriServiceIpc<void, ListWorkspacesOutput>({
-      cmd: "welcome__list_workspaces",
+      cmd: "list_workspaces",
     });
   },
 };

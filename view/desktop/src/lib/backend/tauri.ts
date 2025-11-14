@@ -12,6 +12,7 @@ export type TauriIpcCommand =
   //
   // App
   //
+  | "list_workspaces"
   | "describe_app"
   | "update_configuration"
   | "list_configuration_schemas"
@@ -22,16 +23,20 @@ export type TauriIpcCommand =
   | "list_color_themes"
   | "list_extensions"
   | "create_workspace"
-  | "open_workspace"
-  | "list_workspaces"
-  | "welcome__list_workspaces"
-  | "main__list_workspaces"
-  | "open_workspace"
   | "delete_workspace"
   | "update_workspace"
   | "close_workspace"
   | "update_profile"
   | "get_mistral_api_key"
+  //
+  // Main
+  //
+  | "main__cancel_request"
+  //
+  // Welcome
+  //
+  | "welcome__cancel_request"
+  | "welcome__open_workspace"
   //
   // Workspace
   //

@@ -7,14 +7,16 @@ edition = "2024"
 path = "src/app.rs"
 
 [dependencies]
+sapic-runtime = { workspace = true }
 sapic-system = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
+sapic-window2 = { workspace = true }
+sapic-ipc = { workspace = true }
 
 sapic-window = { workspace = true }
 
 moss_applib = { workspace = true }
-moss_theme = { workspace = true }
 moss_language = { workspace = true }
 moss_user = { workspace = true }
 moss_app_delegate = { workspace = true }
@@ -31,6 +33,7 @@ tauri = { workspace = true }
 tokio = { workspace = true }
 rustc-hash = { workspace = true }
 joinerror = { workspace = true }
+async-trait = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 ts-rs = { workspace = true }

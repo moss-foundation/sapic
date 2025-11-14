@@ -7,8 +7,7 @@ edition = "2024"
 sapic-base.workspace = true
 sapic-platform.workspace = true
 
-moss_app_delegate.workspace = true
-moss_applib.workspace = true
+moss_applib.workspace = true    # TODO: Remove this once we move errors to base crate
 moss_fs.workspace = true
 moss_storage2.workspace = true
 moss_workspace.workspace = true
@@ -19,3 +18,6 @@ serde = { workspace = true, features = ["derive"] }
 rustc-hash.workspace = true
 tokio = { workspace = true }
 async-trait.workspace = true
+
+[features]
+integration-tests = []

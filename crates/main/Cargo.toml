@@ -8,8 +8,10 @@ description = "Main window controller for the application"
 path = "src/window.rs"
 
 [dependencies]
+sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
+sapic-ipc = { workspace = true }
 
 sapic-window = { workspace = true }
 
@@ -18,7 +20,6 @@ moss_server_api = { workspace = true }
 moss_activity_broadcaster = { workspace = true }
 moss_applib = { workspace = true }
 moss_common = { workspace = true }
-moss_api = { workspace = true }
 moss_db = { workspace = true }
 moss_project = { workspace = true }
 moss_fs = { workspace = true }
@@ -29,3 +30,8 @@ moss_keyring = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
 joinerror = { workspace = true }
+tokio = { workspace = true }
+async-trait = { workspace = true }
+
+[features]
+integration-tests = []

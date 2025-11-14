@@ -1,9 +1,8 @@
 use joinerror::Error;
-use moss_api::TauriResult;
 use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
-use sapic_window::models::operations::CancelRequestInput;
+use sapic_ipc::TauriResult;
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;
@@ -24,24 +23,4 @@ pub async fn execute_command<'a, R: tauri::Runtime>(
     })?;
 
     Ok(command_cb(&mut CommandContext::new(window, args)).await?)
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn cancel_request<'a, R: tauri::Runtime>(
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: CancelRequestInput,
-    options: Options,
-) -> TauriResult<()> {
-    unimplemented!()
-
-    // Ok(app
-    //     .window(window.label())
-    //     .await
-    //     .ok_or_else(|| {
-    //         Error::new::<NotFound>(format!("window '{}' is unavailable", window.label()))
-    //     })?
-    //     .cancel_request(input)
-    //     .await?)
 }
