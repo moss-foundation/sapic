@@ -24,10 +24,24 @@ jobs:
         run: |
           cdxgen -r -o bom.json
 
+      - name: Run vulnerability scanning with trivy
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        with:
+          input: bom.json
+          format: table
+          output: trivy-sbom-report.txt
+          severity: HIGH,CRITICAL
+          exit-code: 1
+
       - name: Upload SBOM as artifact
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
         with:
           name: sbom
           path: bom.json
 
+      - name: Upload Trivy SBOM report as artifact
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.0
+        with:
+          name: trivy-sbom-report
+          path: trivy-sbom-report.txt
 
