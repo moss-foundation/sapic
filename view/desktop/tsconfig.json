@@ -37,8 +37,8 @@
       "@/utils": ["src/utils"],
       "@/assets": ["src/assets"],
       "@/constants": ["src/constants"],
-      "@/components": ["src/components"],
-      "@/store": ["src/store"]
+      "@/workbench": ["src/workbench"],
+      "@/welcome": ["src/welcome"]
     }
   },
   "include": ["./src", "eslint.config.js"],

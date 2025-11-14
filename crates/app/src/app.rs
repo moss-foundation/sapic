@@ -1,24 +1,33 @@
-mod language;
+mod extension;
 mod profile;
-mod theme;
 
 pub mod builder;
 pub mod command;
-pub mod types;
+pub mod operations;
+pub mod windows;
 
 use derive_more::Deref;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
+use moss_fs::FileSystem;
+use moss_keyring::KeyringClient;
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
+use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
-use sapic_window::Window;
+use sapic_main::MainWindow;
+use sapic_system::{
+    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+};
+use sapic_welcome::WelcomeWindow;
+use sapic_window2::WindowApi;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
-use tokio::sync::RwLock;
 
-use crate::command::CommandCallback;
+use crate::{command::CommandCallback, extension::ExtensionService, windows::WindowManager};
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
 
@@ -42,21 +51,110 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
+pub(crate) struct AppServices {
+    pub(crate) workspace_service: Arc<WorkspaceService>,
+    pub(crate) theme_service: Arc<ThemeService>,
+}
+
 #[derive(Deref)]
 pub struct App<R: AppRuntime> {
     #[deref]
-    pub(crate) tauri_handle: TauriAppHandle<R::EventLoop>,
+    pub(crate) tao_handle: TauriAppHandle<R::EventLoop>,
+    pub(crate) fs: Arc<dyn FileSystem>,
+    pub(crate) keyring: Arc<dyn KeyringClient>,
+    pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
     pub(crate) commands: AppCommands<R::EventLoop>,
-    pub(crate) windows: RwLock<FxHashMap<String, Arc<Window<R>>>>,
+    pub(crate) services: AppServices,
+    pub(crate) windows: WindowManager<R>,
+
+    #[allow(unused)]
+    pub(crate) extension_service: ExtensionService<R>,
 }
 
 impl<R: AppRuntime> App<R> {
     pub fn handle(&self) -> TauriAppHandle<R::EventLoop> {
-        self.tauri_handle.clone()
+        self.tao_handle.clone()
     }
 
-    pub async fn window(&self, id: &str) -> Option<Arc<Window<R>>> {
-        self.windows.read().await.get(id).cloned()
+    pub async fn window(&self, label: &str) -> Option<Box<dyn WindowApi>> {
+        self.windows
+            .window(label)
+            .await
+            .map(|window| Box::new(window) as Box<dyn WindowApi>)
+    }
+
+    pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
+        let maybe_welcome_window = self.windows.welcome_window().await;
+        if let Some(welcome_window) = maybe_welcome_window {
+            if let Err(err) = welcome_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to welcome window: {}", err);
+            }
+
+            return Ok(());
+        } else {
+            let welcome_window = self.windows.create_welcome_window(delegate).await?;
+            if let Err(err) = welcome_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to welcome window: {}", err);
+            }
+
+            return Ok(());
+        }
+    }
+
+    pub async fn ensure_main_for_workspace(
+        &self,
+        ctx: &R::AsyncContext,
+        delegate: &AppDelegate<R>,
+        workspace_id: WorkspaceId,
+    ) -> joinerror::Result<()> {
+        let label = self.windows.window_label_for_workspace(&workspace_id).await;
+
+        let maybe_main_window = if let Some(label) = label {
+            self.windows.main_window(&label).await
+        } else {
+            None
+        };
+
+        if let Some(main_window) = maybe_main_window {
+            if let Err(err) = main_window.window.set_focus() {
+                tracing::warn!("Failed to set focus to main window: {}", err);
+            }
+            return Ok(());
+        }
+
+        let main_window = self
+            .windows
+            .create_main_window(
+                ctx,
+                delegate,
+                self.fs.clone(),
+                self.keyring.clone(),
+                self.auth_api_client.clone(),
+                workspace_id,
+            )
+            .await?;
+
+        if let Err(err) = main_window.window.set_focus() {
+            tracing::warn!("Failed to set focus to main window: {}", err);
+        }
+
+        Ok(())
+    }
+
+    pub async fn main_window(&self, label: &str) -> Option<MainWindow<R>> {
+        self.windows.main_window(label).await
+    }
+
+    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
+        self.windows.close_main_window(label).await
+    }
+
+    pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {
+        self.windows.welcome_window().await
+    }
+
+    pub async fn close_welcome_window(&self) -> joinerror::Result<()> {
+        self.windows.close_welcome_window().await
     }
 
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {

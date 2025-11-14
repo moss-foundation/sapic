@@ -1,6 +1,6 @@
 use moss_applib::AppRuntime;
 
-use crate::{app::Window, models::operations::ListLanguagesOutput};
+use crate::{models::operations::ListLanguagesOutput, window::Window};
 
 impl<R: AppRuntime> Window<R> {
     pub async fn list_languages(

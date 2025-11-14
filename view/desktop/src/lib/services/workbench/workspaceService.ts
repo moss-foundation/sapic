@@ -1,4 +1,4 @@
-import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
+import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
 import {
   CloseWorkspaceInput,
   CloseWorkspaceOutput,
@@ -32,7 +32,7 @@ export const workspaceService = {
 
   openWorkspace: async (input: OpenWorkspaceInput) => {
     return await invokeTauriServiceIpc<OpenWorkspaceInput, OpenWorkspaceOutput>({
-      cmd: "open_workspace",
+      cmd: "welcome__open_workspace",
       args: {
         input,
       },

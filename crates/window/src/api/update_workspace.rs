@@ -2,7 +2,7 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
 use crate::{
-    app::Window, models::operations::UpdateWorkspaceInput, workspace::WorkspaceItemUpdateParams,
+    models::operations::UpdateWorkspaceInput, window::Window, workspace::WorkspaceItemUpdateParams,
 };
 
 impl<R: AppRuntime> Window<R> {

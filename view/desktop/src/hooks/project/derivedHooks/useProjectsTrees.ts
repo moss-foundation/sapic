@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
-import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import { ProjectTreeNode, ProjectTreeRootNode } from "@/workbench/ui/components/ProjectTree/types";
 
 import { useStreamedProjectsWithResources } from "./useStreamedProjectsWithResources";
 

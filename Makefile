@@ -43,16 +43,16 @@ MISC_DIR := misc
 SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
+BASE_DIR := crates/base
 BINDINGUTILS_DIR := crates/moss-bindingutils
 WINDOW_MODELS_DIR := crates/window
 PROJECT_MODELS_DIR := crates/moss-project
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
-API_MODELS_DIR := crates/moss-api
+IPC_MODELS_DIR := crates/ipc
 GIT_MODELS_DIR := crates/moss-git
 USER_MODELS_DIR := crates/moss-user
-THEME_MODELS_DIR := crates/moss-theme
 CONFIGURATION_MODELS_DIR := crates/moss-configuration
 LANGUAGE_MODELS_DIR := crates/moss-language
 EXTENSION_MODELS_DIR := crates/moss-extension
@@ -148,13 +148,13 @@ $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
-$(eval $(call gen_bindings,api,API_MODELS_DIR))
+$(eval $(call gen_bindings,ipc,IPC_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 $(eval $(call gen_bindings,user,USER_MODELS_DIR))
-$(eval $(call gen_bindings,theme,THEME_MODELS_DIR))
 $(eval $(call gen_bindings,configuration,CONFIGURATION_MODELS_DIR))
 $(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,extension,EXTENSION_MODELS_DIR))
+$(eval $(call gen_bindings,base,BASE_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 
@@ -164,14 +164,14 @@ gen-environment-bindings:
 gen-workspace-bindings:
 gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
-gen-api-bindings:
+gen-ipc-bindings:
 gen-git-bindings:
 gen-user-bindings:
-gen-theme-bindings:
 gen-configuration-bindings:
 gen-language-bindings:
 gen-extension-bindings:
 gen-shared-storage-bindings:
+gen-base-bindings:
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
@@ -181,14 +181,14 @@ gen-bindings: \
 	gen-workspace-bindings \
 	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
-	gen-api-bindings \
+	gen-ipc-bindings \
 	gen-git-bindings \
 	gen-user-bindings \
-	gen-theme-bindings \
 	gen-configuration-bindings \
 	gen-language-bindings \
 	gen-extension-bindings \
-	gen-shared-storage-bindings
+	gen-shared-storage-bindings \
+	gen-base-bindings
 
 
 # ======================================================

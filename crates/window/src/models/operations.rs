@@ -3,7 +3,6 @@ use moss_configuration::models::types::ConfigurationSchema;
 use moss_extension::models::types::ExtensionInfo;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
-use moss_theme::models::primitives::ThemeId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
 use moss_workspace::models::primitives::{WorkspaceId, WorkspaceMode};
 use serde::{Deserialize, Serialize};
@@ -75,17 +74,6 @@ pub struct UpdateProfileOutput {
 }
 
 // ########################################################
-// ###                   Cancellation                   ###
-// ########################################################
-
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CancelRequestInput {
-    pub request_id: String,
-}
-
-// ########################################################
 // ###                    Language                      ###
 // ########################################################
 
@@ -131,27 +119,27 @@ pub struct DescribeAppOutput {
 // ###                      Theme                       ###
 // ########################################################
 
-/// @category Operation
-#[derive(Debug, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetColorThemeInput {
-    #[ts(type = "ThemeId")]
-    pub id: ThemeId,
-}
+// /// @category Operation
+// #[derive(Debug, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct GetColorThemeInput {
+//     #[ts(type = "ThemeId")]
+//     pub id: ThemeId,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetColorThemeOutput {
-    pub css_content: String,
-}
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct GetColorThemeOutput {
+//     pub css_content: String,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
 
 // #########################################################
 // ###                      Log                          ###
@@ -213,6 +201,7 @@ pub struct OpenWorkspaceInput {
     pub id: WorkspaceId,
 }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]

@@ -1,5 +1,5 @@
-import { useGroupedEnvironments } from "@/components/EnvironmentsLists/hooks/useGroupedEnvironments";
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { useGroupedEnvironments } from "@/workbench/ui/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ActivateEnvironmentInput, ActivateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

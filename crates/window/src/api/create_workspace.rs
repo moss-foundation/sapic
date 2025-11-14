@@ -8,8 +8,8 @@ use moss_workspace::models::primitives::WorkspaceId;
 use validator::Validate;
 
 use crate::{
-    app::Window,
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
+    window::Window,
     workspace::WorkspaceItemCreateParams,
 };
 

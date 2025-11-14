@@ -3,11 +3,11 @@ use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
 
 use crate::{
-    app::Window,
     models::{
         operations::DescribeAppOutput,
         types::{Configuration, WorkspaceInfo},
     },
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

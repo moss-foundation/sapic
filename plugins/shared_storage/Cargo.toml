@@ -11,7 +11,8 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-plugin.workspace = true
 
 [dependencies]
-moss_api.workspace = true
+sapic-ipc = { workspace = true }
+
 moss_storage2.workspace = true
 moss_applib.workspace = true
 moss_logging.workspace = true

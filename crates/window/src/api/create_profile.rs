@@ -2,8 +2,8 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::Window,
     models::operations::{CreateProfileInput, CreateProfileOutput},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

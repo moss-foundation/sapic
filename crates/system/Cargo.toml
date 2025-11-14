@@ -1,0 +1,23 @@
+[package]
+name = "system"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+sapic-base.workspace = true
+sapic-platform.workspace = true
+
+moss_applib.workspace = true    # TODO: Remove this once we move errors to base crate
+moss_fs.workspace = true
+moss_storage2.workspace = true
+moss_workspace.workspace = true
+
+joinerror.workspace = true
+serde_json.workspace = true
+serde = { workspace = true, features = ["derive"] }
+rustc-hash.workspace = true
+tokio = { workspace = true }
+async-trait.workspace = true
+
+[features]
+integration-tests = []

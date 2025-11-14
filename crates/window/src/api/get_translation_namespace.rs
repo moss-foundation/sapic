@@ -1,8 +1,8 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::Window,
     models::operations::{GetTranslationNamespaceInput, GetTranslationNamespaceOutput},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

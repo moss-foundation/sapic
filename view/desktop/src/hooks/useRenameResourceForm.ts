@@ -2,7 +2,7 @@ import { useState } from "react";
 
 import { useFetchResourcesForPath } from "@/hooks/project/derivedHooks/useFetchResourceForPath";
 import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 

@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @config "@repo/tailwind-config";
 @source "./icons/";
-@source "../lib/ui/";
+@source "../lib";
+@source "../welcome";
+@source "../workbench";
+@source "../../src/";
 
 @import "allotment/dist/style.css";
 @import "./dockview.css";
@@ -27,7 +30,7 @@
   }
 
   *:focus-visible {
-    @apply outline-2 outline-offset-1 outline-(--moss-accent);
+    @apply outline-(--moss-accent) outline-2 outline-offset-1;
   }
 
   *:focus:not(.focus-visible) {

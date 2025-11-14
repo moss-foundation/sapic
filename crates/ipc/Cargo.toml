@@ -1,0 +1,23 @@
+[package]
+name = "ipc"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[dependencies]
+sapic-base.workspace = true
+
+moss_applib.workspace = true
+moss_common.workspace = true
+
+joinerror.workspace = true
+tokio = { workspace = true, features = ["full"] }
+ts-rs.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+serde_json.workspace = true
+validator.workspace = true
+serde = { workspace = true, features = ["derive"] }
+
+[features]
+integration-tests = []

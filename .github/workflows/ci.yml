@@ -187,9 +187,17 @@ jobs:
         package:
           - app
           - window
+          - ipc
+          - window2
+          - base
+          - platform
+          - runtime
+          - system
+          - welcome
+          - main
+
           - moss_git
           - moss_git_hosting_provider
-          - moss_api
           - moss_text
           - moss_project
           - moss_applib
@@ -211,7 +219,6 @@ jobs:
           - moss_server_api
           - moss_extension
           - moss_extension_points
-          - moss_theme
           - moss_configuration
           - moss_language
           - shared-storage
@@ -305,10 +312,17 @@ jobs:
         package:
           - app
           - window
+          - ipc
+          - window2
+          - base
+          - platform
+          - runtime
+          - system
+          - welcome
+          - main
 
           - moss_git
           - moss_git_hosting_provider
-          - moss_api
           - moss_text
           - moss_project
           - moss_applib
@@ -331,7 +345,6 @@ jobs:
           - moss_server_api
           - moss_extension
           - moss_extension_points
-          - moss_theme
           - moss_configuration
           - moss_language
     steps:

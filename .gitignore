@@ -55,7 +55,7 @@ NUL
 /*.txt
 
 # Logs
-/logs/
+/logs
 /crates/moss-logging/logs
 
 # Project-specific directories and files

@@ -1,4 +1,4 @@
-import { invokeTauriServiceIpc } from "@/lib/backend/tauri";
+import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
 import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLanguagesOutput } from "@repo/window";
 
 export const languagesService = {

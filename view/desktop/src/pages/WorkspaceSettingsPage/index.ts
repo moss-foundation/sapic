@@ -1,1 +1,0 @@
-export { WorkspaceSettings } from "./WorkspaceSettingsPage";

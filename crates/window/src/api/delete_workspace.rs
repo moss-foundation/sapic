@@ -1,7 +1,7 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 
-use crate::{app::Window, models::operations::DeleteWorkspaceInput};
+use crate::{models::operations::DeleteWorkspaceInput, window::Window};
 
 impl<R: AppRuntime> Window<R> {
     pub async fn delete_workspace(

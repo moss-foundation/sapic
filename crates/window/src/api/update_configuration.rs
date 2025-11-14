@@ -7,9 +7,9 @@ use tauri::Emitter;
 use validator::Validate;
 
 use crate::{
-    app::Window,
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

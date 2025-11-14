@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { StreamEnvironmentsEvent, StreamEnvironmentsOutput } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";

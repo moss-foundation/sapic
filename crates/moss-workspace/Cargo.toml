@@ -21,7 +21,6 @@ moss_bindingutils.workspace = true
 moss_edit.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
-moss_api.workspace = true
 moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true

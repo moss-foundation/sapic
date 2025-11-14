@@ -2,10 +2,13 @@
   "files": [],
   "references": [
     {
+      "path": "crates/base"
+    },
+    {
       "path": "crates/window"
     },
     {
-      "path": "crates/moss-api"
+      "path": "crates/ipc"
     },
     {
       "path": "crates/moss-project"
@@ -30,9 +33,6 @@
     },
     {
       "path": "crates/moss-activity-broadcaster"
-    },
-    {
-      "path": "crates/moss-theme"
     },
     {
       "path": "crates/moss-language"

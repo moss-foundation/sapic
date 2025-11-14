@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { DescribeWorkspaceOutput } from "@repo/moss-workspace";
 import { useQuery } from "@tanstack/react-query";
 

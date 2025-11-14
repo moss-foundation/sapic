@@ -2,11 +2,9 @@ import { toMerged } from "es-toolkit";
 import { SerializedDockview } from "moss-tabs";
 
 import { defaultLayoutState } from "@/defaults/layout";
-import { sharedStorageService } from "@/lib/services/sharedStorage";
-import { JsonValue } from "@repo/moss-bindingutils";
+import { layoutService, LayoutStateInput, LayoutStateOutput } from "@/workbench/domains/layout/service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { LayoutStateInput, LayoutStateOutput } from "../../../types/layout";
 import { USE_GET_LAYOUT_QUERY_KEY, useGetLayout } from "./useGetLayout";
 
 export const USE_UPDATE_LAYOUT_MUTATION_KEY = "updateLayout";
@@ -33,7 +31,7 @@ export const useUpdateLayout = () => {
       }
 
       if (!workspaceId) return;
-      return await sharedStorageService.putItem("layout", updatedLayout as unknown as JsonValue, workspaceId);
+      await layoutService.updateLayout(updatedLayout, workspaceId);
     },
     onMutate(variables) {
       queryClient.setQueryData(

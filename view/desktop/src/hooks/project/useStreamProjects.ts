@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";

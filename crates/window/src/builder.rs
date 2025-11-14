@@ -1,52 +1,58 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
-use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
-use moss_theme::registry::ThemeRegistry;
+// use moss_theme::registry::ThemeRegistry;
+use moss_workspace::models::primitives::WorkspaceId;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 
 use crate::{
-    app::Window,
     configuration::ConfigurationService,
     dirs,
-    extension::ExtensionService,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
-    theme::ThemeService,
+    // theme::ThemeService,
+    window::Window,
     workspace::WorkspaceService,
 };
 
-pub struct WindowBuilder<R: AppRuntime> {
+pub const MIN_WINDOW_WIDTH: f64 = 800.0;
+pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
+
+pub struct WindowBuilder {
+    workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
-    extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
 
-impl<R: AppRuntime> WindowBuilder<R> {
+impl WindowBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
-        extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
+        workspace_id: WorkspaceId,
     ) -> Self {
         Self {
+            workspace_id,
             fs,
             keyring,
-            extension_points,
             auth_api_client,
         }
     }
 
-    pub async fn build(self, ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> Window<R> {
+    pub async fn build<R: AppRuntime>(
+        self,
+        ctx: &R::AsyncContext,
+        delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<Window<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
@@ -71,13 +77,13 @@ impl<R: AppRuntime> WindowBuilder<R> {
         .await
         .expect("Failed to create configuration service");
 
-        let theme_service = ThemeService::new(
-            &delegate,
-            self.fs.clone(),
-            <dyn ThemeRegistry>::global(&delegate),
-        )
-        .await
-        .expect("Failed to create theme service");
+        // let theme_service = ThemeService::new(
+        //     &delegate,
+        //     self.fs.clone(),
+        //     <dyn ThemeRegistry>::global(&delegate),
+        // )
+        // .await
+        // .expect("Failed to create theme service");
 
         let language_service =
             LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
@@ -102,28 +108,38 @@ impl<R: AppRuntime> WindowBuilder<R> {
         )
         .await
         .expect("Failed to create profile service");
+
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        profile_service.activate_profile().await?;
+
         let workspace_service =
             WorkspaceService::<R>::new(ctx, storage.clone(), self.fs.clone(), &user_dir)
                 .await
                 .expect("Failed to create workspace service");
 
-        let extension_service =
-            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
-                .await
-                .expect("Failed to create extension service");
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        workspace_service
+            .activate_workspace(
+                ctx,
+                delegate,
+                &self.workspace_id,
+                profile_service.active_profile().await.unwrap(),
+            )
+            .await?;
 
-        Window {
+        Ok(Window {
             app_handle: tao_handle.clone(),
             session_service,
             log_service,
             workspace_service,
             language_service,
-            theme_service,
+            // theme_service,
             profile_service,
             configuration_service,
-            extension_service,
-            tracked_cancellations: Default::default(),
-        }
+            // tracked_cancellations: Default::default(),
+        })
     }
 
     async fn create_user_dirs_if_not_exists(&self, user_dir: PathBuf) {

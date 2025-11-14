@@ -1,6 +1,5 @@
 use moss_configuration::models::primitives::ConfigurationTarget;
 use moss_logging::models::primitives::LogEntryId;
-use moss_theme::models::primitives::{ThemeId, ThemeMode};
 use moss_user::models::primitives::{AccountId, AccountKind};
 use moss_workspace::models::primitives::WorkspaceId;
 use serde::{Deserialize, Serialize};
@@ -69,21 +68,21 @@ pub struct UpdateAccountParams {
 // ###                    Theme                         ###
 // ########################################################
 
-/// @category Type
-#[derive(Debug, Deserialize, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ColorThemeInfo {
-    #[ts(type = "ThemeId")]
-    pub identifier: ThemeId,
-    pub display_name: String,
-    #[ts(type = "ThemeMode")]
-    pub mode: ThemeMode,
-    pub order: Option<isize>, // DEPRECATED
-    pub source: PathBuf,
-    pub is_default: Option<bool>, // DEPRECATED
-}
+// /// @category Type
+// #[derive(Debug, Deserialize, Serialize, Clone, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ColorThemeInfo {
+//     #[ts(type = "ThemeId")]
+//     pub identifier: ThemeId,
+//     pub display_name: String,
+//     #[ts(type = "ThemeMode")]
+//     pub mode: ThemeMode,
+//     pub order: Option<isize>, // DEPRECATED
+//     pub source: PathBuf,
+//     pub is_default: Option<bool>, // DEPRECATED
+// }
 
 // #########################################################
 // ###                      Log                          ###

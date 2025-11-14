@@ -1,8 +1,8 @@
 use moss_applib::AppRuntime;
 
 use crate::{
-    app::Window,
     models::{operations::ListWorkspacesOutput, types::WorkspaceInfo},
+    window::Window,
 };
 
 impl<R: AppRuntime> Window<R> {

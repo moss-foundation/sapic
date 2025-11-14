@@ -1,6 +1,6 @@
 import { DescribeResourceOutput } from "@repo/moss-project";
 
-import { invokeTauriIpc } from "../backend/tauri";
+import { invokeTauriIpc } from "../../infra/ipc/tauri";
 
 export const ProjectService = {
   describeProjectResource: async ({ projectId, resourceId }: { projectId: string; resourceId: string }) => {
