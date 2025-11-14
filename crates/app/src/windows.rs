@@ -1,7 +1,6 @@
 use async_trait::async_trait;
-use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context::Canceller};
+use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
