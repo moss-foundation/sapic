@@ -17,11 +17,7 @@ export const AppState = ({ children }: AppInitStateProps) => {
   const isInit = isInitLanguage && isInitLayout && isInitColorTheme;
 
   if (!isInit) {
-    return (
-      <ErrorBoundary>
-        <PageLoader className="bg-green-200" />
-      </ErrorBoundary>
-    );
+    return <PageLoader className="bg-sky-200" />;
   }
 
   return <ErrorBoundary>{children}</ErrorBoundary>;
