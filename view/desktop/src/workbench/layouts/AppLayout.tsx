@@ -7,8 +7,8 @@ import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 
-import { Resizable, ResizablePanel } from "../lib/ui/Resizable";
-import TabbedPane from "../parts/TabbedPane/TabbedPane";
+import { Resizable, ResizablePanel } from "../../lib/ui/Resizable";
+import TabbedPane from "../ui/parts/TabbedPane/TabbedPane";
 
 interface AppLayoutProps {
   children?: ReactNode;
