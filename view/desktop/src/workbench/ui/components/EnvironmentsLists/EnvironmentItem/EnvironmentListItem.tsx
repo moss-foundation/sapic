@@ -2,8 +2,8 @@ import { useMemo, useRef } from "react";
 
 import { useStreamEnvironments } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";

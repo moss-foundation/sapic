@@ -7,8 +7,8 @@ import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Icon } from "@/lib/ui/Icon";
-import { ActivityBarItemProps } from "@/store/activityBar";
 import { cn } from "@/utils";
+import { ActivityBarItemProps } from "@/workbench/store/activityBar";
 import {
   attachClosestEdge,
   extractClosestEdge,

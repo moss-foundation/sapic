@@ -4,7 +4,7 @@ import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {

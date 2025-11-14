@@ -2,7 +2,7 @@ import { DockviewGroupLocation, IDockviewGroupPanel } from "moss-tabs";
 import React from "react";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 const GroupAction = ({ groupId }: { groupId: string }) => {
   const { api, gridState } = useTabbedPaneStore();

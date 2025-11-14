@@ -3,7 +3,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 const PanelAction = ({ panelId }: { panelId: string }) => {
   const { api, activePanelId } = useTabbedPaneStore();

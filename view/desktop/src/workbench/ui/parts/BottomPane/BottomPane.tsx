@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 
 import { Scrollbar } from "@/lib/ui";
-import { useLogsStore } from "@/store/logs";
 import { cn } from "@/utils";
+import { useLogsStore } from "@/workbench/store/logs";
 import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { listen } from "@tauri-apps/api/event";
 

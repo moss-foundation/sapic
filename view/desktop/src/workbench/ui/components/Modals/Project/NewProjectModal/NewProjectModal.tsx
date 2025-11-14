@@ -5,8 +5,8 @@ import { useImportProject } from "@/hooks/project/useImportProject";
 import { useStreamProjects } from "@/hooks/project/useStreamProjects";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
-import { useGitProviderStore } from "@/store/gitProvider";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useGitProviderStore } from "@/workbench/store/gitProvider";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
 
 import { ModalWrapperProps } from "../../types";

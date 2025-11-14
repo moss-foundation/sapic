@@ -1,6 +1,6 @@
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import Icon from "../../../../lib/ui/Icon";
 import { ProjectTreeNode } from "../ProjectTree/types";

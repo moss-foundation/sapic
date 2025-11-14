@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { defaultConfig, nextId } from "./defaultLayout";
 import { PanelBuilder } from "./panelBuilder";

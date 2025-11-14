@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { useModal, useUpdateProject } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";

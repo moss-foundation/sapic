@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import Input from "@/lib/ui/Input";
 import { PillTabs } from "@/lib/ui/Tabs/index";
-import { useGitProviderStore } from "@/store/gitProvider";
+import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { ImportProjectSource } from "@repo/moss-workspace";
 

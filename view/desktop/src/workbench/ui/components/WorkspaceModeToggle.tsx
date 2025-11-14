@@ -1,5 +1,5 @@
-import { useWorkspaceModeStore } from "@/store/workspaceMode";
 import { cn } from "@/utils";
+import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 
 import { PlannedBadge } from "./PlannedBadge";
 

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { GridActions } from "./gridActions";
 import { GroupActions } from "./groupActions";

@@ -3,7 +3,7 @@ import React from "react";
 
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 interface UseTabbedPaneEventHandlersProps {
   canPragmaticDrop: boolean;

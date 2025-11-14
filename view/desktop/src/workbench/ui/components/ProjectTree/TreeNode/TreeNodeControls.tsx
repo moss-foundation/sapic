@@ -4,8 +4,8 @@ import { createPortal } from "react-dom";
 import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 

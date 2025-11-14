@@ -1,5 +1,5 @@
 import { useBatchUpdateProject, useDeleteProject, useStreamProjects } from "@/hooks";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ConfirmationModal } from "../ConfirmationModal";
 import { ModalWrapperProps } from "../types";

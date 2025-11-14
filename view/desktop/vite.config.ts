@@ -15,8 +15,6 @@ export default defineConfig({
       "@/hooks": resolve(__dirname, "src/hooks"),
       "@/utils": resolve(__dirname, "src/utils"),
       "@/assets": resolve(__dirname, "src/assets"),
-      "@/components": resolve(__dirname, "src/components"),
-      "@/store": resolve(__dirname, "src/store"),
       "@/workbench": resolve(__dirname, "src/workbench"),
       "@/welcome": resolve(__dirname, "src/welcome"),
     },

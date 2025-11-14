@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
-import { useWorkspaceModeStore } from "@/store/workspaceMode";
+import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
 import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
 import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";

@@ -1,7 +1,7 @@
 import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ActivityBarButton } from "./ActivityBarButton";
 

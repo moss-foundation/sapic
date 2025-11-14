@@ -2,8 +2,8 @@ import { useState } from "react";
 
 import { useModal } from "@/hooks/useModal";
 import { useDeleteWorkspace } from "@/hooks/workbench";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ConfirmationModal } from "@/workbench/ui/components";
 import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";

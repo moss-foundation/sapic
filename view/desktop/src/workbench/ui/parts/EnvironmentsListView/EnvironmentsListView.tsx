@@ -1,7 +1,7 @@
 import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
 import { useStreamEnvironments } from "@/hooks";
 import { Icon, Scrollbar } from "@/lib/ui";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { GlobalEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
 import { useMonitorEnvironmentsItems } from "@/workbench/ui/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";

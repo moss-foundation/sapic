@@ -4,7 +4,7 @@ import { useModal } from "@/hooks";
 import { useActivateEnvironment } from "@/hooks/workspace/environment/useActivateEnvironment";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";

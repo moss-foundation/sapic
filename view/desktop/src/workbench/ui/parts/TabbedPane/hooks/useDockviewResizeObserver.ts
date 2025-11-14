@@ -1,6 +1,6 @@
 import React from "react";
 
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 interface UseTabbedPaneResizeObserverProps {
   containerRef: React.RefObject<HTMLDivElement | null>;

@@ -1,6 +1,6 @@
 import { IDockviewHeaderActionsProps } from "moss-tabs";
 
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionButton } from "@/workbench/ui/components";
 
 import { nextId } from "../DebugComponents/defaultLayout";

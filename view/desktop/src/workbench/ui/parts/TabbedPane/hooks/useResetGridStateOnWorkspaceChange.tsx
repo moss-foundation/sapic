@@ -2,7 +2,7 @@ import { useEffect, useEffectEvent } from "react";
 
 import { useActiveWorkspace } from "@/hooks";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 export const useResetGridStateOnWorkspaceChange = () => {
   const { activeWorkspaceId } = useActiveWorkspace();

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DropNode } from "@/workbench/ui/components/ProjectTree/types";
 
 import { TabbedPaneToolBar, Watermark } from "./components";

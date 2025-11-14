@@ -2,7 +2,7 @@ import { useRef } from "react";
 
 import { useStreamProjects } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectTreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
