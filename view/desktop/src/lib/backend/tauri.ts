@@ -1,7 +1,7 @@
 import { InvokeArgs, invoke as invokeTauri } from "@tauri-apps/api/core";
-import type { EventCallback, EventName } from "@tauri-apps/api/event";
-import { listen as listenTauri } from "@tauri-apps/api/event";
 
+//TODO divide this into chunks of commands
+//window commands, plugin commands,
 export type TauriIpcCommand =
   //
   // Plugins
@@ -100,6 +100,9 @@ interface InvokeTauriServiceIpcArgs<Input> {
   };
 }
 
+/**
+ * @deprecated InvokeTauriServiceIpc is unneeded because services will provide a wrapper around the invoke function.
+ */
 export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
   cmd,
   args,
@@ -119,9 +122,4 @@ export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
       error: err as E,
     };
   }
-};
-
-export const listenTauriIpc = <T>(event: EventName, handle: EventCallback<T>) => {
-  const unlisten = listenTauri(event, handle);
-  return async () => await unlisten.then((unlistenFn) => unlistenFn());
 };

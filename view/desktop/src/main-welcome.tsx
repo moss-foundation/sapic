@@ -12,7 +12,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
 import NotFoundPage from "./pages/NotFoundPage";
-import { WelcomePage } from "./pages/welcome/WelcomePage";
+import { WelcomePage } from "./pages/welcome";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({
