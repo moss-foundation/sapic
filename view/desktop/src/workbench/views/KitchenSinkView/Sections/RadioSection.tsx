@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { RadioGroup } from "@/components";
+import { RadioGroup } from "@/workbench/ui/components";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 

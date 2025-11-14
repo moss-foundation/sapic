@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import ActionButton from "@/components/ActionButton";
 import { FolderTabs, Scrollbar, TabItemProps } from "@/lib/ui";
+import ActionButton from "@/workbench/ui/components/ActionButton";
 
 import { BodyTab, CookiesTab, HeadersTab } from "./tabs";
 

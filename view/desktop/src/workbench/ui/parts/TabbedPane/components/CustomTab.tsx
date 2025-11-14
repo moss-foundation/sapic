@@ -1,9 +1,9 @@
 import { IDockviewPanelHeaderProps } from "moss-tabs";
 import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
 
-import { ResourceIcon } from "@/components/ResourceIcon";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { ResourceIcon } from "@/workbench/ui/components/ResourceIcon";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &
   HTMLAttributes<HTMLDivElement> & {

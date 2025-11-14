@@ -1,5 +1,5 @@
-import { ProjectTreeNode, ProjectTreeRootNode } from "@/components/ProjectTree/types";
 import { Icons } from "@/lib/ui";
+import { ProjectTreeNode, ProjectTreeRootNode } from "@/workbench/ui/components/ProjectTree/types";
 
 export const getFolderIcon = (): Icons => {
   return "Folder";

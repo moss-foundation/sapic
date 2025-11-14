@@ -1,8 +1,8 @@
 import { FormEvent, useState } from "react";
 
-import { RadioGroup } from "@/components";
 import Input from "@/lib/ui/Input";
 import { ToggleButton } from "@/lib/ui/ToggleButton";
+import { RadioGroup } from "@/workbench/ui/components";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 

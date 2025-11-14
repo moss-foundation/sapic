@@ -14,8 +14,8 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
-import { PageLoader } from "./components";
 import { router } from "./routes/router";
+import { PageLoader } from "./workbench/ui/components";
 
 const ENABLE_REACT_QUERY_DEVTOOLS = import.meta.env.MODE === "development";
 const queryClient = new QueryClient({

@@ -1,6 +1,6 @@
-import { ActionMenu } from "@/components";
 import { Icons } from "@/lib/ui";
 import { MenuItemProps, renderActionMenuItem } from "@/utils/renderActionMenuItem";
+import { ActionMenu } from "@/workbench/ui/components";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 

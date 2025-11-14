@@ -1,9 +1,9 @@
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
-import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { emptyGridState } from "@/defaults/layout";
 import { Icons } from "@/lib/ui";
+import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import { tabbedPaneComponents } from "@/workbench/ui/parts";
 
 interface AddPanelOptionsWithoutMandatoryComponent

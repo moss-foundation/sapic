@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { InputTemplating } from "@/components";
+import { InputTemplating } from "@/workbench/ui/components";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 

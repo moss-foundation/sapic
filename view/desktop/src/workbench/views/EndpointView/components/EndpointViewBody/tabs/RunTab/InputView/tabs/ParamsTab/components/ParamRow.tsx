@@ -1,12 +1,12 @@
 import { ChangeEvent, memo, useCallback, useContext, useEffect, useRef, useState } from "react";
 
-import { ActionButton, DropIndicator } from "@/components";
-import { DragHandleButton } from "@/components/DragHandleButton";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { cn } from "@/utils";
+import { ActionButton, DropIndicator } from "@/workbench/ui/components";
+import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";

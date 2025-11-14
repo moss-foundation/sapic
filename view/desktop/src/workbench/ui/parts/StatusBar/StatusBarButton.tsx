@@ -1,9 +1,9 @@
 import { ComponentPropsWithoutRef, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { DropIndicator } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
+import { DropIndicator } from "@/workbench/ui/components";
 import {
   attachClosestEdge,
   extractClosestEdge,

@@ -1,4 +1,4 @@
-import { IconInline } from "@/components/IconInline";
+import { IconInline } from "@/workbench/ui/components/IconInline";
 
 export interface WelcomePageLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   label: string;

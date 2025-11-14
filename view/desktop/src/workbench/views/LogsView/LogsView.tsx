@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
-import { PageContent } from "@/components";
-import { ActivityEventSimulator } from "@/components/ActivityEventSimulator";
-import AIDemo from "@/components/AIDemo";
-import GitTest from "@/components/GitTest";
 import { useActivityRouter } from "@/hooks/app";
 import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { PageContent } from "@/workbench/ui/components";
+import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
+import AIDemo from "@/workbench/ui/components/AIDemo";
+import GitTest from "@/workbench/ui/components/GitTest";
 import { ExtensionInfo } from "@repo/moss-extension";
 import { AccountKind } from "@repo/moss-user";
 import {

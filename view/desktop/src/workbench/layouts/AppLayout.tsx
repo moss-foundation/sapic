@@ -1,11 +1,11 @@
 import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef } from "react";
 
-import { ActivityBar, SidebarEdgeHandler } from "@/components";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
+import { ActivityBar, SidebarEdgeHandler } from "@/workbench/ui/components";
 import { BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
 
 import { Resizable, ResizablePanel } from "../../lib/ui/Resizable";

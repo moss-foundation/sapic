@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 
-import SelectOutlined from "@/components/SelectOutlined";
 import { useListColorThemes } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
+import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
 

@@ -1,8 +1,8 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { PageView } from "@/components";
-import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { useDescribeApp } from "@/hooks";
+import { PageView } from "@/workbench/ui/components";
+import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 
 import { ProfileViewBody } from "./components/ProfileViewBody";
 import { ProfileViewHeader } from "./components/ProfileViewHeader";

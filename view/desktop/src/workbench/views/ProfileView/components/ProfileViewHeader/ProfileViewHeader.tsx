@@ -1,7 +1,7 @@
 import { DockviewPanelApi } from "moss-tabs";
 
-import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { Icon } from "@/lib/ui";
+import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ProfileInfo } from "@repo/moss-user";
 
 interface ProfileViewHeaderProps {

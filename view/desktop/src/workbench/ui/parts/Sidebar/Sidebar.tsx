@@ -1,11 +1,11 @@
 import { ReactNode } from "react";
 
-import { ActivityBar } from "@/components";
-import { EmptyWorkspace } from "@/components/EmptyWorkspace";
-import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { cn } from "@/utils";
+import { ActivityBar } from "@/workbench/ui/components";
+import { EmptyWorkspace } from "@/workbench/ui/components/EmptyWorkspace";
+import WorkspaceModeToggle from "@/workbench/ui/components/WorkspaceModeToggle";
 import { SidebarWorkspaceContent } from "@/workbench/ui/parts/Sidebar/SidebarWorkspaceContent";
 
 export interface BaseSidebarProps {

@@ -1,5 +1,5 @@
-import { ActionMenu } from "@/components";
 import { Icons } from "@/lib/ui";
+import { ActionMenu } from "@/workbench/ui/components";
 
 export type MenuItemType =
   | "action"

@@ -1,9 +1,9 @@
-import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
-import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useListWorkspaces } from "@/hooks";
 import { useModal } from "@/hooks/useModal";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
+import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
+import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";
 
 import WelcomeViewDivider from "./WelcomeViewDivider";
 import WelcomeViewLink from "./WelcomeViewLink";

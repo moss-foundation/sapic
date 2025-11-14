@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import { ProjectTree } from "@/components";
-import { useNodeDragAndDropHandler } from "@/components/ProjectTree/hooks/useNodeDragAndDropHandler";
-import { useProjectDragAndDropHandler } from "@/components/ProjectTree/hooks/useProjectDragAndDropHandler";
-import { isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
 import { useProjectsTrees } from "@/hooks/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { useWorkspaceModeStore } from "@/store/workspaceMode";
+import { ProjectTree } from "@/workbench/ui/components";
+import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
+import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";
+import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectCreationZone } from "./ProjectCreationZone";

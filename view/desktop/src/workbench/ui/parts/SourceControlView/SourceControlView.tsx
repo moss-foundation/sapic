@@ -1,5 +1,5 @@
-import { Textarea } from "@/components/Textarea";
 import { Button } from "@/lib/ui";
+import { Textarea } from "@/workbench/ui/components/Textarea";
 
 import { SourceControlViewHeader } from "./SourceControlViewHeader";
 

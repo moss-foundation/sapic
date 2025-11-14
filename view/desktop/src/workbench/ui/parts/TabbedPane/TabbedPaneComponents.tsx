@@ -1,9 +1,9 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { PageContent, PageHeader, PageView } from "@/components";
-import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { PageContent, PageHeader, PageView } from "@/workbench/ui/components";
+import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import {
   EndpointView,
   FolderSettingsView,

@@ -1,10 +1,10 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useEffect, useState } from "react";
 
-import { DeleteProjectModal } from "@/components/Modals/Project/DeleteProjectModal";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useModal, useStreamProjects, useUpdateProject } from "@/hooks";
 import Input from "@/lib/ui/Input";
+import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
 import { ProjectDangerZoneSection } from "../ProjectDangerZoneSection";
 import { ProjectSummarySection } from "../ProjectSummarySection";

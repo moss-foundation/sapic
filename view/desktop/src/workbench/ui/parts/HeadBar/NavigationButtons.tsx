@@ -1,6 +1,6 @@
 import React from "react";
 
-import { ActionButton } from "@/components";
+import { ActionButton } from "@/workbench/ui/components";
 
 export interface NavigationButtonsProps {
   onBack?: () => void;

@@ -1,4 +1,4 @@
-import SelectOutlined from "@/components/SelectOutlined";
+import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 

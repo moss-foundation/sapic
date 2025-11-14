@@ -1,6 +1,6 @@
-import { ActionButton } from "@/components";
-import { NewEnvironmentModal } from "@/components/Modals/Environment/NewEnvironmentModal";
 import { useActiveWorkspace, useModal, useStreamEnvironments } from "@/hooks";
+import { ActionButton } from "@/workbench/ui/components";
+import { NewEnvironmentModal } from "@/workbench/ui/components/Modals/Environment/NewEnvironmentModal";
 
 import { SidebarHeader } from "../Sidebar";
 

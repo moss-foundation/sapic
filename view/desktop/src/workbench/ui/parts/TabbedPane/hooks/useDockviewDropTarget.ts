@@ -1,7 +1,7 @@
 import React from "react";
 
-import { DropNode } from "@/components/ProjectTree/types";
-import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/components/ProjectTree/utils";
+import { DropNode } from "@/workbench/ui/components/ProjectTree/types";
+import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (

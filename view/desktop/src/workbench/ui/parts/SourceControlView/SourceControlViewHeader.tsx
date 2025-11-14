@@ -1,4 +1,4 @@
-import { ActionButton } from "@/components";
+import { ActionButton } from "@/workbench/ui/components";
 
 import { SidebarHeader } from "../Sidebar";
 

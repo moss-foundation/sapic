@@ -1,10 +1,10 @@
 import { useTranslation } from "react-i18next";
 
 import i18next from "@/app/i18n";
-import SelectOutlined from "@/components/SelectOutlined";
 import { useListLanguages } from "@/hooks";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
+import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
 

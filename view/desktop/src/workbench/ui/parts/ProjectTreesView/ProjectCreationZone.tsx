@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 
-import { IconInline } from "@/components/IconInline";
+import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/hooks";
+import { cn } from "@/utils";
+import { IconInline } from "@/workbench/ui/components/IconInline";
 import {
   convertResourceInfoToCreateInput,
   getAllNestedResources,
   getSourceProjectTreeNodeData,
   isSourceProjectTreeNode,
-} from "@/components/ProjectTree/utils";
-import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/hooks";
-import { cn } from "@/utils";
+} from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
 

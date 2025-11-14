@@ -1,8 +1,8 @@
-import { ActionMenu, IconLabelButton } from "@/components";
 import { useActiveWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { renderActionMenuItem } from "@/utils/renderActionMenuItem";
+import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
 
 import { windowsMenuItems } from "./mockHeadBarData";
 import NavigationButtons from "./NavigationButtons";

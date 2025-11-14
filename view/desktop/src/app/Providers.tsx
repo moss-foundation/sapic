@@ -1,5 +1,5 @@
 import ErrorBoundary from "@/app/ErrorBoundary";
-import { Workbench } from "@/components";
+import { Workbench } from "@/workbench/ui/components";
 
 import { ActivityRouterProvider } from "./ActivityRouterProvider";
 import { LoadingBoundary } from "./LoadingBoundary";

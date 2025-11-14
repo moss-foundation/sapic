@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { FramedTabs } from "@/lib/ui";
+import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 
 import { AlertsTab, InsightsTab, IssuesTab, MockTab, OverviewTab, RunTab } from "./tabs";
 

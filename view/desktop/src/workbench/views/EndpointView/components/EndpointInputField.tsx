@@ -1,8 +1,8 @@
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { ActionMenu, InputTemplating } from "@/components";
 import { Button, Icon } from "@/lib/ui";
 import { cn } from "@/utils";
+import { ActionMenu, InputTemplating } from "@/workbench/ui/components";
 
 import { areUrlsEquivalent } from "../utils/urlParser";
 

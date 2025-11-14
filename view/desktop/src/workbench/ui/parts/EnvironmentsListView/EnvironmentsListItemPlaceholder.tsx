@@ -1,8 +1,8 @@
 import { HTMLAttributes } from "react";
 
-import { PlannedBadge } from "@/components";
 import { Icon, Icons } from "@/lib/ui";
 import { cn } from "@/utils";
+import { PlannedBadge } from "@/workbench/ui/components";
 
 export const EnvironmentsListItemPlaceholder = ({
   icon,

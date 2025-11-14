@@ -1,8 +1,5 @@
 import { useState } from "react";
 
-import { ActionButton, ActionMenu } from "@/components";
-import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Project/NewProjectModal/constansts";
-import { NewProjectModal } from "@/components/Modals/Project/NewProjectModal/NewProjectModal";
 import {
   USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
   useActiveWorkspace,
@@ -13,6 +10,9 @@ import {
 } from "@/hooks";
 import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
 import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
+import { ActionButton, ActionMenu } from "@/workbench/ui/components";
+import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constansts";
+import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 

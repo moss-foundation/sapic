@@ -1,8 +1,8 @@
 import { ComponentPropsWithoutRef } from "react";
 import { create } from "zustand";
 
-import { IconInlineType } from "@/components/IconInline";
 import { Icons } from "@/lib/ui/Icon";
+import { IconInlineType } from "@/workbench/ui/components/IconInline";
 import {
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,

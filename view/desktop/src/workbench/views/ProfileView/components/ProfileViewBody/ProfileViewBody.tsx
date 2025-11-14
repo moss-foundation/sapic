@@ -1,7 +1,7 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { PageWrapper } from "@/components/PageView/PageWrapper";
 import { FramedTabs } from "@/lib/ui";
+import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ProfileInfo } from "@repo/moss-user";
 
 import { ProfileViewProps } from "../../ProfileView";

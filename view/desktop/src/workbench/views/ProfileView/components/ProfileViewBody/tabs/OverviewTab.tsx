@@ -1,12 +1,12 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
-import { EditAccountModal } from "@/components/Modals/Account/EditAccountModal";
-import { NewAccountModal } from "@/components/Modals/Account/NewAccountModal";
-import { ConfirmationModal } from "@/components/Modals/ConfirmationModal";
-import { ProviderIcon } from "@/components/ProviderIcon";
 import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
+import { EditAccountModal } from "@/workbench/ui/components/Modals/Account/EditAccountModal";
+import { NewAccountModal } from "@/workbench/ui/components/Modals/Account/NewAccountModal";
+import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
+import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
 import { AccountInfo, ProfileInfo } from "@repo/moss-user";
 import { UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";

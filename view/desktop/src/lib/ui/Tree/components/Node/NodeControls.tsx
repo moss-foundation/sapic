@@ -1,7 +1,7 @@
 import { forwardRef, HTMLAttributes } from "react";
 
-import { DragHandleButton } from "@/components/DragHandleButton";
 import { cn } from "@/utils";
+import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
@@ -62,7 +62,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
 
         {!isRootNode && !hideDragHandle && (
           <DragHandleButton
-            className="absolute top-1/2 left-[1px] -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeNodeControls:delay-400 group-hover/TreeNodeControls:duration-150"
+            className="group-hover/TreeNodeControls:delay-400 absolute left-[1px] top-1/2 -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeNodeControls:duration-150"
             slim
             ghost
           />

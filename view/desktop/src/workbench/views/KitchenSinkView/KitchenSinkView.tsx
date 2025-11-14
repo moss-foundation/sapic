@@ -1,4 +1,4 @@
-import { PageContent } from "@/components";
+import { PageContent } from "@/workbench/ui/components";
 
 import { AccentSection } from "./Sections/AccentSection";
 import { ActionMenusSection } from "./Sections/ActionMenusSection";

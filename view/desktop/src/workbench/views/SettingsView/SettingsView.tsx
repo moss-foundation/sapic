@@ -1,4 +1,4 @@
-import { PageContent } from "@/components";
+import { PageContent } from "@/workbench/ui/components";
 
 import { AppLayoutSection } from "./sections/AppLayoutSection";
 import { LanguageSection } from "./sections/LanguageSection";

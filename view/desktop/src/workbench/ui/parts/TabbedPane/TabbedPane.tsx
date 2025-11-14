@@ -1,10 +1,10 @@
 import { DockviewDidDropEvent, DockviewReact, DockviewReadyEvent, positionToDirection } from "moss-tabs";
 import { useRef, useState } from "react";
 
-import { DropNode } from "@/components/ProjectTree/types";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { DropNode } from "@/workbench/ui/components/ProjectTree/types";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
 import { AddPanelButton } from "./components/AddPanelButton";

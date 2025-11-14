@@ -1,6 +1,6 @@
 import { IDockviewHeaderActionsProps } from "moss-tabs";
 
-import { ActionButton, Divider, IconLabelButton } from "@/components";
+import { ActionButton, Divider, IconLabelButton } from "@/workbench/ui/components";
 
 interface TabbedPaneToolBarProps extends IDockviewHeaderActionsProps {
   workspace?: boolean;

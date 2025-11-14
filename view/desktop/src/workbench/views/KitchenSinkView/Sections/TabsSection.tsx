@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { ProviderIcon } from "@/components/ProviderIcon";
 import { FolderTabs, FramedTabs, Icon, PillTabs, UnderlinedTabs } from "@/lib/ui";
+import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
 
 import { KitchenSinkSection } from "../KitchenSinkSection";
 import { KitchenSinkSectionSubHeader } from "../KitchenSinkSectionSubHeader";

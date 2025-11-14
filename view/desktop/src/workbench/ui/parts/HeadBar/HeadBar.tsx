@@ -1,12 +1,12 @@
 import { useState } from "react";
 
-import { ConfirmationModal } from "@/components";
-import { NewWorkspaceModal } from "@/components/Modals/Workspace/NewWorkspaceModal";
-import { OpenWorkspaceModal } from "@/components/Modals/Workspace/OpenWorkspaceModal";
 import { useModal } from "@/hooks/useModal";
 import { useDeleteWorkspace } from "@/hooks/workbench";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 import { cn } from "@/utils";
+import { ConfirmationModal } from "@/workbench/ui/components";
+import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
+import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";
 import { type } from "@tauri-apps/plugin-os";
 
 import { Controls } from "./Controls/Controls";

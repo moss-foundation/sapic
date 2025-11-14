@@ -1,11 +1,11 @@
 import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
-import { GlobalEnvironmentsList } from "@/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
-import { GroupedEnvironmentsList } from "@/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
-import { useMonitorEnvironmentsItems } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";
-import { useMonitorEnvironmentsLists } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsLists";
 import { useStreamEnvironments } from "@/hooks";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
+import { GlobalEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
+import { GroupedEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
+import { useMonitorEnvironmentsItems } from "@/workbench/ui/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";
+import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/hooks/useMonitorEnvironmentsLists";
 
 import { EnvironmentsListItemPlaceholder } from "./EnvironmentsListItemPlaceholder";
 import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";

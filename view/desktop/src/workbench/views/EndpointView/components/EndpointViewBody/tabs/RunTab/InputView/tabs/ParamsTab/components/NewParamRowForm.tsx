@@ -1,8 +1,8 @@
 import { ChangeEvent, useCallback, useContext, useRef, useState } from "react";
 
-import { DropIndicator } from "@/components";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
+import { DropIndicator } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
