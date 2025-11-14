@@ -15,9 +15,9 @@ pub async fn main__cancel_request<'a, R: tauri::Runtime>(
     options: Options,
 ) -> TauriResult<()> {
     let window = app
-        .welcome_window()
+        .main_window(window.label())
         .await
-        .ok_or_join_err_with::<Unavailable>(|| format!("welcome window is unavailable"))?;
+        .ok_or_join_err_with::<Unavailable>(|| format!("main window is unavailable"))?;
 
     window.cancel_request(input).await.map_err(|e| e.into())
 }
