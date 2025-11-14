@@ -1,29 +1,29 @@
 // Create a new router instance
-import Providers from "@/app/Providers";
+import MainIndex from "@/main";
 import NotFoundPage from "@/pages/NotFoundPage";
 import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
-const rootRoute = createRootRoute({ notFoundComponent: NotFoundPage });
-const indexRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/",
-  component: Providers,
+import { Workbench } from "../../workbench/ui/components";
+
+const rootRoute = createRootRoute({
+  component: MainIndex,
+  notFoundComponent: NotFoundPage,
 });
 
 const workspaceIdRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/$workspaceId",
-  component: Providers,
+  component: Workbench,
 });
 
-export const router = createRouter({
-  routeTree: rootRoute.addChildren([indexRoute, workspaceIdRoute]),
+export const mainRouter = createRouter({
+  routeTree: rootRoute.addChildren([workspaceIdRoute]),
   history: createHashHistory(),
 });
 
 // Register the router instance for type safety
 declare module "@tanstack/react-router" {
   interface Register {
-    router: typeof router;
+    router: typeof mainRouter;
   }
 }

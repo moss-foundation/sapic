@@ -1,25 +1,32 @@
-import { useDescribeColorTheme } from "@/hooks";
-import { useDescribeApp } from "@/hooks/app/useDescribeApp";
+import { useEffect, useEffectEvent, useState } from "react";
 
-const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+import { useDescribeApp, useDescribeColorTheme } from "./app";
+
+export const useSyncColorTheme = () => {
   const { data: appState } = useDescribeApp();
   const { data: colorThemeCss, isSuccess } = useDescribeColorTheme({
     themeId: (appState?.configuration.contents.colorTheme as string) ?? "",
-    enabled: !!appState?.configuration.contents.colorTheme,
   });
 
-  if (isSuccess) {
+  const [isInit, setIsInit] = useState(false);
+
+  const updateTheme = useEffectEvent(() => {
+    if (!isSuccess) return;
     const colorThemeId = appState?.configuration.contents.colorTheme; //TODO this should be able to handle JSON value in the future
 
     if (colorThemeId && colorThemeCss) {
       applyThemeStyles(colorThemeId as string, colorThemeCss.cssContent);
     }
-  }
 
-  return <>{children}</>;
+    setIsInit(true);
+  });
+
+  useEffect(() => {
+    updateTheme();
+  }, [appState?.configuration.contents.colorTheme, colorThemeCss]);
+
+  return { isInit: isInit };
 };
-
-export default ThemeProvider;
 
 const applyThemeStyles = (id: string, css: string): void => {
   let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;

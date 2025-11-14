@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-project";
 import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 

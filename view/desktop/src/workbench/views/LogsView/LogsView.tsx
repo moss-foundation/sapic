@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
-import { invokeTauriIpc } from "@/lib/backend/tauri.ts";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";

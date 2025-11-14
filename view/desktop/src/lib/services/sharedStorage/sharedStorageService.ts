@@ -8,7 +8,7 @@ import {
   RemoveItemOutput,
 } from "@repo/shared-storage";
 
-import { invokeTauriServiceIpc } from "../../backend/tauri";
+import { invokeTauriServiceIpc } from "../../../infra/ipc/tauri";
 
 export const sharedStorageService = {
   getItem: async (key: string, workspaceId?: string): Promise<GetItemOutput> => {

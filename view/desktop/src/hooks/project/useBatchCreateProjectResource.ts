@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { BatchCreateResourceInput, BatchCreateResourceOutput } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 

@@ -1,0 +1,28 @@
+import { useInitLayout } from "@/hooks/useInitLayout";
+import { useSyncColorTheme } from "@/hooks/useSyncColorTheme";
+import { useSyncLanguage } from "@/hooks/useSyncLanguage";
+import { PageLoader } from "@/workbench/ui/components";
+
+import ErrorBoundary from "../ErrorBoundary";
+
+interface AppInitStateProps {
+  children: React.ReactNode;
+}
+
+export const AppState = ({ children }: AppInitStateProps) => {
+  const { isInit: isInitLanguage } = useSyncLanguage();
+  const { isInit: isInitColorTheme } = useSyncColorTheme();
+  const { isInit: isInitLayout } = useInitLayout();
+
+  const isInit = isInitLanguage && isInitLayout && isInitColorTheme;
+
+  if (!isInit) {
+    return (
+      <ErrorBoundary>
+        <PageLoader className="bg-green-200" />
+      </ErrorBoundary>
+    );
+  }
+
+  return <ErrorBoundary>{children}</ErrorBoundary>;
+};

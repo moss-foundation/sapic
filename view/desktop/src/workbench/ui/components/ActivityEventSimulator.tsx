@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 
 import { useActivityRouter } from "@/hooks/app";
-import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY } from "@/app/ActivityRouterProvider";
+import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY } from "@/workbench/providers/ActivityRouterProvider";
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
 
 interface ActivityEventSimulatorProps {

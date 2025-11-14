@@ -1,4 +1,4 @@
-import { sharedStorageService } from "@/lib/services/sharedStorage";
+import { layoutService } from "@/workbench/domains/layout/service";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_REMOVE_LAYOUT_MUTATION_KEY = "removeLayout";
@@ -8,7 +8,8 @@ interface UseRemoveLayoutProps {
 }
 
 const mutationFn = async ({ workspaceId }: UseRemoveLayoutProps) => {
-  return await sharedStorageService.removeItem("layout", workspaceId);
+  if (!workspaceId) return;
+  await layoutService.removeLayout(workspaceId);
 };
 
 export const useRemoveLayout = () => {

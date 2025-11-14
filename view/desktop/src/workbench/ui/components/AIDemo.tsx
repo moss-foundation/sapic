@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
-import { invokeTauriIpc } from "@/lib/backend/tauri";
+
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from "@langchain/core/prompts";
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";

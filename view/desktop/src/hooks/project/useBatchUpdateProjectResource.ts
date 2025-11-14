@@ -1,4 +1,4 @@
-import { invokeTauriIpc, IpcResult } from "@/lib/backend/tauri";
+import { invokeTauriIpc, IpcResult } from "@/infra/ipc/tauri";
 import { BatchUpdateResourceInput, BatchUpdateResourceOutput, BatchUpdateResourceOutputKind } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
