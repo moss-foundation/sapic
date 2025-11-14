@@ -1,3 +1,4 @@
+import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
 import { GlobalEnvironmentsList } from "@/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";
 import { useMonitorEnvironmentsItems } from "@/components/EnvironmentsLists/hooks/useMonitorEnvironmentsItems";
@@ -6,7 +7,6 @@ import { useStreamEnvironments } from "@/hooks";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/store/tabbedPane";
 
-import ErrorNaughtyDog from "../../assets/images/ErrorNaughtyDog.svg";
 import { EnvironmentsListItemPlaceholder } from "./EnvironmentsListItemPlaceholder";
 import { EnvironmentsListViewDivider } from "./EnvironmentsListViewDivider";
 import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
@@ -65,7 +65,7 @@ export const EnvironmentsListView = () => {
         {isFetched && noEnvironments && (
           <div className="px-2">
             <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
-            <p className="text-center text-(--moss-secondary-foreground)">You have no environments yet</p>
+            <p className="text-(--moss-secondary-foreground) text-center">You have no environments yet</p>
           </div>
         )}
       </Scrollbar>

@@ -19,7 +19,7 @@ interface Item {
   order: number;
 }
 
-const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
+export const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   const [isOnline, setIsOnline] = useState(true);
   const [DNDList, setDNDList] = useState<Item[]>([
     {
@@ -77,7 +77,7 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
   return (
     <footer
       className={cn(
-        "background-(--moss-statusBar-background) flex w-screen justify-between border-t border-t-(--moss-border) pr-4 pl-1.5",
+        "background-(--moss-statusBar-background) border-t-(--moss-border) flex w-screen justify-between border-t pl-1.5 pr-4",
         className
       )}
     >
@@ -105,5 +105,3 @@ const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
     </footer>
   );
 };
-
-export default StatusBar;

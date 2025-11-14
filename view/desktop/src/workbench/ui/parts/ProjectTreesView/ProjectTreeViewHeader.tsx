@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ActionButton, ActionMenu, SidebarHeader } from "@/components";
+import { ActionButton, ActionMenu } from "@/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/components/Modals/Project/NewProjectModal/constansts";
 import { NewProjectModal } from "@/components/Modals/Project/NewProjectModal/NewProjectModal";
 import {
@@ -15,6 +15,8 @@ import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
 import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
+
+import { SidebarHeader } from "../Sidebar";
 
 export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();

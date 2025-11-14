@@ -5,15 +5,15 @@ import { EmptyWorkspace } from "@/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/components/WorkspaceModeToggle";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { SidebarWorkspaceContent } from "@/parts/SideBar/SidebarWorkspaceContent";
 import { cn } from "@/utils";
+import { SidebarWorkspaceContent } from "@/workbench/ui/parts/Sidebar/SidebarWorkspaceContent";
 
 export interface BaseSidebarProps {
   className?: string;
   children?: ReactNode;
 }
 
-export const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
+const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
   const { data: appState } = useDescribeApp();
   //TODO later we should handle the JsonValue differently
   const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
@@ -80,5 +80,3 @@ export const Sidebar = () => {
     </BaseSidebar>
   );
 };
-
-export default Sidebar;

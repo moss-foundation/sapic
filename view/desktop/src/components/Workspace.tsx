@@ -1,6 +1,5 @@
 import { useStreamProjects } from "@/hooks";
-
-import TabbedPane from "../parts/TabbedPane/TabbedPane";
+import { TabbedPane } from "@/workbench/ui/parts";
 
 interface WorkspaceProps {
   workspaceName?: string | null;

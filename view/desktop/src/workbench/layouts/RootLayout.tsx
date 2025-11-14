@@ -1,9 +1,9 @@
 import { ComponentProps } from "react";
 
 import { cn } from "@/utils";
+import { StatusBar } from "@/workbench/ui/parts";
 
 import { HeadBar } from "../ui/parts/HeadBar/HeadBar";
-import StatusBar from "../ui/parts/StatusBar/StatusBar";
 
 export const RootLayout = ({ children, className, ...props }: ComponentProps<"main">) => {
   return (

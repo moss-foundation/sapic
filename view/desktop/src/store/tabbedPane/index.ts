@@ -4,7 +4,7 @@ import { create } from "zustand";
 import { ProjectTreeNode } from "@/components/ProjectTree/types";
 import { emptyGridState } from "@/defaults/layout";
 import { Icons } from "@/lib/ui";
-import { tabbedPaneComponents } from "@/parts/TabbedPane/TabbedPaneComponents";
+import { tabbedPaneComponents } from "@/workbench/ui/parts";
 
 interface AddPanelOptionsWithoutMandatoryComponent
   extends Omit<

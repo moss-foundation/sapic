@@ -12,7 +12,7 @@ export const EnvironmentsListItemPlaceholder = ({
 }: { icon: Icons; label: string; disabled?: boolean } & HTMLAttributes<HTMLButtonElement>) => {
   return (
     <button
-      className="hover:background-(--moss-secondary-background-hover) flex w-full cursor-pointer items-center justify-between gap-2 py-1 pr-2 pl-2.5 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+      className="hover:background-(--moss-secondary-background-hover) flex w-full cursor-pointer items-center justify-between gap-2 py-1 pl-2.5 pr-2 disabled:cursor-not-allowed disabled:hover:bg-transparent"
       disabled={disabled}
       onClick={(e) => {
         if (disabled) {

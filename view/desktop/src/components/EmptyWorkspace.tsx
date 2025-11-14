@@ -1,8 +1,8 @@
+import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
 import { useModal } from "@/hooks/useModal";
 import { Button } from "@/lib/ui";
+import { TabbedPane } from "@/workbench/ui/parts";
 
-import ErrorNaughtyDog from "../assets/images/ErrorNaughtyDog.svg";
-import TabbedPane from "../parts/TabbedPane/TabbedPane";
 import { NewWorkspaceModal } from "./Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "./Modals/Workspace/OpenWorkspaceModal";
 

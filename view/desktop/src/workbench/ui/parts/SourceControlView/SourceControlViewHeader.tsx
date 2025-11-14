@@ -1,4 +1,6 @@
-import { ActionButton, SidebarHeader } from "@/components";
+import { ActionButton } from "@/components";
+
+import { SidebarHeader } from "../Sidebar";
 
 export const SourceControlViewHeader = () => {
   return (

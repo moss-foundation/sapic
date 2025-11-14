@@ -8,14 +8,14 @@ import ControlsContext from "./ControlsContext";
 import { ControlsIcons } from "./icons";
 
 const linuxControlButtonStyles = cva(
-  `background-(--moss-windowControlsLinux-background) hover:background-(--moss-windowControlsLinux-hoverBackground) active:background-(--moss-windowControlsLinux-activeBackground) size-6 cursor-default rounded-full text-(--moss-windowControlsLinux-foreground)`
+  `background-(--moss-windowControlsLinux-background) hover:background-(--moss-windowControlsLinux-hoverBackground) active:background-(--moss-windowControlsLinux-activeBackground) text-(--moss-windowControlsLinux-foreground) size-6 cursor-default rounded-full`
 );
 
 export function LinuxControls({ className, ...props }: HTMLProps<HTMLDivElement>) {
   const { isWindowMaximized, minimizeWindow, maximizeWindow, closeWindow } = useContext(ControlsContext);
 
   return (
-    <div className={cn("mr-2.5 flex h-auto items-center gap-3.25", className)} {...props}>
+    <div className={cn("gap-3.25 mr-2.5 flex h-auto items-center", className)} {...props}>
       <ControlButton onClick={minimizeWindow} className={linuxControlButtonStyles()}>
         <ControlsIcons.minimizeWin className="size-[9px]" />
       </ControlButton>
