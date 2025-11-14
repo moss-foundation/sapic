@@ -248,36 +248,6 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     .await
 }
 
-#[allow(non_snake_case)]
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: OpenWorkspaceInput,
-    options: Options,
-) -> TauriResult<()> {
-    super::with_welcome_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, app_delegate, _| async move {
-            app.ensure_main_for_workspace(&ctx, &app_delegate, input.id.clone())
-                .await
-                .unwrap();
-
-            if let Err(err) = app.close_welcome_window().await {
-                tracing::error!("Failed to close welcome window: {}", err);
-            }
-
-            Ok(())
-        },
-    )
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_workspace<'a, R: tauri::Runtime>(
