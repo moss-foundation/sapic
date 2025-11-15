@@ -10,11 +10,10 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
 use sapic_window::WindowBuilder;
 use sapic_window2::{
-    WindowApi,
+    AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
 };
 use std::{collections::HashMap, sync::Arc};
-use tauri::WebviewWindow;
 use tokio::sync::RwLock;
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
@@ -24,7 +23,7 @@ const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
 #[derive(Deref)]
 pub struct MainWindow<R: AppRuntime> {
     #[deref]
-    pub window: WebviewWindow<R::EventLoop>,
+    pub handle: WindowHandle<R::EventLoop>,
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
@@ -37,7 +36,7 @@ pub struct MainWindow<R: AppRuntime> {
 impl<R: AppRuntime> Clone for MainWindow<R> {
     fn clone(&self) -> Self {
         Self {
-            window: self.window.clone(),
+            handle: self.handle.clone(),
             w: self.w.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
@@ -86,7 +85,7 @@ impl<R: AppRuntime> MainWindow<R> {
             .join_err::<()>("failed to build main window")?;
 
         Ok(Self {
-            window: webview_window,
+            handle: WindowHandle::new(webview_window),
             w: Arc::new(w),
             tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
@@ -100,7 +99,7 @@ impl<R: AppRuntime> MainWindow<R> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> WindowApi for MainWindow<R> {
+impl<R: AppRuntime> AppWindowApi for MainWindow<R> {
     async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         let mut write = self.tracked_cancellations.write().await;
 

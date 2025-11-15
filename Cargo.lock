@@ -9212,7 +9212,9 @@ name = "window2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "derive_more 2.0.1",
  "moss_applib",
+ "tauri",
 ]
 
 [[package]]

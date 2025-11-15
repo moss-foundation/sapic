@@ -5,11 +5,10 @@ use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
 use std::{collections::HashMap, sync::Arc};
-use tauri::WebviewWindow;
 use tokio::sync::RwLock;
 
 use sapic_window2::{
-    WindowApi,
+    AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
     defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
 };
@@ -21,7 +20,7 @@ const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
 #[derive(Deref)]
 pub struct WelcomeWindow<R: AppRuntime> {
     #[deref]
-    pub window: WebviewWindow<R::EventLoop>,
+    pub handle: WindowHandle<R::EventLoop>,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -30,7 +29,7 @@ pub struct WelcomeWindow<R: AppRuntime> {
 impl<R: AppRuntime> Clone for WelcomeWindow<R> {
     fn clone(&self) -> Self {
         Self {
-            window: self.window.clone(),
+            handle: self.handle.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
@@ -71,31 +70,23 @@ impl<R: AppRuntime> WelcomeWindow<R> {
             .join_err::<()>("failed to build welcome window")?;
 
         Ok(Self {
-            window: webview_window,
+            handle: WindowHandle::new(webview_window),
             tracked_cancellations: Default::default(),
         })
     }
+}
 
-    pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
+#[async_trait]
+impl<R: AppRuntime> AppWindowApi for WelcomeWindow<R> {
+    async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         let mut write = self.tracked_cancellations.write().await;
 
         write.insert(request_id.to_string(), canceller);
     }
 
-    pub async fn release_cancellation(&self, request_id: &str) -> () {
+    async fn release_cancellation(&self, request_id: &str) -> () {
         let mut write = self.tracked_cancellations.write().await;
 
         write.remove(request_id);
-    }
-}
-
-#[async_trait]
-impl<R: AppRuntime> WindowApi for WelcomeWindow<R> {
-    async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
-        self.track_cancellation(request_id, canceller).await;
-    }
-
-    async fn release_cancellation(&self, request_id: &str) -> () {
-        self.release_cancellation(request_id).await;
     }
 }
