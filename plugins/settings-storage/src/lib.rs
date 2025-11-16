@@ -116,10 +116,26 @@ async fn batch_update_value<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_handle))]
 async fn batch_get_value<'a, R: tauri::Runtime>(
-    #[allow(unused)] app_handle: AppHandle<R>,
+    app_handle: AppHandle<R>,
     input: BatchGetValueInput,
 ) -> TauriResult<BatchGetValueOutput> {
-    unimplemented!()
+    let provider = PROVIDER_CALLBACK
+        .get()
+        .ok_or_join_err::<()>("settings storage provider not found")?;
+
+    let settings_storage: Arc<dyn SettingsStorage> = provider(&GenericAppHandle::new(app_handle))?;
+
+    let values = settings_storage
+        .batch_get_value(
+            &input.scope.clone().into(),
+            &input.keys.iter().map(|k| k.as_str()).collect::<Vec<&str>>(),
+        )
+        .await?;
+
+    Ok(BatchGetValueOutput {
+        scope: input.scope,
+        values: values.into_iter().collect(),
+    })
 }
 
 #[tauri::command(async)]

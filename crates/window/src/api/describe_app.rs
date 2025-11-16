@@ -2,6 +2,9 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
+use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
+use serde_json::Value as JsonValue;
+use std::collections::HashMap;
 
 use crate::{
     models::{
@@ -36,7 +39,14 @@ impl<R: AppRuntime> Window<R> {
             .profile_details(&active_profile.id())
             .await
             .unwrap();
-        let configuration = self.configuration_service.configuration(app_delegate).await;
+
+        let settings_storage = GlobalSettingsStorage::get(app_delegate);
+        let configuration: HashMap<String, JsonValue> = HashMap::from_iter(
+            settings_storage
+                .values(&SettingScope::User)
+                .await
+                .into_iter(),
+        );
 
         Ok(DescribeAppOutput {
             workspace: maybe_workspace_details.map(|details| WorkspaceInfo {

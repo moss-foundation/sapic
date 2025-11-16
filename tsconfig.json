@@ -48,6 +48,9 @@
     },
     {
       "path": "plugins/shared_storage"
+    },
+    {
+      "path": "plugins/settings-storage"
     }
   ]
 }

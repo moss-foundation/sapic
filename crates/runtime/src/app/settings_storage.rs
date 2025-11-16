@@ -1,9 +1,12 @@
 use async_trait::async_trait;
+use moss_applib::{EventMarker, subscription::EventEmitter};
+use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::configuration::ConfigurationModel;
 use sapic_system::configuration::{SettingsStore, configuration_registry::ConfigurationRegistry};
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
 
+#[derive(Debug, Clone)]
 pub enum SettingScope {
     User,
     Workspace(String),
@@ -55,10 +58,22 @@ pub trait SettingsStorage: Send + Sync {
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 }
 
+#[derive(Debug, Clone)]
+pub struct OnDidChangeSettings {
+    pub scope: SettingScope,
+    pub affected_keys: FxHashSet<String>,
+    pub changes: FxHashMap<String, JsonValue>,
+}
+
+impl EventMarker for OnDidChangeSettings {}
+
 pub struct AppSettingsStorage {
     registry: Arc<dyn ConfigurationRegistry>,
     defaults: ConfigurationModel,
     user_settings: Arc<dyn SettingsStore>,
+
+    #[allow(unused)]
+    on_did_change_configuration_emitter: EventEmitter<OnDidChangeSettings>,
 }
 
 impl AppSettingsStorage {
@@ -77,6 +92,7 @@ impl AppSettingsStorage {
                     .collect(),
             },
             user_settings,
+            on_did_change_configuration_emitter: EventEmitter::<OnDidChangeSettings>::new(),
         }
     }
 }
@@ -137,8 +153,16 @@ impl SettingsStorage for AppSettingsStorage {
             unimplemented!()
         }
 
-        Ok(())
+        Ok(self
+            .on_did_change_configuration_emitter
+            .fire(OnDidChangeSettings {
+                scope: scope.clone(),
+                affected_keys: FxHashSet::from_iter([key.to_string()]),
+                changes: FxHashMap::from_iter([(key.to_string(), value)]),
+            })
+            .await)
     }
+
     async fn remove_value(
         &self,
         _scope: &SettingScope,
@@ -146,6 +170,25 @@ impl SettingsStorage for AppSettingsStorage {
     ) -> joinerror::Result<Option<JsonValue>> {
         unimplemented!()
     }
+
+    async fn batch_get_value(
+        &self,
+        scope: &SettingScope,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
+        let mut result = vec![];
+
+        if scope.is_user() {
+            let settings = self.defaults.merge(&self.user_settings.values().await);
+
+            for key in keys {
+                result.push((key.to_string(), settings.get(key).cloned()));
+            }
+        }
+
+        Ok(result)
+    }
+
     async fn batch_update_value(
         &self,
         _scope: &SettingScope,
@@ -153,13 +196,7 @@ impl SettingsStorage for AppSettingsStorage {
     ) -> joinerror::Result<()> {
         unimplemented!()
     }
-    async fn batch_get_value(
-        &self,
-        _scope: &SettingScope,
-        _keys: &[&str],
-    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
-        unimplemented!()
-    }
+
     async fn batch_remove_value(
         &self,
         _scope: &SettingScope,

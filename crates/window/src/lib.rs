@@ -1,15 +1,13 @@
 pub mod api;
 pub mod builder;
 pub mod command;
-pub mod configuration;
+
 mod extension;
-mod internal;
 mod language;
 mod logging;
 pub mod models;
 mod profile;
 mod session;
-pub mod theme;
 pub mod window;
 mod workspace;
 

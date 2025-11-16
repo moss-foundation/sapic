@@ -4,17 +4,9 @@ use std::sync::Arc;
 use tauri::AppHandle;
 
 use crate::{
-    ActiveWorkspace, configuration::ConfigurationServiceOld, language::LanguageService,
-    logging::LogService, models::primitives::SessionId, profile::ProfileService,
-    session::SessionService, workspace::WorkspaceService,
+    ActiveWorkspace, language::LanguageService, logging::LogService, models::primitives::SessionId,
+    profile::ProfileService, session::SessionService, workspace::WorkspaceService,
 };
-
-#[derive(Default)]
-pub enum TitleBarStyle {
-    #[default]
-    Visible,
-    Overlay,
-}
 
 #[derive(Deref)]
 pub struct Window<R: AppRuntime> {
@@ -26,12 +18,12 @@ pub struct Window<R: AppRuntime> {
     pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
-    pub(super) configuration_service: ConfigurationServiceOld, // DEPRECATED
-                                                               // #[allow(unused)]
-                                                               // pub(super) extension_service: ExtensionService<R>,
+    // pub(super) configuration_service: ConfigurationServiceOld,
+    // #[allow(unused)]
+    // pub(super) extension_service: ExtensionService<R>,
 
-                                                               // Store cancellers by the id of API requests
-                                                               // pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
+    // Store cancellers by the id of API requests
+    // pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
 
 impl<R: AppRuntime> Window<R> {

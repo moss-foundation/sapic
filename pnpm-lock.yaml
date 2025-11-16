@@ -516,6 +516,9 @@ importers:
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace
+      '@repo/settings-storage':
+        specifier: workspace:*
+        version: link:../../plugins/settings-storage
       '@repo/shared-storage':
         specifier: workspace:*
         version: link:../../plugins/shared_storage
