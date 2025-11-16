@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-batch-get-value"
+description = "Enables the batch_get_value command without any pre-configured scope."
+commands.allow = ["batch_get_value"]
+
+[[permission]]
+identifier = "deny-batch-get-value"
+description = "Denies the batch_get_value command without any pre-configured scope."
+commands.deny = ["batch_get_value"]

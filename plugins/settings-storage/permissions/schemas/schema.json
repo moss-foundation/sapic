@@ -295,6 +295,42 @@
       "type": "string",
       "oneOf": [
         {
+          "description": "Enables the batch_get_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-batch-get-value",
+          "markdownDescription": "Enables the batch_get_value command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the batch_get_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-batch-get-value",
+          "markdownDescription": "Denies the batch_get_value command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the batch_remove_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-batch-remove-value",
+          "markdownDescription": "Enables the batch_remove_value command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the batch_remove_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-batch-remove-value",
+          "markdownDescription": "Denies the batch_remove_value command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the batch_update_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "allow-batch-update-value",
+          "markdownDescription": "Enables the batch_update_value command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the batch_update_value command without any pre-configured scope.",
+          "type": "string",
+          "const": "deny-batch-update-value",
+          "markdownDescription": "Denies the batch_update_value command without any pre-configured scope."
+        },
+        {
           "description": "Enables the get_value command without any pre-configured scope.",
           "type": "string",
           "const": "allow-get-value",
@@ -329,6 +365,12 @@
           "type": "string",
           "const": "deny-update-value",
           "markdownDescription": "Denies the update_value command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the settings-storage plugin\n#### This default permission set includes:\n\n- `allow-get-value`\n- `allow-update-value`\n- `allow-remove-value`\n- `allow-batch-update-value`\n- `allow-batch-get-value`\n- `allow-batch-remove-value`",
+          "type": "string",
+          "const": "default",
+          "markdownDescription": "Default permissions for the settings-storage plugin\n#### This default permission set includes:\n\n- `allow-get-value`\n- `allow-update-value`\n- `allow-remove-value`\n- `allow-batch-update-value`\n- `allow-batch-get-value`\n- `allow-batch-remove-value`"
         }
       ]
     }

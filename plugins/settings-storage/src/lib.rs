@@ -32,6 +32,9 @@ pub fn init<
             get_value,
             update_value,
             remove_value,
+            batch_update_value,
+            batch_get_value,
+            batch_remove_value,
         ])
         .build()
 }
@@ -99,4 +102,31 @@ async fn remove_value<'a, R: tauri::Runtime>(
         key: input.key,
         value,
     })
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_handle))]
+async fn batch_update_value<'a, R: tauri::Runtime>(
+    #[allow(unused)] app_handle: AppHandle<R>,
+    input: BatchUpdateValueInput,
+) -> TauriResult<BatchUpdateValueOutput> {
+    unimplemented!()
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_handle))]
+async fn batch_get_value<'a, R: tauri::Runtime>(
+    #[allow(unused)] app_handle: AppHandle<R>,
+    input: BatchGetValueInput,
+) -> TauriResult<BatchGetValueOutput> {
+    unimplemented!()
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(app_handle))]
+async fn batch_remove_value<'a, R: tauri::Runtime>(
+    #[allow(unused)] app_handle: AppHandle<R>,
+    input: BatchRemoveValueInput,
+) -> TauriResult<BatchRemoveValueOutput> {
+    unimplemented!()
 }

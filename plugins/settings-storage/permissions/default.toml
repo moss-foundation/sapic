@@ -1,0 +1,34 @@
+[default]
+description = "Default permissions for the settings-storage plugin"
+permissions = [
+    "allow-get-value",
+    "allow-update-value",
+    "allow-remove-value",
+    "allow-batch-update-value",
+    "allow-batch-get-value",
+    "allow-batch-remove-value",
+]
+
+[allow-get-value]
+description = "Enables the get_value command"
+commands.allow = ["get_value"]
+
+[allow-update-value]
+description = "Enables the update_value command"
+commands.allow = ["update_value"]
+
+[allow-remove-value]
+description = "Enables the remove_value command"
+commands.allow = ["remove_value"]
+
+[allow-batch-update-value]
+description = "Enables the batch_update_value command"
+commands.allow = ["batch_update_value"]
+
+[allow-batch-get-value]
+description = "Enables the batch_get_value command"
+commands.allow = ["batch_get_value"]
+
+[allow-batch-remove-value]
+description = "Enables the batch_remove_value command"
+commands.allow = ["batch_remove_value"]
