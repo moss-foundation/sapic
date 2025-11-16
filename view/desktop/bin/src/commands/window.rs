@@ -1,4 +1,7 @@
-use sapic_ipc::{TauriError, TauriResult, contracts::theme::*};
+use sapic_ipc::{
+    TauriError, TauriResult,
+    contracts::{configuration::*, theme::*},
+};
 use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
 
@@ -17,7 +20,9 @@ pub async fn describe_app<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, window| async move { window.inner().describe_app(&ctx).await },
+        |ctx, app_delegate, window| async move {
+            window.inner().describe_app(&ctx, &app_delegate).await
+        },
     )
     .await
 }
@@ -54,12 +59,14 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListConfigurationSchemasOutput> {
-    super::with_main_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, window| async move { window.inner().list_configuration_schemas(&ctx).await },
+        |ctx, app, app_delegate| async move {
+            app.list_configuration_schemas(&ctx, &app_delegate).await
+        },
     )
     .await
 }

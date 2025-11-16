@@ -19,6 +19,7 @@ members = [
     "crates/platform",
     "crates/ipc",
     "crates/window2",
+    "crates/runtime",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -53,6 +54,7 @@ members = [
     # Plugins
     #
     "plugins/shared_storage",
+    "plugins/settings-storage",
     #
     # Apps
     #
@@ -61,7 +63,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", "crates/runtime",
+    "tools/cargo-new-ts", 
 ]
 
 [workspace.dependencies]
@@ -122,6 +124,7 @@ moss_storage2 = { path = "crates/moss-storage2" }
 # Plugin crates
 #
 shared-storage = { path = "plugins/shared_storage" }
+settings-storage = { path = "plugins/settings-storage" }
 #
 # External crates
 #

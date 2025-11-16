@@ -1,4 +1,5 @@
 use joinerror::OptionExt;
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
 
@@ -14,6 +15,7 @@ impl<R: AppRuntime> Window<R> {
     pub async fn describe_app(
         &self,
         _ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<DescribeAppOutput> {
         let maybe_workspace_details =
             if let Some(workspace) = self.workspace_service.workspace().await {
@@ -34,7 +36,7 @@ impl<R: AppRuntime> Window<R> {
             .profile_details(&active_profile.id())
             .await
             .unwrap();
-        let configuration = self.configuration_service.configuration().await;
+        let configuration = self.configuration_service.configuration(app_delegate).await;
 
         Ok(DescribeAppOutput {
             workspace: maybe_workspace_details.map(|details| WorkspaceInfo {
@@ -49,15 +51,10 @@ impl<R: AppRuntime> Window<R> {
                 accounts: profile_details.accounts,
             }),
             configuration: Configuration {
-                keys: configuration
-                    .keys
-                    .into_iter()
-                    .map(|key| key.to_string())
-                    .collect(),
+                keys: configuration.keys().map(|key| key.clone()).collect(),
                 contents: configuration
-                    .contents
                     .into_iter()
-                    .map(|(key, value)| (key.to_string(), value))
+                    .map(|(key, value)| (key, value))
                     .collect(),
             },
         })

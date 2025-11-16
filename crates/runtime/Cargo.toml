@@ -5,9 +5,12 @@ edition = "2024"
 
 [dependencies]
 sapic-system.workspace = true
+sapic-platform.workspace = true
+sapic-base.workspace = true
 
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
+moss_fs.workspace = true
 
 async-trait.workspace = true
 derive_more.workspace = true
@@ -15,6 +18,8 @@ tokio.workspace = true
 serde_json.workspace = true
 serde = { workspace = true, features = ["derive"] }
 inventory.workspace = true
+joinerror.workspace = true
+tracing.workspace = true
 
 [features]
 integration-tests = []

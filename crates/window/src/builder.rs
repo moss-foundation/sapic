@@ -11,7 +11,7 @@ use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 
 use crate::{
-    configuration::ConfigurationService,
+    configuration::ConfigurationServiceOld,
     dirs,
     internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
     language::LanguageService,
@@ -67,7 +67,7 @@ impl WindowBuilder {
         let on_did_change_configuration_emitter = EventEmitter::<OnDidChangeConfiguration>::new();
         let _on_did_change_configuration_event = on_did_change_configuration_emitter.event();
 
-        let configuration_service = ConfigurationService::new(
+        let configuration_service = ConfigurationServiceOld::new(
             &delegate,
             self.fs.clone(),
             on_did_change_configuration_emitter,

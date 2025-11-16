@@ -54,6 +54,7 @@ moss_language.workspace = true
 moss_storage2.workspace = true
 
 shared-storage.workspace = true
+settings-storage.workspace = true
 
 inventory.workspace = true
 reqwest.workspace = true

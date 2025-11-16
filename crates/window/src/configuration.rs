@@ -8,15 +8,17 @@ use moss_applib::{
     errors::{FailedPrecondition, Internal},
     subscription::{Event, EventEmitter, Subscription},
 };
-use moss_configuration::{
-    models::primitives::ConfigurationTarget,
-    registry::{ConfigurationNode, ConfigurationRegistry},
-};
+use moss_configuration::models::primitives::ConfigurationTarget;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_logging::session;
 use moss_text::ReadOnlyStr;
 use rustc_hash::{FxHashMap, FxHashSet};
+use sapic_runtime::{
+    app::settings_storage::SettingScope,
+    globals::{GlobalConfigurationRegistry, GlobalSettingsStorage},
+};
+use sapic_system::configuration::configuration_registry::ConfigurationRegistry;
 use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
@@ -33,14 +35,14 @@ use crate::{
 };
 
 #[derive(Clone)]
-pub struct ConfigurationModel {
+pub struct ConfigurationModelOld {
     /// A set of all keys present in this object.
     pub keys: HashSet<ReadOnlyStr>,
     /// A JSON object with string keys, where the values are specific settings.
     pub contents: HashMap<ReadOnlyStr, JsonValue>,
 }
 
-impl ConfigurationModel {
+impl ConfigurationModelOld {
     pub fn merge(&self, other: &Self) -> Self {
         let mut all_keys: HashSet<ReadOnlyStr> = self.keys.iter().cloned().collect();
         all_keys.extend(other.keys.iter().cloned());
@@ -60,7 +62,7 @@ impl ConfigurationModel {
 struct ConfigurationHandle {
     fs: Arc<dyn FileSystem>,
     edit: ConfigurationEdit,
-    model: ConfigurationModel,
+    model: ConfigurationModelOld,
 }
 
 impl ConfigurationHandle {
@@ -68,7 +70,7 @@ impl ConfigurationHandle {
         Self {
             fs: fs.clone(),
             edit: ConfigurationEdit::new(fs, source),
-            model: ConfigurationModel {
+            model: ConfigurationModelOld {
                 keys: HashSet::new(),
                 contents: HashMap::new(),
             },
@@ -80,7 +82,7 @@ impl ConfigurationHandle {
         Ok(ConfigurationHandle {
             fs: fs.clone(),
             edit: ConfigurationEdit::new(fs, source),
-            model: ConfigurationModel {
+            model: ConfigurationModelOld {
                 keys: parsed.keys().map(|key| key.clone()).collect(),
                 contents: parsed,
             },
@@ -89,7 +91,7 @@ impl ConfigurationHandle {
 
     async fn reload(&mut self) -> joinerror::Result<()> {
         let parsed = Self::load_internal(self.fs.as_ref(), self.edit.abs_path()).await?;
-        self.model = ConfigurationModel {
+        self.model = ConfigurationModelOld {
             keys: parsed.keys().map(|key| key.clone()).collect(),
             contents: parsed,
         };
@@ -149,9 +151,9 @@ impl ConfigurationHandle {
     }
 }
 
-pub(crate) struct ConfigurationService {
+pub(crate) struct ConfigurationServiceOld {
     registry: Arc<dyn ConfigurationRegistry>,
-    defaults: ConfigurationModel,
+    defaults: ConfigurationModelOld,
     profile: Arc<RwLock<Option<ConfigurationHandle>>>,
     workspace: Arc<RwLock<Option<ConfigurationHandle>>>,
 
@@ -168,7 +170,7 @@ pub(crate) struct ConfigurationService {
     _on_did_change_workspace: Subscription<OnDidChangeWorkspace>,
 }
 
-impl ConfigurationService {
+impl ConfigurationServiceOld {
     pub async fn new<R: AppRuntime>(
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
@@ -178,7 +180,7 @@ impl ConfigurationService {
         on_did_change_profile_event: &Event<OnDidChangeProfile>,
         on_did_change_workspace_event: &Event<OnDidChangeWorkspace>,
     ) -> joinerror::Result<Self> {
-        let registry = <dyn ConfigurationRegistry>::global(app_delegate);
+        let registry = GlobalConfigurationRegistry::get(app_delegate);
         let defaults = registry.defaults();
 
         let profile = Arc::new(RwLock::new(None));
@@ -193,7 +195,7 @@ impl ConfigurationService {
 
         Ok(Self {
             registry,
-            defaults: ConfigurationModel {
+            defaults: ConfigurationModelOld {
                 keys: defaults.keys().map(|key| key.clone()).collect(),
                 contents: defaults,
             },
@@ -240,57 +242,64 @@ impl ConfigurationService {
         })
     }
 
-    pub fn schemas(&self) -> HashMap<ReadOnlyStr, Arc<ConfigurationNode>> {
-        self.registry.nodes()
-    }
-
-    pub async fn configuration(&self) -> ConfigurationModel {
-        let mut configuration = self.defaults.clone();
-
-        if let Some(profile_conf_handle) = &*self.profile.read().await {
-            configuration = configuration.merge(&profile_conf_handle.model);
-        }
-
-        if let Some(workspace_conf_handle) = &*self.workspace.read().await {
-            configuration = configuration.merge(&workspace_conf_handle.model);
-        }
-
-        configuration
-    }
-
-    pub async fn update_value(
+    pub async fn configuration<R: AppRuntime>(
         &self,
+        delegate: &AppDelegate<R>,
+    ) -> HashMap<String, JsonValue> {
+        // HACK: A temporary solution to maintain backward compatibility
+
+        let settings_storage = GlobalSettingsStorage::get(delegate);
+        HashMap::from_iter(
+            settings_storage
+                .values(&SettingScope::User)
+                .await
+                .into_iter(),
+        )
+    }
+
+    pub async fn update_value<R: AppRuntime>(
+        &self,
+        delegate: &AppDelegate<R>,
         key: &str,
         value: JsonValue,
-        target: ConfigurationTarget,
+        _target: ConfigurationTarget,
     ) -> joinerror::Result<()> {
-        if !self.registry.is_parameter_known(key) {
-            session::warn!("parameter '{}' is unknown", key);
-        } else {
-            self.registry.validate_parameter(key, &value)?;
-        }
+        // HACK: A temporary solution to maintain backward compatibility
 
-        match target {
-            ConfigurationTarget::Profile => {
-                let mut handle_lock = self.profile.write().await;
-                let handle = handle_lock
-                    .as_mut()
-                    .ok_or_join_err::<FailedPrecondition>("no profile configuration handle")?;
+        // if !self.registry.is_parameter_known(key) {
+        //     session::warn!("parameter '{}' is unknown", key);
+        // } else {
+        //     self.registry.validate_parameter(key, &value)?;
+        // }
 
-                handle.update_value(key, value.clone()).await?;
-                handle.reload().await?;
-            }
-            ConfigurationTarget::Workspace => {
-                unimplemented!()
-            }
-        }
+        // match target {
+        //     ConfigurationTarget::Profile => {
+        //         let mut handle_lock = self.profile.write().await;
+        //         let handle = handle_lock
+        //             .as_mut()
+        //             .ok_or_join_err::<FailedPrecondition>("no profile configuration handle")?;
 
-        self.on_did_change_configuration_emitter
-            .fire(OnDidChangeConfiguration {
-                affected_keys: FxHashSet::from_iter([key.to_string()]),
-                changes: FxHashMap::from_iter([(key.to_string(), value)]),
-            })
-            .await;
+        //         handle.update_value(key, value.clone()).await?;
+        //         handle.reload().await?;
+        //     }
+        //     ConfigurationTarget::Workspace => {
+        //         unimplemented!()
+        //     }
+        // }
+
+        // self.on_did_change_configuration_emitter
+        //     .fire(OnDidChangeConfiguration {
+        //         affected_keys: FxHashSet::from_iter([key.to_string()]),
+        //         changes: FxHashMap::from_iter([(key.to_string(), value)]),
+        //     })
+        //     .await;
+
+        // Ok(())
+
+        let settings_storage = GlobalSettingsStorage::get(delegate);
+        settings_storage
+            .update_value(&SettingScope::User, key, value)
+            .await?;
 
         Ok(())
     }

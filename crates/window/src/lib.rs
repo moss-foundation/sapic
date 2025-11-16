@@ -23,13 +23,8 @@ extern crate derive_more;
 
 pub use builder::WindowBuilder;
 use moss_applib::AppRuntime;
-use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::{Workspace, models::primitives::WorkspaceId};
 pub use window::Window;
-
-inventory::submit! {
-    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
-}
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {

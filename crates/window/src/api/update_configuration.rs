@@ -23,6 +23,7 @@ impl<R: AppRuntime> Window<R> {
 
         self.configuration_service
             .update_value(
+                app_delegate,
                 &input.inner.key,
                 input.inner.value.clone(),
                 input.inner.target,
