@@ -10,7 +10,7 @@ use super::types::primitives::*;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "configuration/types.ts")]
 pub struct ConfigurationSchema {
     pub id: String,
     pub parent_id: Option<String>,
@@ -24,7 +24,7 @@ pub struct ConfigurationSchema {
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
+#[ts(export, export_to = "configuration/types.ts")]
 pub struct ParameterSchema {
     pub id: String,
     #[ts(optional, type = "JsonValue")]

@@ -48,7 +48,6 @@ moss_environment.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_user.workspace = true
-moss_configuration.workspace = true
 moss_extension_points.workspace = true
 moss_language.workspace = true
 moss_storage2.workspace = true

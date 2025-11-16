@@ -16,7 +16,7 @@ ts-rs.workspace = true
 thiserror.workspace = true
 anyhow.workspace = true
 serde_json.workspace = true
-validator.workspace = true
+validator = { workspace = true, features = ["derive"] }
 serde = { workspace = true, features = ["derive"] }
 
 [features]

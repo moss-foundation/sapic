@@ -1688,7 +1688,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_environment",
  "moss_extension_points",
@@ -3892,22 +3891,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_configuration"
-version = "0.1.0"
-dependencies = [
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_logging",
- "moss_text",
- "serde",
- "serde_json",
- "tracing",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_db"
 version = "0.1.0"
 dependencies = [
@@ -4299,7 +4282,6 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -9192,7 +9174,6 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",

@@ -25,7 +25,6 @@ moss_id_macro.workspace = true
 moss_user.workspace = true
 moss_extension.workspace = true
 moss_text.workspace = true
-moss_configuration.workspace = true
 
 static_json.workspace = true
 inventory.workspace = true

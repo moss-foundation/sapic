@@ -9,4 +9,4 @@ export const configurationParameterTypeSchema = z.union([
   z.literal("array"),
 ]);
 
-export const configurationTargetSchema = z.union([z.literal("PROFILE"), z.literal("WORKSPACE")]);
+export const configurationTargetSchema = z.union([z.literal("USER"), z.literal("WORKSPACE")]);

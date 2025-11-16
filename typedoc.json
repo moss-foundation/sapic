@@ -14,7 +14,6 @@
     "crates/moss-git",
     "crates/moss-language",
     "crates/moss-user",
-    "crates/moss-configuration",
 
     "plugins/shared_storage",
     "plugins/settings-storage"

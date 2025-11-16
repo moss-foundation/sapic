@@ -38,9 +38,6 @@
       "path": "crates/moss-language"
     },
     {
-      "path": "crates/moss-configuration"
-    },
-    {
       "path": "view/desktop"
     },
     {
