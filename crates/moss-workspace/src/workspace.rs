@@ -9,7 +9,7 @@ use moss_applib::{
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_project::Project;
+use moss_project::{Project, models::primitives::ProjectId};
 use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -20,7 +20,7 @@ use crate::{
     environment::EnvironmentService,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::{ProjectId, WorkspaceId},
+    models::primitives::WorkspaceId,
     project::ProjectService,
     storage_old::StorageService,
 };

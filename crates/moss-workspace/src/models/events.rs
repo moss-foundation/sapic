@@ -2,10 +2,9 @@ use std::path::PathBuf;
 
 use moss_environment::models::primitives::EnvironmentId;
 use moss_git::models::types::BranchInfo;
+use moss_project::models::primitives::ProjectId;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
-
-use crate::models::primitives::ProjectId;
 
 /// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]

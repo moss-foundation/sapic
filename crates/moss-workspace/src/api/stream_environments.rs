@@ -1,14 +1,12 @@
 use futures::StreamExt;
 use moss_applib::AppRuntime;
 use moss_logging::session;
+use moss_project::models::primitives::ProjectId;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     Workspace,
-    models::{
-        events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput,
-        primitives::ProjectId,
-    },
+    models::{events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput},
 };
 
 impl<R: AppRuntime> Workspace<R> {

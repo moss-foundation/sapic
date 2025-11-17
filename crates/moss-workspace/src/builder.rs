@@ -3,6 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
@@ -14,7 +15,7 @@ use crate::{
     environment::EnvironmentService,
     layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::{ProjectId, WorkspaceId},
+    models::primitives::WorkspaceId,
     project::ProjectService,
     storage_old::StorageService,
 };

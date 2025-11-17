@@ -13,6 +13,7 @@ use moss_environment::{
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
+use moss_project::models::primitives::ProjectId;
 use moss_storage::{
     WorkspaceStorage, common::VariableStore, primitives::segkey::SegKeyBuf,
     storage::operations::TransactionalRemoveItem,
@@ -31,7 +32,7 @@ use crate::{
     dirs,
     errors::ErrorNotFound,
     models::{
-        primitives::{ProjectId, WorkspaceId},
+        primitives::WorkspaceId,
         types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     },
     storage::{

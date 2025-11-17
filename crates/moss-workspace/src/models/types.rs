@@ -10,6 +10,7 @@ use moss_git::{
     models::{primitives::FileStatus, types::BranchInfo},
     url::GIT_URL_REGEX,
 };
+use moss_project::models::primitives::ProjectId;
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -20,7 +21,7 @@ use std::{
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
-use crate::models::primitives::{ActivitybarPosition, ProjectId, SidebarPosition};
+use crate::models::primitives::{ActivitybarPosition, SidebarPosition};
 
 pub type EnvironmentName = String;
 

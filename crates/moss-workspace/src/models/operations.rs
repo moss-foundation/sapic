@@ -2,6 +2,7 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
+use moss_project::models::primitives::ProjectId;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -10,7 +11,7 @@ use std::{
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{primitives::*, types::*};
+use crate::models::types::*;
 
 // ------------------------------ //
 // Project

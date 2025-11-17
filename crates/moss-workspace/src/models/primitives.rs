@@ -2,7 +2,7 @@ use moss_id_macro::ids;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-ids!([ProjectId, WorkspaceId]);
+ids!([WorkspaceId]);
 
 /// @category Type
 #[derive(Debug, PartialEq, Serialize, Deserialize, TS, Clone)]

@@ -17,6 +17,7 @@ use moss_project::{
         ProjectImportArchiveParams, ProjectImportExternalParams, ProjectLoadParams,
     },
     git::GitClient,
+    models::primitives::ProjectId,
     vcs::VcsSummary,
 };
 use moss_storage2::{Storage, models::primitives::StorageScope};
@@ -35,7 +36,7 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
     models::{
-        primitives::{ProjectId, WorkspaceId},
+        primitives::WorkspaceId,
         types::{
             CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
             UpdateProjectParams,
