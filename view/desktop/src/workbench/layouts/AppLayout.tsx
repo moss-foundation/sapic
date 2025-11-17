@@ -1,5 +1,5 @@
 import { AllotmentHandle, LayoutPriority } from "allotment";
-import { ReactNode, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
@@ -10,11 +10,7 @@ import { BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
 
 import { Resizable, ResizablePanel } from "../../lib/ui/Resizable";
 
-interface AppLayoutProps {
-  children?: ReactNode;
-}
-
-export const AppLayout = ({ children }: AppLayoutProps) => {
+export const AppLayout = () => {
   const mainResizableRef = useRef<AllotmentHandle>(null);
   const verticalResizableRef = useRef<AllotmentHandle>(null);
 
@@ -147,7 +143,9 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
                 });
               }}
             >
-              <ResizablePanel>{children ?? <MainContent />}</ResizablePanel>
+              <ResizablePanel>
+                <MainContent />
+              </ResizablePanel>
               <ResizablePanel
                 preferredSize={layout?.bottomPanelState.height}
                 visible={layout?.bottomPanelState.visible}
