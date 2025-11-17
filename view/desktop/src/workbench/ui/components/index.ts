@@ -15,7 +15,6 @@ export * as RadioGroup from "./RadioGroup";
 export * from "./SelectOutlined";
 
 export * from "./EmptyWorkspace";
-export * from "./Workbench";
 export * from "./Workspace";
 
 export * from "./EnvironmentsLists";
