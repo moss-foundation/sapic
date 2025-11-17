@@ -7,6 +7,7 @@ import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
+import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 
 export const LanguageSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
@@ -19,7 +20,7 @@ export const LanguageSection = () => {
     updateConfiguration({
       key: "language",
       value: newCode === "default" ? "en" : newCode,
-      target: "PROFILE",
+      target: ConfigurationTargetEnum.USER,
     });
 
     i18next.changeLanguage(newCode).catch(console.error);
