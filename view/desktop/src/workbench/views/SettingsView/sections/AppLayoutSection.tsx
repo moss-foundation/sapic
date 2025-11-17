@@ -6,6 +6,7 @@ import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";
+import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 
 export const AppLayoutSection = () => {
   return (
@@ -41,7 +42,7 @@ const SideBarPositionSection = () => {
     updateConfiguration({
       key: "sideBarPosition",
       value: value,
-      target: "PROFILE",
+      target: ConfigurationTargetEnum.USER,
     });
   };
 
@@ -106,7 +107,7 @@ const ActivityBarPositionSection = () => {
     updateConfiguration({
       key: "activityBarPosition",
       value: position,
-      target: "PROFILE",
+      target: ConfigurationTargetEnum.USER,
     });
   };
 

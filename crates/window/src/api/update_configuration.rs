@@ -1,16 +1,16 @@
 use std::collections::HashMap;
 
-use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use moss_logging::session;
-use tauri::Emitter;
-use validator::Validate;
-
 use crate::{
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput},
     window::Window,
 };
+use moss_app_delegate::AppDelegate;
+use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_logging::session;
+use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
+use tauri::Emitter;
+use validator::Validate;
 
 impl<R: AppRuntime> Window<R> {
     pub async fn update_configuration(
@@ -21,11 +21,12 @@ impl<R: AppRuntime> Window<R> {
     ) -> joinerror::Result<()> {
         input.validate().join_err_bare()?;
 
-        self.configuration_service
+        let settings_storage = GlobalSettingsStorage::get(app_delegate);
+        settings_storage
             .update_value(
+                &SettingScope::User,
                 &input.inner.key,
                 input.inner.value.clone(),
-                input.inner.target,
             )
             .await?;
 

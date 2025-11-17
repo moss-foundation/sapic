@@ -164,22 +164,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-configuration:
-    dependencies:
-      typescript:
-        specifier: 5.9.2
-        version: 5.9.2
-      zod:
-        specifier: 3.25.32
-        version: 3.25.32
-    devDependencies:
-      '@repo/moss-bindingutils':
-        specifier: workspace:*
-        version: link:../moss-bindingutils
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
   crates/moss-environment:
     dependencies:
       typescript:
@@ -317,12 +301,12 @@ importers:
         specifier: 3.25.32
         version: 3.25.32
     devDependencies:
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../base
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../moss-bindingutils
-      '@repo/moss-configuration':
-        specifier: workspace:*
-        version: link:../moss-configuration
       '@repo/moss-extension':
         specifier: workspace:*
         version: link:../moss-extension
@@ -384,6 +368,22 @@ importers:
       '@types/node':
         specifier: 24.6.1
         version: 24.6.1
+
+  plugins/settings-storage:
+    dependencies:
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      zod:
+        specifier: 3.24.4
+        version: 3.24.4
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../../crates/moss-bindingutils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
 
   plugins/shared_storage:
     dependencies:
@@ -479,6 +479,9 @@ importers:
       '@radix-ui/react-use-controllable-state':
         specifier: 1.2.2
         version: 1.2.2(@types/react@19.2.2)(react@19.2.0)
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../../crates/base
       '@repo/ipc':
         specifier: workspace:*
         version: link:../../crates/ipc
@@ -500,6 +503,9 @@ importers:
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace
+      '@repo/settings-storage':
+        specifier: workspace:*
+        version: link:../../plugins/settings-storage
       '@repo/shared-storage':
         specifier: workspace:*
         version: link:../../plugins/shared_storage

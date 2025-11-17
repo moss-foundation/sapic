@@ -13,7 +13,6 @@ use moss_applib::{
     TauriAppRuntime,
     context::{AnyAsyncContext, MutableContext},
 };
-use moss_configuration::registry::{AppConfigurationRegistry, ConfigurationRegistry};
 use moss_extension_points::{
     configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
     languages::LanguageExtensionPoint, resource_statuses::ResourceStatusesExtensionPoint,
@@ -44,8 +43,15 @@ use moss_server_api::{
 use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
-use sapic_runtime::globals::GlobalThemeRegistry;
-use sapic_system::theme::theme_registry::AppThemeRegistry;
+use sapic_runtime::{
+    app::settings_storage::AppSettingsStorage,
+    globals::{GlobalConfigurationRegistry, GlobalSettingsStorage, GlobalThemeRegistry},
+    user_settings::UserSettingsService,
+};
+use sapic_system::{
+    configuration::configuration_registry::AppConfigurationRegistry,
+    theme::theme_registry::AppThemeRegistry,
+};
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 #[cfg(not(debug_assertions))]
@@ -67,7 +73,6 @@ pub async fn run<R: TauriRuntime>() {
         .plugin(plugin_window_state::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_os::init())
-        // .plugin(tauri_plugin_single_instance::init(|_app, _args, _cwd| {}))
         .plugin(tauri_plugin_opener::init())
         .plugin(shared_storage::init(|app| {
             let handle = app
@@ -80,6 +85,18 @@ pub async fn run<R: TauriRuntime>() {
                 .clone();
 
             Ok(<dyn Storage>::global(&delegate))
+        }))
+        .plugin(settings_storage::init(|app| {
+            let handle = app
+                .downcast::<R>()
+                .ok_or_join_err::<()>("failed to downcast app handle")?;
+
+            let delegate = handle
+                .state::<AppDelegate<TauriAppRuntime<R>>>()
+                .inner()
+                .clone();
+
+            Ok(GlobalSettingsStorage::get(&delegate))
         }));
 
     #[cfg(target_os = "macos")]
@@ -174,9 +191,17 @@ pub async fn run<R: TauriRuntime>() {
                     let http_header_registry =
                         AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
+                    let user_settings = UserSettingsService::new(&delegate, fs.clone()).await?;
+                    let settings_storage = AppSettingsStorage::new(
+                        configuration_registry.clone(),
+                        Arc::new(user_settings),
+                    );
+
                     GlobalThemeRegistry::set(&delegate, theme_registry);
+                    GlobalConfigurationRegistry::set(&delegate, configuration_registry);
+                    GlobalSettingsStorage::set(&delegate, Arc::new(settings_storage));
+
                     <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
-                    <dyn ConfigurationRegistry>::set_global(&delegate, configuration_registry);
                     <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                     <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 

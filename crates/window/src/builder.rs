@@ -1,5 +1,5 @@
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
@@ -11,9 +11,8 @@ use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 
 use crate::{
-    configuration::ConfigurationService,
     dirs,
-    internal::events::{OnDidChangeConfiguration, OnDidChangeProfile, OnDidChangeWorkspace},
+
     language::LanguageService,
     logging::LogService,
     profile::ProfileService,
@@ -22,9 +21,6 @@ use crate::{
     window::Window,
     workspace::WorkspaceService,
 };
-
-pub const MIN_WINDOW_WIDTH: f64 = 800.0;
-pub const MIN_WINDOW_HEIGHT: f64 = 600.0;
 
 pub struct WindowBuilder {
     workspace_id: WorkspaceId,
@@ -58,24 +54,24 @@ impl WindowBuilder {
 
         self.create_user_dirs_if_not_exists(user_dir.clone()).await;
 
-        let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
-        let on_did_change_profile_event = on_did_change_profile_emitter.event();
+        // let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
+        // let on_did_change_profile_event = on_did_change_profile_emitter.event();
 
-        let on_did_change_workspace_emitter = EventEmitter::<OnDidChangeWorkspace>::new();
-        let on_did_change_workspace_event = on_did_change_workspace_emitter.event();
+        // let on_did_change_workspace_emitter = EventEmitter::<OnDidChangeWorkspace>::new();
+        // let on_did_change_workspace_event = on_did_change_workspace_emitter.event();
 
-        let on_did_change_configuration_emitter = EventEmitter::<OnDidChangeConfiguration>::new();
-        let _on_did_change_configuration_event = on_did_change_configuration_emitter.event();
+        // let on_did_change_configuration_emitter = EventEmitter::<OnDidChangeConfiguration>::new();
+        // let _on_did_change_configuration_event = on_did_change_configuration_emitter.event();
 
-        let configuration_service = ConfigurationService::new(
-            &delegate,
-            self.fs.clone(),
-            on_did_change_configuration_emitter,
-            &on_did_change_profile_event,
-            &on_did_change_workspace_event,
-        )
-        .await
-        .expect("Failed to create configuration service");
+        // let configuration_service = ConfigurationServiceOld::new(
+        //     &delegate,
+        //     self.fs.clone(),
+        //     on_did_change_configuration_emitter,
+        //     &on_did_change_profile_event,
+        //     &on_did_change_workspace_event,
+        // )
+        // .await
+        // .expect("Failed to create configuration service");
 
         // let theme_service = ThemeService::new(
         //     &delegate,
@@ -104,7 +100,6 @@ impl WindowBuilder {
             self.fs.clone(),
             self.auth_api_client.clone(),
             self.keyring.clone(),
-            on_did_change_profile_emitter,
         )
         .await
         .expect("Failed to create profile service");
@@ -137,7 +132,7 @@ impl WindowBuilder {
             language_service,
             // theme_service,
             profile_service,
-            configuration_service,
+            // configuration_service,
             // tracked_cancellations: Default::default(),
         })
     }

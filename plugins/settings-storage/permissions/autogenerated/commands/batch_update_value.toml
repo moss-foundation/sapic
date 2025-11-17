@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-batch-update-value"
+description = "Enables the batch_update_value command without any pre-configured scope."
+commands.allow = ["batch_update_value"]
+
+[[permission]]
+identifier = "deny-batch-update-value"
+description = "Denies the batch_update_value command without any pre-configured scope."
+commands.deny = ["batch_update_value"]

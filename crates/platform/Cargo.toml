@@ -6,6 +6,8 @@ edition = "2024"
 [dependencies]
 sapic-base = { workspace = true }
 moss_fs = { workspace = true }
+moss_edit = { workspace = true }
+moss_text = { workspace = true }
 
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -13,6 +15,8 @@ serde_json = { workspace = true }
 joinerror = { workspace = true }
 derive_more = { workspace = true, features = ["deref", "display"] }
 regorus = { workspace = true }
+tokio = { workspace = true }
+json-patch = { workspace = true }
 
 [features]
 integration-tests = []

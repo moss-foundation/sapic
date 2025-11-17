@@ -1,5 +1,4 @@
 use derive_more::Deref;
-use moss_configuration::models::types::ConfigurationSchema;
 use moss_extension::models::types::ExtensionInfo;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
@@ -13,16 +12,18 @@ use validator::Validate;
 
 use crate::models::{primitives::*, types::*};
 
+/// DEPRECATED
 /// @category Operation
-#[derive(Debug, Clone, Serialize, TS, Validate)]
-#[ts(optional_fields)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListConfigurationSchemasOutput {
-    #[ts(type = "ConfigurationSchema[]")]
-    pub schemas: Vec<ConfigurationSchema>,
-}
+// #[derive(Debug, Clone, Serialize, TS, Validate)]
+// #[ts(optional_fields)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListConfigurationSchemasOutput {
+//     #[ts(type = "ConfigurationSchema[]")]
+//     pub schemas: Vec<ConfigurationSchema>,
+// }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS, Validate)]
 #[ts(optional_fields)]
@@ -37,6 +38,7 @@ pub struct UpdateConfigurationInput {
 // ###                    Profile                        ###
 // #########################################################
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]
 #[ts(optional_fields)]
@@ -47,6 +49,7 @@ pub struct CreateProfileInput {
     pub is_default: Option<bool>,
 }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -54,6 +57,7 @@ pub struct CreateProfileOutput {
     pub profile_id: String,
 }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -64,6 +68,7 @@ pub struct UpdateProfileInput {
     pub accounts_to_update: Vec<UpdateAccountParams>,
 }
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Clone, Serialize, TS)]
 #[ts(export, export_to = "operations.ts")]
@@ -101,6 +106,7 @@ pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageIn
 
 // Describe App
 
+/// DEPRECATED
 /// @category Operation
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]

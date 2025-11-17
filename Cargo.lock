@@ -187,6 +187,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "derive_more 2.0.1",
+ "inventory",
  "ipc",
  "joinerror",
  "main",
@@ -521,6 +522,7 @@ version = "0.1.0"
 dependencies = [
  "derive_more 2.0.1",
  "joinerror",
+ "moss_text",
  "serde",
  "serde_json",
  "ts-rs",
@@ -1686,7 +1688,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_environment",
  "moss_extension_points",
@@ -1706,6 +1707,7 @@ dependencies = [
  "reqwest",
  "runtime",
  "serde_json",
+ "settings-storage",
  "shared-storage",
  "strum",
  "system",
@@ -3889,22 +3891,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_configuration"
-version = "0.1.0"
-dependencies = [
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_logging",
- "moss_text",
- "serde",
- "serde_json",
- "tracing",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_db"
 version = "0.1.0"
 dependencies = [
@@ -4296,7 +4282,6 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -5289,10 +5274,14 @@ dependencies = [
  "base",
  "derive_more 2.0.1",
  "joinerror",
+ "json-patch 4.1.0",
+ "moss_edit",
  "moss_fs",
+ "moss_text",
  "regorus",
  "serde",
  "serde_json",
+ "tokio",
  "ts-rs",
 ]
 
@@ -6017,14 +6006,20 @@ name = "runtime"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base",
  "derive_more 2.0.1",
  "inventory",
+ "joinerror",
  "moss_app_delegate",
  "moss_applib",
+ "moss_fs",
+ "platform",
+ "rustc-hash",
  "serde",
  "serde_json",
  "system",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -6528,6 +6523,24 @@ checksum = "d52aa42f8fdf0fed91e5ce7f23d8138441002fa31dca008acf47e6fd4721f741"
 dependencies = [
  "nodrop",
  "stable_deref_trait",
+]
+
+[[package]]
+name = "settings-storage"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ipc",
+ "joinerror",
+ "moss_applib",
+ "runtime",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tracing",
+ "ts-rs",
+ "validator",
 ]
 
 [[package]]
@@ -7084,16 +7097,19 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "inventory",
  "joinerror",
  "moss_applib",
  "moss_fs",
  "moss_storage2",
+ "moss_text",
  "moss_workspace",
  "platform",
  "rustc-hash",
  "serde",
  "serde_json",
  "tokio",
+ "tracing",
 ]
 
 [[package]]
@@ -9145,6 +9161,7 @@ name = "window"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base",
  "chrono",
  "derive_more 2.0.1",
  "futures",
@@ -9157,7 +9174,6 @@ dependencies = [
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
- "moss_configuration",
  "moss_db",
  "moss_edit",
  "moss_environment",
@@ -9176,12 +9192,15 @@ dependencies = [
  "moss_user",
  "moss_workspace",
  "nanoid",
+ "platform",
  "regorus",
  "reqwest",
+ "runtime",
  "rustc-hash",
  "serde",
  "serde_json",
  "static_json",
+ "system",
  "tauri",
  "thiserror 2.0.17",
  "tokio",
@@ -9212,7 +9231,9 @@ name = "window2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "derive_more 2.0.1",
  "moss_applib",
+ "tauri",
 ]
 
 [[package]]

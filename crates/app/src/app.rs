@@ -17,10 +17,11 @@ use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
 use sapic_main::MainWindow;
 use sapic_system::{
+    configuration::configuration_registry::RegisterConfigurationContribution,
     theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
 };
 use sapic_welcome::WelcomeWindow;
-use sapic_window2::WindowApi;
+use sapic_window2::AppWindowApi;
 use std::{
     ops::{Deref, DerefMut},
     sync::Arc,
@@ -28,6 +29,10 @@ use std::{
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
 
 use crate::{command::CommandCallback, extension::ExtensionService, windows::WindowManager};
+
+inventory::submit! {
+    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
+}
 
 pub struct AppCommands<R: TauriRuntime>(FxHashMap<ReadOnlyStr, CommandCallback<R>>);
 
@@ -76,24 +81,24 @@ impl<R: AppRuntime> App<R> {
         self.tao_handle.clone()
     }
 
-    pub async fn window(&self, label: &str) -> Option<Box<dyn WindowApi>> {
+    pub async fn window(&self, label: &str) -> Option<Box<dyn AppWindowApi>> {
         self.windows
             .window(label)
             .await
-            .map(|window| Box::new(window) as Box<dyn WindowApi>)
+            .map(|window| Box::new(window) as Box<dyn AppWindowApi>)
     }
 
     pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
         let maybe_welcome_window = self.windows.welcome_window().await;
         if let Some(welcome_window) = maybe_welcome_window {
-            if let Err(err) = welcome_window.window.set_focus() {
+            if let Err(err) = welcome_window.handle.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
 
             return Ok(());
         } else {
             let welcome_window = self.windows.create_welcome_window(delegate).await?;
-            if let Err(err) = welcome_window.window.set_focus() {
+            if let Err(err) = welcome_window.handle.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
 
@@ -107,18 +112,16 @@ impl<R: AppRuntime> App<R> {
         delegate: &AppDelegate<R>,
         workspace_id: WorkspaceId,
     ) -> joinerror::Result<()> {
-        let label = self.windows.window_label_for_workspace(&workspace_id).await;
-
-        let maybe_main_window = if let Some(label) = label {
-            self.windows.main_window(&label).await
-        } else {
-            None
-        };
+        let maybe_main_window = self
+            .windows
+            .main_window_by_workspace_id(&workspace_id)
+            .await;
 
         if let Some(main_window) = maybe_main_window {
-            if let Err(err) = main_window.window.set_focus() {
+            if let Err(err) = main_window.handle.set_focus() {
                 tracing::warn!("Failed to set focus to main window: {}", err);
             }
+
             return Ok(());
         }
 
@@ -134,7 +137,7 @@ impl<R: AppRuntime> App<R> {
             )
             .await?;
 
-        if let Err(err) = main_window.window.set_focus() {
+        if let Err(err) = main_window.handle.set_focus() {
             tracing::warn!("Failed to set focus to main window: {}", err);
         }
 

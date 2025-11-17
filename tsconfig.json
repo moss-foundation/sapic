@@ -38,9 +38,6 @@
       "path": "crates/moss-language"
     },
     {
-      "path": "crates/moss-configuration"
-    },
-    {
       "path": "view/desktop"
     },
     {
@@ -48,6 +45,9 @@
     },
     {
       "path": "plugins/shared_storage"
+    },
+    {
+      "path": "plugins/settings-storage"
     }
   ]
 }

@@ -19,6 +19,7 @@ members = [
     "crates/platform",
     "crates/ipc",
     "crates/window2",
+    "crates/runtime",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -46,13 +47,13 @@ members = [
     "crates/moss-id-macro",
     "crates/moss-extension",
     "crates/moss-extension-points", 
-    "crates/moss-configuration",
     "crates/moss-language",
     "crates/moss-storage2",
     #
     # Plugins
     #
     "plugins/shared_storage",
+    "plugins/settings-storage",
     #
     # Apps
     #
@@ -61,7 +62,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", "crates/runtime",
+    "tools/cargo-new-ts", 
 ]
 
 [workspace.dependencies]
@@ -115,13 +116,13 @@ moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_extension = { path = "crates/moss-extension" }
 moss_extension_points = { path = "crates/moss-extension-points" }
-moss_configuration = { path = "crates/moss-configuration" }
 moss_language = { path = "crates/moss-language" }
 moss_storage2 = { path = "crates/moss-storage2" }
 #
 # Plugin crates
 #
 shared-storage = { path = "plugins/shared_storage" }
+settings-storage = { path = "plugins/settings-storage" }
 #
 # External crates
 #

@@ -4,10 +4,8 @@ version = "0.1.0"
 edition = "2024"
 license = "MIT"
 
-[build-dependencies]
-serde_json.workspace = true
-
 [dependencies]
+
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_db.workspace = true
@@ -27,7 +25,6 @@ moss_id_macro.workspace = true
 moss_user.workspace = true
 moss_extension.workspace = true
 moss_text.workspace = true
-moss_configuration.workspace = true
 
 static_json.workspace = true
 inventory.workspace = true

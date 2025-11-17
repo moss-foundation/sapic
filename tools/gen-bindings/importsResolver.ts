@@ -28,7 +28,6 @@ const KNOWN_PACKAGES = [
   "ipc",
   "moss-git",
   "moss-user",
-  "moss-configuration",
   "moss-language",
   "moss-extension",
 ];

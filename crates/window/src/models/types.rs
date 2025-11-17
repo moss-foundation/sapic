@@ -1,7 +1,7 @@
-use moss_configuration::models::primitives::ConfigurationTarget;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::{AccountId, AccountKind};
 use moss_workspace::models::primitives::WorkspaceId;
+use sapic_base::configuration::types::primitives::ConfigurationTarget;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{
@@ -13,6 +13,7 @@ use ts_rs::TS;
 
 use crate::models::primitives::*;
 
+/// DEPRECATED
 /// @category Type
 #[derive(Debug, Clone, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -26,6 +27,7 @@ pub struct UpdateConfigurationParams {
     pub target: ConfigurationTarget,
 }
 
+/// DEPRECATED
 /// @category Type
 #[derive(Debug, Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
