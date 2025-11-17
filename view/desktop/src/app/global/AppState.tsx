@@ -1,4 +1,3 @@
-import { useInitLayout } from "@/hooks/useInitLayout";
 import { useSyncColorTheme } from "@/hooks/useSyncColorTheme";
 import { useSyncLanguage } from "@/hooks/useSyncLanguage";
 import { PageLoader } from "@/workbench/ui/components";
@@ -12,9 +11,9 @@ interface AppInitStateProps {
 export const AppState = ({ children }: AppInitStateProps) => {
   const { isInit: isInitLanguage } = useSyncLanguage();
   const { isInit: isInitColorTheme } = useSyncColorTheme();
-  const { isInit: isInitLayout } = useInitLayout();
+  // const { isInit: isInitLayout } = useInitLayout();
 
-  const isInit = isInitLanguage && isInitLayout && isInitColorTheme;
+  const isInit = isInitLanguage && isInitColorTheme;
 
   if (!isInit) {
     return <PageLoader className="bg-sky-200" />;
