@@ -1,15 +1,11 @@
 pub mod api;
 pub mod builder;
-pub mod command;
-pub mod configuration;
-mod extension;
-mod internal;
+
 mod language;
 mod logging;
 pub mod models;
 mod profile;
 mod session;
-pub mod theme;
 pub mod window;
 mod workspace;
 
@@ -23,13 +19,8 @@ extern crate derive_more;
 
 pub use builder::WindowBuilder;
 use moss_applib::AppRuntime;
-use moss_configuration::RegisterConfigurationContribution;
 use moss_workspace::{Workspace, models::primitives::WorkspaceId};
 pub use window::Window;
-
-inventory::submit! {
-    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
-}
 
 #[derive(Deref, DerefMut)]
 pub struct ActiveWorkspace<R: AppRuntime> {

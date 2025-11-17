@@ -1,7 +1,12 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use sapic_system::theme::theme_registry::ThemeRegistry;
+use sapic_system::{
+    configuration::configuration_registry::ConfigurationRegistry,
+    theme::theme_registry::ThemeRegistry,
+};
 use std::sync::Arc;
+
+use crate::app::settings_storage::SettingsStorage;
 
 pub trait AsGlobal: Send + Sync + 'static {}
 #[derive(derive_more::Deref, Clone)]
@@ -17,5 +22,9 @@ impl<T: ?Sized + AsGlobal> Global<T> {
 }
 
 impl AsGlobal for dyn ThemeRegistry {}
+impl AsGlobal for dyn ConfigurationRegistry {}
+impl AsGlobal for dyn SettingsStorage {}
 
 pub type GlobalThemeRegistry = Global<dyn ThemeRegistry>;
+pub type GlobalConfigurationRegistry = Global<dyn ConfigurationRegistry>;
+pub type GlobalSettingsStorage = Global<dyn SettingsStorage>;

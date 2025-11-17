@@ -7,6 +7,9 @@ edition = "2024"
 moss_applib = { workspace = true }
 
 async-trait = { workspace = true }
+tauri = { workspace = true }
+derive_more = { workspace = true, features = ["deref"] }
 
 [features]
+external = []
 integration-tests = []

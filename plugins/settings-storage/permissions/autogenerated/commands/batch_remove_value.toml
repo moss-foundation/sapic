@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-batch-remove-value"
+description = "Enables the batch_remove_value command without any pre-configured scope."
+commands.allow = ["batch_remove_value"]
+
+[[permission]]
+identifier = "deny-batch-remove-value"
+description = "Denies the batch_remove_value command without any pre-configured scope."
+commands.deny = ["batch_remove_value"]

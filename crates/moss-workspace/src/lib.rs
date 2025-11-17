@@ -17,14 +17,9 @@ pub mod storage_old;
 pub mod workspace;
 
 use moss_applib::AppRuntime;
-use moss_configuration::RegisterConfigurationContribution;
 use moss_environment::AnyEnvironment;
 
 pub use workspace::Workspace;
-
-inventory::submit! {
-    RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
-}
 
 pub mod constants {
     use moss_bindingutils::const_export;

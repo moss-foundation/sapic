@@ -5,7 +5,6 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
     errors::{AlreadyExists, FailedPrecondition, NotFound},
-    subscription::EventEmitter,
 };
 use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
 use moss_fs::{CreateOptions, FileSystem};
@@ -34,7 +33,6 @@ use tokio::sync::RwLock;
 
 use crate::{
     dirs,
-    internal::events::OnDidChangeProfile,
     models::types::UpdateAccountParams,
     profile::registry::{
         ProfileRegistryAccount, ProfileRegistryAccountMetadata, ProfileRegistryItem,
@@ -42,7 +40,7 @@ use crate::{
 };
 
 pub(crate) const PROFILES_REGISTRY_FILE: &str = "profiles.json";
-pub(crate) const PROFILE_SETTINGS_FILE: &str = "settings.json";
+// pub(crate) const PROFILE_SETTINGS_FILE: &str = "settings.json";
 
 const DEFAULT_PROFILE: LazyCell<ProfileRegistryItem> = LazyCell::new(|| ProfileRegistryItem {
     id: ProfileId::new(),
@@ -66,8 +64,6 @@ pub(crate) struct ProfileService<R: AppRuntime> {
     keyring: Arc<dyn KeyringClient>,
     active_profile: RwLock<Option<Arc<Profile<R>>>>,
     cache: RwLock<ServiceCache>,
-
-    on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
 }
 
 impl<R: AppRuntime> ProfileService<R> {
@@ -76,8 +72,6 @@ impl<R: AppRuntime> ProfileService<R> {
         fs: Arc<dyn FileSystem>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         keyring: Arc<dyn KeyringClient>,
-
-        on_did_change_profile_emitter: EventEmitter<OnDidChangeProfile>,
     ) -> joinerror::Result<Self> {
         let profiles = load_or_init_profiles(fs.as_ref(), dir_abs).await?;
 
@@ -99,7 +93,6 @@ impl<R: AppRuntime> ProfileService<R> {
             keyring,
             active_profile: RwLock::new(None),
             cache: RwLock::new(ServiceCache { profiles: profiles }),
-            on_did_change_profile_emitter,
         })
     }
 
@@ -133,7 +126,6 @@ impl<R: AppRuntime> ProfileService<R> {
             cache_lock.profiles.first().1,
             self.keyring.clone(),
             self.auth_api_client.clone(),
-            &self.on_did_change_profile_emitter,
         )
         .await?
         .into();
@@ -440,7 +432,6 @@ async fn activate_profile<R: AppRuntime>(
     profile_item: &ProfileRegistryItem,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
-    on_did_change_profile_emitter: &EventEmitter<OnDidChangeProfile>,
 ) -> joinerror::Result<Profile<R>> {
     let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
 
@@ -499,11 +490,6 @@ async fn activate_profile<R: AppRuntime>(
     }
 
     let profile = Profile::new(profile_item.id.clone(), accounts);
-    on_did_change_profile_emitter
-        .fire(OnDidChangeProfile {
-            id: profile_item.id.clone(),
-        })
-        .await;
 
     Ok(profile)
 }

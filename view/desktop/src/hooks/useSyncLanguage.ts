@@ -1,14 +1,20 @@
 import { useEffect, useEffectEvent, useState } from "react";
 
 import { initializeI18n } from "@/app/i18n";
+import { settingsStorageService } from "@/app/services/settingsStorage";
 
 import { useDescribeApp } from "./app";
 
 export const useSyncLanguage = () => {
-  const { data: appState, isSuccess: isSuccessApp } = useDescribeApp();
-  const langCode = appState?.configuration.contents.language as string;
-
+  const { data: _, isSuccess: isSuccessApp } = useDescribeApp();
+  const [langCode, setLangCode] = useState<string | null>(null);
   const [isInit, setIsInit] = useState(false);
+
+  useEffect(() => {
+    settingsStorageService.getValue<string>("language").then((value) => {
+      setLangCode(value);
+    });
+  }, []);
 
   const updateLanguage = useEffectEvent(() => {
     if (!langCode) return;

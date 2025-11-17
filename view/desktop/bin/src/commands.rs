@@ -26,7 +26,7 @@ use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
 use sapic_window::ActiveWorkspace;
-use sapic_window2::WindowApi;
+use sapic_window2::AppWindowApi;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
 

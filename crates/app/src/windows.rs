@@ -8,7 +8,7 @@ use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
 use sapic_main::MainWindow;
 use sapic_welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow};
-use sapic_window2::WindowApi;
+use sapic_window2::AppWindowApi;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
@@ -23,7 +23,7 @@ pub(crate) enum AppWindow<R: AppRuntime> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> WindowApi for AppWindow<R> {
+impl<R: AppRuntime> AppWindowApi for AppWindow<R> {
     async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         match self {
             AppWindow::Welcome(window) => window.track_cancellation(request_id, canceller).await,
@@ -67,7 +67,6 @@ impl<R: AppRuntime> AppWindow<R> {
 pub(crate) struct WindowManager<R: AppRuntime> {
     next_window_id: AtomicUsize,
     windows: RwLock<FxHashMap<WindowLabel, AppWindow<R>>>,
-    labels_by_workspace_id: RwLock<FxHashMap<WorkspaceId, WindowLabel>>,
 }
 
 impl<R: AppRuntime> WindowManager<R> {
@@ -75,7 +74,6 @@ impl<R: AppRuntime> WindowManager<R> {
         Self {
             next_window_id: AtomicUsize::new(0),
             windows: RwLock::new(FxHashMap::default()),
-            labels_by_workspace_id: RwLock::new(FxHashMap::default()),
         }
     }
 
@@ -83,15 +81,25 @@ impl<R: AppRuntime> WindowManager<R> {
         self.windows.read().await.get(label).cloned()
     }
 
-    pub async fn window_label_for_workspace(
+    pub async fn main_window_by_workspace_id(
         &self,
         workspace_id: &WorkspaceId,
-    ) -> Option<WindowLabel> {
-        self.labels_by_workspace_id
-            .read()
-            .await
-            .get(workspace_id)
-            .cloned()
+    ) -> Option<MainWindow<R>> {
+        for window in self.windows.read().await.values() {
+            let AppWindow::Main(main) = window else {
+                continue;
+            };
+
+            let Some(workspace) = main.inner().workspace().await else {
+                continue;
+            };
+
+            if workspace.id() == *workspace_id {
+                return Some(main.clone());
+            }
+        }
+
+        None
     }
 
     pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {
@@ -174,10 +182,6 @@ impl<R: AppRuntime> WindowManager<R> {
             .write()
             .await
             .insert(label.clone(), AppWindow::Main(window.clone()));
-        self.labels_by_workspace_id
-            .write()
-            .await
-            .insert(workspace_id.clone(), label);
 
         Ok(window)
     }
