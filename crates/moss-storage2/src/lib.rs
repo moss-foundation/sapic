@@ -13,7 +13,6 @@ use moss_logging::session;
 use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 use std::{
-    collections::HashSet,
     path::{Path, PathBuf},
     sync::Arc,
     time::{Duration, Instant},
@@ -181,7 +180,7 @@ impl Storage for AppStorage {
         let projects = if let Some(projects) = workspace_projects_lock.get_mut(&workspace_id) {
             projects
         } else {
-            return joinerror::bail!("Workspace storage `{}` not found", workspace_id);
+            joinerror::bail!("Workspace storage `{}` not found", workspace_id);
         };
 
         let project = ProjectStorageBackend::new(
@@ -388,6 +387,10 @@ impl StorageCapabilities for AppStorage {
 
         for workspace in self.workspaces.read().await.values() {
             storages_to_flush.push(workspace.capabilities().await?.flushable.clone());
+        }
+
+        for project in self.projects.read().await.values() {
+            storages_to_flush.push(project.capabilities().await?.flushable.clone());
         }
 
         for storage in storages_to_flush {

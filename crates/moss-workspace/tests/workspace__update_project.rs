@@ -1,14 +1,15 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_bindingutils::primitives::ChangePath;
+use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{CreateProjectInput, UpdateProjectInput},
-    primitives::ProjectId,
     types::{CreateProjectParams, UpdateProjectParams},
 };
+
+use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn rename_project_success() {

@@ -1,20 +1,19 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
         operations::{CreateProjectInput, DeleteProjectInput},
-        primitives::ProjectId,
         types::CreateProjectParams,
     },
     storage::{KEY_EXPANDED_ITEMS, key_project},
 };
 use std::collections::HashSet;
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn delete_project_success() {

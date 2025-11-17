@@ -252,7 +252,7 @@ impl<R: AppRuntime> ProjectService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = ProjectBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
 
         let project = match builder
             .create(
@@ -264,6 +264,7 @@ impl<R: AppRuntime> ProjectService<R> {
                     git_params: git_params.clone(),
                     icon_path: params.icon_path.to_owned(),
                 },
+                self.app_delegate.clone(),
             )
             .await
             .join_err::<()>("failed to build collection")
@@ -398,7 +399,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
 
         let repository = match GitUrl::parse(&params.repository) {
             Ok(repository) => repository,
@@ -440,6 +441,7 @@ impl<R: AppRuntime> ProjectService<R> {
                     repository,
                     branch: params.branch.clone(),
                 },
+                self.app_delegate.clone(),
             )
             .await
             .join_err::<()>("failed to clone collection")
@@ -758,7 +760,7 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
 
         let collection = match builder
             .import_archive(
@@ -767,6 +769,7 @@ impl<R: AppRuntime> ProjectService<R> {
                     internal_abs_path: abs_path.clone(),
                     archive_path: params.archive_path.into(),
                 },
+                self.app_delegate.clone(),
             )
             .await
             .join_err::<()>("failed to import collection from archive file")
@@ -880,12 +883,15 @@ impl<R: AppRuntime> ProjectService<R> {
                 )
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
         let project = match builder
-            .import_external(ProjectImportExternalParams {
-                internal_abs_path: internal_abs_path.clone(),
-                external_abs_path: params.external_path.clone().into(),
-            })
+            .import_external(
+                ProjectImportExternalParams {
+                    internal_abs_path: internal_abs_path.clone(),
+                    external_abs_path: params.external_path.clone().into(),
+                },
+                self.app_delegate.clone(),
+            )
             .await
             .join_err::<()>("failed to import external project")
         {
@@ -1062,12 +1068,15 @@ async fn restore_projects<R: AppRuntime>(
 
         let project = {
             let project_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = ProjectBuilder::new(fs.clone()).await;
+            let builder = ProjectBuilder::new(fs.clone(), id.clone()).await;
 
             let project_result = builder
-                .load(ProjectLoadParams {
-                    internal_abs_path: project_abs_path,
-                })
+                .load(
+                    ProjectLoadParams {
+                        internal_abs_path: project_abs_path,
+                    },
+                    app_delegate.clone(),
+                )
                 .await;
             match project_result {
                 Ok(project) => project,

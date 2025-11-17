@@ -175,6 +175,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
+            self.workspace_id.clone(),
             <dyn Storage>::global(app_delegate),
         )
         .await;
@@ -259,6 +260,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
+            self.workspace_id.clone(),
             <dyn Storage>::global(app_delegate),
         )
         .await;
