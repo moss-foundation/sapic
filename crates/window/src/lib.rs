@@ -2,7 +2,6 @@ pub mod api;
 pub mod builder;
 pub mod command;
 
-mod extension;
 mod language;
 mod logging;
 pub mod models;
