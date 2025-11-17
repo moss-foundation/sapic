@@ -62,7 +62,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
 
         <Icon icon="ChevronRight" />
 
-        <IconLabelButton title={activeGlobalEnvironment?.name} placeholder="No environment" labelClassName="text-md" />
+        <IconLabelButton title={activeGlobalEnvironment?.name} placeholder="No environment" />
 
         <Icon icon="ChevronRight" />
 

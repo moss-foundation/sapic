@@ -12,7 +12,6 @@ interface IconLabelButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
   leftIconClassName?: string;
   rightIconClassName?: string;
-  labelClassName?: string;
 }
 
 const buttonStyles = `
