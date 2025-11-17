@@ -1,6 +1,7 @@
 pub mod adapters;
 pub mod application_storage;
 pub mod models;
+mod project_storage;
 pub mod workspace_storage;
 
 use async_trait::async_trait;
@@ -9,9 +10,10 @@ use joinerror::{OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_logging::session;
-use rustc_hash::FxHashMap;
+use rustc_hash::{FxHashMap, FxHashSet};
 use serde_json::Value as JsonValue;
 use std::{
+    collections::HashSet,
     path::{Path, PathBuf},
     sync::Arc,
     time::{Duration, Instant},
@@ -22,6 +24,7 @@ use crate::{
     adapters::{KeyedStorage, Options},
     application_storage::ApplicationStorageBackend,
     models::{events::OnDidChangeValueEvent, primitives::StorageScope},
+    project_storage::ProjectStorageBackend,
     workspace_storage::WorkspaceStorageBackend,
 };
 
@@ -29,6 +32,12 @@ use crate::{
 pub trait Storage: Send + Sync {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
     async fn remove_workspace(&self, workspace_id: Arc<String>);
+    async fn add_project(
+        &self,
+        workspace_id: Arc<String>,
+        project_id: Arc<String>,
+    ) -> joinerror::Result<()>;
+    async fn remove_project(&self, workspace_id: Arc<String>, project_id: Arc<String>);
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
@@ -95,6 +104,11 @@ pub struct AppStorage {
     workspaces_dir: PathBuf,
     application: ApplicationStorageBackend,
     workspaces: RwLock<FxHashMap<Arc<String>, WorkspaceStorageBackend>>,
+    projects: RwLock<FxHashMap<Arc<String>, ProjectStorageBackend>>,
+    // Storing which workspace contains which projects
+    // So when we drop a workspace storage, we drop all associated projects' as well
+    workspace_projects: RwLock<FxHashMap<Arc<String>, FxHashSet<Arc<String>>>>,
+
     options: Option<AppStorageOptions>,
 
     on_did_change_value_emitter: EventEmitter<OnDidChangeValueEvent>,
@@ -112,6 +126,7 @@ impl AppStorage {
             .close()
             .await;
         self.workspaces.write().await.clear();
+        self.projects.write().await.clear();
         Ok(())
     }
 }
@@ -134,13 +149,74 @@ impl Storage for AppStorage {
         self.workspaces
             .write()
             .await
-            .insert(workspace_id, workspace);
+            .insert(workspace_id.clone(), workspace);
+
+        self.workspace_projects
+            .write()
+            .await
+            .insert(workspace_id, FxHashSet::default());
 
         Ok(())
     }
 
+    // Remove a workspace and all associated project storages
     async fn remove_workspace(&self, workspace_id: Arc<String>) {
         self.workspaces.write().await.remove(&workspace_id);
+        let projects = self.workspace_projects.write().await.remove(&workspace_id);
+        if let Some(projects) = projects {
+            let mut projects_lock = self.projects.write().await;
+            for project_id in projects {
+                projects_lock.remove(&project_id);
+            }
+        }
+    }
+
+    async fn add_project(
+        &self,
+        workspace_id: Arc<String>,
+        project_id: Arc<String>,
+    ) -> joinerror::Result<()> {
+        let mut workspace_projects_lock = self.workspace_projects.write().await;
+
+        let projects = if let Some(projects) = workspace_projects_lock.get_mut(&workspace_id) {
+            projects
+        } else {
+            return joinerror::bail!("Workspace storage `{}` not found", workspace_id);
+        };
+
+        let project = ProjectStorageBackend::new(
+            &self
+                .workspaces_dir
+                .join(workspace_id.as_str())
+                .join("projects")
+                .join(project_id.as_str()),
+            self.options.clone().map(Into::into),
+        )
+        .await
+        .join_err_with::<()>(|| {
+            format!(
+                "failed to create project storage backend for project `{}`",
+                project_id
+            )
+        })?;
+
+        self.projects
+            .write()
+            .await
+            .insert(project_id.clone(), project);
+
+        projects.insert(project_id);
+
+        Ok(())
+    }
+
+    async fn remove_project(&self, workspace_id: Arc<String>, project_id: Arc<String>) {
+        self.projects.write().await.remove(&project_id);
+        if let Some(workspace_projects) =
+            self.workspace_projects.write().await.get_mut(&workspace_id)
+        {
+            workspace_projects.remove(&project_id);
+        }
     }
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
@@ -149,7 +225,9 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.put(key, value).await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.put(key, value).await
+            }
         }?;
 
         self.on_did_change_value_emitter
@@ -169,7 +247,7 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.get(key).await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => self.project(project_id).await?.get(key).await,
         }
     }
 
@@ -179,7 +257,9 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.remove(key).await?
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.remove(key).await?
+            }
         };
 
         self.on_did_change_value_emitter
@@ -203,7 +283,9 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.put_batch(items).await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.put_batch(items).await
+            }
         }
     }
 
@@ -217,7 +299,9 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.get_batch(keys).await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.get_batch(keys).await
+            }
         }
     }
 
@@ -231,7 +315,9 @@ impl Storage for AppStorage {
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id).await?.remove_batch(keys).await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.remove_batch(keys).await
+            }
         }
     }
 
@@ -250,7 +336,12 @@ impl Storage for AppStorage {
                     .get_batch_by_prefix(prefix)
                     .await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id)
+                    .await?
+                    .get_batch_by_prefix(prefix)
+                    .await
+            }
         }
     }
 
@@ -272,7 +363,12 @@ impl Storage for AppStorage {
                     .remove_batch_by_prefix(prefix)
                     .await
             }
-            _ => unimplemented!(),
+            StorageScope::Project(project_id) => {
+                self.project(project_id)
+                    .await?
+                    .remove_batch_by_prefix(prefix)
+                    .await
+            }
         }
     }
 
@@ -339,11 +435,23 @@ impl AppStorage {
             workspaces_dir,
             application,
             workspaces: RwLock::new(FxHashMap::default()),
+            projects: RwLock::new(FxHashMap::default()),
+            workspace_projects: RwLock::new(FxHashMap::default()),
             options,
             on_did_change_value_emitter: EventEmitter::<OnDidChangeValueEvent>::new(),
             last_checkpoint: RwLock::new(None),
         }
         .into())
+    }
+
+    async fn project(&self, project_id: Arc<String>) -> joinerror::Result<Arc<dyn KeyedStorage>> {
+        let projects = self.projects.read().await;
+
+        Ok(projects
+            .get(&project_id)
+            .ok_or_join_err::<()>("project storage not found")?
+            .storage()
+            .await?)
     }
 
     async fn workspace(
@@ -354,7 +462,7 @@ impl AppStorage {
 
         Ok(workspaces
             .get(&workspace_id)
-            .ok_or_join_err::<()>("workspace not found")?
+            .ok_or_join_err::<()>("workspace storage not found")?
             .storage()
             .await?)
     }

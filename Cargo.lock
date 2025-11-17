@@ -4153,7 +4153,7 @@ dependencies = [
  "moss_id_macro",
  "moss_keyring",
  "moss_logging",
- "moss_storage",
+ "moss_storage2",
  "moss_testutils",
  "moss_text",
  "moss_user",

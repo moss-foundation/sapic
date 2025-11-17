@@ -9,6 +9,7 @@ use moss_applib::{
 };
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_user::profile::Profile;
@@ -18,7 +19,7 @@ use moss_workspace::{
     models::{
         events::StreamProjectsEvent,
         operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
-        primitives::{EditorGridOrientation, PanelRenderer, ProjectId, WorkspaceId},
+        primitives::{EditorGridOrientation, PanelRenderer, WorkspaceId},
         types::{
             CreateProjectParams, EditorGridLeafData, EditorGridNode, EditorGridState,
             EditorPanelState, EditorPartStateInfo,

@@ -20,9 +20,9 @@ use moss_project::{
             },
         },
     },
-    storage::segments::{SEGKEY_EXPANDED_ENTRIES, SEGKEY_RESOURCE_ENTRY},
+    storage::{KEY_EXPANDED_ENTRIES, key_resource_order},
 };
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use serde_json::{Value as JsonValue, json};
@@ -32,7 +32,6 @@ use crate::shared::{
     RESOURCES_ROOT_DIR, create_test_component_dir_entry, create_test_endpoint_dir_entry,
     create_test_project, random_entry_name,
 };
-// TODO: Test updating entry order
 
 #[tokio::test]
 async fn rename_dir_entry_success() {
@@ -66,7 +65,7 @@ async fn rename_dir_entry_success() {
     assert!(new_path.exists());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -95,7 +94,7 @@ async fn rename_dir_entry_empty_name() {
     assert!(result.is_err());
 
     //Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -126,7 +125,7 @@ async fn rename_dir_entry_already_exists() {
     assert!(result.is_err());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -175,7 +174,7 @@ async fn rename_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -201,18 +200,22 @@ async fn update_dir_entry_order() {
         .await
         .unwrap();
 
-    let resource_store = project.db().resource_store();
+    let storage = <dyn Storage>::global(&app_delegate);
+    let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated
-    let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(resource_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope, &key_resource_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: isize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 42);
+
+    let order: isize = serde_json::from_value(order_value).unwrap();
+
+    assert_eq!(order, 42);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -223,7 +226,8 @@ async fn expand_and_collapse_dir_entry() {
 
     let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
-    let resource_store = project.db().resource_store();
+    let storage = <dyn Storage>::global(&app_delegate);
+    let storage_scope = StorageScope::Project(project.id().inner());
 
     // Expanding the entry
     let _ = project
@@ -242,14 +246,12 @@ async fn expand_and_collapse_dir_entry() {
         .unwrap();
 
     // Check expanded_items contains the entry id
-    let expanded_items_value = GetItem::get(
-        resource_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
+    let expanded_items_value = storage
+        .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: Vec<ResourceId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(expanded_items.contains(&id));
 
     // Collapsing the entry
@@ -268,19 +270,16 @@ async fn expand_and_collapse_dir_entry() {
         .await
         .unwrap();
 
-    // Check expanded_items contains the entry id
-    let expanded_items_value = GetItem::get(
-        resource_store.as_ref(),
-        &ctx,
-        SEGKEY_EXPANDED_ENTRIES.to_segkey_buf(),
-    )
-    .await
-    .unwrap();
-    let expanded_items: Vec<ResourceId> = expanded_items_value.deserialize().unwrap();
+    // Check expanded_items no longer contains the entry id
+    let expanded_items_value = storage
+        .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+        .await
+        .unwrap()
+        .unwrap();
+    let expanded_items: Vec<ResourceId> = serde_json::from_value(expanded_items_value).unwrap();
     assert!(!expanded_items.contains(&id));
-
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -321,7 +320,7 @@ async fn move_dir_entry_success() {
     assert!(new_path.exists());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -352,7 +351,7 @@ async fn move_dir_entry_nonexistent_destination() {
     assert!(result.is_err());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -401,7 +400,7 @@ async fn move_dir_entry_already_exists() {
     assert!(result.is_err());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -571,7 +570,7 @@ async fn update_item_entry_endpoint_headers() {
     assert_eq!(header.disabled, false);
     assert_eq!(header.propagate, false);
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -740,7 +739,7 @@ async fn update_item_entry_endpoint_path_params() {
     assert_eq!(path_param.disabled, false);
     assert_eq!(path_param.propagate, false);
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -909,7 +908,7 @@ async fn update_item_entry_endpoint_query_params() {
     assert_eq!(query_param.disabled, false);
     assert_eq!(query_param.propagate, false);
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -974,7 +973,7 @@ async fn test_item_entry_endpoint_remove_body() {
         .unwrap();
     assert!(desc.body.is_none());
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1030,7 +1029,7 @@ async fn test_item_entry_endpoint_update_text() {
     // An extra \n is added during deserialization
     assert_eq!(desc.body, Some(BodyInfo::Text("After\n".to_string())));
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1086,7 +1085,7 @@ async fn test_item_entry_endpoint_update_json() {
         .unwrap();
     assert_eq!(desc.body, Some(BodyInfo::Json(new_json.clone())));
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1144,7 +1143,7 @@ async fn test_item_entry_endpoint_update_xml() {
         Some(BodyInfo::Xml("<after></after>\n".to_string()))
     );
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1199,7 +1198,7 @@ async fn test_item_entry_endpoint_update_binary() {
         .unwrap();
     assert_eq!(desc.body, Some(BodyInfo::Binary(PathBuf::from("/after"))));
 
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1390,7 +1389,7 @@ async fn test_item_entry_endpoint_update_urlencoded() {
     assert_eq!(urlencoded.len(), 0);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1581,7 +1580,7 @@ async fn test_item_entry_endpoint_update_formdata() {
     assert_eq!(formdata.len(), 0);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -1644,5 +1643,5 @@ async fn test_item_entry_endpoint_update_change_body_type() {
     };
     assert_eq!(urlencoded.len(), 0);
 
-    cleanup();
+    cleanup().await;
 }

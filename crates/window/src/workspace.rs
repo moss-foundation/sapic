@@ -399,9 +399,8 @@ impl<R: AppRuntime> WorkspaceService<R> {
         if let Some(workspace) = current_workspace {
             workspace.dispose().await;
 
-            <dyn Storage>::global(app_delegate)
-                .remove_workspace(workspace.id.inner())
-                .await;
+            let storage = <dyn Storage>::global(app_delegate);
+            storage.remove_workspace(workspace.id.inner()).await;
         }
 
         let storage = <dyn Storage>::global(app_delegate);

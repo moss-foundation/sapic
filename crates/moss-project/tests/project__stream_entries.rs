@@ -57,7 +57,7 @@ async fn stream_entries_empty_project() {
     assert_eq!(entries.len(), 0);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -90,7 +90,7 @@ async fn stream_entries_single_entry() {
     );
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -119,7 +119,7 @@ async fn stream_entries_multiple_entries_same_directory() {
     assert!(entry_names.contains(&entry3_name.as_str()));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -161,5 +161,5 @@ async fn stream_entries_multiple_directories() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }

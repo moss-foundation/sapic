@@ -14,7 +14,7 @@ moss_edit.workspace = true
 moss_fs.workspace = true
 moss_db.workspace = true
 moss_common.workspace = true
-moss_storage.workspace = true
+moss_storage2.workspace = true
 moss_text.workspace = true
 moss_environment.workspace = true
 moss_git.workspace = true
@@ -57,4 +57,4 @@ moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
 
 [features]
-integration-tests = ["reqwest", "oauth2", "moss_app_delegate/integration-tests"]
+integration-tests = ["reqwest", "oauth2", "moss_app_delegate/integration-tests", "moss_storage2/integration-tests"]
