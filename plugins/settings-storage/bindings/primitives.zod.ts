@@ -2,8 +2,8 @@
 import { z } from "zod";
 
 export const settingScopeSchema = z.union([
-  z.literal("user"),
+  z.literal("USER"),
   z.object({
-    "workspace": z.string(),
+    "WORKSPACE": z.string(),
   }),
 ]);

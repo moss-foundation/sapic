@@ -4,7 +4,7 @@ use ts_rs::TS;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[ts(optional_fields)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_all = "UPPERCASE")]
 #[serde(rename = "SettingScope")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum SettingScopeForFrontend {

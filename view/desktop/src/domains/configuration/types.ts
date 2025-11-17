@@ -5,10 +5,10 @@ export enum ConfigurationTargetEnum {
   WORKSPACE = "WORKSPACE",
 }
 
-const _EnsureAllValuesForConfigurationTarget: {
+const _ensureAllValuesForConfigurationTarget: {
   [K in ConfigurationTarget]: ConfigurationTargetEnum;
 } = {
   USER: ConfigurationTargetEnum.USER,
   WORKSPACE: ConfigurationTargetEnum.WORKSPACE,
 };
-void _EnsureAllValuesForConfigurationTarget;
+void _ensureAllValuesForConfigurationTarget;

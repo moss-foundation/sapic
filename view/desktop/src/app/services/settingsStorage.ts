@@ -1,4 +1,5 @@
 import { settingsStorageIpc } from "@/infra/ipc/settingsStorage";
+import { SettingScopeEnum } from "@/shared/settingsStorage/types";
 import { JsonValue } from "@repo/moss-bindingutils";
 
 type TypedValue<T> = T extends object | boolean | number | string | null ? T : never;
@@ -16,7 +17,7 @@ async function batchGetValue<T extends Record<string, object | boolean | number 
   keys: Array<keyof T>,
   defaults?: Partial<{ [K in keyof T]: T[K] }> | { [K in keyof T]: T[K] }
 ): Promise<{ [K in keyof T]: T[K] | null } | { [K in keyof T]: T[K] }> {
-  const output = await settingsStorageIpc.batchGetValue(keys as string[], "user");
+  const output = await settingsStorageIpc.batchGetValue(keys as string[], SettingScopeEnum.USER);
   const hasAllDefaults = defaults && keys.every((key) => key in defaults);
 
   if (hasAllDefaults) {
@@ -39,7 +40,7 @@ async function batchGetValue<T extends Record<string, object | boolean | number 
 
 export const settingsStorageService = {
   getValue: async <T extends object | boolean | number | string | null>(key: string): Promise<T | null> => {
-    const output = await settingsStorageIpc.getValue(key, "user");
+    const output = await settingsStorageIpc.getValue(key, SettingScopeEnum.USER);
     return (output.value as T) ?? null;
   },
   /**
@@ -59,9 +60,9 @@ export const settingsStorageService = {
    */
   batchGetValue,
   updateValue: async <T extends object | boolean | number | string | null>(key: string, value: TypedValue<T>) => {
-    return await settingsStorageIpc.updateValue(key, value as JsonValue, "user");
+    return await settingsStorageIpc.updateValue(key, value as JsonValue, SettingScopeEnum.USER);
   },
   removeValue: async (key: string) => {
-    return await settingsStorageIpc.removeValue(key, "user");
+    return await settingsStorageIpc.removeValue(key, SettingScopeEnum.USER);
   },
 };
