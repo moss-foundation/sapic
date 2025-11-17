@@ -1,6 +1,5 @@
 pub mod api;
 pub mod builder;
-pub mod command;
 
 mod language;
 mod logging;

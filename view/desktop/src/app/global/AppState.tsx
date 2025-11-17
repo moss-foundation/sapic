@@ -10,8 +10,12 @@ interface AppInitStateProps {
 }
 
 export const AppState = ({ children }: AppInitStateProps) => {
+  // TODO: Redo this to retrieve language and color theme settings
+  // through a batch operation using SettingsStore.
   const { isInit: isInitLanguage } = useSyncLanguage();
   const { isInit: isInitColorTheme } = useSyncColorTheme();
+
+  // FIXME: This needs to be moved to a workbench layer
   const { isInit: isInitLayout } = useInitLayout();
 
   const isInit = isInitLanguage && isInitLayout && isInitColorTheme;
