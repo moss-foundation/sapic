@@ -123,8 +123,6 @@ impl AppConfigurationRegistry {
             contribs.extend(decl);
         }
 
-        dbg!(&contribs);
-
         let mut extensions = Vec::new();
         let mut bases = Vec::new();
         for decl in contribs {

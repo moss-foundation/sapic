@@ -164,22 +164,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-configuration:
-    dependencies:
-      typescript:
-        specifier: 5.9.2
-        version: 5.9.2
-      zod:
-        specifier: 3.25.32
-        version: 3.25.32
-    devDependencies:
-      '@repo/moss-bindingutils':
-        specifier: workspace:*
-        version: link:../moss-bindingutils
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
   crates/moss-environment:
     dependencies:
       typescript:
@@ -317,12 +301,12 @@ importers:
         specifier: 3.25.32
         version: 3.25.32
     devDependencies:
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../base
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../moss-bindingutils
-      '@repo/moss-configuration':
-        specifier: workspace:*
-        version: link:../moss-configuration
       '@repo/moss-extension':
         specifier: workspace:*
         version: link:../moss-extension
