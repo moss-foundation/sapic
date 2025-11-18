@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
@@ -13,7 +13,7 @@ const startStreamingProjects = async (): Promise<StreamProjectsEvent[]> => {
     projects.push(project);
   };
 
-  await projectIpc.streamProjects(projectEvent);
+  await projectService.streamProjects(projectEvent);
 
   return projects;
 };

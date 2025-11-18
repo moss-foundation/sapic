@@ -24,14 +24,8 @@ export interface IEnvironmentIpc {
 
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  streamEnvironments: (channel: Channel<StreamEnvironmentsEvent>) => Promise<StreamEnvironmentsResult>;
+  streamEnvironments: (channelEvent: Channel<StreamEnvironmentsEvent>) => Promise<StreamEnvironmentsOutput>;
 
   updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
-  //TODO is there a need for a output here?
   updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;
-}
-
-export interface StreamEnvironmentsResult {
-  environments: StreamEnvironmentsEvent[];
-  groups: StreamEnvironmentsOutput["groups"];
 }

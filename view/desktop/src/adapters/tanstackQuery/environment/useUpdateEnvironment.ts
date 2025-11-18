@@ -1,5 +1,5 @@
-import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
-import { environmentIpc } from "@/infra/ipc/environment";
+import { environmentService } from "@/domains/environment/environmentService";
+import { StreamEnvironmentsResult } from "@/domains/environment/types";
 import { UpdateEnvironmentInput, UpdateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -12,7 +12,7 @@ export const useUpdateEnvironment = () => {
 
   return useMutation<UpdateEnvironmentOutput, Error, UpdateEnvironmentInput>({
     mutationKey: [UPDATE_ENVIRONMENT_QUERY_KEY],
-    mutationFn: (input) => environmentIpc.updateEnvironment(input),
+    mutationFn: (input) => environmentService.updateEnvironment(input),
     onSuccess: (data, variables) => {
       queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
         return {

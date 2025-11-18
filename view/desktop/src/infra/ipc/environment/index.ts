@@ -1,4 +1,4 @@
-import { IEnvironmentIpc } from "@/domains/environment/ipc";
+import { IEnvironmentIpc } from "@/domains/environment";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { Channel, invoke } from "@tauri-apps/api/core";
 

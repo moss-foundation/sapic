@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
@@ -13,7 +13,7 @@ export const startStreamingProjectResources = async (
     resources.push(projectResource);
   };
 
-  await projectIpc.streamProjectResources(projectId, onProjectResourceEvent, path);
+  await projectService.streamProjectResources(projectId, onProjectResourceEvent, path);
 
   return resources;
 };

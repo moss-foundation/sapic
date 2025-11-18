@@ -1,8 +1,8 @@
 import { useContext } from "react";
 
+import { useUpdateProject } from "@/adapters/tanstackQuery/project";
 import { useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { useUpdateProject } from "@/workbench/adapters/tanstackQuery/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";

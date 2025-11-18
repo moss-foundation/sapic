@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments } from "@/workbench/adapters";
-import { useBatchUpdateEnvironmentGroup } from "@/workbench/adapters/tanstackQuery/environment/useBatchUpdateEnvironmentGroup";
+import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { useBatchUpdateEnvironmentGroup } from "@/adapters/tanstackQuery/environment/useBatchUpdateEnvironmentGroup";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import {

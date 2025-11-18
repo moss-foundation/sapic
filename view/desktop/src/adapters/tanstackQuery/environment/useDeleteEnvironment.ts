@@ -1,5 +1,5 @@
-import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
-import { environmentIpc } from "@/infra/ipc/environment";
+import { environmentService } from "@/domains/environment/environmentService";
+import { StreamEnvironmentsResult } from "@/domains/environment/types";
 import { DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -9,7 +9,7 @@ export const useDeleteEnvironment = () => {
   const queryClient = useQueryClient();
 
   return useMutation<DeleteEnvironmentOutput, Error, DeleteEnvironmentInput>({
-    mutationFn: (input) => environmentIpc.deleteEnvironment(input),
+    mutationFn: (input) => environmentService.deleteEnvironment(input),
     onSuccess: (data) => {
       queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
         return {

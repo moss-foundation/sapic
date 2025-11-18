@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useUpdateProject } from "@/workbench/adapters/tanstackQuery/project";
+import { useUpdateProject } from "@/adapters/tanstackQuery/project";
 
 import { ProjectTreeRootNode } from "../../types";
 

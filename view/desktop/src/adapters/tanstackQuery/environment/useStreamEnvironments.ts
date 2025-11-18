@@ -1,33 +1,17 @@
 import { useMemo } from "react";
 
-import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
-import { environmentIpc } from "@/infra/ipc/environment";
+import { environmentService } from "@/domains/environment/environmentService";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Channel } from "@tauri-apps/api/core";
 
 export const USE_STREAMED_ENVIRONMENTS_QUERY_KEY = "streamedEnvironments";
-
-const startStreamingEnvironments = async (): Promise<StreamEnvironmentsResult> => {
-  const environments: StreamEnvironmentsEvent[] = [];
-
-  const environmentEvent = new Channel<StreamEnvironmentsEvent>();
-  environmentEvent.onmessage = (environment) => {
-    environments.push(environment);
-  };
-
-  const groups = await environmentIpc.streamEnvironments(environmentEvent);
-
-  return { environments, groups: groups.groups };
-};
 
 export const useStreamEnvironments = () => {
   const queryClient = useQueryClient();
 
   const query = useQuery({
     queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY],
-    queryFn: startStreamingEnvironments,
+    queryFn: environmentService.streamEnvironments,
     placeholderData: { environments: [], groups: [] },
   });
 

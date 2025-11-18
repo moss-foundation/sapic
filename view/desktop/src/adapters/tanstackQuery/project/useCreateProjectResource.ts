@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { CreateResourceInput, CreateResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -14,7 +14,7 @@ export const useCreateProjectResource = () => {
   const queryClient = useQueryClient();
 
   return useMutation<CreateResourceOutput, Error, UseCreateProjectResourceInputProps>({
-    mutationFn: ({ projectId, input }) => projectIpc.createProjectResource(projectId, input),
+    mutationFn: ({ projectId, input }) => projectService.createProjectResource(projectId, input),
     onSuccess: async (data, variables) => {
       const newResource = await createProjectResourceForCache(data.id, variables.input);
 

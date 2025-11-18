@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from "react";
 
-import { useCreateEnvironment, useDeleteEnvironment, useStreamEnvironments } from "@/workbench/adapters";
-import { useBatchUpdateEnvironment } from "@/workbench/adapters/tanstackQuery/environment/useBatchUpdateEnvironment";
+import {
+  useCreateEnvironment,
+  useDeleteEnvironment,
+  useStreamEnvironments,
+} from "@/adapters/tanstackQuery/environment";
+import { useBatchUpdateEnvironment } from "@/adapters/tanstackQuery/environment/useBatchUpdateEnvironment";
 import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { ElementDragPayload, monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 

@@ -1,6 +1,6 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { useProjectsTrees } from "@/workbench/adapters/tanstackQuery/project";
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { PageContent } from "@/workbench/ui/components";
 import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import { ResourceKind } from "@repo/moss-project";

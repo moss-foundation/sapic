@@ -1,10 +1,10 @@
 import { useContext, useState } from "react";
 
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { useUpdateProjectResource } from "@/workbench/adapters/tanstackQuery/project";
 import { ActionButton } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";

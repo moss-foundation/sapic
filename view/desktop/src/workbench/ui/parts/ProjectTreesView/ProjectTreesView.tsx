@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
-import { useProjectsTrees } from "@/workbench/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";

@@ -1,5 +1,5 @@
-import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
-import { environmentIpc } from "@/infra/ipc/environment";
+import { environmentService } from "@/domains/environment/environmentService";
+import { StreamEnvironmentsResult } from "@/domains/environment/types";
 import { useGroupedEnvironments } from "@/workbench/ui/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ActivateEnvironmentInput, ActivateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -16,7 +16,7 @@ export const useActivateEnvironment = () => {
 
   return useMutation<ActivateEnvironmentOutput, Error, ActivateEnvironmentInput>({
     mutationKey: [ACTIVATE_ENVIRONMENT_QUERY_KEY],
-    mutationFn: (input) => environmentIpc.activateEnvironment(input),
+    mutationFn: (input) => environmentService.activateEnvironment(input),
     onSuccess: (data) => {
       if (globalEnvironments.some((environment) => environment.id === data.environmentId)) {
         queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {

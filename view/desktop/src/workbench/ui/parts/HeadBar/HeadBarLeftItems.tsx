@@ -1,8 +1,8 @@
+import { useActiveEnvironments } from "@/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
+import { useStreamedProjectsWithResources } from "@/adapters/tanstackQuery/project";
 import { useActiveWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
-import { useActiveEnvironments } from "@/workbench/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
-import { useStreamedProjectsWithResources } from "@/workbench/adapters/tanstackQuery/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";

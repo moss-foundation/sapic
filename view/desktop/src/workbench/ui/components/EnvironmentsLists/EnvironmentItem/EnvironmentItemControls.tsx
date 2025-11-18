@@ -1,9 +1,9 @@
 import { MouseEvent, useState } from "react";
 
+import { useActivateEnvironment } from "@/adapters/tanstackQuery/environment/useActivateEnvironment";
 import { useModal } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { useActivateEnvironment } from "@/workbench/adapters/tanstackQuery/environment/useActivateEnvironment";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";

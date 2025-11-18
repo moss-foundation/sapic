@@ -1,4 +1,4 @@
-import { IProjectIpc } from "@/domains/project/ipc";
+import { IProjectIpc } from "@/domains/project";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { Channel, invoke } from "@tauri-apps/api/core";

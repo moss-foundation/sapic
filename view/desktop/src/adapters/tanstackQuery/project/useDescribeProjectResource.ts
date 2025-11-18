@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { DescribeResourceOutput } from "@repo/moss-project";
 import { useQuery, UseQueryOptions } from "@tanstack/react-query";
 
@@ -13,7 +13,7 @@ export interface UseDescribeProjectResourceProps {
 export const useDescribeProjectResource = ({ projectId, resourceId, options }: UseDescribeProjectResourceProps) => {
   return useQuery<DescribeResourceOutput, Error>({
     queryKey: [USE_DESCRIBE_PROJECT_RESOURCE_QUERY_KEY, projectId, resourceId],
-    queryFn: () => projectIpc.describeProjectResource(projectId, resourceId),
+    queryFn: () => projectService.describeProjectResource(projectId, resourceId),
     ...options,
   });
 };

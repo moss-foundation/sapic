@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DeleteResourceInput, DeleteResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -15,7 +15,7 @@ export const useDeleteProjectResource = () => {
   const { api } = useTabbedPaneStore();
 
   return useMutation<DeleteResourceOutput, Error, UseDeleteProjectResourceInput>({
-    mutationFn: ({ projectId, input }) => projectIpc.deleteProjectResource(projectId, input),
+    mutationFn: ({ projectId, input }) => projectService.deleteProjectResource(projectId, input),
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],

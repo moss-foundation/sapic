@@ -1,5 +1,5 @@
+import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 import { useModal } from "@/hooks";
-import { useStreamEnvironments } from "@/workbench/adapters";
 import { ActionButton } from "@/workbench/ui/components";
 import { NewEnvironmentModal } from "@/workbench/ui/components/Modals/Environment/NewEnvironmentModal";
 

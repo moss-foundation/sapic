@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useStreamProjects, useUpdateProject } from "../adapters/tanstackQuery/project";
+import { useStreamProjects, useUpdateProject } from "@/adapters/tanstackQuery/project";
 
 export const useRenameProjectForm = (projectId: string) => {
   const [isRenamingProject, setIsRenamingProject] = useState(false);

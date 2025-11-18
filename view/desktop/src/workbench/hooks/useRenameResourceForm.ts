@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { useFetchResourcesForPath } from "@/workbench/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
-import { useUpdateProjectResource } from "@/workbench/adapters/tanstackQuery/project/useUpdateProjectResource";
+import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";

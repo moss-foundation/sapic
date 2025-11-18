@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectService } from "@/domains/project/projectService";
 import { StreamProjectsEvent, UpdateProjectInput, UpdateProjectOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -8,7 +8,7 @@ export const useUpdateProject = () => {
   const queryClient = useQueryClient();
 
   return useMutation<UpdateProjectOutput, Error, UpdateProjectInput>({
-    mutationFn: (input) => projectIpc.updateProject(input),
+    mutationFn: (input) => projectService.updateProject(input),
     onSuccess: (data, variables) => {
       queryClient.setQueryData([USE_STREAM_PROJECTS_QUERY_KEY], (old: StreamProjectsEvent[]) => {
         return old.map((oldProject) => {

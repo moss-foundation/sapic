@@ -1,5 +1,5 @@
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/workbench/adapters/tanstackQuery/project";
-import { useFetchResourcesForPath } from "@/workbench/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/project";
+import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
 import { useQueryClient } from "@tanstack/react-query";
 
 export const useRefreshProject = (projectId: string) => {

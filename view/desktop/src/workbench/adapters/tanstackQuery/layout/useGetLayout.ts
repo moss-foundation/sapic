@@ -14,6 +14,5 @@ export const useGetLayout = ({ workspaceId }: UseGetLayoutProps) => {
       if (!workspaceId) return;
       return await layoutService.getLayout(workspaceId);
     },
-    enabled: !!workspaceId,
   });
 };

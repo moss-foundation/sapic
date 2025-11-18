@@ -1,5 +1,5 @@
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { Icon } from "@/lib/ui";
-import { useProjectsTrees } from "@/workbench/adapters/tanstackQuery/project";
 
 import { ActionMenu } from "..";
 import { ResourceIcon } from "../ResourceIcon";
