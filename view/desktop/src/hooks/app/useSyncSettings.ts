@@ -24,14 +24,19 @@ export const useSyncSettings = () => {
 
   useEffect(() => {
     if (settings?.language) {
-      initializeI18n(settings.language);
-      setIsLanguageLoaded(true);
+      initializeI18n(settings.language).then(() => {
+        setIsLanguageLoaded(true);
+      });
     }
+  }, [settings?.language]);
+
+  useEffect(() => {
     if (settings?.colorTheme) {
-      applyThemeCSS(settings.colorTheme as string, colorTheme?.cssContent ?? "");
-      setIsColorThemeLoaded(true);
+      applyThemeCSS(settings.colorTheme, colorTheme?.cssContent ?? "").then(() => {
+        setIsColorThemeLoaded(true);
+      });
     }
-  }, [settings, colorTheme]);
+  }, [colorTheme?.cssContent, settings?.colorTheme]);
 
   return {
     isSynced: isLanguageLoaded && isColorThemeLoaded,

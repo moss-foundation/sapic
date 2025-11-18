@@ -1,4 +1,4 @@
-export const applyThemeCSS = (id: string, css: string): void => {
+export const applyThemeCSS = async (id: string, css: string): Promise<void> => {
   let styleTag = document.getElementById("theme-style") as HTMLStyleElement | null;
 
   if (!styleTag) {
