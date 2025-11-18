@@ -1,4 +1,4 @@
-import type { StorageScope } from "@repo/shared-storage";
+import { StorageScope } from "@repo/shared-storage";
 
 export const SharedStorageScopeEnum = {
   APPLICATION: "application" as const satisfies StorageScope,

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 
-import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/workbench/store/activityBar";
 import { swapListById } from "@/workbench/utils/swapListById";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";

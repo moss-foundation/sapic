@@ -1,5 +1,5 @@
-import { defaultLayoutState } from "@/defaults/layout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { layoutService, LayoutStateOutput } from "@/workbench/domains/layout/service";
 import { useQuery } from "@tanstack/react-query";
 

@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { ACTIVITYBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBarItemProps } from "@/workbench/store/activityBar";
 import {
   attachClosestEdge,

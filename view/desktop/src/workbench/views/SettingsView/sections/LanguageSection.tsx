@@ -1,32 +1,29 @@
 import { useTranslation } from "react-i18next";
 
+import { useGetBatchValue } from "@/adapters";
+import { useListLanguages } from "@/adapters/tanstackQuery/language/useListLanguages";
+import { useUpdateSettingsValue } from "@/adapters/tanstackQuery/settingsStorage/useUpdateValue";
 import i18next from "@/app/i18n";
-import { useListLanguages } from "@/hooks";
-import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
-import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 
 export const LanguageSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
 
-  const { data: appState } = useDescribeApp();
+  const { data: settings } = useGetBatchValue<{ language: string }>(["language"]);
+  const { mutate: updateSettingsValue } = useUpdateSettingsValue();
+
   const { data: languages } = useListLanguages();
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
 
   const handleLanguageChange = (newCode: string) => {
-    updateConfiguration({
-      key: "language",
-      value: newCode === "default" ? "en" : newCode,
-      target: ConfigurationTargetEnum.USER,
-    });
+    newCode = newCode === "default" ? "en" : newCode;
 
+    updateSettingsValue({ key: "language", value: newCode });
     i18next.changeLanguage(newCode).catch(console.error);
   };
 
-  const currentLanguage = appState?.configuration.contents.language as string;
+  const currentLanguage = settings?.language ?? "";
 
   return (
     <Section title={t("selectLanguage")}>

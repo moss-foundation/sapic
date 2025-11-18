@@ -2,7 +2,7 @@ import { settingsStorageIpc } from "@/infra/ipc/settingsStorage";
 import { SettingScopeEnum } from "@/shared/settingsStorage/types";
 import { JsonValue } from "@repo/moss-bindingutils";
 
-type TypedValue<T> = T extends object | boolean | number | string | null ? T : never;
+import { TypedValue } from "../../shared/types";
 
 async function batchGetValue<T extends Record<string, object | boolean | number | string | null>>(
   keys: Array<keyof T>
