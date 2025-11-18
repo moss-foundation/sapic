@@ -1,11 +1,13 @@
+// TODO: move to system/application/ services
+
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_extension::{
-    ExtensionInfo, ExtensionPoint,
-    scanner::{ExtensionScanner, ExtensionsKind},
-};
+use sapic_base::extension::types::LoadedExtensionInfo;
+use sapic_platform::extension::scanner::{ExtensionScanner, ExtensionsKind};
+use sapic_runtime::extension_point::ExtensionPoint;
+
 use moss_fs::FileSystem;
 use rustc_hash::FxHashMap;
 use std::sync::Arc;
@@ -42,7 +44,7 @@ impl<R: AppRuntime> ExtensionService<R> {
 
         let descriptions = scanner.scan().await?;
         for desc in descriptions {
-            let info = ExtensionInfo {
+            let info = LoadedExtensionInfo {
                 source: desc.abs_path.clone(),
             };
 

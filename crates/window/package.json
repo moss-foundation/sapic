@@ -13,7 +13,6 @@
       "@repo/moss-workspace": "workspace:*",
       "@repo/moss-user": "workspace:*",
       "@repo/moss-language": "workspace:*",
-      "@repo/moss-extension": "workspace:*",
       "@repo/base": "workspace:*"
     },
     "dependencies": {

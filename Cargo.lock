@@ -186,6 +186,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "base",
  "core",
  "derive_more 2.0.1",
  "inventory",
@@ -195,7 +196,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_common",
- "moss_extension",
  "moss_fs",
  "moss_keyring",
  "moss_language",
@@ -3205,7 +3205,6 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_common",
- "moss_extension",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -3966,23 +3965,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_extension"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_fs",
- "moss_logging",
- "serde",
- "serde_json",
- "tracing",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_extension_points"
 version = "0.1.0"
 dependencies = [
@@ -3992,7 +3974,6 @@ dependencies = [
  "joinerror",
  "moss_app_delegate",
  "moss_applib",
- "moss_extension",
  "moss_fs",
  "moss_language",
  "moss_logging",
@@ -4164,7 +4145,6 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
- "moss_extension",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",
@@ -4308,7 +4288,6 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
- "moss_extension",
  "moss_fs",
  "moss_git",
  "moss_git_hosting_provider",
@@ -5310,6 +5289,7 @@ dependencies = [
  "serde_json",
  "system",
  "tokio",
+ "tracing",
  "ts-rs",
 ]
 
@@ -9206,7 +9186,6 @@ dependencies = [
  "moss_db",
  "moss_edit",
  "moss_environment",
- "moss_extension",
  "moss_extension_points",
  "moss_fs",
  "moss_git_hosting_provider",

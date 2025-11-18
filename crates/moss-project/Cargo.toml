@@ -26,7 +26,6 @@ moss_keyring.workspace = true
 sapic-core.workspace = true
 moss_id_macro.workspace = true
 moss_logging.workspace = true
-moss_extension.workspace = true
 
 inventory.workspace = true
 async-trait.workspace = true

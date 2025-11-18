@@ -1,11 +1,12 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
 use moss_language::{
     contribution::LanguageContributionDecl,
     registry::{GlobalLanguageRegistry, LanguageRegistryItem},
 };
+use sapic_base::extension::{contribution::ContributionKey, types::LoadedExtensionInfo};
+use sapic_runtime::extension_point::ExtensionPoint;
 use serde_json::Value as JsonValue;
 
 const LANGUAGES_KEY: ContributionKey = ContributionKey::new("languages");
@@ -27,7 +28,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for LanguageExtensionPoint {
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        info: &ExtensionInfo,
+        info: &LoadedExtensionInfo,
         contribution: JsonValue,
     ) -> joinerror::Result<()> {
         if !contribution.is_array() {

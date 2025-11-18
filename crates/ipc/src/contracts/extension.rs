@@ -1,7 +1,6 @@
+use sapic_base::extension::types::ExtensionInfo;
 use serde::Serialize;
 use ts_rs::TS;
-
-use moss_extension::models::types::ExtensionInfo;
 
 /// @category Operation
 #[derive(Debug, Serialize, TS)]

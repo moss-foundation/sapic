@@ -18,6 +18,7 @@ sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
 sapic-window2 = { workspace = true, features = ["external"] }
 sapic-ipc = { workspace = true }
+sapic-base = { workspace = true }
 
 sapic-window = { workspace = true }
 
@@ -26,7 +27,6 @@ moss_language = { workspace = true }
 moss_user = { workspace = true }
 moss_app_delegate = { workspace = true }
 moss_fs = { workspace = true }
-moss_extension = { workspace = true }
 moss_keyring = { workspace = true }
 moss_server_api = { workspace = true }
 moss_text = { workspace = true }

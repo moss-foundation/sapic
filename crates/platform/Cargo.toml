@@ -23,6 +23,7 @@ tokio = { workspace = true }
 json-patch = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 async-trait = { workspace = true }
+tracing = { workspace = true }
 
 [features]
 integration-tests = []

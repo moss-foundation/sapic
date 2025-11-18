@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
+use sapic_base::extension::{contribution::ContributionKey, types::LoadedExtensionInfo};
+use sapic_runtime::extension_point::ExtensionPoint;
 use serde_json::Value as JsonValue;
 
 pub struct ConfigurationExtensionPoint;
@@ -24,7 +25,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for ConfigurationExtensionPoint {
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        info: &ExtensionInfo,
+        info: &LoadedExtensionInfo,
         data: JsonValue,
     ) -> joinerror::Result<()> {
         unimplemented!()

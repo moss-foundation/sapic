@@ -36,7 +36,6 @@
     "@repo/base": "workspace:*",
     "@repo/moss-activity-broadcaster": "workspace:*",
     "@repo/moss-bindingutils": "workspace:*",
-    "@repo/moss-extension": "workspace:*",
     "@repo/moss-project": "workspace:*",
     "@repo/moss-user": "workspace:*",
     "@repo/moss-workspace": "workspace:*",

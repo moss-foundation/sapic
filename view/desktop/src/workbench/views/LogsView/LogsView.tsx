@@ -7,7 +7,7 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
-import { ExtensionInfo } from "@repo/moss-extension";
+import { ExtensionInfo } from "@repo/base";
 import { AccountKind } from "@repo/moss-user";
 import {
   AddAccountParams,

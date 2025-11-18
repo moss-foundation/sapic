@@ -24,7 +24,6 @@ moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
 moss_user.workspace = true
-moss_extension.workspace = true
 moss_text.workspace = true
 
 static_json.workspace = true

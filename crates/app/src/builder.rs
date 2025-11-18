@@ -1,13 +1,12 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_extension::ExtensionPoint;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{server::HttpServerApiClient, theme::loader::ThemeLoader};
-use sapic_runtime::globals::GlobalThemeRegistry;
+use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalThemeRegistry};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService, theme::theme_service::ThemeService,
     workspace::workspace_service::WorkspaceService,

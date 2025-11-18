@@ -1,5 +1,5 @@
 use moss_applib::AppRuntime;
-use moss_extension::models::types::ExtensionInfo;
+use sapic_base::extension::types::ExtensionInfo;
 use sapic_ipc::contracts::extension::ListExtensionsOutput;
 
 use crate::App;

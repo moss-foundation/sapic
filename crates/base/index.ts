@@ -2,6 +2,8 @@ export * from "./bindings/configuration/primitives";
 export * from "./bindings/configuration/primitives.zod";
 export * from "./bindings/configuration/types";
 export * from "./bindings/configuration/types.zod";
+export * from "./bindings/extension/types";
+export * from "./bindings/extension/types.zod";
 export * from "./bindings/theme/primitives";
 export * from "./bindings/theme/primitives.zod";
 export * from "./bindings/theme/types";

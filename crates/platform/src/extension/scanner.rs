@@ -1,9 +1,7 @@
 use moss_fs::{FileSystem, FsResultExt};
-use moss_logging::session;
+use sapic_base::extension::manifest::AddonManifestFile;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
-
-use crate::manifest::AddonManifestFile;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExtensionsKind {
@@ -44,10 +42,7 @@ impl ExtensionScanner {
 
                 let manifest_path = entry.path().join("Sapic.json");
                 if !manifest_path.exists() {
-                    session::warn!(format!(
-                        "manifest file not found: {}",
-                        manifest_path.display()
-                    ));
+                    tracing::warn!("manifest file not found: {}", manifest_path.display());
                     continue;
                 }
 
