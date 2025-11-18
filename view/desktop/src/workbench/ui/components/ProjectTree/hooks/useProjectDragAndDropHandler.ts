@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react";
 
-import { useProjectsTrees } from "@/hooks";
-import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
+import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectDragType } from "../constants";

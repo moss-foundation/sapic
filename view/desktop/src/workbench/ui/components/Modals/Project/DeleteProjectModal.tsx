@@ -1,4 +1,4 @@
-import { useBatchUpdateProject, useDeleteProject, useStreamProjects } from "@/hooks";
+import { useBatchUpdateProject, useDeleteProject, useStreamProjects } from "@/adapters/tanstackQuery/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ConfirmationModal } from "../ConfirmationModal";

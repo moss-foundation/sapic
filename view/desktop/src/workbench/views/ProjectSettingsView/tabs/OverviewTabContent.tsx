@@ -1,8 +1,9 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useEffect, useState } from "react";
 
+import { useStreamProjects, useUpdateProject } from "@/adapters/tanstackQuery/project";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useModal, useStreamProjects, useUpdateProject } from "@/hooks";
+import { useModal } from "@/hooks";
 import Input from "@/lib/ui/Input";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 

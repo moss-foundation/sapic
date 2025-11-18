@@ -1,7 +1,7 @@
 import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
-import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";

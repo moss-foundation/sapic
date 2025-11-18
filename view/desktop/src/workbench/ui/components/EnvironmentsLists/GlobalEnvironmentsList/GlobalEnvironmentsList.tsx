@@ -1,4 +1,4 @@
-import { useStreamEnvironments } from "@/hooks";
+import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentListItem } from "../EnvironmentItem/EnvironmentListItem";
