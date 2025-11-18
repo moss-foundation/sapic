@@ -1,12 +1,12 @@
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
+import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 import { useDescribeApp } from "@/hooks";
 import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";
-import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 
 export const AppLayoutSection = () => {
   return (

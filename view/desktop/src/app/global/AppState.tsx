@@ -1,5 +1,4 @@
-import { useSyncColorTheme } from "@/hooks/useSyncColorTheme";
-import { useSyncLanguage } from "@/hooks/useSyncLanguage";
+import { useSyncSettings } from "@/hooks/app/useSyncSettings";
 import { PageLoader } from "@/workbench/ui/components";
 
 import ErrorBoundary from "../ErrorBoundary";
@@ -9,14 +8,9 @@ interface AppInitStateProps {
 }
 
 export const AppState = ({ children }: AppInitStateProps) => {
-  // TODO: Redo this to retrieve language and color theme settings
-  // through a batch operation using SettingsStore.
-  const { isInit: isInitLanguage } = useSyncLanguage();
-  const { isInit: isInitColorTheme } = useSyncColorTheme();
+  const { isSynced: areSettingsSynced } = useSyncSettings();
 
-  const isInit = isInitLanguage && isInitColorTheme;
-
-  if (!isInit) {
+  if (!areSettingsSynced) {
     return <PageLoader className="bg-sky-200" />;
   }
 
