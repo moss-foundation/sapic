@@ -523,9 +523,13 @@ checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 name = "base"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "core",
  "derive_more 2.0.1",
  "joinerror",
+ "moss_id_macro",
  "moss_text",
+ "nanoid",
  "serde",
  "serde_json",
  "ts-rs",
@@ -5275,6 +5279,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "chrono",
  "core",
  "derive_more 2.0.1",
  "joinerror",
@@ -5282,7 +5287,9 @@ dependencies = [
  "moss_applib",
  "moss_edit",
  "moss_fs",
+ "moss_git",
  "moss_text",
+ "oauth2",
  "regorus",
  "reqwest",
  "serde",
@@ -5291,6 +5298,9 @@ dependencies = [
  "tokio",
  "tracing",
  "ts-rs",
+ "url",
+ "urlencoding",
+ "webbrowser",
 ]
 
 [[package]]
@@ -7105,11 +7115,14 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "chrono",
  "core",
  "inventory",
  "joinerror",
  "moss_applib",
  "moss_fs",
+ "moss_git",
+ "moss_keyring",
  "moss_storage2",
  "moss_text",
  "moss_workspace",

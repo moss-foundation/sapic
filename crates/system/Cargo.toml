@@ -12,6 +12,8 @@ moss_fs.workspace = true        # TODO: Remove this once we move FS operations f
 moss_storage2.workspace = true
 moss_workspace.workspace = true
 moss_text.workspace = true
+moss_keyring.workspace = true   # TODO: move impl to platform crate
+moss_git.workspace = true
 
 joinerror.workspace = true
 serde_json.workspace = true
@@ -21,6 +23,7 @@ tokio = { workspace = true }
 async-trait.workspace = true
 inventory.workspace = true
 tracing.workspace = true
+chrono.workspace = true
 
 [features]
 integration-tests = []

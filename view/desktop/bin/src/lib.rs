@@ -33,10 +33,7 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_server_api::{
-    account_auth_gateway::AccountAuthGatewayApiClient,
-    extension_registry::{AppExtensionRegistryApiClient, ExtensionRegistryApiClient},
-};
+use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
@@ -151,12 +148,6 @@ pub async fn run<R: TauriRuntime>() {
                             8081,
                         ));
 
-                    let extension_registry_api_client =
-                        Arc::new(AppExtensionRegistryApiClient::new(
-                            http_client.clone(),
-                            format!("{server_api_endpoint}/extension-registry"),
-                        ));
-
                     <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         github_api_client,
@@ -173,11 +164,6 @@ pub async fn run<R: TauriRuntime>() {
                     <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
                         &delegate,
                         gitlab_auth_adapter,
-                    );
-
-                    <dyn ExtensionRegistryApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        extension_registry_api_client,
                     );
 
                     let theme_registry = AppThemeRegistry::new();

@@ -1,4 +1,4 @@
-use sapic_system::ports::server_api::types::ExtensionInfo;
+use sapic_base::extension::types::ExtensionInfo;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -33,7 +33,6 @@ impl From<ExtensionInfoResponse> for ExtensionInfo {
     }
 }
 
-/// Wire type for list extensions response.
 #[derive(Debug, Deserialize)]
 pub struct ListExtensionsResponse {
     pub extensions: Vec<ExtensionInfoResponse>,

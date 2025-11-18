@@ -1,8 +1,9 @@
 use std::sync::Arc;
 
+use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
 
-use crate::ports::server_api::{ExtensionApiOperations, types::ExtensionInfo};
+use crate::ports::server_api::ExtensionApiOperations;
 
 pub struct ExtensionsApiService {
     client: Arc<dyn ExtensionApiOperations>,

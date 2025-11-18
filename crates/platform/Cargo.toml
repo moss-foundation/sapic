@@ -12,6 +12,7 @@ moss_fs = { workspace = true }
 moss_edit = { workspace = true }
 moss_text = { workspace = true }
 moss_applib = { workspace = true }
+moss_git = { workspace = true }
 
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -24,6 +25,11 @@ json-patch = { workspace = true }
 reqwest = { workspace = true, features = ["json"] }
 async-trait = { workspace = true }
 tracing = { workspace = true }
+oauth2 = { workspace = true }
+chrono = { workspace = true }
+url = { workspace = true }
+urlencoding = { workspace = true }
+webbrowser = { workspace = true }
 
 [features]
 integration-tests = []
