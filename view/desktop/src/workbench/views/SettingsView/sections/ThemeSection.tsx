@@ -1,32 +1,27 @@
 import { useTranslation } from "react-i18next";
 
 import { useListColorThemes } from "@/hooks";
-import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
+import { useGetSettings } from "@/hooks/app/settings/useGetSettings";
+import { useUpdateSettingsValue } from "@/hooks/app/settings/useUpdateSettingsValue";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
-import { ConfigurationTargetEnum } from "@/domains/configuration/types";
 
 export const ThemeSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
 
-  const { data: appState } = useDescribeApp();
+  const { data: settings } = useGetSettings<{ colorTheme: string }>(["colorTheme"]);
   const { data: themes } = useListColorThemes();
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
+  const { mutate: updateSettingsValue } = useUpdateSettingsValue<string>();
 
   const handleThemeChange = (newIdentifier: string) => {
     const selectedTheme = themes?.find((theme) => theme.identifier === newIdentifier);
     if (selectedTheme) {
-      updateConfiguration({
-        key: "colorTheme",
-        value: selectedTheme.identifier,
-        target: ConfigurationTargetEnum.USER,
-      });
+      updateSettingsValue({ key: "colorTheme", value: selectedTheme.identifier });
     }
   };
 
-  const currentThemeId = appState?.configuration.contents.colorTheme as string;
+  const currentThemeId = settings?.colorTheme || "";
 
   return (
     <Section title={t("selectTheme")}>

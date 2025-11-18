@@ -33,7 +33,7 @@ export const AppLayout = ({ children }: AppLayoutProps) => {
     mainResizableRef?.current?.reset();
     // We want to run this effect(resetting the layout) when the workspace changes
     // because different workspaces have different layouts.
-  }, [activeWorkspaceId]);
+  }, [activeWorkspaceId, layout]);
 
   const handleSidebarEdgeHandlerClick = () => {
     if (!layout?.sidebarState.visible) {
