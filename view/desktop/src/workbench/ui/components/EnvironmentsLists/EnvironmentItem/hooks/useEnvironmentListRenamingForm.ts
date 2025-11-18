@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useUpdateEnvironment } from "@/hooks";
+import { useUpdateEnvironment } from "@/adapters/tanstackQuery/environment";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 interface UseGlobalEnvironmentsListRenamingFormProps {

@@ -1,8 +1,8 @@
 import { FormEvent, useCallback, useState } from "react";
 
-import { useCreateProject } from "@/hooks/project/useCreateProject";
-import { useImportProject } from "@/hooks/project/useImportProject";
-import { useStreamProjects } from "@/hooks/project/useStreamProjects";
+import { useCreateProject } from "@/adapters/tanstackQuery/project/useCreateProject";
+import { useImportProject } from "@/adapters/tanstackQuery/project/useImportProject";
+import { useStreamProjects } from "@/adapters/tanstackQuery/project/useStreamProjects";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";

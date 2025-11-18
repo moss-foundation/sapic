@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
-import { useFetchResourcesForPath } from "@/hooks/project/derivedHooks/useFetchResourceForPath";
-import { useUpdateProjectResource } from "@/hooks/project/useUpdateProjectResource";
+import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";

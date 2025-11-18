@@ -1,5 +1,5 @@
-import { useStreamProjects } from "@/hooks";
-import { useUpdateEnvironmentGroup } from "@/hooks/workspace/environment/useUpdateEnvironmentGroup";
+import { useUpdateEnvironmentGroup } from "@/adapters/tanstackQuery/environment/useUpdateEnvironmentGroup";
+import { useStreamProjects } from "@/adapters/tanstackQuery/project";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";

@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 
-import { useRenameResourceForm } from "@/hooks";
 import { Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
+import { useRenameResourceForm } from "@/workbench/hooks";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 
 import { EndpointViewContext } from "../../EndpointViewContext";

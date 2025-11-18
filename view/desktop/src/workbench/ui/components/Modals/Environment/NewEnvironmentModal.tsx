@@ -1,13 +1,9 @@
 import { useMemo, useRef, useState } from "react";
 
+import { useCreateEnvironment, useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { useStreamProjects } from "@/adapters/tanstackQuery/project";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import {
-  useCreateEnvironment,
-  useFocusInputOnMount,
-  useStreamEnvironments,
-  useStreamProjects,
-  useValidateInput,
-} from "@/hooks";
+import { useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";

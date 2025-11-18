@@ -1,4 +1,4 @@
-import { useProjectsTrees } from "@/hooks/project";
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";

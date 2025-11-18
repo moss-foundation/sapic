@@ -6,7 +6,13 @@ import { ActivitybarState, BottomPanelState, SidebarState, TabbedPaneState } fro
 
 const SHARED_STORAGE_LAYOUT_KEY = "workbench.layout" as const;
 
-export const layoutService = {
+interface ILayoutService {
+  getLayout: (workspaceId: string) => Promise<LayoutStateOutput>;
+  updateLayout: (input: LayoutStateInput, workspaceId: string) => Promise<void>;
+  removeLayout: (workspaceId: string) => Promise<void>;
+}
+
+export const layoutService: ILayoutService = {
   getLayout: async (workspaceId: string) => {
     try {
       const { value } = await sharedStorageIpc.getItem(SHARED_STORAGE_LAYOUT_KEY, {
@@ -18,13 +24,13 @@ export const layoutService = {
       return defaultLayoutState;
     }
   },
-  updateLayout: async (input: LayoutStateInput, workspaceId: string) => {
-    return await sharedStorageIpc.putItem(SHARED_STORAGE_LAYOUT_KEY, input as unknown as JsonValue, {
+  updateLayout: async (input, workspaceId) => {
+    await sharedStorageIpc.putItem(SHARED_STORAGE_LAYOUT_KEY, input as unknown as JsonValue, {
       workspace: workspaceId ?? "application",
     });
   },
   removeLayout: async (workspaceId: string) => {
-    return await sharedStorageIpc.removeItem(SHARED_STORAGE_LAYOUT_KEY, {
+    await sharedStorageIpc.removeItem(SHARED_STORAGE_LAYOUT_KEY, {
       workspace: workspaceId ?? "application",
     });
   },
