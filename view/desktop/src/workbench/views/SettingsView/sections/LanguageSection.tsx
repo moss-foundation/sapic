@@ -1,9 +1,9 @@
 import { useTranslation } from "react-i18next";
 
+import { useListLanguages } from "@/app/adapters/tanstackQuery/language/useListLanguages";
+import { useGetBatchSettingsValueWithDefaults } from "@/app/adapters/tanstackQuery/settings/useGetBatchSettingsValueWithDefaults";
+import { useUpdateSettingsValue } from "@/app/adapters/tanstackQuery/settings/useUpdateSettingsValue";
 import i18next from "@/app/i18n";
-import { useListLanguages } from "@/hooks";
-import { useGetSettings } from "@/hooks/app/settings/useGetSettings";
-import { useUpdateSettingsValue } from "@/hooks/app/settings/useUpdateSettingsValue";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
@@ -11,8 +11,10 @@ import { Section } from "../Section";
 export const LanguageSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
 
-  const { data: settings } = useGetSettings<{ language: string }>(["language"]);
-  const { mutate: updateSettingsValue } = useUpdateSettingsValue<string>();
+  const { data: settings } = useGetBatchSettingsValueWithDefaults<{ language: string }>(["language"], {
+    language: "en",
+  });
+  const { mutate: updateSettingsValue } = useUpdateSettingsValue();
 
   const { data: languages } = useListLanguages();
 
@@ -23,7 +25,7 @@ export const LanguageSection = () => {
     i18next.changeLanguage(newCode).catch(console.error);
   };
 
-  const currentLanguage = settings?.language || "en";
+  const currentLanguage = settings?.language;
 
   return (
     <Section title={t("selectLanguage")}>

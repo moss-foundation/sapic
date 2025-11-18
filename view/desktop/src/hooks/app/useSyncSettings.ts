@@ -1,33 +1,39 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
+import { useDescribeColorTheme } from "@/app/adapters/tanstackQuery/colorTheme/useDescribeColorTheme";
+import { useGetBatchSettingsValueWithDefaults } from "@/app/adapters/tanstackQuery/settings/useGetBatchSettingsValueWithDefaults";
 import { initializeI18n } from "@/app/i18n";
 
-import { useDescribeColorTheme } from "./colorTheme";
-import { useGetSettings } from "./settings/useGetSettings";
 import { applyThemeCSS } from "./utils";
 
-export const SETTINGS_QUERY_KEY = "application.settings" as const;
-
 export const useSyncSettings = () => {
-  const { data: settings, isSuccess: isSuccessSettings } = useGetSettings<{ language: string; colorTheme: string }>([
-    "language",
-    "colorTheme",
-  ]);
+  const [isColorThemeLoaded, setIsColorThemeLoaded] = useState(false);
+  const [isLanguageLoaded, setIsLanguageLoaded] = useState(false);
 
-  const { data: colorTheme, isSuccess: isSuccessColorTheme } = useDescribeColorTheme({
+  const { data: settings } = useGetBatchSettingsValueWithDefaults<{
+    language: string;
+    colorTheme: string;
+  }>(["language", "colorTheme"], {
+    language: "en",
+    colorTheme: "default",
+  });
+
+  const { data: colorTheme } = useDescribeColorTheme({
     themeId: settings?.colorTheme as string,
   });
 
   useEffect(() => {
     if (settings?.language) {
       initializeI18n(settings.language);
+      setIsLanguageLoaded(true);
     }
     if (settings?.colorTheme) {
       applyThemeCSS(settings.colorTheme as string, colorTheme?.cssContent ?? "");
+      setIsColorThemeLoaded(true);
     }
   }, [settings, colorTheme]);
 
   return {
-    isSynced: isSuccessSettings && isSuccessColorTheme,
+    isSynced: isLanguageLoaded && isColorThemeLoaded,
   };
 };

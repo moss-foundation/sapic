@@ -1,8 +1,7 @@
 import { useTranslation } from "react-i18next";
 
-import { useListColorThemes } from "@/hooks";
-import { useGetSettings } from "@/hooks/app/settings/useGetSettings";
-import { useUpdateSettingsValue } from "@/hooks/app/settings/useUpdateSettingsValue";
+import { useGetBatchSettingsValueWithDefaults, useListColorThemes } from "@/app/adapters";
+import { useUpdateSettingsValue } from "@/app/adapters/tanstackQuery/settings/useUpdateSettingsValue";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 
 import { Section } from "../Section";
@@ -10,7 +9,9 @@ import { Section } from "../Section";
 export const ThemeSection = () => {
   const { t } = useTranslation(["main", "bootstrap"]);
 
-  const { data: settings } = useGetSettings<{ colorTheme: string }>(["colorTheme"]);
+  const { data: settings } = useGetBatchSettingsValueWithDefaults<{ colorTheme: string }>(["colorTheme"], {
+    colorTheme: "moss.sapic-theme.lightDefault",
+  });
   const { data: themes } = useListColorThemes();
   const { mutate: updateSettingsValue } = useUpdateSettingsValue<string>();
 
@@ -21,7 +22,7 @@ export const ThemeSection = () => {
     }
   };
 
-  const currentThemeId = settings?.colorTheme || "";
+  const currentThemeId = settings?.colorTheme;
 
   return (
     <Section title={t("selectTheme")}>
