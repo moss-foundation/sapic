@@ -9,8 +9,8 @@ use reqwest::Client as HttpClient;
 use sapic_platform::{server::HttpServerApiClient, theme::loader::ThemeLoader};
 use sapic_runtime::globals::GlobalThemeRegistry;
 use sapic_system::{
-    application::extensions_service::ExtensionsApiService, ports::server_api::ServerApiClient,
-    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+    application::extensions_service::ExtensionsApiService, theme::theme_service::ThemeService,
+    workspace::workspace_service::WorkspaceService,
 };
 use std::sync::Arc;
 

@@ -1,3 +1,5 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
+
 use moss_applib::{TauriAppRuntime, Wry};
 use moss_git_hosting_provider::{GitAuthAdapter, gitlab::AppGitLabAuthAdapter};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;

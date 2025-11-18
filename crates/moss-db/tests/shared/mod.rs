@@ -1,3 +1,5 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
+
 use moss_db::{
     ReDbClient,
     bincode_table::BincodeTable,

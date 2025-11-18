@@ -1,3 +1,4 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};

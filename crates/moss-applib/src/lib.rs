@@ -1,4 +1,3 @@
-pub mod context;
 pub mod errors;
 pub mod markers;
 pub mod subscription;
@@ -34,10 +33,6 @@ impl GenericAppHandle {
 pub trait AppRuntime: 'static {
     type AsyncContext: AnyAsyncContext + Clone;
     type EventLoop: TauriRuntime;
-}
-
-pub trait AppContext {
-    type Async: AnyAsyncContext + Clone;
 }
 
 pub struct TauriAppRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);

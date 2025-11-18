@@ -1,3 +1,5 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
+
 use std::sync::Arc;
 
 use moss_applib::{TauriAppRuntime, Wry};
