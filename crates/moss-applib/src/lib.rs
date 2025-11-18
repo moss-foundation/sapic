@@ -10,7 +10,7 @@ pub use tauri::Wry;
 use std::{any::Any, sync::Arc};
 use tauri::{AppHandle, Runtime as TauriRuntime};
 
-use crate::context::{AnyAsyncContext, AnyContext, AsyncContext, MutableContext};
+use sapic_core::context::{AnyAsyncContext, ArcContext};
 
 /// A generic app handle that can be used to access the app's runtime context.
 /// This is useful for internal plugins that need to access the app's
@@ -32,16 +32,18 @@ impl GenericAppHandle {
 }
 
 pub trait AppRuntime: 'static {
-    type Context: AnyContext<Frozen = Self::AsyncContext>;
-    type AsyncContext: AnyAsyncContext<Unfrozen = Self::Context>;
+    type AsyncContext: AnyAsyncContext + Clone;
     type EventLoop: TauriRuntime;
+}
+
+pub trait AppContext {
+    type Async: AnyAsyncContext + Clone;
 }
 
 pub struct TauriAppRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);
 
 impl<R: TauriRuntime> AppRuntime for TauriAppRuntime<R> {
-    type Context = MutableContext;
-    type AsyncContext = AsyncContext;
+    type AsyncContext = ArcContext;
     type EventLoop = R;
 }
 
@@ -54,8 +56,7 @@ pub mod mock {
     pub struct MockAppRuntime;
 
     impl AppRuntime for MockAppRuntime {
-        type Context = MutableContext;
-        type AsyncContext = AsyncContext;
+        type AsyncContext = ArcContext;
         type EventLoop = MockRuntime;
     }
 }

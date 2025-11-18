@@ -10,7 +10,9 @@ path = "src/app.rs"
 serde_json.workspace = true
 
 [dependencies]
+sapic-core = { workspace = true }
 sapic-runtime = { workspace = true }
+sapic-platform = { workspace = true }
 sapic-system = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
@@ -43,6 +45,7 @@ ts-rs = { workspace = true }
 derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 tracing.workspace = true
 inventory.workspace = true
+reqwest = { workspace = true, features = ["json"] }
 
 [dev-dependencies]
 

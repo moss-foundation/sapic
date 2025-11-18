@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
-use moss_applib::{TauriAppRuntime, Wry, context::MutableContext};
+use moss_applib::{TauriAppRuntime, Wry};
 use moss_git_hosting_provider::{GitAuthAdapter, github::AppGitHubAuthAdapter};
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use reqwest::Client;
+use sapic_core::context::MutableContext;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

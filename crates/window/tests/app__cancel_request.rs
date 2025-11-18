@@ -3,7 +3,7 @@
 // #![cfg(feature = "integration-tests")]
 
 // use futures::future;
-// use moss_applib::context::{AnyAsyncContext, AnyContext, MutableContext, Reason};
+// use sapic_core::context::{AnyAsyncContext, AnyContext, MutableContext, Reason};
 // use std::time::Duration;
 // use tokio::time::timeout;
 // use window::models::operations::CancelRequestInput;

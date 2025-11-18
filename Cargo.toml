@@ -20,6 +20,7 @@ members = [
     "crates/ipc",
     "crates/window2",
     "crates/runtime",
+    "crates/core",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -62,7 +63,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", 
+    "tools/cargo-new-ts",
 ]
 
 [workspace.dependencies]
@@ -84,6 +85,7 @@ sapic-window2 = { path = "crates/window2", package = "window2" }
 sapic-base = { path = "crates/base", package = "base" }
 sapic-platform = { path = "crates/platform", package = "platform" }
 sapic-ipc = { path = "crates/ipc", package = "ipc" }
+sapic-core = { path = "crates/core", package = "core" }
 
 sapic-window = { path = "crates/window", package = "window" }
 

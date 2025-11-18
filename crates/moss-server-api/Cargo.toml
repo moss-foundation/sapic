@@ -5,6 +5,7 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-core.workspace = true
 moss_applib.workspace = true
 moss_app_delegate.workspace = true
 

@@ -1,10 +1,10 @@
-use moss_applib::context::{AsyncContext, MutableContext};
 use moss_db::{
     ReDbClient,
     bincode_table::BincodeTable,
     encrypted_bincode_table::{EncryptedBincodeTable, EncryptionOptions},
 };
 use moss_testutils::random_name::random_string;
+use sapic_core::context::{AsyncContext, MutableContext};
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use std::{path::PathBuf, string::ToString, sync::LazyLock, time::Duration};
 

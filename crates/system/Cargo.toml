@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sapic-core.workspace = true
 sapic-base.workspace = true
-sapic-platform.workspace = true
 
 moss_applib.workspace = true    # TODO: Remove this once we move errors to base crate
-moss_fs.workspace = true
+moss_fs.workspace = true        # TODO: Remove this once we move FS operations from workspace_service
 moss_storage2.workspace = true
 moss_workspace.workspace = true
 moss_text.workspace = true

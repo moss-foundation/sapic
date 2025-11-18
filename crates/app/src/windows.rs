@@ -1,11 +1,12 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
+use moss_applib::{AppRuntime, errors::TauriResultExt};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
+use sapic_core::context::Canceller;
 use sapic_main::MainWindow;
 use sapic_welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow};
 use sapic_window2::AppWindowApi;

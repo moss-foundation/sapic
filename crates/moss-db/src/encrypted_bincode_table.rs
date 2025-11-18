@@ -6,8 +6,8 @@ use argon2::{
     Argon2,
     password_hash::{PasswordHasher, SaltString, rand_core::OsRng},
 };
-use moss_applib::context::AnyAsyncContext;
 use redb::{Key, TableDefinition};
+use sapic_core::context::AnyAsyncContext;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{
     borrow::Borrow,

@@ -2,11 +2,7 @@
 
 use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    context::{AsyncContext, MutableContext},
-    mock::MockAppRuntime,
-};
+use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
 use moss_storage2::{AppStorage, AppStorageOptions, Storage};
@@ -27,6 +23,7 @@ use moss_workspace::{
 };
 use rand::Rng;
 use reqwest::ClientBuilder as HttpClientBuilder;
+use sapic_core::context::{AsyncContext, MutableContext};
 use std::{
     collections::HashMap,
     fs,

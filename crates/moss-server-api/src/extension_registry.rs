@@ -1,8 +1,9 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context, context::ContextResultExt};
+use moss_applib::AppRuntime;
 use reqwest::Client as HttpClient;
+use sapic_core::context::{self, ContextResultExt};
 use serde::Deserialize;
 use std::sync::Arc;
 

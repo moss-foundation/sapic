@@ -186,6 +186,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "inventory",
  "ipc",
@@ -203,6 +204,8 @@ dependencies = [
  "moss_text",
  "moss_user",
  "moss_workspace",
+ "platform",
+ "reqwest",
  "runtime",
  "rustc-hash",
  "serde",
@@ -1171,6 +1174,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "core"
+version = "0.1.0"
+dependencies = [
+ "joinerror",
+ "serde",
+ "tokio",
+]
+
+[[package]]
 name = "core-foundation"
 version = "0.9.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1675,6 +1687,7 @@ dependencies = [
  "anyhow",
  "app",
  "cocoa",
+ "core",
  "dotenvy",
  "futures",
  "inventory",
@@ -3192,6 +3205,7 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_common",
+ "moss_extension",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -3662,6 +3676,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "core",
  "derive_more 2.0.1",
  "ipc",
  "joinerror",
@@ -3850,6 +3865,7 @@ name = "moss_applib"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "core",
  "dashmap",
  "derive_more 2.0.1",
  "futures",
@@ -3898,6 +3914,7 @@ dependencies = [
  "anyhow",
  "argon2",
  "async-trait",
+ "core",
  "joinerror",
  "moss_applib",
  "moss_testutils",
@@ -4033,6 +4050,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "chrono",
+ "core",
  "dotenvy",
  "git2",
  "joinerror",
@@ -4129,6 +4147,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
+ "core",
  "derive_more 2.0.1",
  "futures",
  "git2",
@@ -4175,6 +4194,7 @@ name = "moss_server_api"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "joinerror",
  "moss_app_delegate",
  "moss_applib",
@@ -4188,6 +4208,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "core",
  "hcl-rs",
  "joinerror",
  "moss_applib",
@@ -4241,6 +4262,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "chrono",
+ "core",
  "joinerror",
  "moss_applib",
  "moss_id_macro",
@@ -4270,6 +4292,7 @@ dependencies = [
  "anyhow",
  "async-stream",
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "dotenvy",
  "futures",
@@ -5271,16 +5294,21 @@ checksum = "7edddbd0b52d732b21ad9a5fab5c704c14cd949e5e9a1ec5929a24fded1b904c"
 name = "platform"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "base",
+ "core",
  "derive_more 2.0.1",
  "joinerror",
  "json-patch 4.1.0",
+ "moss_applib",
  "moss_edit",
  "moss_fs",
  "moss_text",
  "regorus",
+ "reqwest",
  "serde",
  "serde_json",
+ "system",
  "tokio",
  "ts-rs",
 ]
@@ -7097,6 +7125,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "core",
  "inventory",
  "joinerror",
  "moss_applib",
@@ -7104,7 +7133,6 @@ dependencies = [
  "moss_storage2",
  "moss_text",
  "moss_workspace",
- "platform",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -9035,6 +9063,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "core",
  "derive_more 2.0.1",
  "ipc",
  "joinerror",
@@ -9231,6 +9260,7 @@ name = "window2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "moss_applib",
  "tauri",

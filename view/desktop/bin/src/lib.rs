@@ -9,10 +9,7 @@ extern crate tracing;
 
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    TauriAppRuntime,
-    context::{AnyAsyncContext, MutableContext},
-};
+use moss_applib::TauriAppRuntime;
 use moss_extension_points::{
     configurations::ConfigurationExtensionPoint, http_headers::HttpHeadersExtensionPoint,
     languages::LanguageExtensionPoint, resource_statuses::ResourceStatusesExtensionPoint,
@@ -43,6 +40,7 @@ use moss_server_api::{
 use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
+use sapic_core::context::ArcContext;
 use sapic_runtime::{
     app::settings_storage::AppSettingsStorage,
     globals::{GlobalConfigurationRegistry, GlobalSettingsStorage, GlobalThemeRegistry},
@@ -107,7 +105,7 @@ pub async fn run<R: TauriRuntime>() {
     builder
         .setup(|tao| {
             futures::executor::block_on(async {
-                let ctx = MutableContext::background().freeze();
+                let ctx = ArcContext::background();
 
                 let keyring = Arc::new(KeyringClientImpl::new());
                 let http_client = HttpClientBuilder::new()
@@ -227,8 +225,7 @@ pub async fn run<R: TauriRuntime>() {
                         });
 
                     let app_init_ctx =
-                        MutableContext::new_with_timeout(ctx_clone, Duration::from_secs(30))
-                            .freeze();
+                        ArcContext::new_with_timeout(ctx_clone, Duration::from_secs(30));
 
                     let app = AppBuilder::<TauriAppRuntime<R>>::new(
                         fs,
@@ -241,6 +238,8 @@ pub async fn run<R: TauriRuntime>() {
                             ResourceStatusesExtensionPoint::new(),
                             HttpHeadersExtensionPoint::new(),
                         ],
+                        server_api_endpoint,
+                        http_client,
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)
@@ -250,10 +249,7 @@ pub async fn run<R: TauriRuntime>() {
                     app
                 };
 
-                tao_app_handle.manage({
-                    let ctx = ctx.unfreeze().expect("Failed to unfreeze the root context");
-                    ctx.freeze()
-                });
+                tao_app_handle.manage(ctx.clone());
                 tao_app_handle.manage(Arc::new(app));
 
                 Ok(())

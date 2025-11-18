@@ -9,8 +9,8 @@ pub use error::*;
 
 use anyhow::Result;
 use async_trait::async_trait;
-use moss_applib::context::AnyAsyncContext;
 use redb::{Builder, Database, Key, TableDefinition};
+use sapic_core::context::AnyAsyncContext;
 use serde::{Serialize, de::DeserializeOwned};
 use std::{borrow::Borrow, path::Path, sync::Arc};
 use tokio::sync::Notify;

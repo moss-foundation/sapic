@@ -10,10 +10,10 @@ use crate::{
     },
 };
 use async_trait::async_trait;
-use moss_applib::context::AnyAsyncContext;
 use moss_db::{
     DatabaseClientWithContext, DatabaseResult, ReDbClient, Transaction, primitives::AnyValue,
 };
+use sapic_core::context::AnyAsyncContext;
 use std::sync::Arc;
 
 pub struct VariableStoreImpl {

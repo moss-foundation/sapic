@@ -1,12 +1,12 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_applib::context::AnyAsyncContext;
 use moss_git::models::types::BranchInfo;
 use moss_user::models::primitives::AccountId;
 use moss_workspace::models::{
     operations::{DeleteProjectInput, DescribeProjectInput, ImportProjectInput},
     types::{ImportGitHubParams, ImportProjectParams, ImportProjectSource, VcsInfo},
 };
+use sapic_core::context::AnyAsyncContext;
 use std::{env, ops::Deref};
 
 use crate::shared::setup_test_workspace;
@@ -19,7 +19,9 @@ async fn describe_project_with_repository() {
     let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let account_id = ctx
-        .value::<AccountId>("account_id")
+        .value("account_id")
+        .unwrap()
+        .downcast::<AccountId>()
         .unwrap()
         .deref()
         .clone();

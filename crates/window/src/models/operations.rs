@@ -330,10 +330,10 @@ pub struct CloseWorkspaceOutput {
     pub id: WorkspaceId,
 }
 
-// #########################################################
-// ###                    Extensions                     ###
-// #########################################################
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListExtensionsOutput(#[ts(type = "ExtensionInfo[]")] pub Vec<ExtensionInfo>);
+// // #########################################################
+// // ###                    Extensions                     ###
+// // #########################################################
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListExtensionsOutput(#[ts(type = "ExtensionInfo[]")] pub Vec<ExtensionInfo>);

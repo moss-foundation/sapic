@@ -7,8 +7,8 @@ use crate::{
         TransactionalRemoveItem,
     },
 };
-use moss_applib::context::AnyAsyncContext;
 use moss_db::{Transaction, primitives::AnyValue};
+use sapic_core::context::AnyAsyncContext;
 
 #[async_trait::async_trait]
 pub trait VariableStore<Context: AnyAsyncContext>:

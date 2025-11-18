@@ -1,8 +1,8 @@
 pub mod operations;
 
 use async_trait::async_trait;
-use moss_applib::context::AnyAsyncContext;
 use moss_db::{DatabaseResult, Transaction, bincode_table::BincodeTable, primitives::AnyValue};
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{any::TypeId, collections::HashMap};
 
@@ -31,7 +31,7 @@ pub type SegBinTable = BincodeTable<'static, SegKeyBuf, AnyValue>;
 mod tests {
     use super::*;
 
-    use moss_applib::context::MutableContext;
+    use sapic_core::context::MutableContext;
     use serde::{Deserialize, Serialize};
     use std::time::Duration;
 

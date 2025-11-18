@@ -17,6 +17,7 @@ use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
 use sapic_main::MainWindow;
 use sapic_system::{
+    application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
     theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
 };
@@ -59,6 +60,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 pub(crate) struct AppServices {
     pub(crate) workspace_service: Arc<WorkspaceService>,
     pub(crate) theme_service: Arc<ThemeService>,
+    pub(crate) extension_api_service: Arc<ExtensionsApiService>,
 }
 
 #[derive(Deref)]

@@ -1,4 +1,5 @@
 pub mod configuration;
+pub mod extension;
 pub mod other;
 pub mod theme;
 
