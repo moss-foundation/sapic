@@ -8,8 +8,6 @@ interface AppInitStateProps {
 }
 
 export const AppState = ({ children }: AppInitStateProps) => {
-  // TODO: Redo this to retrieve language and color theme settings
-  // through a batch operation using SettingsStore.
   const { isSynced: areSettingsSynced } = useSyncSettings();
 
   if (!areSettingsSynced) {

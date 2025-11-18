@@ -1,6 +1,6 @@
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 
 export const ActivityBarButtonIndicator = () => {
   const { data: appState } = useDescribeApp();

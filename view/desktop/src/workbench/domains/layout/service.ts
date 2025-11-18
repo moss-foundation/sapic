@@ -1,5 +1,5 @@
-import { defaultLayoutState } from "@/defaults/layout";
 import { sharedStorageIpc } from "@/infra/ipc/sharedStorage";
+import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { JsonValue } from "@repo/moss-bindingutils";
 
 import { ActivitybarState, BottomPanelState, SidebarState, TabbedPaneState } from "./types";

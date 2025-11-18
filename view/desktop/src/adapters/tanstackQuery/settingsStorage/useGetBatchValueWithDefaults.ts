@@ -3,9 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_BATCH_SETTINGS_VALUE_WITH_DEFAULTS_QUERY_KEY = "application.settings" as const;
 
-export const useGetBatchSettingsValueWithDefaults = <
-  T extends Record<string, object | boolean | number | string | null>,
->(
+export const useGetBatchValueWithDefaults = <T extends Record<string, object | boolean | number | string | null>>(
   keys: Array<keyof T>,
   defaults: { [K in keyof T]: T[K] }
 ) => {

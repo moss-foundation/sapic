@@ -1,10 +1,10 @@
 import { AllotmentHandle, LayoutPriority } from "allotment";
 import { ReactNode, useEffect, useRef } from "react";
 
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBar, SidebarEdgeHandler } from "@/workbench/ui/components";
 import { BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
 

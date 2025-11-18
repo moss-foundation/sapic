@@ -1,9 +1,9 @@
 import { settingsStorageService } from "@/app/services/settingsStorage";
-import { TypedValue } from "@/app/services/types";
+import { TypedValue } from "@/shared/types";
 import { UpdateValueOutput } from "@repo/settings-storage";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_GET_BATCH_SETTINGS_VALUE_WITH_DEFAULTS_QUERY_KEY } from "./useGetBatchSettingsValueWithDefaults";
+import { USE_GET_BATCH_SETTINGS_VALUE_WITH_DEFAULTS_QUERY_KEY } from "./useGetBatchValueWithDefaults";
 
 export const useUpdateSettingsValue = <T extends object | boolean | number | string | null>() => {
   const queryClient = useQueryClient();
