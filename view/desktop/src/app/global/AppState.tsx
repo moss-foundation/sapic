@@ -1,4 +1,5 @@
 import { useSyncSettings } from "@/hooks/app/useSyncSettings";
+
 import { PageLoader } from "@/workbench/ui/components";
 
 import ErrorBoundary from "../ErrorBoundary";
