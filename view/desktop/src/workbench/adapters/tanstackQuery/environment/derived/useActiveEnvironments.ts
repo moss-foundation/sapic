@@ -1,4 +1,4 @@
-import { useStreamEnvironments } from "../..";
+import { useStreamEnvironments } from "../useStreamEnvironments";
 
 export const useActiveEnvironments = () => {
   const { globalEnvironments, projectEnvironments } = useStreamEnvironments();

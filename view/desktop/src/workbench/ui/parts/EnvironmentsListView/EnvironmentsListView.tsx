@@ -1,6 +1,6 @@
 import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
-import { useStreamEnvironments } from "@/hooks";
 import { Icon, Scrollbar } from "@/lib/ui";
+import { useStreamEnvironments } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { GlobalEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GlobalEnvironmentsList/GlobalEnvironmentsList";
 import { GroupedEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/GroupedEnvironmentsList/GroupedEnvironmentsList";

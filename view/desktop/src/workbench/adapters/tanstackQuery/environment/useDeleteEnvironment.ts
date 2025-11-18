@@ -1,24 +1,15 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
+import { environmentIpc } from "@/infra/ipc/environment";
 import { DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { StreamEnvironmentsResult, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
-
-const deleteEnvironment = async (input: DeleteEnvironmentInput) => {
-  const result = await invokeTauriIpc<DeleteEnvironmentOutput>("delete_environment", { input });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
+import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
 export const useDeleteEnvironment = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: deleteEnvironment,
+  return useMutation<DeleteEnvironmentOutput, Error, DeleteEnvironmentInput>({
+    mutationFn: (input) => environmentIpc.deleteEnvironment(input),
     onSuccess: (data) => {
       queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
         return {

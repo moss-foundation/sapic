@@ -1,7 +1,8 @@
 import { useMemo } from "react";
 
-import { useStreamEnvironments, useStreamProjects } from "@/hooks";
+import { useStreamProjects } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import { useStreamEnvironments } from "@/workbench/adapters";
 
 import { GroupedEnvironments } from "../types";
 

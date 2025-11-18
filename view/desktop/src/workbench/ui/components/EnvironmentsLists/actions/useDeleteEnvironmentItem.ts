@@ -1,5 +1,5 @@
-import { useDeleteEnvironment, useStreamEnvironments } from "@/hooks";
-import { useBatchUpdateEnvironment } from "@/hooks/workspace/environment/useBatchUpdateEnvironment";
+import { useDeleteEnvironment, useStreamEnvironments } from "@/workbench/adapters";
+import { useBatchUpdateEnvironment } from "@/workbench/adapters/tanstackQuery/environment/useBatchUpdateEnvironment";
 import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 
 import { useGroupedEnvironments } from "../hooks/useGroupedEnvironments";

@@ -1,50 +1,34 @@
 import { useMemo } from "react";
 
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
+import { environmentIpc } from "@/infra/ipc/environment";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { StreamEnvironmentsEvent, StreamEnvironmentsOutput } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 
-import { useActiveWorkspace } from "..";
-
 export const USE_STREAMED_ENVIRONMENTS_QUERY_KEY = "streamedEnvironments";
-
-export interface StreamEnvironmentsResult {
-  environments: StreamEnvironmentsEvent[];
-  groups: StreamEnvironmentsOutput["groups"];
-}
 
 const startStreamingEnvironments = async (): Promise<StreamEnvironmentsResult> => {
   const environments: StreamEnvironmentsEvent[] = [];
 
-  const onEnvironmentEvent = new Channel<StreamEnvironmentsEvent>();
-
-  onEnvironmentEvent.onmessage = (environment) => {
+  const environmentEvent = new Channel<StreamEnvironmentsEvent>();
+  environmentEvent.onmessage = (environment) => {
     environments.push(environment);
   };
 
-  const groups = await invokeTauriIpc<StreamEnvironmentsOutput>("stream_environments", {
-    channel: onEnvironmentEvent,
-  });
+  const groups = await environmentIpc.streamEnvironments(environmentEvent);
 
-  if (groups.status === "error") {
-    throw new Error(String(groups.error));
-  }
-
-  return { environments, groups: groups.data.groups };
+  return { environments, groups: groups.groups };
 };
 
 export const useStreamEnvironments = () => {
   const queryClient = useQueryClient();
 
-  const { hasActiveWorkspace } = useActiveWorkspace();
-
-  const query = useQuery<StreamEnvironmentsResult, Error>({
+  const query = useQuery({
     queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY],
     queryFn: startStreamingEnvironments,
     placeholderData: { environments: [], groups: [] },
-    enabled: hasActiveWorkspace,
   });
 
   const clearEnvironmentsCacheAndRefetch = () => {

@@ -1,28 +1,18 @@
-import { StreamEnvironmentsResult } from "@/hooks/workspace/environment/useStreamEnvironments";
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
-import { BatchUpdateEnvironmentGroupInput } from "@repo/moss-workspace";
+import { StreamEnvironmentsResult } from "@/domains/environment/ipc";
+import { environmentIpc } from "@/infra/ipc/environment";
+import { BatchUpdateEnvironmentGroupInput, BatchUpdateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "..";
+import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
 const BATCH_UPDATE_ENVIRONMENT_GROUP_MUTATION_KEY = "batchUpdateEnvironmentGroup";
-
-const batchUpdateEnvironmentGroup = async (input: BatchUpdateEnvironmentGroupInput) => {
-  const result = await invokeTauriIpc("batch_update_environment_group", { input });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
 
 export const useBatchUpdateEnvironmentGroup = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<BatchUpdateEnvironmentOutput, Error, BatchUpdateEnvironmentGroupInput>({
     mutationKey: [BATCH_UPDATE_ENVIRONMENT_GROUP_MUTATION_KEY],
-    mutationFn: batchUpdateEnvironmentGroup,
+    mutationFn: (input) => environmentIpc.batchUpdateEnvironmentGroup(input),
     onSuccess: (_, variables) => {
       queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsResult) => {
         return {

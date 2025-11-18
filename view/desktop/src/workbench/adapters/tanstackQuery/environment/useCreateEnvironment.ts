@@ -1,24 +1,14 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { environmentIpc } from "@/infra/ipc/environment";
 import { CreateEnvironmentInput, CreateEnvironmentOutput } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
 
-const createEnvironment = async (input: CreateEnvironmentInput) => {
-  const result = await invokeTauriIpc<CreateEnvironmentOutput>("create_environment", { input });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
-
 export const useCreateEnvironment = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: createEnvironment,
+  return useMutation<CreateEnvironmentOutput, Error, CreateEnvironmentInput>({
+    mutationFn: (input) => environmentIpc.createEnvironment(input),
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
 

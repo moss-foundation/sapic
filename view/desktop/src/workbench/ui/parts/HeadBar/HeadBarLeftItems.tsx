@@ -1,7 +1,7 @@
 import { useActiveWorkspace, useStreamedProjectsWithResources } from "@/hooks";
-import { useActiveEnvironments } from "@/hooks/workspace/environment/derived/useActiveEnvironments";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { useActiveEnvironments } from "@/workbench/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";

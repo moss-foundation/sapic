@@ -1,16 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import {
-  useCreateEnvironment,
-  useFocusInputOnMount,
-  useStreamEnvironments,
-  useStreamProjects,
-  useValidateInput,
-} from "@/hooks";
+import { useFocusInputOnMount, useStreamProjects, useValidateInput } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
+import { useCreateEnvironment, useStreamEnvironments } from "@/workbench/adapters";
 import { RadioGroup } from "@/workbench/ui/components";
 import { useGroupedEnvironments } from "@/workbench/ui/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
