@@ -20,11 +20,16 @@ import { StreamEnvironmentsResult } from "./types";
 
 interface IEnvironmentService {
   activateEnvironment: (input: ActivateEnvironmentInput) => Promise<ActivateEnvironmentOutput>;
+
   batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
   batchUpdateEnvironmentGroup: (input: BatchUpdateEnvironmentGroupInput) => Promise<BatchUpdateEnvironmentOutput>;
+
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
+
   streamEnvironments: () => Promise<StreamEnvironmentsResult>;
+
   updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
   updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;
 }

@@ -29,19 +29,11 @@ import {
 } from "@repo/moss-workspace";
 import { Channel } from "@tauri-apps/api/core";
 
-export * from "@/infra/ipc/project";
-
+// prettier-ignore
 interface IProjectService {
-  batchCreateProjectResource: (
-    projectId: string,
-    input: BatchCreateResourceInput
-  ) => Promise<BatchCreateResourceOutput>;
+  batchCreateProjectResource: (projectId: string, input: BatchCreateResourceInput) => Promise<BatchCreateResourceOutput>;
   batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
-  batchUpdateProjectResource: (
-    projectId: string,
-    input: BatchUpdateResourceInput,
-    channelEvent: Channel<BatchUpdateResourceEvent>
-  ) => Promise<BatchUpdateResourceOutput>;
+  batchUpdateProjectResource: (projectId: string, input: BatchUpdateResourceInput, channelEvent: Channel<BatchUpdateResourceEvent>) => Promise<BatchUpdateResourceOutput>;
 
   createProject: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
   createProjectResource: (projectId: string, input: CreateResourceInput) => Promise<CreateResourceOutput>;
@@ -53,11 +45,7 @@ interface IProjectService {
 
   importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
-  streamProjectResources: (
-    projectId: string,
-    channelEvent: Channel<StreamResourcesEvent>,
-    path?: string
-  ) => Promise<void>;
+  streamProjectResources: (projectId: string, channelEvent: Channel<StreamResourcesEvent>, path?: string) => Promise<void>;
   streamProjects: (channelEvent: Channel<StreamProjectsEvent>) => Promise<StreamProjectsEvent[]>;
 
   updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
