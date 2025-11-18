@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useUpdateProjectResource } from "@/hooks";
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";

@@ -1,6 +1,9 @@
+import { useActiveEnvironments } from "@/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
+import { useStreamedProjectsWithResources } from "@/adapters/tanstackQuery/project";
 import { useActiveWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";
 
@@ -17,8 +20,19 @@ export interface HeadBarLeftItemsProps {
 export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuAction, os }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
-  const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
-  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+  const { activeWorkspace } = useActiveWorkspace();
+  const { selectedWorkspaceMenuItems } = useWorkspaceMenu();
+  const { data: streamedProjectsWithResources } = useStreamedProjectsWithResources();
+  const { activeGlobalEnvironment, activeProjectEnvironments } = useActiveEnvironments();
+  const { activePanelId } = useTabbedPaneStore();
+
+  const activeProject = streamedProjectsWithResources?.find((project) =>
+    project.resources.some((resource) => resource.id === activePanelId)
+  );
+
+  const currentProjectEnvironment = activeProjectEnvironments.find(
+    (environment) => environment.projectId === activeProject?.id
+  );
 
   return (
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
@@ -35,23 +49,24 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
 
       <NavigationButtons onBack={() => {}} onForward={() => {}} canGoBack={true} canGoForward={true} />
 
-      <ActionMenu.Root>
-        <ActionMenu.Trigger asChild>
-          <IconLabelButton
-            rightIcon="ChevronDown"
-            title={activeWorkspace?.name || "No workspace selected"}
-            placeholder="No workspace selected"
-            showPlaceholder={!hasActiveWorkspace}
-            labelClassName="text-md"
-            className="hover:!background-(--moss-toolbarItem-background-hover) h-[24px] min-w-[46px]"
-          />
-        </ActionMenu.Trigger>
-        <ActionMenu.Content>
-          {hasActiveWorkspace
-            ? selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))
-            : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
-        </ActionMenu.Content>
-      </ActionMenu.Root>
+      <div className="flex items-center">
+        <ActionMenu.Root>
+          <ActionMenu.Trigger asChild>
+            <IconLabelButton title={activeWorkspace?.name} placeholder="No workspace selected" />
+          </ActionMenu.Trigger>
+          <ActionMenu.Content>
+            {selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
+          </ActionMenu.Content>
+        </ActionMenu.Root>
+
+        <Icon icon="ChevronRight" />
+
+        <IconLabelButton title={activeGlobalEnvironment?.name} placeholder="No environment" />
+
+        <Icon icon="ChevronRight" />
+
+        <IconLabelButton title={currentProjectEnvironment?.name} placeholder="No environment" />
+      </div>
     </div>
   );
 };

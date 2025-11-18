@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { useUpdateProjectResource } from "@/hooks";
+import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { swapListByIndexWithEdge } from "@/workbench/utils/swapListByIndexWithEdge";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";

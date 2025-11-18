@@ -1,6 +1,6 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { useProjectsTrees } from "@/hooks";
+import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { PageContent } from "@/workbench/ui/components";
 import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import { ResourceKind } from "@repo/moss-project";
@@ -14,7 +14,7 @@ export interface FolderSettingsParams {
 }
 
 export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSettingsParams>) => {
-  const { projectsTrees: projectsTrees } = useProjectsTrees();
+  const { projectsTrees } = useProjectsTrees();
   const project = projectsTrees?.find((col) => col.id === params?.projectId);
   const node = project ? findNodeInProject(project, params?.node?.id) : undefined;
 
