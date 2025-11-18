@@ -1,32 +1,23 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { projectIpc } from "@/infra/ipc/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/moss-workspace";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useStreamedProjectsWithResources } from "..";
+import { useStreamedProjectsWithResources } from "./derivedHooks/useStreamedProjectsWithResources";
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "./useStreamProjects";
 
 export interface UseDeleteProjectInput {
   id: string;
 }
 
-const deleteStreamedProject = async ({ id }: DeleteProjectInput) => {
-  const result = await invokeTauriIpc<DeleteProjectOutput>("delete_project", { input: { id } });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
-
 export const useDeleteProject = () => {
   const queryClient = useQueryClient();
+
   const { api } = useTabbedPaneStore();
   const { data: projectsWithResources } = useStreamedProjectsWithResources();
 
-  return useMutation({
-    mutationFn: deleteStreamedProject,
+  return useMutation<DeleteProjectOutput, Error, DeleteProjectInput>({
+    mutationFn: (input) => projectIpc.deleteProject(input),
     onSuccess: (data) => {
       queryClient.setQueryData([USE_STREAM_PROJECTS_QUERY_KEY], (old: StreamProjectsEvent[]) => {
         return old.filter((project) => project.id !== data.id);

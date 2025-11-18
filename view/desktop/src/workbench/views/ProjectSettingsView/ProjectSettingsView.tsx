@@ -1,10 +1,10 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
-import { useStreamProjects } from "@/hooks";
-import { useRenameProjectForm } from "@/hooks/useRenameProjectForm";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
+import { useStreamProjects } from "@/workbench/adapters/tanstackQuery/project";
+import { useRenameProjectForm } from "@/workbench/hooks/useRenameProjectForm";
 import { PageHeader, PageView } from "@/workbench/ui/components/PageView";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 

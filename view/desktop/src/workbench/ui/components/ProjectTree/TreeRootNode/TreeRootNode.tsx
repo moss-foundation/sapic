@@ -1,7 +1,7 @@
 import { useRef } from "react";
 
-import { useStreamProjects } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
+import { useStreamProjects } from "@/workbench/adapters/tanstackQuery/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectTreeRootNodeProps } from "../types";

@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { projectIpc } from "@/infra/ipc/project";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
@@ -13,15 +13,7 @@ export const startStreamingProjectResources = async (
     resources.push(projectResource);
   };
 
-  const result = await invokeTauriIpc("stream_project_resources", {
-    projectId,
-    channel: onProjectResourceEvent,
-    input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",
-  });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
+  await projectIpc.streamProjectResources(projectId, onProjectResourceEvent, path);
 
   return resources;
 };

@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/hooks";
 import { cn } from "@/utils";
+import {
+  useCreateProject,
+  useCreateProjectResource,
+  useDeleteProjectResource,
+  useStreamProjects,
+} from "@/workbench/adapters/tanstackQuery/project";
 import { IconInline } from "@/workbench/ui/components/IconInline";
 import {
   convertResourceInfoToCreateInput,

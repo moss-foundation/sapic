@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { projectIpc } from "@/infra/ipc/project";
 import { CreateResourceInput, CreateResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -10,24 +10,11 @@ export interface UseCreateProjectResourceInputProps {
   input: CreateResourceInput;
 }
 
-const createProjectResource = async ({ projectId, input }: UseCreateProjectResourceInputProps) => {
-  const result = await invokeTauriIpc<CreateResourceOutput>("create_project_resource", {
-    projectId: projectId,
-    input,
-  });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
-
 export const useCreateProjectResource = () => {
   const queryClient = useQueryClient();
 
   return useMutation<CreateResourceOutput, Error, UseCreateProjectResourceInputProps>({
-    mutationFn: createProjectResource,
+    mutationFn: ({ projectId, input }) => projectIpc.createProjectResource(projectId, input),
     onSuccess: async (data, variables) => {
       const newResource = await createProjectResourceForCache(data.id, variables.input);
 

@@ -1,4 +1,4 @@
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { projectIpc } from "@/infra/ipc/project";
 import { StreamResourcesEvent, UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -10,24 +10,11 @@ export interface UseUpdateProjectResourceInput {
   updatedResource: UpdateResourceInput;
 }
 
-const updateProjectResource = async ({ projectId, updatedResource }: UseUpdateProjectResourceInput) => {
-  const result = await invokeTauriIpc<UpdateResourceOutput>("update_project_resource", {
-    projectId: projectId,
-    input: updatedResource,
-  });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
-
 export const useUpdateProjectResource = () => {
   const queryClient = useQueryClient();
 
   return useMutation<UpdateResourceOutput, Error, UseUpdateProjectResourceInput>({
-    mutationFn: updateProjectResource,
+    mutationFn: ({ projectId, updatedResource }) => projectIpc.updateProjectResource(projectId, updatedResource),
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],

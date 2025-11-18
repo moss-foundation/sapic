@@ -1,4 +1,4 @@
-import { useStreamProjects } from "@/hooks";
+import { useStreamProjects } from "@/workbench/adapters/tanstackQuery/project";
 import { TabbedPane } from "@/workbench/ui/parts";
 
 interface WorkspaceProps {

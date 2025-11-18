@@ -1,6 +1,9 @@
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, useDeleteProjectResource } from "@/hooks";
-import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import {
+  USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
+  useDeleteProjectResource,
+} from "@/workbench/adapters/tanstackQuery/project";
+import { useBatchUpdateProjectResource } from "@/workbench/adapters/tanstackQuery/project/useBatchUpdateProjectResource";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 

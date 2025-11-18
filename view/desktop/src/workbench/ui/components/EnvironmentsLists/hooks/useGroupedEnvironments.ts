@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
-import { useStreamProjects } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { useStreamEnvironments } from "@/workbench/adapters";
+import { useStreamProjects } from "@/workbench/adapters/tanstackQuery/project";
 
 import { GroupedEnvironments } from "../types";
 

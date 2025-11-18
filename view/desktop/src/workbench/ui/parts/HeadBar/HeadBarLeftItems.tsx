@@ -1,7 +1,8 @@
-import { useActiveWorkspace, useStreamedProjectsWithResources } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { useActiveEnvironments } from "@/workbench/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
+import { useStreamedProjectsWithResources } from "@/workbench/adapters/tanstackQuery/project";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";
@@ -19,8 +20,8 @@ export interface HeadBarLeftItemsProps {
 export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuAction, os }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
-  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
-  const { workspaceMenuItems, selectedWorkspaceMenuItems } = useWorkspaceMenu();
+  const { activeWorkspace } = useActiveWorkspace();
+  const { selectedWorkspaceMenuItems } = useWorkspaceMenu();
   const { data: streamedProjectsWithResources } = useStreamedProjectsWithResources();
   const { activeGlobalEnvironment, activeProjectEnvironments } = useActiveEnvironments();
   const { activePanelId } = useTabbedPaneStore();
@@ -54,9 +55,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
             <IconLabelButton title={activeWorkspace?.name} placeholder="No workspace selected" />
           </ActionMenu.Trigger>
           <ActionMenu.Content>
-            {hasActiveWorkspace
-              ? selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))
-              : workspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
+            {selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
           </ActionMenu.Content>
         </ActionMenu.Root>
 
