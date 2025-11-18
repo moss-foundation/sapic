@@ -29,7 +29,6 @@ const KNOWN_PACKAGES = [
   "moss-git",
   "moss-user",
   "moss-language",
-  "moss-extension",
 ];
 
 interface Config {
