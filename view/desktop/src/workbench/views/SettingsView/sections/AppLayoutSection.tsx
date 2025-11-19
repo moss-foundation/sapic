@@ -4,7 +4,6 @@ import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
-import { ActivitybarPosition } from "@repo/moss-workspace";
 
 import { Section } from "../Section";
 
@@ -72,7 +71,7 @@ const ActivityBarPositionSection = () => {
   const { data: appState } = useDescribeApp();
   //TODO later we should handle the JsonValue differently
   const activityBarPosition =
-    (appState?.configuration.contents.activityBarPosition as ActivitybarPosition) || ACTIVITYBAR_POSITION.DEFAULT;
+    (appState?.configuration.contents.activityBarPosition as ACTIVITYBAR_POSITION) || ACTIVITYBAR_POSITION.DEFAULT;
 
   const { mutate: updateConfiguration } = useUpdateConfiguration();
 
@@ -103,7 +102,7 @@ const ActivityBarPositionSection = () => {
     },
   ];
 
-  const handleActivityBarPositionChange = (position: ActivitybarPosition) => {
+  const handleActivityBarPositionChange = (position: ACTIVITYBAR_POSITION) => {
     updateConfiguration({
       key: "activityBarPosition",
       value: position,
