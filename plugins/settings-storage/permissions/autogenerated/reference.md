@@ -19,7 +19,6 @@ Default permissions for the settings-storage plugin
 <th>Description</th>
 </tr>
 
-
 <tr>
 <td>
 

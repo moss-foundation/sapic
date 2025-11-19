@@ -3,19 +3,6 @@
 import { changeJsonValueSchema, changePathSchema, changeStringSchema, jsonValueSchema } from "@repo/moss-bindingutils";
 import { fileStatusSchema } from "@repo/moss-git";
 import { z } from "zod";
-import {
-  activitybarPositionSchema,
-  editorGridOrientationSchema,
-  panelRendererSchema,
-  sidebarPositionSchema,
-} from "./primitives.zod";
-import { type EditorGridNode } from "./types";
-
-export const activitybarItemStateInfoSchema = z.object({
-  id: z.string(),
-  order: z.number(),
-  visible: z.boolean(),
-});
 
 export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
@@ -50,27 +37,6 @@ export const createProjectGitParamsSchema = z.union([
     "gitLab": gitLabCreateParamsSchema,
   }),
 ]);
-
-export const editorGridLeafDataSchema = z.object({
-  views: z.array(z.string()),
-  activeView: z.string(),
-  id: z.string(),
-});
-
-export const editorGridNodeSchema: z.ZodSchema<EditorGridNode> = z.lazy(() =>
-  z.union([
-    z.object({
-      "type": z.literal("branch"),
-      data: z.array(editorGridNodeSchema),
-      size: z.number(),
-    }),
-    z.object({
-      "type": z.literal("leaf"),
-      data: editorGridLeafDataSchema,
-      size: z.number(),
-    }),
-  ])
-);
 
 export const environmentGroupSchema = z.object({
   projectId: z.string(),
@@ -132,11 +98,6 @@ export const importProjectSourceSchema = z.union([
   }),
 ]);
 
-export const panelPartStateInfoSchema = z.object({
-  size: z.number(),
-  visible: z.boolean(),
-});
-
 export const updateEnvironmentGroupParamsSchema = z.object({
   projectId: z.string(),
   expanded: z.boolean().optional(),
@@ -151,12 +112,6 @@ export const vcsInfoSchema = z.union([
     "gitLab": gitLabVcsInfoSchema,
   }),
 ]);
-export const activitybarPartStateInfoSchema = z.object({
-  lastActiveContainerId: z.string().optional(),
-  position: activitybarPositionSchema,
-  items: z.array(activitybarItemStateInfoSchema),
-});
-
 export const addVariableParamsSchema = z.object({
   name: z.string(),
   globalValue: jsonValueSchema,
@@ -172,32 +127,6 @@ export const createProjectParamsSchema = z.object({
   externalPath: z.string().optional(),
   gitParams: createProjectGitParamsSchema.optional(),
   iconPath: z.string().optional(),
-});
-
-export const editorGridStateSchema = z.object({
-  root: editorGridNodeSchema,
-  width: z.number(),
-  height: z.number(),
-  orientation: editorGridOrientationSchema,
-});
-
-export const editorPanelStateSchema = z.object({
-  id: z.string(),
-  contentComponent: z.string().optional(),
-  tabComponent: z.string().optional(),
-  title: z.string().optional(),
-  renderer: panelRendererSchema.optional(),
-  params: z.record(z.string(), jsonValueSchema),
-  minimumWidth: z.number().optional(),
-  minimumHeight: z.number().optional(),
-  maximumWidth: z.number().optional(),
-  maximumHeight: z.number().optional(),
-});
-
-export const editorPartStateInfoSchema = z.object({
-  grid: editorGridStateSchema,
-  panels: z.record(z.string(), editorPanelStateSchema),
-  activeGroup: z.string().optional(),
 });
 
 export const entryChangeSchema = z.object({
@@ -221,12 +150,6 @@ export const importProjectParamsSchema = z.object({
   order: z.number(),
   source: importProjectSourceSchema,
   iconPath: z.string().optional(),
-});
-
-export const sidebarPartStateInfoSchema = z.object({
-  position: sidebarPositionSchema,
-  size: z.number(),
-  visible: z.boolean(),
 });
 
 export const updateVariableParamsSchema = z.object({
@@ -256,13 +179,6 @@ export const environmentInfoSchema = z.object({
   order: z.number(),
   color: z.string().optional(),
   variables: z.array(variableInfoSchema),
-});
-
-export const layoutsSchema = z.object({
-  editor: editorPartStateInfoSchema.optional(),
-  sidebar: sidebarPartStateInfoSchema.optional(),
-  panel: panelPartStateInfoSchema.optional(),
-  activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
 export const updateEnvironmentParamsSchema = z.object({
