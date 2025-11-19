@@ -1,12 +1,14 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
 use moss_app_delegate::AppDelegate;
-use moss_applib::{context::AsyncContext, mock::MockAppRuntime};
+use moss_applib::mock::MockAppRuntime;
 use moss_project::{
     dirs,
     models::{events::StreamResourcesEvent, operations::StreamResourcesInput},
 };
+use sapic_core::context::AsyncContext;
 use std::{
     path::PathBuf,
     sync::{Arc, Mutex},

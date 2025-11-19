@@ -20,6 +20,7 @@ members = [
     "crates/ipc",
     "crates/window2",
     "crates/runtime",
+    "crates/core",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -43,7 +44,6 @@ members = [
     "crates/moss-user",
     "crates/moss-server-api",
     "crates/moss-id-macro",
-    "crates/moss-extension",
     "crates/moss-extension-points", 
     "crates/moss-language",
     "crates/moss-storage2",
@@ -60,7 +60,7 @@ members = [
     # Tools
     #
     "tools/xtask",
-    "tools/cargo-new-ts", 
+    "tools/cargo-new-ts",
 ]
 
 [workspace.dependencies]
@@ -82,6 +82,7 @@ sapic-window2 = { path = "crates/window2", package = "window2" }
 sapic-base = { path = "crates/base", package = "base" }
 sapic-platform = { path = "crates/platform", package = "platform" }
 sapic-ipc = { path = "crates/ipc", package = "ipc" }
+sapic-core = { path = "crates/core", package = "core" }
 
 sapic-window = { path = "crates/window", package = "window" }
 
@@ -110,7 +111,6 @@ moss_id_macro = { path = "crates/moss-id-macro"}
 moss_user = { path = "crates/moss-user" }
 moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
-moss_extension = { path = "crates/moss-extension" }
 moss_extension_points = { path = "crates/moss-extension-points" }
 moss_language = { path = "crates/moss-language" }
 moss_storage2 = { path = "crates/moss-storage2" }

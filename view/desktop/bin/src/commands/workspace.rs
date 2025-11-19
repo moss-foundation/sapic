@@ -3,7 +3,7 @@ use moss_workspace::{
     models::{events::*, operations::*},
 };
 use sapic_ipc::TauriResult;
-use tauri::{State, Window, ipc::Channel as TauriChannel};
+use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
 
@@ -151,7 +151,7 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn update_project<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: UpdateProjectInput,
@@ -170,7 +170,7 @@ pub async fn update_project<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn archive_project<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: ArchiveProjectInput,
@@ -189,7 +189,7 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn unarchive_project<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: UnarchiveProjectInput,
@@ -208,7 +208,7 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn batch_update_project<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: BatchUpdateProjectInput,
@@ -227,7 +227,7 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn list_changes<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
@@ -287,7 +287,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn update_environment<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: UpdateEnvironmentInput,
@@ -306,7 +306,7 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn batch_update_environment<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: BatchUpdateEnvironmentInput,
@@ -344,7 +344,7 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn update_environment_group<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: UpdateEnvironmentGroupInput,
@@ -363,7 +363,7 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app), fields(window = window.label()))]
 pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
-    ctx: State<'_, moss_applib::context::AsyncContext>,
+    ctx: AsyncContext<'a>,
     app: App<'a, R>,
     window: Window<R>,
     input: BatchUpdateEnvironmentGroupInput,

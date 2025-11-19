@@ -1,27 +1,21 @@
 use joinerror::OptionExt;
 use moss_applib::errors::NotFound;
-use moss_fs::FileSystem;
 use sapic_base::theme::types::{ColorThemeInfo, primitives::ThemeId};
-use sapic_platform::theme::loader::ThemeLoader;
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::collections::HashMap;
 
-use super::theme_registry::ThemeRegistry;
+use super::{DynThemeLoader, DynThemeRegistry};
 
 pub struct ThemeService {
-    loader: ThemeLoader,
-    registry: Arc<dyn ThemeRegistry>,
+    loader: DynThemeLoader,
+    registry: DynThemeRegistry,
 }
 
 impl ThemeService {
     pub async fn new(
-        resource_dir: PathBuf,
-        fs: Arc<dyn FileSystem>,
-        registry: Arc<dyn ThemeRegistry>,
+        registry: DynThemeRegistry,
+        loader: DynThemeLoader,
     ) -> joinerror::Result<Self> {
-        Ok(Self {
-            registry,
-            loader: ThemeLoader::new(fs, resource_dir.join("policies/theme.rego")),
-        })
+        Ok(Self { registry, loader })
     }
 
     pub async fn themes(&self) -> HashMap<ThemeId, ColorThemeInfo> {

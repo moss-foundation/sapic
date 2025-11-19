@@ -215,7 +215,6 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
-          - moss_extension
           - moss_extension_points
           - moss_language
           - moss_storage2
@@ -339,7 +338,6 @@ jobs:
           - moss_user
           - moss_edit
           - moss_server_api
-          - moss_extension
           - moss_extension_points
           - moss_language
           - moss_storage2

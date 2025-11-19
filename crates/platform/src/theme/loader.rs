@@ -1,7 +1,9 @@
+use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_fs::FileSystem;
 use regorus::Value as RegoValue;
 use sapic_base::theme::manifest::ThemeFile;
+use sapic_system::theme::ThemeLoader as ThemeLoaderPort;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -13,21 +15,8 @@ pub struct ThemeLoader {
 }
 
 impl ThemeLoader {
-    pub fn new(fs: Arc<dyn FileSystem>, policy_path: PathBuf) -> Self {
-        Self { fs, policy_path }
-    }
-
-    pub async fn load(&self, path: &Path) -> joinerror::Result<ThemeFile> {
-        let rdr = self.fs.open_file(path).await?;
-        let file: ThemeFile = serde_json::from_reader(rdr)?;
-
-        let mut buf = String::new();
-        let mut policy_rdr = self.fs.open_file(&self.policy_path).await?;
-        policy_rdr.read_to_string(&mut buf)?;
-
-        self.validate(&file, buf)?;
-
-        Ok(file)
+    pub fn new(fs: Arc<dyn FileSystem>, policy_path: PathBuf) -> Arc<Self> {
+        Arc::new(Self { fs, policy_path })
     }
 
     fn validate(&self, theme: &ThemeFile, policy_content: String) -> joinerror::Result<()> {
@@ -57,5 +46,21 @@ impl ThemeLoader {
                 errors.join("\n")
             )))
         }
+    }
+}
+
+#[async_trait]
+impl ThemeLoaderPort for ThemeLoader {
+    async fn load(&self, path: &Path) -> joinerror::Result<ThemeFile> {
+        let rdr = self.fs.open_file(path).await?;
+        let file: ThemeFile = serde_json::from_reader(rdr)?;
+
+        let mut buf = String::new();
+        let mut policy_rdr = self.fs.open_file(&self.policy_path).await?;
+        policy_rdr.read_to_string(&mut buf)?;
+
+        self.validate(&file, buf)?;
+
+        Ok(file)
     }
 }

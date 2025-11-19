@@ -23,6 +23,7 @@ compression = ["tauri/compression"]
 devtools = ["tauri/devtools"]
 
 [dependencies]
+sapic-core = { workspace = true }
 sapic-app = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }

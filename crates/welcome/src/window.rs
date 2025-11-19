@@ -3,7 +3,8 @@ pub mod operations;
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, context::Canceller, errors::TauriResultExt};
+use moss_applib::{AppRuntime, errors::TauriResultExt};
+use sapic_core::context::Canceller;
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 

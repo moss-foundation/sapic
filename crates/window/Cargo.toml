@@ -29,7 +29,6 @@ moss_logging.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
-moss_extension.workspace = true
 moss_extension_points.workspace = true
 moss_language.workspace = true
 moss_storage2.workspace = true

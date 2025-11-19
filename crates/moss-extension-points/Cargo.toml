@@ -12,7 +12,6 @@ sapic-base.workspace = true
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_logging.workspace = true
-moss_extension.workspace = true
 moss_fs.workspace = true
 moss_project.workspace = true
 moss_language.workspace = true

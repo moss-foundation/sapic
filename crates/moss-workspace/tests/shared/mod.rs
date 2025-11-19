@@ -1,12 +1,9 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
 #![cfg(feature = "integration-tests")]
 
 use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    context::{AsyncContext, MutableContext},
-    mock::MockAppRuntime,
-};
+use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
 use moss_project::models::primitives::ProjectId;
@@ -25,6 +22,7 @@ use moss_workspace::{
 };
 use rand::Rng;
 use reqwest::ClientBuilder as HttpClientBuilder;
+use sapic_core::context::{AsyncContext, MutableContext};
 use std::{
     collections::HashMap,
     fs,

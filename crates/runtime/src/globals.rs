@@ -1,8 +1,7 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use sapic_system::{
-    configuration::configuration_registry::ConfigurationRegistry,
-    theme::theme_registry::ThemeRegistry,
+    configuration::configuration_registry::ConfigurationRegistry, theme::ThemeRegistry,
 };
 use std::sync::Arc;
 

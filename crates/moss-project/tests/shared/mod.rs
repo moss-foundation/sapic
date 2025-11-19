@@ -1,10 +1,8 @@
+#![allow(deprecated)] // TODO: remove once we get rid of old context types
 #![cfg(feature = "integration-tests")]
 
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    context::{AsyncContext, MutableContext},
-    mock::MockAppRuntime,
-};
+use moss_applib::mock::MockAppRuntime;
 use moss_fs::RealFileSystem;
 use moss_project::{
     ProjectBuilder,
@@ -19,6 +17,7 @@ use moss_project::{
 use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
+use sapic_core::context::{AsyncContext, MutableContext};
 use std::{
     path::{Path, PathBuf},
     pin::Pin,

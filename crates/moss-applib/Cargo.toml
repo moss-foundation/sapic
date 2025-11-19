@@ -5,6 +5,8 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-core.workspace = true
+
 tauri = { workspace = true, features = ["wry"] }
 tokio = { workspace = true, features = ["full"] }
 anyhow.workspace = true

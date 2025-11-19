@@ -1,5 +1,4 @@
 use derive_more::Deref;
-use moss_extension::models::types::ExtensionInfo;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
@@ -11,17 +10,6 @@ use ts_rs::TS;
 use validator::Validate;
 
 use crate::models::{primitives::*, types::*};
-
-/// DEPRECATED
-/// @category Operation
-// #[derive(Debug, Clone, Serialize, TS, Validate)]
-// #[ts(optional_fields)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct ListConfigurationSchemasOutput {
-//     #[ts(type = "ConfigurationSchema[]")]
-//     pub schemas: Vec<ConfigurationSchema>,
-// }
 
 /// DEPRECATED
 /// @category Operation
@@ -120,32 +108,6 @@ pub struct DescribeAppOutput {
     pub profile: Option<ProfileInfo>,
     pub configuration: Configuration,
 }
-
-// ########################################################
-// ###                      Theme                       ###
-// ########################################################
-
-// /// @category Operation
-// #[derive(Debug, Deserialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct GetColorThemeInput {
-//     #[ts(type = "ThemeId")]
-//     pub id: ThemeId,
-// }
-
-// /// @category Operation
-// #[derive(Debug, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct GetColorThemeOutput {
-//     pub css_content: String,
-// }
-
-// /// @category Operation
-// #[derive(Debug, Serialize, TS)]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct ListColorThemesOutput(pub Vec<ColorThemeInfo>);
 
 // #########################################################
 // ###                      Log                          ###
@@ -330,11 +292,3 @@ pub struct CloseWorkspaceOutput {
     /// The id of the workspace that was closed.
     pub id: WorkspaceId,
 }
-
-// #########################################################
-// ###                    Extensions                     ###
-// #########################################################
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListExtensionsOutput(#[ts(type = "ExtensionInfo[]")] pub Vec<ExtensionInfo>);

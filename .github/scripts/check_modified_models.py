@@ -19,7 +19,6 @@ CRATES_WITH_BINDINGS = {
     "moss-git",
     "moss-user",
     "moss-language",
-    "moss-extension"
 }
 
 if __name__ == "__main__":
