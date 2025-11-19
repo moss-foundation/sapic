@@ -2,6 +2,7 @@ use moss_environment::models::{
     primitives::EnvironmentId,
     types::{AddVariableParams, VariableInfo},
 };
+use moss_project::models::primitives::ProjectId;
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -10,7 +11,7 @@ use std::{
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{primitives::*, types::*};
+use crate::models::types::*;
 
 // ------------------------------ //
 // Project
@@ -203,27 +204,6 @@ pub struct DescribeEnvironmentInput {
 pub struct DescribeEnvironmentOutput {
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeWorkspaceOutput {
-    pub layouts: Layouts,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateLayoutInput {
-    pub editor: Option<EditorPartStateInfo>,
-    pub sidebar: Option<SidebarPartStateInfo>,
-    pub panel: Option<PanelPartStateInfo>,
-    pub activitybar: Option<ActivitybarPartStateInfo>,
 }
 
 /// @category Operation

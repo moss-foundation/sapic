@@ -1,18 +1,17 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use crate::shared::setup_test_workspace;
+use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
-    events::StreamProjectsEvent, operations::CreateProjectInput, primitives::ProjectId,
-    types::CreateProjectParams,
+    events::StreamProjectsEvent, operations::CreateProjectInput, types::CreateProjectParams,
 };
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
 use tauri::ipc::{Channel, InvokeResponseBody};
-
-use crate::shared::setup_test_workspace;
 
 #[tokio::test]
 async fn stream_projects_empty_workspace() {

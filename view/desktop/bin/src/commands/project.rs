@@ -1,8 +1,12 @@
-use crate::commands::primitives::*;
-use moss_project::models::{events::*, operations::*, primitives::ResourceId};
-use moss_workspace::models::primitives::ProjectId;
+use moss_project::models::{
+    events::*,
+    operations::*,
+    primitives::{ProjectId, ResourceId},
+};
 use sapic_ipc::TauriResult;
 use tauri::{Window, ipc::Channel as TauriChannel};
+
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]

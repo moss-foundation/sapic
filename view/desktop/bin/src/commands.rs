@@ -18,8 +18,7 @@ use moss_applib::{
     AppRuntime,
     errors::{FailedPrecondition, NotFound, Unavailable},
 };
-use moss_project::Project;
-use moss_workspace::models::primitives::ProjectId;
+use moss_project::{Project, models::primitives::ProjectId};
 use primitives::Options;
 use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};

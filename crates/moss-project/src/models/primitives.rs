@@ -4,6 +4,7 @@ use std::path::PathBuf;
 use ts_rs::TS;
 
 ids!([
+    ProjectId,
     ResourceId,
     QueryParamId,
     PathParamId,

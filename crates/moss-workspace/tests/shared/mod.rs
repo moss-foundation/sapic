@@ -6,6 +6,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_user::profile::Profile;
@@ -15,11 +16,8 @@ use moss_workspace::{
     models::{
         events::StreamProjectsEvent,
         operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
-        primitives::{EditorGridOrientation, PanelRenderer, ProjectId, WorkspaceId},
-        types::{
-            CreateProjectParams, EditorGridLeafData, EditorGridNode, EditorGridState,
-            EditorPanelState, EditorPartStateInfo,
-        },
+        primitives::WorkspaceId,
+        types::CreateProjectParams,
     },
 };
 use rand::Rng;
@@ -187,69 +185,6 @@ pub async fn setup_external_project(
         .unwrap();
 
     (project_name, external_path)
-}
-
-pub fn _create_simple_editor_state() -> EditorPartStateInfo {
-    // Create a simple grid with one leaf
-    let leaf_data = EditorGridLeafData {
-        views: vec!["panel1".to_string()],
-        active_view: "panel1".to_string(),
-        id: "group1".to_string(),
-    };
-
-    let grid_node = EditorGridNode::Leaf {
-        data: leaf_data,
-        size: 100.0,
-    };
-
-    // Create grid state
-    let grid = EditorGridState {
-        root: grid_node,
-        width: 800.0,
-        height: 600.0,
-        orientation: EditorGridOrientation::Horizontal,
-    };
-
-    // Create some panels
-    let mut panels = HashMap::new();
-
-    panels.insert(
-        "panel1".to_string(),
-        EditorPanelState {
-            id: "panel1".to_string(),
-            content_component: Some("TestComponent".to_string()),
-            tab_component: None,
-            title: Some("Test Panel".to_string()),
-            renderer: Some(PanelRenderer::OnlyWhenVisible),
-            params: Some(HashMap::new()),
-            minimum_width: None,
-            minimum_height: None,
-            maximum_width: None,
-            maximum_height: None,
-        },
-    );
-
-    panels.insert(
-        "panel2".to_string(),
-        EditorPanelState {
-            id: "panel2".to_string(),
-            content_component: Some("AnotherComponent".to_string()),
-            tab_component: None,
-            title: Some("Another Panel".to_string()),
-            renderer: None,
-            params: None,
-            minimum_width: Some(200.0),
-            minimum_height: Some(150.0),
-            maximum_width: None,
-            maximum_height: None,
-        },
-    );
-
-    EditorPartStateInfo {
-        grid,
-        panels,
-        active_group: Some("group1".to_string()),
-    }
 }
 
 #[allow(unused)]

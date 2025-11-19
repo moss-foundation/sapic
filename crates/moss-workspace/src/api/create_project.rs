@@ -1,12 +1,10 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_project::models::primitives::ProjectId;
 use validator::Validate;
 
 use crate::{
-    models::{
-        operations::{CreateProjectInput, CreateProjectOutput},
-        primitives::ProjectId,
-    },
+    models::operations::{CreateProjectInput, CreateProjectOutput},
     workspace::Workspace,
 };
 

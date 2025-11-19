@@ -1,6 +1,5 @@
 use moss_environment::models::primitives::EnvironmentId;
-
-use crate::models::primitives::ProjectId;
+use moss_project::models::primitives::ProjectId;
 
 pub static KEY_EXPANDED_ITEMS: &'static str = "expandedItems";
 

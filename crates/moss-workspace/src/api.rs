@@ -8,7 +8,6 @@ pub mod create_project;
 pub mod delete_environment;
 pub mod delete_project;
 pub mod describe_project;
-pub mod describe_workspace;
 pub mod export_project;
 pub mod import_project;
 pub mod list_changes;
@@ -17,7 +16,6 @@ pub mod stream_projects;
 pub mod unarchive_project;
 pub mod update_environment;
 pub mod update_environment_group;
-pub mod update_layout;
 pub mod update_project;
 
 use moss_applib::AppRuntime;

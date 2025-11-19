@@ -1,7 +1,6 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
-use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
@@ -17,13 +16,15 @@ use moss_project::{
             },
         },
     },
-    storage::segments::SEGKEY_RESOURCE_ENTRY,
+    storage::key_resource_order,
 };
-use moss_storage::storage::operations::GetItem;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use serde_json::{Value as JsonValue, json};
 use std::path::PathBuf;
+
+use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};
 
 #[tokio::test]
 async fn create_dir_entry_success() {
@@ -57,12 +58,12 @@ async fn create_dir_entry_success() {
     assert!(config_content.contains(&output.id.to_string()));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
 async fn create_dir_entry_with_order() {
-    let (ctx, _, project_path, project, cleanup) = create_test_project().await;
+    let (ctx, app_delegate, project_path, project, cleanup) = create_test_project().await;
     let resources_dir = project_path.join(dirs::RESOURCES_DIR);
 
     let entry_name = random_entry_name();
@@ -83,18 +84,22 @@ async fn create_dir_entry_with_order() {
     let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
-    let resource_store = project.db().resource_store();
+    let storage = <dyn Storage>::global(&app_delegate);
+    let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated
-    let order_key = SEGKEY_RESOURCE_ENTRY.join(&id.to_string()).join("order");
-    let order_value = GetItem::get(resource_store.as_ref(), &ctx, order_key)
+    let order_value = storage
+        .get(storage_scope, &key_resource_order(&id))
         .await
+        .unwrap()
         .unwrap();
-    let stored_order: isize = order_value.deserialize().unwrap();
-    assert_eq!(stored_order, 42);
+
+    let order: isize = serde_json::from_value(order_value).unwrap();
+
+    assert_eq!(order, 42);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -124,7 +129,7 @@ async fn create_dir_entry_already_exists() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -167,7 +172,7 @@ async fn create_dir_entry_special_chars_in_name() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -269,7 +274,7 @@ async fn create_item_entry_endpoint() {
     assert!(!query_param.propagate);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 // Note: deserialization of heredoc strings will append a newline character at the end
@@ -307,7 +312,7 @@ String"#;
     assert_eq!(body_desc, BodyInfo::Text(text.to_string() + "\n"));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -345,7 +350,7 @@ async fn create_item_entry_body_json() {
     assert_eq!(body_desc, BodyInfo::Json(json));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -379,7 +384,7 @@ async fn create_item_entry_body_xml() {
     assert_eq!(body_desc, BodyInfo::Xml(xml.to_string() + "\n"));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -413,7 +418,7 @@ async fn create_item_entry_body_binary() {
     assert_eq!(body_desc, BodyInfo::Binary(binary));
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -490,7 +495,7 @@ async fn create_item_entry_body_urlencoded() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -567,5 +572,5 @@ async fn create_item_entry_body_formdata() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }

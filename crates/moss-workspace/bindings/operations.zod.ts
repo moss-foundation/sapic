@@ -2,17 +2,12 @@
 import { changePathSchema, changeStringSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
 import {
-  activitybarPartStateInfoSchema,
   addVariableParamsSchema,
   contributorSchema,
   createProjectGitParamsSchema,
-  editorPartStateInfoSchema,
   entryChangeSchema,
   environmentGroupSchema,
   importProjectSourceSchema,
-  layoutsSchema,
-  panelPartStateInfoSchema,
-  sidebarPartStateInfoSchema,
   updateEnvironmentGroupParamsSchema,
   updateEnvironmentParamsSchema,
   updateProjectParamsSchema,
@@ -164,10 +159,6 @@ export const describeProjectOutputSchema = z.object({
   createdAt: z.string(),
 });
 
-export const describeWorkspaceOutputSchema = z.object({
-  layouts: layoutsSchema,
-});
-
 export const importProjectInputSchema = z.object({
   name: z.string(),
   order: z.number(),
@@ -192,13 +183,6 @@ export const updateEnvironmentInputSchema = z.object({
   varsToAdd: z.array(addVariableParamsSchema),
   varsToUpdate: z.array(updateVariableParamsSchema),
   varsToDelete: z.array(z.string()),
-});
-
-export const updateLayoutInputSchema = z.object({
-  editor: editorPartStateInfoSchema.optional(),
-  sidebar: sidebarPartStateInfoSchema.optional(),
-  panel: panelPartStateInfoSchema.optional(),
-  activitybar: activitybarPartStateInfoSchema.optional(),
 });
 
 export const updateProjectInputSchema = z.object({

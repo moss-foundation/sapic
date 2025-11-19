@@ -1,11 +1,12 @@
 #![cfg(feature = "integration-tests")]
 
+use crate::shared::setup_test_workspace;
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
         operations::{CreateProjectInput, ExportProjectInput, ImportProjectInput},
-        primitives::ProjectId,
         types::{
             CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportProjectParams,
             ImportProjectSource,
@@ -15,8 +16,6 @@ use moss_workspace::{
 };
 use std::collections::HashSet;
 use tauri::ipc::Channel;
-
-use crate::shared::setup_test_workspace;
 
 mod shared;
 
