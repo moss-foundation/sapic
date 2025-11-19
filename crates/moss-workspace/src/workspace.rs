@@ -85,15 +85,11 @@ impl<R: AppRuntime> Workspace<R> {
         project_service: Arc<ProjectService<R>>,
         environment_service: Arc<EnvironmentService<R>>,
         on_did_add_project_event: &Event<OnDidAddProject>,
-        workspace_id: WorkspaceId,
-        storage: Arc<dyn Storage>,
     ) -> Subscription<OnDidAddProject> {
         on_did_add_project_event
             .subscribe(move |event| {
                 let project_service_clone = project_service.clone();
                 let environment_service_clone = environment_service.clone();
-                let workspace_id_clone = workspace_id.clone();
-                let storage_clone = storage.clone();
                 async move {
                     let project = project_service_clone.project(&event.project_id).await;
 
@@ -101,15 +97,6 @@ impl<R: AppRuntime> Workspace<R> {
                         environment_service_clone
                             .add_source(event.project_id.inner(), project.environments_path())
                             .await;
-                        if let Err(e) = storage_clone
-                            .add_project(workspace_id_clone.inner(), project.id().inner())
-                            .await
-                        {
-                            session::error!(format!(
-                                "failed to create project storage backend: {}",
-                                e
-                            ))
-                        }
                     } else {
                         unreachable!()
                     }
@@ -121,20 +108,13 @@ impl<R: AppRuntime> Workspace<R> {
     pub(super) async fn on_did_delete_project(
         environment_service: Arc<EnvironmentService<R>>,
         on_did_delete_project_event: &Event<OnDidDeleteProject>,
-        workspace_id: WorkspaceId,
-        storage: Arc<dyn Storage>,
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
             .subscribe(move |event| {
                 let environment_service_clone = environment_service.clone();
-                let workspace_id_clone = workspace_id.clone();
-                let storage_clone = storage.clone();
                 async move {
                     environment_service_clone
                         .remove_source(&event.project_id.inner())
-                        .await;
-                    storage_clone
-                        .remove_project(workspace_id_clone.inner(), event.project_id.inner())
                         .await;
                 }
             })

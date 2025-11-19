@@ -79,6 +79,7 @@ impl<R: AppRuntime> Workspace<R> {
                 self.project_service
                     .import_archived_project(
                         ctx,
+                        app_delegate,
                         &id,
                         ProjectItemImportFromArchiveParams {
                             name: params.name.clone(),

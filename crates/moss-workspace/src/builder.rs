@@ -76,6 +76,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
 
     pub async fn initialize(
         fs: Arc<dyn FileSystem>,
+        workspace_id: WorkspaceId,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());
@@ -93,7 +94,7 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         .join_err::<()>("failed to create manifest file")?;
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(fs.clone())
+            EnvironmentBuilder::new(workspace_id.inner(), fs.clone())
                 .initialize(CreateEnvironmentParams {
                     name: env.name.clone(),
                     abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
@@ -167,16 +168,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             collection_service.clone(),
             environment_service.clone(),
             &on_did_add_collection_event,
-            self.workspace_id.clone(),
-            <dyn Storage>::global(app_delegate),
         )
         .await;
 
         let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
-            self.workspace_id.clone(),
-            <dyn Storage>::global(app_delegate),
         )
         .await;
 
@@ -202,9 +199,13 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::<R>::initialize(self.fs.clone(), params.clone())
-            .await
-            .join_err::<()>("failed to initialize workspace")?;
+        WorkspaceBuilder::<R>::initialize(
+            self.fs.clone(),
+            self.workspace_id.clone(),
+            params.clone(),
+        )
+        .await
+        .join_err::<()>("failed to initialize workspace")?;
 
         let mut environment_sources = FxHashMap::from_iter([(
             "".to_string().into(),
@@ -252,16 +253,12 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             project_service.clone(),
             environment_service.clone(),
             &on_did_add_collection_event,
-            self.workspace_id.clone(),
-            <dyn Storage>::global(app_delegate),
         )
         .await;
 
         let on_did_delete_collection = Workspace::on_did_delete_project(
             environment_service.clone(),
             &on_did_delete_collection_event,
-            self.workspace_id.clone(),
-            <dyn Storage>::global(app_delegate),
         )
         .await;
 

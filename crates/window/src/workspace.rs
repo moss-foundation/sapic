@@ -238,6 +238,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
 
         if let Err(e) = WorkspaceBuilder::<R>::initialize(
             self.fs.clone(),
+            id.clone(),
             CreateWorkspaceParams {
                 name: params.name.clone(),
                 abs_path: abs_path.clone(),
@@ -315,7 +316,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
                 previous_workspace.dispose().await;
                 storage
                     .remove_workspace(previous_workspace.id.inner())
-                    .await;
+                    .await?;
                 drop(previous_workspace);
             }
         }
@@ -400,7 +401,7 @@ impl<R: AppRuntime> WorkspaceService<R> {
             workspace.dispose().await;
 
             let storage = <dyn Storage>::global(app_delegate);
-            storage.remove_workspace(workspace.id.inner()).await;
+            storage.remove_workspace(workspace.id.inner()).await?;
         }
 
         let storage = <dyn Storage>::global(app_delegate);

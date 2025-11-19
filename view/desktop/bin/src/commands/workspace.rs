@@ -58,7 +58,11 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.stream_environments(&ctx, channel).await },
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .stream_environments(&ctx, app_delegate, channel)
+                .await
+        },
     )
     .await
 }
@@ -308,7 +312,11 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.create_environment(&ctx, input).await },
+        |ctx, appp_delegate, workspace| async move {
+            workspace
+                .create_environment(&ctx, appp_delegate, input)
+                .await
+        },
     )
     .await
 }

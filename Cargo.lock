@@ -3929,6 +3929,7 @@ dependencies = [
  "indexmap 2.12.0",
  "joinerror",
  "json-patch 4.1.0",
+ "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3937,7 +3938,8 @@ dependencies = [
  "moss_fs",
  "moss_hcl",
  "moss_id_macro",
- "moss_storage",
+ "moss_logging",
+ "moss_storage2",
  "moss_testutils",
  "moss_text",
  "nanoid",
@@ -3945,6 +3947,7 @@ dependencies = [
  "serde_json",
  "tauri",
  "tokio",
+ "tracing",
  "ts-rs",
 ]
 

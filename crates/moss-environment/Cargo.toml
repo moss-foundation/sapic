@@ -8,13 +8,15 @@ license = "MIT"
 moss_edit.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
-moss_storage.workspace = true
+moss_storage2.workspace = true
 moss_applib.workspace = true
 moss_hcl.workspace = true
 moss_text.workspace = true
 moss_bindingutils.workspace = true
 moss_db.workspace = true
 moss_id_macro.workspace = true
+moss_logging.workspace = true
+moss_app_delegate.workspace = true
 
 anyhow.workspace = true
 serde = { workspace = true, features = ["derive"] }
@@ -28,6 +30,7 @@ indexmap.workspace = true
 hcl-rs.workspace = true
 tokio.workspace = true
 json-patch.workspace = true
+tracing.workspace = true
 
 [dev-dependencies]
 tauri = { workspace = true, features = ["test"] }

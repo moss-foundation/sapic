@@ -1,13 +1,13 @@
 use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_db::{DbResultExt, primitives::AnyValue};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
-use moss_storage::{
-    common::VariableStore, primitives::segkey::SegKeyBuf, storage::operations::TransactionalPutItem,
-};
+use moss_logging::session;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -27,7 +27,7 @@ use crate::{
         primitives::{EnvironmentId, VariableId},
         types::AddVariableParams,
     },
-    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    storage::{key_variable_local_value, key_variable_order},
     utils,
 };
 
@@ -43,13 +43,15 @@ pub struct EnvironmentLoadParams {
 }
 
 pub struct EnvironmentBuilder {
+    workspace_id: Arc<String>,
     fs: Arc<dyn FileSystem>,
     vars_to_store: HashMap<VariableId, (JsonValue, isize)>,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(workspace_id: Arc<String>, fs: Arc<dyn FileSystem>) -> Self {
         Self {
+            workspace_id,
             fs,
             vars_to_store: HashMap::new(),
         }
@@ -124,7 +126,7 @@ impl EnvironmentBuilder {
     pub async fn create<'a, R: AppRuntime>(
         mut self,
         ctx: &R::AsyncContext,
-        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        app_delegate: AppDelegate<R>,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -134,50 +136,26 @@ impl EnvironmentBuilder {
             .await
             .join_err::<()>("failed to initialize environment")?;
 
+        let storage = <dyn Storage>::global(&app_delegate);
+
         for (id, (local_value, order)) in self.vars_to_store.drain() {
-            let local_value = continue_if_err!(AnyValue::serialize(&local_value), |err| {
-                println!("failed to serialize localvalue: {}", err);
-            });
+            let local_value_key = key_variable_local_value(&id);
+            let order_key = key_variable_order(&id);
 
-            let order = continue_if_err!(AnyValue::serialize(&order), |err| {
-                println!("failed to serialize order: {}", err);
-            });
+            let batch_input = vec![
+                (local_value_key.as_str(), local_value),
+                (order_key.as_str(), serde_json::to_value(order)?),
+            ];
 
-            let mut txn = continue_if_err!(variable_store.begin_write(&ctx).await, |err| {
-                println!("failed to start a write transaction: {}", err);
-            });
-
-            continue_if_err!(
-                async {
-                    TransactionalPutItem::put_with_context(
-                        variable_store.as_ref(),
-                        ctx,
-                        &mut txn,
-                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
-                        local_value,
-                    )
-                    .await
-                    .join_err::<()>("failed to put local_value in the database")?;
-
-                    TransactionalPutItem::put_with_context(
-                        variable_store.as_ref(),
-                        ctx,
-                        &mut txn,
-                        SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
-                        order,
-                    )
-                    .await
-                    .join_err::<()>("failed to put order in the database")?;
-
-                    txn.commit()
-                        .join_err::<()>("failed to commit transaction")?;
-
-                    Ok::<(), Error>(())
-                },
-                |err: Error| {
-                    println!("{}", err);
-                }
-            );
+            if let Err(e) = storage
+                .put_batch(
+                    StorageScope::Workspace(self.workspace_id.clone()),
+                    &batch_input,
+                )
+                .await
+            {
+                session::error!(format!("failed to put environment variable cache: {}", e));
+            }
         }
 
         let (abs_path_tx, abs_path_rx) = watch::channel(EnvironmentPath::new(abs_path)?);
@@ -186,13 +164,14 @@ impl EnvironmentBuilder {
             fs: self.fs.clone(),
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
-            variable_store,
+            workspace_id: self.workspace_id,
+            app_delegate,
         })
     }
 
     pub async fn load<R: AppRuntime>(
         self,
-        variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+        app_delegate: AppDelegate<R>,
         params: EnvironmentLoadParams,
     ) -> joinerror::Result<Environment<R>> {
         debug_assert!(params.abs_path.is_absolute());
@@ -209,7 +188,8 @@ impl EnvironmentBuilder {
             fs: self.fs.clone(),
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
-            variable_store,
+            workspace_id: self.workspace_id,
+            app_delegate,
         })
     }
 }

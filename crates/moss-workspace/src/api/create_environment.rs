@@ -1,3 +1,4 @@
+use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use validator::Validate;
 
@@ -11,6 +12,7 @@ impl<R: AppRuntime> Workspace<R> {
     pub async fn create_environment(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: AppDelegate<R>,
         input: CreateEnvironmentInput,
     ) -> joinerror::Result<CreateEnvironmentOutput> {
         input.validate().join_err_bare()?;
@@ -19,6 +21,7 @@ impl<R: AppRuntime> Workspace<R> {
             .environment_service
             .create_environment(
                 ctx,
+                app_delegate,
                 CreateEnvironmentItemParams {
                     project_id: input.project_id,
                     name: input.name.clone(),

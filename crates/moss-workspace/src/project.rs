@@ -148,8 +148,11 @@ impl<R: AppRuntime> ProjectService<R> {
         .await
         .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
 
-        for (id, collection) in projects.iter() {
-            environment_sources.insert(id.clone().inner(), collection.environments_path());
+        for (project_id, project) in projects.iter() {
+            environment_sources.insert(project_id.clone().inner(), project.environments_path());
+            storage
+                .add_project(workspace_id.inner(), project_id.inner())
+                .await;
         }
 
         Ok(Self {
@@ -319,6 +322,13 @@ impl<R: AppRuntime> ProjectService<R> {
                     handle: Arc::new(project),
                 },
             );
+        }
+
+        if let Err(e) = <dyn Storage>::global(app_delegate)
+            .add_project(self.workspace_id.inner(), id.inner())
+            .await
+        {
+            session::error!(format!("failed to create project storage backend: {}", e))
         }
 
         self.on_did_add_project_emitter
@@ -501,6 +511,13 @@ impl<R: AppRuntime> ProjectService<R> {
             }
         }
 
+        if let Err(e) = <dyn Storage>::global(app_delegate)
+            .add_project(self.workspace_id.inner(), id.inner())
+            .await
+        {
+            session::error!(format!("failed to create project storage backend: {}", e))
+        }
+
         self.on_did_add_project_emitter
             .fire(OnDidAddProject {
                 project_id: id.clone(),
@@ -533,6 +550,13 @@ impl<R: AppRuntime> ProjectService<R> {
         let item = state_lock.projects.remove(&id);
         let item_existed = item.is_some();
 
+        let storage = <dyn Storage>::global(&self.app_delegate);
+
+        // Dropping the database first to prevent lock when deleting the folder
+        storage
+            .remove_project(self.workspace_id.inner(), id.inner())
+            .await?;
+
         if abs_path.exists() {
             if let Some(item) = item {
                 item.dispose().await?;
@@ -552,8 +576,6 @@ impl<R: AppRuntime> ProjectService<R> {
         }
 
         state_lock.expanded_items.remove(&id);
-
-        let storage = <dyn Storage>::global(&self.app_delegate);
 
         if let Err(e) = storage
             .remove_batch_by_prefix(
@@ -739,6 +761,7 @@ impl<R: AppRuntime> ProjectService<R> {
     pub(crate) async fn import_archived_project(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: &AppDelegate<R>,
         id: &ProjectId,
         params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
@@ -835,6 +858,13 @@ impl<R: AppRuntime> ProjectService<R> {
                     e
                 ));
             }
+        }
+
+        if let Err(e) = <dyn Storage>::global(app_delegate)
+            .add_project(self.workspace_id.inner(), id.inner())
+            .await
+        {
+            session::error!(format!("failed to create project storage backend: {}", e))
         }
 
         self.on_did_add_project_emitter

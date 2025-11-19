@@ -1,6 +1,7 @@
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::OptionExt;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_environment::{
@@ -9,7 +10,7 @@ use moss_environment::{
     constants::ENVIRONMENT_FILE_EXTENSION,
     errors::ErrorIo,
     models::{primitives::EnvironmentId, types::AddVariableParams},
-    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    storage::key_variable,
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
@@ -275,6 +276,7 @@ where
     pub async fn list_environments(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: AppDelegate<R>,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let ctx = ctx.clone();
         let state_clone = self.state.clone();
@@ -284,6 +286,7 @@ where
 
         Box::pin(async_stream::stream! {
             let storage_clone = storage.clone();
+            let app_delegate_clone = app_delegate.clone();
             let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem<R>, DescribeEnvironment)>();
             let scanner = EnvironmentSourceScanner {
                 fs: self.fs.clone(),
@@ -297,7 +300,7 @@ where
             let ctx_clone = ctx.clone();
             let scan_task = {
                 tokio::spawn(async move {
-                    if let Err(e) = scanner.scan(&ctx_clone).await {
+                    if let Err(e) = scanner.scan(&ctx_clone, app_delegate_clone).await {
                         session::error!(format!("environment scan failed: {}", e));
                     }
                 })
@@ -407,6 +410,7 @@ where
     pub async fn create_environment(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: AppDelegate<R>,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let abs_path = if let Some(collection_id) = params.project_id.clone() {
@@ -426,10 +430,10 @@ where
         };
 
         // FIXME: Switch to new db when refactoring moss-environment
-        let environment = EnvironmentBuilder::new(self.fs.clone())
+        let environment = EnvironmentBuilder::new(self.workspace_id.inner(), self.fs.clone())
             .create::<R>(
                 ctx,
-                self.storage_old.variable_store(),
+                app_delegate,
                 moss_environment::builder::CreateEnvironmentParams {
                     name: params.name.clone(),
                     abs_path: &abs_path,
@@ -567,13 +571,11 @@ where
 
         // Database errors should not fail the operation
         {
+            let storage_scope = StorageScope::Workspace(self.workspace_id.inner());
             // Clean all the data related to the deleted environment
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(
-                    StorageScope::Workspace(self.workspace_id.inner()),
-                    &key_environment(id),
-                )
+                .remove_batch_by_prefix(storage_scope.clone(), &key_environment(id))
                 .await
             {
                 session::warn!(format!(
@@ -586,7 +588,7 @@ where
                 if let Err(e) = self
                     .storage
                     .put(
-                        StorageScope::Workspace(self.workspace_id.inner()),
+                        storage_scope.clone(),
                         KEY_ACTIVE_ENVIRONMENTS,
                         serde_json::to_value(&state.active_environments)?,
                     )
@@ -599,51 +601,22 @@ where
                 }
             }
 
-            // FIXME: For now we will still use old storage's variable stores
-            // We will fix it once we update moss-environment
-            let mut txn = match self.storage_old.begin_write(ctx).await {
-                Ok(txn) => txn,
-                Err(e) => {
-                    session::warn!(format!("failed to begin transaction: {}", e.to_string()));
-                    return Ok(());
-                }
-            };
             // Remove all variables belonging to the deleted environment
-            let store = self.storage_old.variable_store();
+
             for id in desc.variables.keys() {
-                let segkey_localvalue =
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-
-                if let Err(e) = TransactionalRemoveItem::remove(
-                    store.as_ref(),
-                    ctx,
-                    &mut txn,
-                    segkey_localvalue,
-                )
-                .await
+                if let Err(e) = self
+                    .storage
+                    .remove_batch_by_prefix(
+                        StorageScope::Workspace(self.workspace_id.inner()),
+                        &key_variable(id),
+                    )
+                    .await
                 {
                     session::warn!(format!(
-                        "failed to remove variable local value in the db: {}",
-                        e.to_string()
+                        "failed to remove variable cache from the database: {}",
+                        e
                     ));
                 }
-
-                let segkey_order = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-                if let Err(e) =
-                    TransactionalRemoveItem::remove(store.as_ref(), ctx, &mut txn, segkey_order)
-                        .await
-                {
-                    session::warn!(format!(
-                        "failed to remove variable order in the db: {}",
-                        e.to_string()
-                    ));
-                }
-            }
-            if let Err(e) = txn.commit() {
-                session::warn!(format!(
-                    "failed to commit transaction to the database: {}",
-                    e.to_string()
-                ));
             }
         }
         Ok(())
@@ -716,7 +689,11 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     /// 2. Spawns parallel scanning tasks for each registered environment provider
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
-    async fn scan(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+    async fn scan(
+        &self,
+        ctx: &R::AsyncContext,
+        app_delegate: AppDelegate<R>,
+    ) -> joinerror::Result<()> {
         let data = self
             .storage
             .get_batch_by_prefix(
@@ -739,23 +716,32 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
 
         let mut scan_tasks = Vec::new();
 
+        let workspace_id = self.workspace_id.clone();
         for (source_id, source) in self.sources.iter() {
             let provider_tx_clone = provider_tx.clone();
             let storage_clone = self.storage_old.variable_store();
             let source_id_clone = source_id.clone();
             let source_clone = source.clone();
             let fs_clone = self.fs.clone();
+            let app_delegate_clone = app_delegate.clone();
+            let workspace_id_clone = workspace_id.clone();
 
             let task = tokio::spawn(async move {
+                let app_delegate_clone = app_delegate_clone.clone();
                 let scan_task = tokio::spawn({
                     let source_id_for_scan = source_id_clone.clone();
                     let source_for_scan = source_clone.clone();
                     let fs_for_scan = fs_clone.clone();
                     let storage_for_scan = storage_clone.clone();
+                    let app_delegate_for_scan = app_delegate_clone.clone();
+                    let workspace_id_for_scan = workspace_id_clone.clone();
+
                     async move {
                         if let Err(e) = scan_source::<R>(
+                            workspace_id_for_scan,
+                            app_delegate_for_scan,
                             fs_for_scan,
-                            storage_for_scan.clone(),
+                            storage_for_scan,
                             ScanSourceJob {
                                 source_id: source_id_for_scan.clone(),
                                 abs_path: source_for_scan,
@@ -822,6 +808,8 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
 }
 
 async fn scan_source<R: AppRuntime>(
+    workspace_id: WorkspaceId,
+    app_delegate: AppDelegate<R>,
     fs: Arc<dyn FileSystem>,
     store: Arc<dyn VariableStore<R::AsyncContext>>,
     job: ScanSourceJob<R>,
@@ -851,9 +839,9 @@ async fn scan_source<R: AppRuntime>(
             continue;
         }
 
-        let maybe_environment = EnvironmentBuilder::new(fs.clone())
+        let maybe_environment = EnvironmentBuilder::new(workspace_id.inner(), fs.clone())
             .load::<R>(
-                store.clone(),
+                app_delegate.clone(),
                 EnvironmentLoadParams {
                     abs_path: entry.path(),
                 },

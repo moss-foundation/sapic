@@ -30,13 +30,17 @@ use crate::{
 #[async_trait]
 pub trait Storage: Send + Sync {
     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
-    async fn remove_workspace(&self, workspace_id: Arc<String>);
+    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
     async fn add_project(
         &self,
         workspace_id: Arc<String>,
         project_id: Arc<String>,
     ) -> joinerror::Result<()>;
-    async fn remove_project(&self, workspace_id: Arc<String>, project_id: Arc<String>);
+    async fn remove_project(
+        &self,
+        workspace_id: Arc<String>,
+        project_id: Arc<String>,
+    ) -> joinerror::Result<()>;
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
@@ -159,15 +163,36 @@ impl Storage for AppStorage {
     }
 
     // Remove a workspace and all associated project storages
-    async fn remove_workspace(&self, workspace_id: Arc<String>) {
-        self.workspaces.write().await.remove(&workspace_id);
+    async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()> {
+        if let Some(workspace_storage) = self.workspaces.write().await.remove(&workspace_id) {
+            // Properly close the database handle to prevent any lock
+            workspace_storage
+                .capabilities()
+                .await?
+                .closable
+                .expect("Must be closable")
+                .close()
+                .await;
+        }
+
         let projects = self.workspace_projects.write().await.remove(&workspace_id);
         if let Some(projects) = projects {
             let mut projects_lock = self.projects.write().await;
             for project_id in projects {
-                projects_lock.remove(&project_id);
+                if let Some(project_storage) = projects_lock.remove(&project_id) {
+                    // Properly close the database handle to prevent any lock
+                    project_storage
+                        .capabilities()
+                        .await?
+                        .closable
+                        .expect("Must be closable")
+                        .close()
+                        .await;
+                }
             }
         }
+
+        Ok(())
     }
 
     async fn add_project(
@@ -209,13 +234,27 @@ impl Storage for AppStorage {
         Ok(())
     }
 
-    async fn remove_project(&self, workspace_id: Arc<String>, project_id: Arc<String>) {
-        self.projects.write().await.remove(&project_id);
+    async fn remove_project(
+        &self,
+        workspace_id: Arc<String>,
+        project_id: Arc<String>,
+    ) -> joinerror::Result<()> {
+        if let Some(project_storage) = self.projects.write().await.remove(&project_id) {
+            // Properly close the database handle to prevent any lock
+            project_storage
+                .capabilities()
+                .await?
+                .closable
+                .expect("Must be closable")
+                .close()
+                .await;
+        };
         if let Some(workspace_projects) =
             self.workspace_projects.write().await.get_mut(&workspace_id)
         {
             workspace_projects.remove(&project_id);
         }
+        Ok(())
     }
 
     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
