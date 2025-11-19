@@ -6,7 +6,7 @@ use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 // use moss_theme::registry::ThemeRegistry;
-use moss_workspace::models::primitives::WorkspaceId;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 

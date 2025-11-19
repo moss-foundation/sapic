@@ -2,7 +2,7 @@ use derive_more::Deref;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
-use moss_workspace::models::primitives::{WorkspaceId, WorkspaceMode};
+use sapic_base::workspace::types::primitives::{WorkspaceId, WorkspaceMode};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};

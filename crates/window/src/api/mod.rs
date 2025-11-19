@@ -7,7 +7,6 @@ pub mod get_translation_namespace;
 pub mod list_color_themes;
 pub mod list_languages;
 pub mod list_logs;
-pub mod list_workspaces;
 pub mod open_workspace;
 pub mod update_configuration;
 pub mod update_profile;

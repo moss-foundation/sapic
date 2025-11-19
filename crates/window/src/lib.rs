@@ -19,7 +19,8 @@ extern crate derive_more;
 
 pub use builder::WindowBuilder;
 use moss_applib::AppRuntime;
-use moss_workspace::{Workspace, models::primitives::WorkspaceId};
+use moss_workspace::Workspace;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 pub use window::Window;
 
 #[derive(Deref, DerefMut)]

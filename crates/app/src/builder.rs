@@ -5,7 +5,10 @@ use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use reqwest::Client as HttpClient;
-use sapic_platform::{server::HttpServerApiClient, theme::loader::ThemeLoader};
+use sapic_platform::{
+    server::HttpServerApiClient, theme::loader::ThemeLoader,
+    workspace::workspace_discoverer::WorkspaceDiscoverer,
+};
 use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalThemeRegistry};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService, theme::theme_service::ThemeService,
@@ -66,9 +69,11 @@ impl<R: AppRuntime> AppBuilder<R> {
 
         let services = AppServices {
             workspace_service: WorkspaceService::new(
-                self.fs.clone(),
+                Arc::new(WorkspaceDiscoverer::new(
+                    self.fs.clone(),
+                    delegate.workspaces_dir(),
+                )),
                 storage.clone(),
-                delegate.workspaces_dir(),
             )
             .await
             .into(),

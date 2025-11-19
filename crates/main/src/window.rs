@@ -7,7 +7,7 @@ use moss_applib::{AppRuntime, errors::TauriResultExt};
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use moss_workspace::models::primitives::WorkspaceId;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
 use sapic_window::WindowBuilder;
 use sapic_window2::{

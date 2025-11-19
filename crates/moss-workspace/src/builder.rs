@@ -7,15 +7,12 @@ use moss_project::models::primitives::ProjectId;
 use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
+use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
-    Workspace, dirs,
-    edit::WorkspaceEdit,
-    environment::EnvironmentService,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::WorkspaceId,
-    project::ProjectService,
+    Workspace, dirs, edit::WorkspaceEdit, environment::EnvironmentService,
+    manifest::MANIFEST_FILE_NAME, project::ProjectService,
 };
 
 struct PredefinedEnvironment {

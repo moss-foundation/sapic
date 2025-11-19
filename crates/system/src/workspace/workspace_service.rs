@@ -1,13 +1,12 @@
-use moss_fs::FileSystem;
+use joinerror::ResultExt;
 use moss_storage2::{Storage, models::primitives::StorageScope};
-use moss_workspace::{models::primitives::WorkspaceId, workspace::WorkspaceSummary};
 use rustc_hash::FxHashMap;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 
 use serde_json::Value as JsonValue;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::sync::Arc;
+
+use crate::workspace::{DynWorkspaceDiscoverer, types::KnownWorkspace};
 
 // static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
@@ -20,33 +19,20 @@ pub fn key_workspace(id: &WorkspaceId) -> String {
     format!("{KEY_WORKSPACE_PREFIX}.{}", id.to_string())
 }
 
-pub struct WorkspaceItem {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub abs_path: Arc<Path>,
-    pub last_opened_at: Option<i64>,
-}
-
 pub struct WorkspaceService {
-    workspaces_dir: PathBuf,
-    fs: Arc<dyn FileSystem>,
+    discoverer: DynWorkspaceDiscoverer,
     storage: Arc<dyn Storage>,
 }
 
 impl WorkspaceService {
-    pub async fn new(
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn Storage>,
-        workspaces_dir: PathBuf,
-    ) -> Self {
+    pub async fn new(discoverer: DynWorkspaceDiscoverer, storage: Arc<dyn Storage>) -> Self {
         Self {
-            fs,
+            discoverer,
             storage,
-            workspaces_dir,
         }
     }
 
-    pub async fn known_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+    pub async fn known_workspaces(&self) -> joinerror::Result<Vec<KnownWorkspace>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
             .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
@@ -57,53 +43,32 @@ impl WorkspaceService {
             FxHashMap::default()
         };
 
-        let mut read_dir = self.fs.read_dir(&self.workspaces_dir).await?;
+        let discovered_workspaces = self
+            .discoverer
+            .discover_workspaces()
+            .await
+            .join_err::<()>("failed to discover workspaces")?;
 
-        let mut workspaces = vec![];
-        while let Some(entry) = read_dir.next_entry().await? {
-            if !entry.file_type().await?.is_dir() {
-                continue;
-            }
+        let workspaces = discovered_workspaces
+            .into_iter()
+            .map(|discovered| {
+                let filtered_items = restored_items
+                    .iter()
+                    .filter(|(key, _)| key.starts_with(&key_workspace(&discovered.id)))
+                    .collect::<FxHashMap<_, _>>();
 
-            let id_str = entry.file_name().to_string_lossy().to_string();
-            let id: WorkspaceId = id_str.into();
+                let last_opened_at = filtered_items
+                    .get(&key_workspace_last_opened_at(&discovered.id))
+                    .and_then(|value| value.as_i64());
 
-            // Log the error and skip when encountering a workspace with invalid manifest
-            let summary = match WorkspaceSummary::new(&self.fs, &entry.path()).await {
-                Ok(summary) => summary,
-                Err(e) => {
-                    // FIXME: We can't use session logs outside of a session.
-                    // session::error!(format!(
-                    //     "failed to parse workspace `{}` manifest: {}",
-                    //     id.as_str(),
-                    //     e.to_string()
-                    // ));
-
-                    println!(
-                        "ERROR: failed to parse workspace `{}` manifest: {}",
-                        id.as_str(),
-                        e.to_string()
-                    );
-                    continue;
+                KnownWorkspace {
+                    id: discovered.id,
+                    name: discovered.name,
+                    abs_path: Arc::from(discovered.abs_path),
+                    last_opened_at,
                 }
-            };
-
-            let filtered_items = restored_items
-                .iter()
-                .filter(|(key, _)| key.starts_with(&key_workspace(&id)))
-                .collect::<FxHashMap<_, _>>();
-
-            let last_opened_at = filtered_items
-                .get(&key_workspace_last_opened_at(&id))
-                .and_then(|value| value.as_i64());
-
-            workspaces.push(WorkspaceItem {
-                id,
-                name: summary.name,
-                abs_path: entry.path().into(),
-                last_opened_at,
-            });
-        }
+            })
+            .collect();
 
         Ok(workspaces)
     }

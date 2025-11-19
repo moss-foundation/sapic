@@ -7,12 +7,11 @@ edition = "2024"
 sapic-core.workspace = true
 sapic-base.workspace = true
 
-moss_applib.workspace = true    # TODO: Remove this once we move errors to base crate
-moss_fs.workspace = true        # TODO: Remove this once we move FS operations from workspace_service
+moss_applib.workspace = true   # TODO: Remove this once we move errors to base crate
+moss_fs.workspace = true       # TODO: Remove this once we move FS operations from workspace_service
 moss_storage2.workspace = true
-moss_workspace.workspace = true
 moss_text.workspace = true
-moss_keyring.workspace = true   # TODO: move impl to platform crate
+moss_keyring.workspace = true  # TODO: move impl to platform crate
 moss_git.workspace = true
 
 joinerror.workspace = true

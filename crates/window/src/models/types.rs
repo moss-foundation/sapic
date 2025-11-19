@@ -1,7 +1,9 @@
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::primitives::{AccountId, AccountKind};
-use moss_workspace::models::primitives::WorkspaceId;
-use sapic_base::configuration::types::primitives::ConfigurationTarget;
+use sapic_base::{
+    configuration::types::primitives::ConfigurationTarget,
+    workspace::types::primitives::WorkspaceId,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{

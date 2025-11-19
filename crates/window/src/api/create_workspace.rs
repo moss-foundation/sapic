@@ -4,7 +4,7 @@ use moss_applib::{
     AppRuntime,
     errors::{FailedPrecondition, ValidationResultExt},
 };
-use moss_workspace::models::primitives::WorkspaceId;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use validator::Validate;
 
 use crate::{

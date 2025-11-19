@@ -16,12 +16,12 @@ use moss_workspace::{
     models::{
         events::StreamProjectsEvent,
         operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
-        primitives::WorkspaceId,
         types::CreateProjectParams,
     },
 };
 use rand::Rng;
 use reqwest::ClientBuilder as HttpClientBuilder;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::{AsyncContext, MutableContext};
 use std::{
     collections::HashMap,

@@ -7,10 +7,14 @@ use moss_applib::{
     subscription::{Event, Subscription},
 };
 use moss_edit::json::EditOptions;
-use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
+use moss_environment::{AnyEnvironment, Environment};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_project::{Project, models::primitives::ProjectId};
 use moss_user::profile::Profile;
+use sapic_base::{
+    environment::types::primitives::EnvironmentId,
+    workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
+};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
@@ -18,8 +22,7 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
     environment::EnvironmentService,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::WorkspaceId,
+    manifest::MANIFEST_FILE_NAME,
     project::ProjectService,
 };
 

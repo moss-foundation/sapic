@@ -1,14 +1,12 @@
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_environment::models::{
-    primitives::{EnvironmentId, VariableId},
-    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
-};
+use moss_environment::models::types::{AddVariableParams, UpdateVariableParams};
 use moss_git::{
     models::{primitives::FileStatus, types::BranchInfo},
     url::GIT_URL_REGEX,
 };
 use moss_project::models::primitives::ProjectId;
 use moss_user::models::primitives::AccountId;
+use sapic_base::environment::types::primitives::{EnvironmentId, VariableId};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},
@@ -140,20 +138,21 @@ fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError
     }
 }
 
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct EnvironmentInfo {
-    pub id: String,
-    pub project_id: Option<String>,
-    pub name: String,
-    pub display_name: String,
-    pub order: isize,
-    pub color: Option<String>,
-    pub variables: Vec<VariableInfo>,
-}
+// INFO: moved to sapic-base
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct EnvironmentInfo {
+//     pub id: String,
+//     pub project_id: Option<String>,
+//     pub name: String,
+//     pub display_name: String,
+//     pub order: isize,
+//     pub color: Option<String>,
+//     pub variables: Vec<VariableInfo>,
+// }
 
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS)]

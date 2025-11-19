@@ -1,4 +1,4 @@
-use crate::models::primitives::VariableId;
+use sapic_base::environment::types::primitives::VariableId;
 
 pub const KEY_VARIABLE_PREFIX: &'static str = "var";
 

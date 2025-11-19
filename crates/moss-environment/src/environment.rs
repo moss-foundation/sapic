@@ -12,6 +12,7 @@ use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{Storage, models::primitives::StorageScope};
+use sapic_base::environment::types::{VariableInfo, primitives::VariableId};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -24,7 +25,6 @@ use crate::{
     AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
     configuration::{SourceFile, VariableDecl},
     edit::EnvironmentEditing,
-    models::{primitives::VariableId, types::VariableInfo},
     storage::{key_variable, key_variable_local_value, key_variable_order},
     utils,
 };

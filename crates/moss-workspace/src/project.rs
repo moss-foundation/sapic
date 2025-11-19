@@ -23,6 +23,7 @@ use moss_project::{
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
@@ -35,12 +36,9 @@ use tokio::sync::RwLock;
 use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
-    models::{
-        primitives::WorkspaceId,
-        types::{
-            CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
-            UpdateProjectParams,
-        },
+    models::types::{
+        CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
+        UpdateProjectParams,
     },
     storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project, key_project_order},
 };

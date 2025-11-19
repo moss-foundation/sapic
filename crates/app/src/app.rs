@@ -13,8 +13,8 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
-use moss_workspace::models::primitives::WorkspaceId;
 use rustc_hash::FxHashMap;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::MainWindow;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,

@@ -2,7 +2,6 @@
 
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_environment::models::primitives::EnvironmentId;
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     Workspace,
@@ -12,6 +11,7 @@ use moss_workspace::{
         types::CreateProjectParams,
     },
 };
+use sapic_base::environment::types::primitives::EnvironmentId;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},

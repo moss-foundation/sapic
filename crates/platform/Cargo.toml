@@ -13,6 +13,7 @@ moss_edit = { workspace = true }
 moss_text = { workspace = true }
 moss_applib = { workspace = true }
 moss_git = { workspace = true }
+moss_common = { workspace = true }
 
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
