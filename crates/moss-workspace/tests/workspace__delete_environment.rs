@@ -1,16 +1,14 @@
 // TODO: Update the tests after changing the variable store to the new database
 #![cfg(feature = "integration-tests")]
 
-use crate::shared::setup_test_workspace;
 use moss_environment::{
     AnyEnvironment,
     models::{
         primitives::EnvironmentId,
         types::{AddVariableParams, VariableOptions},
     },
-    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    storage::key_variable,
 };
-use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
@@ -23,6 +21,8 @@ use moss_workspace::{
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;
 
+use crate::shared::setup_test_workspace;
+
 mod shared;
 #[tokio::test]
 async fn delete_environment_success() {
@@ -33,6 +33,7 @@ async fn delete_environment_success() {
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: None,
@@ -99,7 +100,10 @@ async fn delete_environment_success() {
         .unwrap();
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1); // Only the globals environment should exist
 
     // Check the environment file is deleted
@@ -117,24 +121,17 @@ async fn delete_environment_success() {
         .unwrap();
     assert!(env_order_result.is_none());
 
-    // TODO: Update variable storage
     // Check variables associated with the environment are removed from the database
-    let variable_store = workspace.db().variable_store();
-
-    let segkey_localvalue = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-
+    let storage = <dyn Storage>::global(&app_delegate);
     assert!(
-        GetItem::get(variable_store.as_ref(), &ctx, segkey_localvalue,)
+        storage
+            .get_batch_by_prefix(
+                StorageScope::Workspace(workspace.id().inner()),
+                &key_variable(&variable_id)
+            )
             .await
-            .is_err()
-    );
-
-    let segkey_order = SegKeyBuf::from(variable_id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-
-    assert!(
-        GetItem::get(variable_store.as_ref(), &ctx, segkey_order,)
-            .await
-            .is_err()
+            .unwrap()
+            .is_empty()
     );
 
     cleanup().await;

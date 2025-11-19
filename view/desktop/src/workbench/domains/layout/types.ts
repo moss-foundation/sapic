@@ -1,6 +1,6 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { ActivitybarPosition } from "@repo/moss-workspace";
+import { ACTIVITYBAR_POSITION } from "./index";
 
 export interface SidebarState {
   width: number;
@@ -21,6 +21,6 @@ export interface TabbedPaneState {
 }
 
 export interface ActivitybarState {
-  position: ActivitybarPosition;
+  position: ACTIVITYBAR_POSITION;
   activeContainerId: string;
 }

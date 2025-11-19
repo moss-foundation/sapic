@@ -19,7 +19,7 @@ use crate::shared::setup_test_workspace;
 pub mod shared;
 #[tokio::test]
 async fn stream_environments_no_custom_environment() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -33,7 +33,10 @@ async fn stream_environments_no_custom_environment() {
         Ok(())
     });
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     // There should be one predefined globals environment
     let events = received_events.lock().unwrap();
@@ -47,7 +50,7 @@ async fn stream_environments_no_custom_environment() {
 
 #[tokio::test]
 async fn stream_environments_only_workspace_environments() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let mut expected_environments = Vec::new();
 
@@ -60,6 +63,7 @@ async fn stream_environments_only_workspace_environments() {
         let create_result = workspace
             .create_environment(
                 &ctx,
+                app_delegate.clone(),
                 CreateEnvironmentInput {
                     project_id: None,
                     name: environment_name.clone(),
@@ -86,7 +90,10 @@ async fn stream_environments_only_workspace_environments() {
         Ok(())
     });
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     // 1 predefined + 5 workspace environment
     let events = received_events.lock().unwrap();
@@ -144,6 +151,7 @@ async fn stream_environments_only_collection_environments() {
         let create_result = workspace
             .create_environment(
                 &ctx,
+                app_delegate.clone(),
                 CreateEnvironmentInput {
                     project_id: Some(collection_id.clone()),
                     name: environment_name.clone(),
@@ -175,7 +183,10 @@ async fn stream_environments_only_collection_environments() {
         Ok(())
     });
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     // 1 predefined + 5 collection environment
     let events = received_events.lock().unwrap();
@@ -239,6 +250,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     let collection_env_result = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: Some(collection_id.clone()),
                 name: collection_env_name.clone(),
@@ -254,6 +266,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
     let workspace_env_result = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: None,
                 name: workspace_env_name.clone(),
@@ -277,7 +290,10 @@ async fn stream_environments_both_workspace_and_collection_environments() {
         Ok(())
     });
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     // 1 predefined + 1 workspace + 1 collection environment
     let events = received_events.lock().unwrap();
@@ -312,7 +328,7 @@ async fn stream_environments_both_workspace_and_collection_environments() {
 
 #[tokio::test]
 async fn stream_environments_with_variables() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let variables = (0..5)
         .map(|i| AddVariableParams {
@@ -329,6 +345,7 @@ async fn stream_environments_with_variables() {
     let environment_result = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: None,
                 name: environment_name.clone(),
@@ -352,7 +369,10 @@ async fn stream_environments_with_variables() {
         Ok(())
     });
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     // 1 predefined + 1 workspace environment
     let events = received_events.lock().unwrap();

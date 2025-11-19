@@ -3,8 +3,9 @@ use moss_applib::{
     AppRuntime,
     context::{AnyAsyncContext, Reason},
 };
-use moss_db::primitives::AnyValue;
-use moss_storage::primitives::segkey::SegKeyBuf;
+use moss_logging::session;
+use moss_storage2::{Storage, models::primitives::StorageScope};
+use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
     path::PathBuf,
@@ -21,6 +22,7 @@ use crate::{
         primitives::{FrontendResourcePath, ResourceId},
     },
     project::OnDidChangeEvent,
+    storage::{KEY_EXPANDED_ENTRIES, KEY_RESOURCE_PREFIX},
     worktree::entry::EntryDescription,
 };
 
@@ -41,23 +43,35 @@ impl<R: AppRuntime> Project<R> {
             StreamResourcesInput::ReloadPath(path) => vec![path],
         };
 
-        let expanded_entries: Arc<HashSet<ResourceId>> =
-            match self.storage_service.get_expanded_entries(ctx).await {
-                Ok(entries) => HashSet::from_iter(entries).into(),
-                Err(error) => {
-                    println!("warn: getting expanded entries: {}", error);
-                    HashSet::default().into()
-                }
-            };
+        let storage = <dyn Storage>::global(app_delegate);
+        let storage_scope = StorageScope::Project(self.id.inner());
+        let expanded_entries: Arc<HashSet<ResourceId>> = match storage
+            .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+            .await
+        {
+            Ok(Some(entries)) => serde_json::from_value::<HashSet<ResourceId>>(entries)
+                .unwrap_or_else(|e| {
+                    session::warn!(format!("failed to deserialize expanded entries: {}", e));
+                    HashSet::new()
+                })
+                .into(),
+            Ok(None) => HashSet::new().into(),
+            Err(e) => {
+                session::warn!(format!("failed to get expanded entries: {}", e));
+                HashSet::new().into()
+            }
+        };
 
-        let all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>> =
-            match self.storage_service.get_all_entry_keys(ctx).await {
-                Ok(keys) => keys.into(),
-                Err(error) => {
-                    println!("warn: getting all entry keys: {}", error);
-                    HashMap::default().into()
-                }
-            };
+        let all_entry_keys: Arc<HashMap<String, JsonValue>> = match storage
+            .get_batch_by_prefix(storage_scope.clone(), KEY_RESOURCE_PREFIX)
+            .await
+        {
+            Ok(keys) => keys.into_iter().collect::<HashMap<_, _>>().into(),
+            Err(e) => {
+                session::warn!(format!("failed to get all entry keys: {}", e));
+                HashMap::new().into()
+            }
+        };
 
         for dir in expansion_dirs {
             let entries_tx_clone = tx.clone();

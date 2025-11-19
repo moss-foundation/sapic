@@ -5,6 +5,7 @@ use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
 use moss_logging::session;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use std::collections::HashMap;
 use validator::Validate;
 
@@ -21,6 +22,10 @@ use crate::{
             CreateDirResourceParams, CreateItemResourceParams, UpdateDirResourceParams,
             UpdateItemResourceParams, http::AddBodyParams,
         },
+    },
+    storage::{
+        key_resource_body_formdata_param_order, key_resource_body_urlencoded_param_order,
+        key_resource_header_order, key_resource_path_param_order, key_resource_query_param_order,
     },
     worktree::{
         ModifyParams,
@@ -305,87 +310,57 @@ impl<R: AppRuntime> Project<R> {
             return Ok(output);
         }
 
-        // Storing param orders
-        let mut txn = match self.storage_service.begin_write(ctx).await {
-            Ok(txn) => txn,
-            Err(e) => {
-                session::error!(format!("failed to begin write transaction: {}", e));
-                return Ok(output);
-            }
-        };
+        // FIXME: Find a better way to convert to &[(&str, JsonValue)]
 
+        let mut key_values = vec![];
         for (header_id, order) in header_orders {
-            continue_if_err!(
-                self.storage_service
-                    .put_entry_header_order_txn(ctx, &mut txn, &id, &header_id, order,)
-                    .await,
-                |err| {
-                    session::error!(format!("failed to put header order: {}", err));
-                }
-            )
+            key_values.push((
+                key_resource_header_order(&id, &header_id),
+                serde_json::to_value(&order)?,
+            ));
         }
 
         for (path_param_id, order) in path_param_orders {
-            continue_if_err!(
-                self.storage_service
-                    .put_entry_path_param_order_txn(ctx, &mut txn, &id, &path_param_id, order,)
-                    .await,
-                |err| {
-                    session::error!(format!("failed to put path param order: {}", err));
-                }
-            )
+            key_values.push((
+                key_resource_path_param_order(&id, &path_param_id),
+                serde_json::to_value(&order)?,
+            ));
         }
 
         for (query_param_id, order) in query_param_orders {
-            continue_if_err!(
-                self.storage_service
-                    .put_entry_query_param_order_txn(ctx, &mut txn, &id, &query_param_id, order,)
-                    .await,
-                |err| {
-                    session::error!(format!("failed to put query param order: {}", err));
-                }
-            )
+            key_values.push((
+                key_resource_query_param_order(&id, &query_param_id),
+                serde_json::to_value(&order)?,
+            ));
         }
 
         for (urlencoded_param_id, order) in urlencoded_param_orders {
-            continue_if_err!(
-                self.storage_service
-                    .put_entry_body_urlencoded_param_order_txn(
-                        ctx,
-                        &mut txn,
-                        &id,
-                        &urlencoded_param_id,
-                        order,
-                    )
-                    .await,
-                |err| {
-                    session::error!(format!(
-                        "failed to put entry body urlencoded param order: {}",
-                        err
-                    ));
-                }
-            )
+            key_values.push((
+                key_resource_body_urlencoded_param_order(&id, &urlencoded_param_id),
+                serde_json::to_value(&order)?,
+            ));
         }
 
         for (formdata_param_id, order) in formdata_param_orders {
-            continue_if_err!(
-                self.storage_service
-                    .put_entry_body_formdata_param_order_txn(
-                        ctx,
-                        &mut txn,
-                        &id,
-                        &formdata_param_id,
-                        order,
-                    )
-                    .await,
-                |err| {
-                    session::error!(format!("failed to put entry formdata param order: {}", err));
-                }
-            )
+            key_values.push((
+                key_resource_body_formdata_param_order(&id, &formdata_param_id),
+                serde_json::to_value(&order)?,
+            ));
         }
 
-        if let Err(e) = txn.commit() {
-            session::error!(format!("failed to commit write transaction: {}", e));
+        let mut batch_input = Vec::new();
+        for (key, value) in key_values.iter() {
+            batch_input.push((key.as_str(), value.clone()));
+        }
+
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let storage_scope = StorageScope::Project(self.id.inner());
+
+        if let Err(e) = storage.put_batch(storage_scope, &batch_input).await {
+            session::warn!(format!(
+                "failed to update database after creating endpoint resource: {}",
+                e
+            ));
         }
 
         Ok(output)

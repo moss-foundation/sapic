@@ -38,12 +38,10 @@ moss_activity_broadcaster.workspace = true
 moss_applib.workspace = true
 moss_common.workspace = true
 
-moss_db.workspace = true
 moss_project.workspace = true
 moss_fs.workspace = true
 moss_text.workspace = true
 moss_workspace.workspace = true
-moss_storage.workspace = true
 moss_environment.workspace = true
 moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true

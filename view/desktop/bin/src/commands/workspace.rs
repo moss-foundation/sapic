@@ -8,43 +8,6 @@ use tauri::{State, Window, ipc::Channel as TauriChannel};
 use crate::commands::primitives::*;
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_layout<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: UpdateLayoutInput,
-    options: Options,
-) -> TauriResult<()> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move { workspace.update_layout(&ctx, input).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn describe_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    options: Options,
-) -> TauriResult<DescribeWorkspaceOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move { workspace.describe_workspace(&ctx).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_environments<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
@@ -58,7 +21,11 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.stream_environments(&ctx, channel).await },
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .stream_environments(&ctx, app_delegate, channel)
+                .await
+        },
     )
     .await
 }
@@ -308,7 +275,11 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.create_environment(&ctx, input).await },
+        |ctx, appp_delegate, workspace| async move {
+            workspace
+                .create_environment(&ctx, appp_delegate, input)
+                .await
+        },
     )
     .await
 }

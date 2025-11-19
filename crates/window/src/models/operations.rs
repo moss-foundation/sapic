@@ -231,6 +231,7 @@ pub struct CreateWorkspaceInput {
     #[validate(length(min = 1))]
     pub name: String,
 
+    // FIXME: Do we need this anymore?
     #[serde(default)]
     #[ts(type = "WorkspaceMode")]
     pub mode: WorkspaceMode,

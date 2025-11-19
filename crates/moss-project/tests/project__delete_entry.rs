@@ -36,7 +36,7 @@ async fn delete_entry_success() {
     assert!(!expected_dir.exists());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -55,7 +55,7 @@ async fn delete_entry_not_found() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -93,7 +93,7 @@ async fn delete_entry_with_subdirectories() {
     assert!(!sub_sub_dir.exists());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -137,7 +137,7 @@ async fn delete_multiple_entries() {
     assert!(!expected_dir2.exists());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -171,7 +171,7 @@ async fn delete_entry_twice() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -218,5 +218,5 @@ async fn delete_entries_from_different_directories() {
     }
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }

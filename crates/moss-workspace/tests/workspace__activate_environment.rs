@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_environment::models::primitives::EnvironmentId;
 use moss_testutils::random_name::{random_environment_name, random_project_name};
@@ -23,6 +24,7 @@ pub mod shared;
 
 async fn test_stream_environments<R: AppRuntime>(
     ctx: &R::AsyncContext,
+    app_delegate: AppDelegate<R>,
     workspace: &Workspace<R>,
 ) -> HashMap<EnvironmentId, StreamEnvironmentsEvent> {
     let received_events = Arc::new(Mutex::new(Vec::new()));
@@ -37,7 +39,9 @@ async fn test_stream_environments<R: AppRuntime>(
         Ok(())
     });
 
-    let _ = workspace.stream_environments(ctx, channel.clone()).await;
+    let _ = workspace
+        .stream_environments(ctx, app_delegate, channel.clone())
+        .await;
     received_events
         .lock()
         .unwrap()
@@ -48,12 +52,13 @@ async fn test_stream_environments<R: AppRuntime>(
 
 #[tokio::test]
 async fn activate_environment_global() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name,
                 project_id: None,
@@ -67,7 +72,7 @@ async fn activate_environment_global() {
 
     let id = create_environment_output.id;
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     // Newly created environments are not automatically activated
     assert!(!events_map.get(&id).unwrap().is_active);
@@ -81,7 +86,7 @@ async fn activate_environment_global() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -115,6 +120,7 @@ async fn activate_environment_collection() {
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name,
                 project_id: Some(collection_id.clone()),
@@ -128,7 +134,7 @@ async fn activate_environment_collection() {
 
     let id = create_environment_output.id;
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     // Newly created environments are not automatically activated
     assert!(!events_map.get(&id).unwrap().is_active);
@@ -143,7 +149,7 @@ async fn activate_environment_collection() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -152,12 +158,13 @@ async fn activate_environment_collection() {
 
 #[tokio::test]
 async fn activate_environment_currently_active() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name,
                 project_id: None,
@@ -192,7 +199,7 @@ async fn activate_environment_currently_active() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -227,6 +234,7 @@ async fn activate_environment_groups_isolation() {
     let collection_env_id = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: Some(collection_id.clone()),
                 name: collection_env_name,
@@ -243,6 +251,7 @@ async fn activate_environment_groups_isolation() {
     let global_env_id = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: None,
                 name: global_env_name,
@@ -265,7 +274,7 @@ async fn activate_environment_groups_isolation() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, &workspace).await;
+    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&global_env_id).unwrap().is_active);
     assert!(!events_map.get(&collection_env_id).unwrap().is_active);

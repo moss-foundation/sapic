@@ -11,15 +11,17 @@ use moss_project::{
     builder::ProjectCreateParams,
     models::{
         operations::CreateResourceInput,
-        primitives::{ResourceClass, ResourceId},
+        primitives::{ProjectId, ResourceClass, ResourceId},
         types::{CreateDirResourceParams, CreateItemResourceParams},
     },
     project::Project,
 };
+use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use std::{
     path::{Path, PathBuf},
+    pin::Pin,
     sync::Arc,
     time::Duration,
 };
@@ -41,30 +43,53 @@ fn random_test_dir_path() -> PathBuf {
         .join("data")
         .join(nanoid!(10))
 }
+pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
 pub async fn create_test_project() -> (
     AsyncContext,
     AppDelegate<MockAppRuntime>,
     Arc<Path>,
     Project<MockAppRuntime>,
-    impl FnOnce(),
+    CleanupFn,
 ) {
     let mock_app = tauri::test::mock_app();
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30)).freeze();
     let test_dir_path = random_test_dir_path();
     let temp_path = test_dir_path.join("tmp");
-    let project_path = test_dir_path.join(nanoid!(10));
+    let globals_path = test_dir_path.join("globals");
+    let workspaces_path = test_dir_path.join("workspaces");
 
+    let workspace_id = nanoid!(10);
+    let project_id = ProjectId::new();
+    let project_path = workspaces_path
+        .join(&workspace_id)
+        .join("projects")
+        .join(project_id.as_str());
+
+    let app_storage = AppStorage::new(
+        &globals_path,
+        workspaces_path,
+        AppStorageOptions {
+            in_memory: Some(false),
+            busy_timeout: Some(Duration::from_secs(5)),
+        }
+        .into(),
+    )
+    .await
+    .unwrap();
+
+    std::fs::create_dir_all(&globals_path).unwrap();
     std::fs::create_dir_all(&temp_path).unwrap();
     std::fs::create_dir_all(&project_path).unwrap();
     let fs = Arc::new(RealFileSystem::new(&temp_path));
 
     let app_delegate = {
         let delegate = AppDelegate::new(mock_app.handle().clone());
+        <dyn Storage>::set_global(&delegate, app_storage.clone());
         delegate
     };
 
-    let project = ProjectBuilder::new(fs)
+    let project = ProjectBuilder::new(fs, project_id.clone())
         .await
         .create(
             &ctx,
@@ -75,14 +100,39 @@ pub async fn create_test_project() -> (
                 git_params: None,
                 icon_path: None,
             },
+            app_delegate.clone(),
         )
         .await
         .unwrap();
 
-    let cleanup = || {
-        std::fs::remove_dir_all(test_dir_path).unwrap();
-    };
-    (ctx, app_delegate, project_path.into(), project, cleanup)
+    // let cleanup = || {
+    //     std::fs::remove_dir_all(test_dir_path).unwrap();
+    // };
+    let cleanup_fn = Box::new({
+        let test_dir_path_clone = test_dir_path.clone();
+        let app_storage_clone = app_storage.clone();
+        move || {
+            Box::pin(async move {
+                app_storage_clone.close().await.unwrap();
+                // Looks like some delay is necessary to release SQLite file handle
+                tokio::time::sleep(Duration::from_millis(100)).await;
+                if let Err(e) = tokio::fs::remove_dir_all(&test_dir_path_clone).await {
+                    eprintln!("Failed to clean up test workspace directory: {}", e);
+                }
+            }) as Pin<Box<dyn Future<Output = ()> + Send>>
+        }
+    });
+
+    // Add workspace and project storage
+    app_storage
+        .add_workspace(workspace_id.clone().into())
+        .await
+        .unwrap();
+    app_storage
+        .add_project(workspace_id.into(), project_id.inner())
+        .await
+        .unwrap();
+    (ctx, app_delegate, project_path.into(), project, cleanup_fn)
 }
 
 #[allow(dead_code)]

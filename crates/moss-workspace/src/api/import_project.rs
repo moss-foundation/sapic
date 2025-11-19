@@ -2,13 +2,13 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
 use moss_git_hosting_provider::GitProviderKind;
+use moss_project::models::primitives::ProjectId;
 use validator::Validate;
 
 use crate::{
     Workspace,
     models::{
         operations::{ImportProjectInput, ImportProjectOutput},
-        primitives::ProjectId,
         types::ImportProjectSource,
     },
     project::{
@@ -79,6 +79,7 @@ impl<R: AppRuntime> Workspace<R> {
                 self.project_service
                     .import_archived_project(
                         ctx,
+                        app_delegate,
                         &id,
                         ProjectItemImportFromArchiveParams {
                             name: params.name.clone(),
