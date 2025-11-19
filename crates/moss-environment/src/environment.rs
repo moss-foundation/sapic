@@ -84,7 +84,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     // TODO: add variables()
 
     // TODO: rename to details
-    async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
+    async fn describe(&self, _ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
@@ -161,7 +161,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
     async fn modify(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
@@ -373,7 +373,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         .put(storage_scope.clone(), &local_value_key, value)
                         .await
                     {
-                        session::warn!(format!("failed to update variable localValue"));
+                        session::warn!(format!("failed to update variable localValue: {}", e));
                     }
                 }
                 Some(ChangeJsonValue::Remove) => {
@@ -381,7 +381,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         .remove(storage_scope.clone(), &local_value_key)
                         .await
                     {
-                        session::warn!(format!("failed to remove variable localValue"));
+                        session::warn!(format!("failed to remove variable localValue: {}", e));
                     }
                 }
                 None => {}
@@ -398,7 +398,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                         )
                         .await
                     {
-                        session::warn!(format!("failed to update variable order"));
+                        session::warn!(format!("failed to update variable order: {}", e));
                     }
                 }
                 None => {}

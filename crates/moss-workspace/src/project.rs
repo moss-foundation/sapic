@@ -150,9 +150,12 @@ impl<R: AppRuntime> ProjectService<R> {
 
         for (project_id, project) in projects.iter() {
             environment_sources.insert(project_id.clone().inner(), project.environments_path());
-            storage
+            if let Err(e) = storage
                 .add_project(workspace_id.inner(), project_id.inner())
-                .await;
+                .await
+            {
+                session::warn!(format!("failed to open project storage: {}", e));
+            };
         }
 
         Ok(Self {
@@ -553,9 +556,12 @@ impl<R: AppRuntime> ProjectService<R> {
         let storage = <dyn Storage>::global(&self.app_delegate);
 
         // Dropping the database first to prevent lock when deleting the folder
-        storage
+        if let Err(e) = storage
             .remove_project(self.workspace_id.inner(), id.inner())
-            .await?;
+            .await
+        {
+            session::warn!(format!("failed to remove project storage: {}", e));
+        }
 
         if abs_path.exists() {
             if let Some(item) = item {

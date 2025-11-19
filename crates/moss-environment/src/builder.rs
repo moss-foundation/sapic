@@ -124,7 +124,7 @@ impl EnvironmentBuilder {
 
     pub async fn create<'a, R: AppRuntime>(
         mut self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         app_delegate: AppDelegate<R>,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment<R>> {

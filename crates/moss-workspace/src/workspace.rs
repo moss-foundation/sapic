@@ -9,9 +9,7 @@ use moss_applib::{
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_logging::session;
 use moss_project::{Project, models::primitives::ProjectId};
-use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -162,12 +160,5 @@ impl<R: AppRuntime> Workspace<R> {
             self._on_did_add_project.unsubscribe().await;
             self._on_did_delete_project.unsubscribe().await;
         }
-    }
-}
-
-#[cfg(any(test, feature = "integration-tests"))]
-impl<R: AppRuntime> Workspace<R> {
-    pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
-        self.storage_service_old.storage()
     }
 }

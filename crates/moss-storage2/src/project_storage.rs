@@ -53,13 +53,12 @@ impl ProjectStorageBackend {
     async fn storage_internal(&self) -> joinerror::Result<Arc<SqliteStorage>> {
         let storage = self
             .storage
-            .get_or_init(|| async {
+            .get_or_try_init(|| async {
                 SqliteStorage::new(&self.db_path, self.storage_options.clone().map(Into::into))
                     .await
-                    .join_err::<()>("failed to open workspace storage")
-                    .unwrap()
+                    .join_err::<()>("failed to open project storage")
             })
-            .await;
+            .await?;
 
         Ok(storage.clone())
     }

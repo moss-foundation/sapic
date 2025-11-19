@@ -11,15 +11,11 @@ use moss_project::models::primitives::ProjectId;
 use moss_user::models::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
-
-use crate::models::primitives::{ActivitybarPosition, SidebarPosition};
-
 pub type EnvironmentName = String;
 
 // ------------------------------ //

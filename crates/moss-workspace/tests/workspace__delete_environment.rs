@@ -9,7 +9,6 @@ use moss_environment::{
     },
     storage::key_variable,
 };
-use moss_storage::{primitives::segkey::SegKeyBuf, storage::operations::GetItem};
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{

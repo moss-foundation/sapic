@@ -16,10 +16,7 @@ use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
-use tauri::{
-    App,
-    ipc::{Channel, InvokeResponseBody},
-};
+use tauri::ipc::{Channel, InvokeResponseBody};
 
 use crate::shared::setup_test_workspace;
 
