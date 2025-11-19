@@ -7,6 +7,7 @@
 
 use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_project::models::primitives::ProjectId;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
