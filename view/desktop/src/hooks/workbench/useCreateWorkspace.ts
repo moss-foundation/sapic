@@ -1,5 +1,5 @@
-import { defaultLayoutState } from "@/defaults/layout";
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
+import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import {
   CreateWorkspaceInput,
   CreateWorkspaceOutput,

@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 
-import { useStreamEnvironments } from "@/hooks";
+import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";

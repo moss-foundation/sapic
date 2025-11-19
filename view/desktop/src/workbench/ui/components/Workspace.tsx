@@ -1,4 +1,5 @@
-import { useStreamProjects } from "@/hooks";
+import { useStreamProjects } from "@/adapters/tanstackQuery/project";
+import { useGetLayout } from "@/hooks/workbench/layout";
 import { TabbedPane } from "@/workbench/ui/parts";
 
 interface WorkspaceProps {
@@ -8,10 +9,11 @@ interface WorkspaceProps {
 export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   const effectiveWorkspaceName = workspaceName ?? null;
 
+  const { isFetching: isFetchingLayout } = useGetLayout();
   const { isLoading: isLoadingProjects, error: projectsError } = useStreamProjects();
 
   // Show loading state while any critical data is loading
-  if (isLoadingProjects) {
+  if (isLoadingProjects || isFetchingLayout) {
     return <div className="flex h-full w-full items-center justify-center">Loading workspace...</div>;
   }
 

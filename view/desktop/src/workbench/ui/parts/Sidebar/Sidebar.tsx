@@ -1,8 +1,8 @@
 import { ReactNode } from "react";
 
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useActiveWorkspace, useDescribeApp } from "@/hooks";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBar } from "@/workbench/ui/components";
 import { EmptyWorkspace } from "@/workbench/ui/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/workbench/ui/components/WorkspaceModeToggle";

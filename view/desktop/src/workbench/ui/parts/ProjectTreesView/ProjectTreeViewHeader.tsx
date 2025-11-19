@@ -2,14 +2,13 @@ import { useState } from "react";
 
 import {
   USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
-  useActiveWorkspace,
   useClearAllProjectResources,
-  useModal,
   useStreamedProjectsWithResources,
   useStreamProjects,
-} from "@/hooks";
-import { useBatchUpdateProject } from "@/hooks/project/useBatchUpdateProject";
-import { useBatchUpdateProjectResource } from "@/hooks/project/useBatchUpdateProjectResource";
+} from "@/adapters/tanstackQuery/project";
+import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
+import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/project/useBatchUpdateProjectResource";
+import { useModal } from "@/hooks";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constansts";
 import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
@@ -26,7 +25,6 @@ export const ProjectTreeViewHeader = () => {
   const { data: projectsWithResources } = useStreamedProjectsWithResources();
   const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
-  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
@@ -115,7 +113,6 @@ export const ProjectTreeViewHeader = () => {
           <>
             <ActionButton
               title="Add Project"
-              disabled={!hasActiveWorkspace}
               icon="Add"
               onClick={() => {
                 setInitialTab(CREATE_TAB);
@@ -124,13 +121,12 @@ export const ProjectTreeViewHeader = () => {
             />
             <ActionButton
               title="Collapse all Projects"
-              disabled={!hasActiveWorkspace || (areAllDirNodesCollapsed && areAllProjectsCollapsed)}
+              disabled={areAllDirNodesCollapsed && areAllProjectsCollapsed}
               icon="CollapseAll"
               onClick={handleCollapseAll}
             />
             <ActionButton
               title="Import Project"
-              disabled={!hasActiveWorkspace}
               icon="Import"
               onClick={() => {
                 setInitialTab(IMPORT_TAB);
@@ -141,7 +137,7 @@ export const ProjectTreeViewHeader = () => {
               icon="Refresh"
               onClick={handleRefreshProjects}
               title="Refresh Projects"
-              disabled={areProjectsLoading || !hasActiveWorkspace}
+              disabled={areProjectsLoading}
             />
 
             <PlaceholderDropdownMenu />

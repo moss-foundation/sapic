@@ -1,6 +1,6 @@
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/constants/layout";
 import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 
 import { ActivityBarFirstItems } from "./ActivityBarFirstItems";
 import { ActivityBarLastItems } from "./ActivityBarLastItems";

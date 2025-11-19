@@ -1,7 +1,7 @@
 import { toMerged } from "es-toolkit";
 import { SerializedDockview } from "moss-tabs";
 
-import { defaultLayoutState } from "@/defaults/layout";
+import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { layoutService, LayoutStateInput, LayoutStateOutput } from "@/workbench/domains/layout/service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
