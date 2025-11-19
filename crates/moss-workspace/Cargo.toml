@@ -8,11 +8,9 @@ license = "MIT"
 
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
-moss_db.workspace = true
 moss_fs.workspace = true
 moss_project.workspace = true
 moss_environment.workspace = true
-moss_storage.workspace = true              # FIXME: Remove once we fix environment and layout
 moss_storage2.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true

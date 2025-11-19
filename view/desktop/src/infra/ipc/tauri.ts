@@ -40,8 +40,6 @@ export type TauriIpcCommand =
   //
   // Workspace
   //
-  | "update_layout"
-  | "describe_workspace"
   | "describe_project"
   | "create_project"
   | "delete_project"

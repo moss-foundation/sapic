@@ -3,13 +3,10 @@
 pub mod shared;
 
 use moss_storage::storage::operations::GetItem;
-use moss_workspace::{
-    models::{
-        operations::UpdateLayoutInput,
-        primitives::SidebarPosition,
-        types::{PanelPartStateInfo, SidebarPartStateInfo},
-    },
-    storage_old::segments::{SEGKEY_LAYOUT_PANEL, SEGKEY_LAYOUT_SIDEBAR},
+use moss_workspace::models::{
+    operations::UpdateLayoutInput,
+    primitives::SidebarPosition,
+    types::{PanelPartStateInfo, SidebarPartStateInfo},
 };
 
 use crate::shared::setup_test_workspace;

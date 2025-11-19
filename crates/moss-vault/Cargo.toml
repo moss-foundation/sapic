@@ -5,7 +5,6 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
-moss_db.workspace = true
 
 serde = { workspace = true, features = ["derive"] }
 

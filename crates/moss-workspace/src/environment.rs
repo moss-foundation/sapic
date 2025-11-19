@@ -15,10 +15,6 @@ use moss_environment::{
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
 use moss_project::models::primitives::ProjectId;
-use moss_storage::{
-    WorkspaceStorage, common::VariableStore, primitives::segkey::SegKeyBuf,
-    storage::operations::TransactionalRemoveItem,
-};
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
 use std::{
@@ -41,7 +37,6 @@ use crate::{
         KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,
         key_environment_order,
     },
-    storage_old::StorageService,
 };
 
 const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
@@ -102,9 +97,6 @@ where
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState<R>>>,
-    // FIXME: Temporarily provide the old variable store to environment
-    // To avoid updating the environment crate, which is used also by moss-project
-    storage_old: Arc<StorageService<R>>,
     storage: Arc<dyn Storage>,
     workspace_id: WorkspaceId,
 }
@@ -117,7 +109,6 @@ where
     pub async fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage_old: Arc<StorageService<R>>,
         storage: Arc<dyn Storage>,
         workspace_id: WorkspaceId,
         sources: FxHashMap<Arc<String>, PathBuf>,
@@ -135,7 +126,6 @@ where
             fs,
             abs_path,
             state,
-            storage_old,
             storage,
             workspace_id,
         })
@@ -281,7 +271,6 @@ where
         let ctx = ctx.clone();
         let state_clone = self.state.clone();
         let storage = self.storage.clone();
-        let storage_old = self.storage_old.storage.clone();
         let sources_clone = state_clone.read().await.sources.clone();
 
         Box::pin(async_stream::stream! {
@@ -291,7 +280,6 @@ where
             let scanner = EnvironmentSourceScanner {
                 fs: self.fs.clone(),
                 sources: sources_clone,
-                storage_old,
                 storage: storage_clone.clone(),
                 workspace_id: self.workspace_id.clone(),
                 tx,
@@ -674,8 +662,6 @@ struct ScanSourceJob<R: AppRuntime> {
 struct EnvironmentSourceScanner<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     sources: FxHashMap<Arc<String>, PathBuf>,
-    // FIXME: Remove old storage when refactoring moss-environment
-    storage_old: Arc<dyn WorkspaceStorage<R::AsyncContext>>,
     storage: Arc<dyn Storage>,
     workspace_id: WorkspaceId,
     tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
@@ -719,7 +705,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
         let workspace_id = self.workspace_id.clone();
         for (source_id, source) in self.sources.iter() {
             let provider_tx_clone = provider_tx.clone();
-            let storage_clone = self.storage_old.variable_store();
             let source_id_clone = source_id.clone();
             let source_clone = source.clone();
             let fs_clone = self.fs.clone();
@@ -732,7 +717,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                     let source_id_for_scan = source_id_clone.clone();
                     let source_for_scan = source_clone.clone();
                     let fs_for_scan = fs_clone.clone();
-                    let storage_for_scan = storage_clone.clone();
                     let app_delegate_for_scan = app_delegate_clone.clone();
                     let workspace_id_for_scan = workspace_id_clone.clone();
 
@@ -741,7 +725,6 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
                             workspace_id_for_scan,
                             app_delegate_for_scan,
                             fs_for_scan,
-                            storage_for_scan,
                             ScanSourceJob {
                                 source_id: source_id_for_scan.clone(),
                                 abs_path: source_for_scan,
@@ -811,7 +794,6 @@ async fn scan_source<R: AppRuntime>(
     workspace_id: WorkspaceId,
     app_delegate: AppDelegate<R>,
     fs: Arc<dyn FileSystem>,
-    store: Arc<dyn VariableStore<R::AsyncContext>>,
     job: ScanSourceJob<R>,
 ) -> joinerror::Result<()> {
     session::trace!(

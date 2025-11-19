@@ -27,7 +27,6 @@ members = [
     "crates/moss-git-hosting-provider",
     "crates/moss-text",
     "crates/moss-project",
-    "crates/moss-db",
     "crates/moss-fs",
     "crates/moss-keyring",
     "crates/moss-vault",
@@ -35,7 +34,6 @@ members = [
     "crates/moss-environment",
     "crates/moss-testutils",
     "crates/moss-common",
-    "crates/moss-storage",
     "crates/moss-activity-broadcaster",
     "crates/moss-hcl", 
     "crates/moss-bindingutils", 
@@ -91,7 +89,6 @@ sapic-window = { path = "crates/window", package = "window" }
 
 moss_text = { path = "crates/moss-text" }
 moss_project = { path = "crates/moss-project" }
-moss_db = { path = "crates/moss-db" }
 moss_applib = { path = "crates/moss-applib" }
 moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
@@ -103,7 +100,6 @@ moss_workspace = { path = "crates/moss-workspace" }
 moss_environment = { path = "crates/moss-environment" }
 moss_common = { path = "crates/moss-common" }
 moss_testutils = { path = "crates/moss-testutils" }
-moss_storage = { path = "crates/moss-storage" }
 moss_activity_broadcaster = { path = "crates/moss-activity-broadcaster" }
 moss_hcl = { path = "crates/moss-hcl" }
 moss_bindingutils = { path = "crates/moss-bindingutils" }
@@ -129,7 +125,6 @@ settings-storage = { path = "plugins/settings-storage" }
 sqlx = { version = "0.8", features = [ "runtime-tokio" ] }
 async-stream = "0.3.6"
 notify = "8.0"
-redb = "2.6.0"
 tauri = { version = "2.2.5", default-features = false }
 tauri-plugin = { version = "2.2.0", features = ["build"] }
 rand = { version = "0.9.0", default-features = false}

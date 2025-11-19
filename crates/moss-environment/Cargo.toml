@@ -13,7 +13,6 @@ moss_applib.workspace = true
 moss_hcl.workspace = true
 moss_text.workspace = true
 moss_bindingutils.workspace = true
-moss_db.workspace = true
 moss_id_macro.workspace = true
 moss_logging.workspace = true
 moss_app_delegate.workspace = true

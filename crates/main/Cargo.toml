@@ -20,7 +20,6 @@ moss_server_api = { workspace = true }
 moss_activity_broadcaster = { workspace = true }
 moss_applib = { workspace = true }
 moss_common = { workspace = true }
-moss_db = { workspace = true }
 moss_project = { workspace = true }
 moss_fs = { workspace = true }
 moss_text = { workspace = true }

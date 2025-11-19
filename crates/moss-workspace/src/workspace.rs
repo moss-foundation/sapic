@@ -20,11 +20,9 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
     environment::EnvironmentService,
-    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
     models::primitives::WorkspaceId,
     project::ProjectService,
-    storage_old::StorageService,
 };
 
 pub struct WorkspaceSummary {
@@ -66,11 +64,8 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile<R>>,
-    pub(super) layout_service: LayoutService<R>,
     pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
-    // FIXME: Remove after removing the layout functionalities from the backend
-    pub(super) storage_service_old: Arc<StorageService<R>>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
     pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }

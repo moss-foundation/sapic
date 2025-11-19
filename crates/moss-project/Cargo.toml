@@ -12,7 +12,6 @@ moss_app_delegate.workspace = true
 moss_user.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
-moss_db.workspace = true
 moss_common.workspace = true
 moss_storage2.workspace = true
 moss_text.workspace = true

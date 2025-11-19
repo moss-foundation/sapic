@@ -1,6 +1,3 @@
-mod editor;
-pub use editor::*;
-
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_environment::models::{
     primitives::{EnvironmentId, VariableId},
@@ -160,87 +157,6 @@ pub struct EnvironmentInfo {
     pub order: isize,
     pub color: Option<String>,
     pub variables: Vec<VariableInfo>,
-}
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct Layouts {
-    pub editor: Option<EditorPartStateInfo>,
-    pub sidebar: Option<SidebarPartStateInfo>,
-    pub panel: Option<PanelPartStateInfo>,
-    pub activitybar: Option<ActivitybarPartStateInfo>,
-}
-
-// ------------------------------------------------------------
-// Activitybar Part State
-// ------------------------------------------------------------
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct ActivitybarItemStateInfo {
-    pub id: String,
-    pub order: isize,
-    pub visible: bool,
-}
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ActivitybarPartStateInfo {
-    pub last_active_container_id: Option<String>,
-    pub position: ActivitybarPosition,
-    pub items: Vec<ActivitybarItemStateInfo>,
-}
-
-// ------------------------------------------------------------
-// Sidebar Part State
-// ------------------------------------------------------------
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct SidebarPartStateInfo {
-    /// DEPRECATED (parameter should now be taken from the configuration)
-    pub position: SidebarPosition,
-    pub size: f64,
-    pub visible: bool,
-}
-
-// ------------------------------------------------------------
-// Panel Part State
-// ------------------------------------------------------------
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct PanelPartStateInfo {
-    pub size: f64,
-    pub visible: bool,
-}
-
-// ------------------------------------------------------------
-// Editor Part State
-// ------------------------------------------------------------
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct EditorPartStateInfo {
-    pub grid: EditorGridState,
-    #[ts(type = "Record<string, EditorPanelState>")]
-    pub panels: HashMap<String, EditorPanelState>,
-    pub active_group: Option<String>,
 }
 
 /// @category Type

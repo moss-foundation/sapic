@@ -207,27 +207,6 @@ pub struct DescribeEnvironmentOutput {
 }
 
 /// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeWorkspaceOutput {
-    pub layouts: Layouts,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateLayoutInput {
-    pub editor: Option<EditorPartStateInfo>,
-    pub sidebar: Option<SidebarPartStateInfo>,
-    pub panel: Option<PanelPartStateInfo>,
-    pub activitybar: Option<ActivitybarPartStateInfo>,
-}
-
-/// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
