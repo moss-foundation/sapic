@@ -13,6 +13,7 @@ moss_storage2.workspace = true
 moss_text.workspace = true
 moss_keyring.workspace = true  # TODO: move impl to platform crate
 moss_git.workspace = true
+moss_edit.workspace = true
 
 joinerror.workspace = true
 serde_json.workspace = true

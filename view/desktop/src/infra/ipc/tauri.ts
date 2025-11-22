@@ -32,6 +32,7 @@ export type TauriIpcCommand =
   // Main
   //
   | "main__cancel_request"
+  | "main__update_workspace"
   //
   // Welcome
   //

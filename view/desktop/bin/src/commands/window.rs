@@ -1,6 +1,6 @@
 use sapic_ipc::{
     TauriError, TauriResult,
-    contracts::{configuration::*, extension::*, theme::*},
+    contracts::{configuration::*, extension::*, theme::*, workspace::*},
 };
 use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
@@ -237,17 +237,14 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: DeleteWorkspaceInput,
     options: Options,
-) -> TauriResult<()> {
-    super::with_main_window_timeout(
+) -> TauriResult<DeleteWorkspaceOutput> {
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
-            window
-                .inner()
-                .delete_workspace(&ctx, &app_delegate, &input)
-                .await
+        |ctx, app, app_delegate| async move {
+            app.delete_workspace(&ctx, &app_delegate, &input).await
         },
     )
     .await
@@ -261,13 +258,13 @@ pub async fn update_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: UpdateWorkspaceInput,
     options: Options,
-) -> TauriResult<()> {
-    super::with_main_window_timeout(
+) -> TauriResult<UpdateWorkspaceOutput> {
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, window| async move { window.inner().update_workspace(&ctx, &input).await },
+        |ctx, app, _| async move { app.update_workspace(&ctx, &input).await },
     )
     .await
 }

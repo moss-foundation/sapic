@@ -46,6 +46,7 @@ derive_more = { workspace = true, features = ["deref", "deref_mut"] }
 tracing.workspace = true
 inventory.workspace = true
 reqwest = { workspace = true, features = ["json"] }
+validator = { workspace = true }
 
 [dev-dependencies]
 

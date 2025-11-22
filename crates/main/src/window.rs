@@ -1,21 +1,19 @@
 pub mod operations;
+pub mod workspace;
 
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::TauriResultExt};
-use moss_fs::FileSystem;
-use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
-use sapic_window::WindowBuilder;
 use sapic_window2::{
     AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
 };
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
+
+use crate::workspace::Workspace;
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
@@ -26,9 +24,11 @@ pub struct MainWindow<R: AppRuntime> {
     #[deref]
     pub handle: WindowHandle<R::EventLoop>,
 
+    pub workspace: Arc<dyn Workspace>,
+
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    w: Arc<sapic_window::Window<R>>,
+    w: Arc<sapic_window::OldSapicWindow<R>>,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -38,6 +38,7 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
     fn clone(&self) -> Self {
         Self {
             handle: self.handle.clone(),
+            workspace: self.workspace.clone(),
             w: self.w.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
@@ -46,24 +47,19 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn new(
-        ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-        fs: Arc<dyn FileSystem>,
-        keyring: Arc<dyn KeyringClient>,
-        auth_api_client: Arc<AccountAuthGatewayApiClient>,
         window_id: usize,
-        workspace_id: WorkspaceId,
+        old_window: sapic_window::OldSapicWindow<R>,
+        workspace: Arc<dyn Workspace>,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
-        let w = WindowBuilder::new(fs, keyring, auth_api_client, workspace_id.clone())
-            .build(ctx, delegate)
-            .await?;
-
         let label = format!("{MAIN_WINDOW_LABEL_PREFIX}{}", window_id);
         let win_builder = tauri::WebviewWindowBuilder::new(
             &tao_handle,
             label,
-            tauri::WebviewUrl::App(format!("{}#/{}", MAIN_WINDOW_ENTRY_POINT, workspace_id).into()),
+            tauri::WebviewUrl::App(
+                format!("{}#/{}", MAIN_WINDOW_ENTRY_POINT, workspace.id()).into(),
+            ),
         )
         .title("HARDCODED TITLE") // FIXME: HARDCODE
         .center()
@@ -87,15 +83,20 @@ impl<R: AppRuntime> MainWindow<R> {
 
         Ok(Self {
             handle: WindowHandle::new(webview_window),
-            w: Arc::new(w),
+            w: Arc::new(old_window),
+            workspace,
             tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    pub fn inner(&self) -> &sapic_window::Window<R> {
+    pub fn inner(&self) -> &sapic_window::OldSapicWindow<R> {
         &self.w
+    }
+
+    pub async fn workspace(&self) -> Arc<dyn Workspace> {
+        self.workspace.clone()
     }
 }
 

@@ -15,13 +15,17 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
-use sapic_main::MainWindow;
+use sapic_main::{MainWindow, workspace::RuntimeWorkspace};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
-    theme::theme_service::ThemeService, workspace::workspace_service::WorkspaceService,
+    theme::theme_service::ThemeService,
+    workspace::{
+        workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
+    },
 };
 use sapic_welcome::WelcomeWindow;
+use sapic_window::OldSapicWindowBuilder;
 use sapic_window2::AppWindowApi;
 use std::{
     ops::{Deref, DerefMut},
@@ -59,6 +63,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 
 pub(crate) struct AppServices {
     pub(crate) workspace_service: Arc<WorkspaceService>,
+    pub(crate) workspace_edit_service: Arc<WorkspaceEditService>,
     pub(crate) theme_service: Arc<ThemeService>,
     pub(crate) extension_api_service: Arc<ExtensionsApiService>,
 }
@@ -127,16 +132,27 @@ impl<R: AppRuntime> App<R> {
             return Ok(());
         }
 
+        let abs_path = delegate
+            .workspaces_dir()
+            .join(workspace_id.to_string())
+            .into();
+        let workspace = Arc::new(RuntimeWorkspace::new(
+            workspace_id.clone(),
+            abs_path,
+            self.services.workspace_edit_service.clone(),
+        ));
+        let old_window = OldSapicWindowBuilder::new(
+            self.fs.clone(),
+            self.keyring.clone(),
+            self.auth_api_client.clone(),
+            workspace_id.clone(),
+        )
+        .build(ctx, delegate)
+        .await?;
+
         let main_window = self
             .windows
-            .create_main_window(
-                ctx,
-                delegate,
-                self.fs.clone(),
-                self.keyring.clone(),
-                self.auth_api_client.clone(),
-                workspace_id,
-            )
+            .create_main_window(delegate, old_window, workspace)
             .await?;
 
         if let Err(err) = main_window.handle.set_focus() {

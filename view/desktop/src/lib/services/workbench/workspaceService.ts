@@ -49,7 +49,7 @@ export const workspaceService = {
 
   updateWorkspace: async (input: UpdateWorkspaceInput) => {
     return await invokeTauriServiceIpc<UpdateWorkspaceInput, void>({
-      cmd: "update_workspace",
+      cmd: "main__update_workspace",
       args: {
         input,
       },

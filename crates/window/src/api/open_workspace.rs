@@ -4,10 +4,10 @@ use moss_applib::{AppRuntime, errors::FailedPrecondition};
 
 use crate::{
     models::operations::{OpenWorkspaceInput, OpenWorkspaceOutput},
-    window::Window,
+    window::OldSapicWindow,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn open_workspace(
         &self,
         ctx: &R::AsyncContext,

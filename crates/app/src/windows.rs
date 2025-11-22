@@ -1,14 +1,12 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::TauriResultExt};
-use moss_fs::FileSystem;
-use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
-use sapic_main::MainWindow;
+use sapic_main::{MainWindow, workspace::Workspace};
 use sapic_welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow};
+use sapic_window::OldSapicWindow;
 use sapic_window2::AppWindowApi;
 use std::sync::{
     Arc,
@@ -68,6 +66,8 @@ impl<R: AppRuntime> AppWindow<R> {
 pub(crate) struct WindowManager<R: AppRuntime> {
     next_window_id: AtomicUsize,
     windows: RwLock<FxHashMap<WindowLabel, AppWindow<R>>>,
+    workspaces: RwLock<FxHashMap<WorkspaceId, Arc<dyn Workspace>>>,
+    labels_by_workspace: RwLock<FxHashMap<WorkspaceId, WindowLabel>>,
 }
 
 impl<R: AppRuntime> WindowManager<R> {
@@ -75,6 +75,8 @@ impl<R: AppRuntime> WindowManager<R> {
         Self {
             next_window_id: AtomicUsize::new(0),
             windows: RwLock::new(FxHashMap::default()),
+            workspaces: RwLock::new(FxHashMap::default()),
+            labels_by_workspace: RwLock::new(FxHashMap::default()),
         }
     }
 
@@ -86,18 +88,15 @@ impl<R: AppRuntime> WindowManager<R> {
         &self,
         workspace_id: &WorkspaceId,
     ) -> Option<MainWindow<R>> {
-        for window in self.windows.read().await.values() {
-            let AppWindow::Main(main) = window else {
-                continue;
-            };
+        let workspace_id = self
+            .labels_by_workspace
+            .read()
+            .await
+            .get(workspace_id)
+            .cloned();
 
-            let Some(workspace) = main.inner().workspace().await else {
-                continue;
-            };
-
-            if workspace.id() == *workspace_id {
-                return Some(main.clone());
-            }
+        if let Some(label) = workspace_id {
+            return self.main_window(&label).await;
         }
 
         None
@@ -120,6 +119,10 @@ impl<R: AppRuntime> WindowManager<R> {
         &self,
         delegate: &AppDelegate<R>,
     ) -> joinerror::Result<WelcomeWindow<R>> {
+        if let Some(w) = self.welcome_window().await {
+            return Ok(w);
+        }
+
         let window = WelcomeWindow::new(delegate).await?;
         self.windows.write().await.insert(
             WELCOME_WINDOW_LABEL.to_string(),
@@ -160,21 +163,16 @@ impl<R: AppRuntime> WindowManager<R> {
 
     pub async fn create_main_window(
         &self,
-        ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-        fs: Arc<dyn FileSystem>,
-        keyring: Arc<dyn KeyringClient>,
-        auth_api_client: Arc<AccountAuthGatewayApiClient>,
-        workspace_id: WorkspaceId,
+
+        old_window: OldSapicWindow<R>,
+        workspace: Arc<dyn Workspace>,
     ) -> joinerror::Result<MainWindow<R>> {
         let window = MainWindow::new(
-            ctx,
             delegate,
-            fs,
-            keyring,
-            auth_api_client,
             self.next_window_id.fetch_add(1, Ordering::Relaxed),
-            workspace_id.clone(),
+            old_window,
+            workspace.clone(),
         )
         .await?;
 
@@ -183,6 +181,15 @@ impl<R: AppRuntime> WindowManager<R> {
             .write()
             .await
             .insert(label.clone(), AppWindow::Main(window.clone()));
+
+        self.workspaces
+            .write()
+            .await
+            .insert(workspace.id(), workspace.clone());
+        self.labels_by_workspace
+            .write()
+            .await
+            .insert(workspace.id(), label.clone());
 
         Ok(window)
     }
@@ -194,11 +201,15 @@ impl<R: AppRuntime> WindowManager<R> {
             return Ok(());
         };
 
+        let workspace_id = window.workspace().await.id();
+
         window
             .close()
             .join_err::<()>("failed to close main window")?;
 
         self.windows.write().await.remove(label);
+        self.workspaces.write().await.remove(&workspace_id);
+        self.labels_by_workspace.write().await.remove(&workspace_id);
 
         Ok(())
     }

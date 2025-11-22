@@ -9,11 +9,11 @@ use validator::Validate;
 
 use crate::{
     models::operations::{CreateWorkspaceInput, CreateWorkspaceOutput},
-    window::Window,
+    window::OldSapicWindow,
     workspace::WorkspaceItemCreateParams,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn create_workspace(
         &self,
         ctx: &R::AsyncContext,

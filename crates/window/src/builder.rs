@@ -18,18 +18,18 @@ use crate::{
     profile::ProfileService,
     session::SessionService,
     // theme::ThemeService,
-    window::Window,
+    window::OldSapicWindow,
     workspace::WorkspaceService,
 };
 
-pub struct WindowBuilder {
+pub struct OldSapicWindowBuilder {
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
 }
 
-impl WindowBuilder {
+impl OldSapicWindowBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
@@ -48,7 +48,7 @@ impl WindowBuilder {
         self,
         ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-    ) -> joinerror::Result<Window<R>> {
+    ) -> joinerror::Result<OldSapicWindow<R>> {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
@@ -124,7 +124,7 @@ impl WindowBuilder {
             )
             .await?;
 
-        Ok(Window {
+        Ok(OldSapicWindow {
             app_handle: tao_handle.clone(),
             session_service,
             log_service,

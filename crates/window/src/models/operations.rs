@@ -2,7 +2,10 @@ use derive_more::Deref;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
-use sapic_base::workspace::types::primitives::{WorkspaceId, WorkspaceMode};
+use sapic_base::workspace::types::{
+    WorkspaceInfo,
+    primitives::{WorkspaceId, WorkspaceMode},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -154,10 +157,10 @@ pub struct BatchDeleteLogOutput {
 
 // List Workspaces
 
-/// @category Operation
-#[derive(Debug, Serialize, Deref, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
+// /// @category Operation
+// #[derive(Debug, Serialize, Deref, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 
 // Open Workspace
 
@@ -220,41 +223,41 @@ pub struct CreateWorkspaceOutput {
     pub abs_path: Arc<Path>,
 }
 
-// Delete Workspace
+// // Delete Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteWorkspaceInput {
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteWorkspaceInput {
+//     pub id: WorkspaceId,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
 // Rename Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateWorkspaceInput {
-    /// A new name for the workspace, if provided, the workspace
-    /// will be renamed to this name.
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct UpdateWorkspaceInput {
+//     /// A new name for the workspace, if provided, the workspace
+//     /// will be renamed to this name.
+//     #[validate(length(min = 1))]
+//     pub name: Option<String>,
+// }
 
 // Describe Workbench State
 

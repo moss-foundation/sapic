@@ -108,21 +108,6 @@ impl<R: AppRuntime> WorkspaceService<R> {
             })
     }
 
-    pub(crate) async fn list_workspaces(&self) -> joinerror::Result<Vec<WorkspaceDetails>> {
-        let state_lock = self.state.read().await;
-        let workspaces = state_lock
-            .known_workspaces
-            .values()
-            .map(|item| WorkspaceDetails {
-                id: item.id.clone(),
-                name: item.name.clone(),
-                abs_path: item.abs_path.clone(),
-                last_opened_at: item.last_opened_at,
-            })
-            .collect();
-        Ok(workspaces)
-    }
-
     pub(crate) async fn update_workspace(
         &self,
         params: WorkspaceItemUpdateParams,
@@ -156,67 +141,67 @@ impl<R: AppRuntime> WorkspaceService<R> {
         Ok(())
     }
 
-    pub(crate) async fn delete_workspace(
-        &self,
-        ctx: &R::AsyncContext,
-        app_delegate: &AppDelegate<R>,
-        id: &WorkspaceId,
-    ) -> joinerror::Result<()> {
-        let (active_workspace_id, item) = {
-            let state_lock = self.state.read().await;
+    // pub(crate) async fn delete_workspace(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     app_delegate: &AppDelegate<R>,
+    //     id: &WorkspaceId,
+    // ) -> joinerror::Result<()> {
+    //     let (active_workspace_id, item) = {
+    //         let state_lock = self.state.read().await;
 
-            let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
-            let item = state_lock.known_workspaces.get(&id).cloned();
+    //         let active_workspace_id = state_lock.active_workspace.as_ref().map(|a| a.id.clone());
+    //         let item = state_lock.known_workspaces.get(&id).cloned();
 
-            (active_workspace_id, item)
-        };
+    //         (active_workspace_id, item)
+    //     };
 
-        let item = item.ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
-        if active_workspace_id == Some(item.id.clone()) {
-            self.deactivate_workspace(ctx, app_delegate).await?
-        }
+    //     let item = item.ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", id))?;
+    //     if active_workspace_id == Some(item.id.clone()) {
+    //         self.deactivate_workspace(ctx, app_delegate).await?
+    //     }
 
-        if item.abs_path.exists() {
-            self.fs
-                .remove_dir(
-                    &item.abs_path,
-                    RemoveOptions {
-                        recursive: true,
-                        ignore_if_not_exists: true,
-                    },
-                )
-                .await
-                .join_err_with::<()>(|| {
-                    format!(
-                        "failed to delete workspace `{}` directory",
-                        item.id.as_str()
-                    )
-                })?;
-        }
+    //     if item.abs_path.exists() {
+    //         self.fs
+    //             .remove_dir(
+    //                 &item.abs_path,
+    //                 RemoveOptions {
+    //                     recursive: true,
+    //                     ignore_if_not_exists: true,
+    //                 },
+    //             )
+    //             .await
+    //             .join_err_with::<()>(|| {
+    //                 format!(
+    //                     "failed to delete workspace `{}` directory",
+    //                     item.id.as_str()
+    //                 )
+    //             })?;
+    //     }
 
-        {
-            let mut state_lock = self.state.write().await;
-            state_lock.known_workspaces.remove(&id);
-        }
+    //     {
+    //         let mut state_lock = self.state.write().await;
+    //         state_lock.known_workspaces.remove(&id);
+    //     }
 
-        {
-            let storage = <dyn Storage>::global(app_delegate);
+    //     {
+    //         let storage = <dyn Storage>::global(app_delegate);
 
-            // Try to remove database entries for the workspace (log error if db operation fails)
-            if let Err(e) = storage
-                .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
-                .await
-            {
-                session::warn!(format!(
-                    "failed to remove database entries for workspace `{}`: {}",
-                    id,
-                    e.to_string()
-                ));
-            }
-        }
+    //         // Try to remove database entries for the workspace (log error if db operation fails)
+    //         if let Err(e) = storage
+    //             .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
+    //             .await
+    //         {
+    //             session::warn!(format!(
+    //                 "failed to remove database entries for workspace `{}`: {}",
+    //                 id,
+    //                 e.to_string()
+    //             ));
+    //         }
+    //     }
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     pub(crate) async fn create_workspace(
         &self,

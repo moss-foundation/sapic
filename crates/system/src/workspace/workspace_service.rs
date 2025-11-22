@@ -2,13 +2,11 @@ use joinerror::ResultExt;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
-
 use serde_json::Value as JsonValue;
-use std::sync::Arc;
+use std::{path::PathBuf, sync::Arc};
 
-use crate::workspace::{DynWorkspaceDiscoverer, types::KnownWorkspace};
+use crate::workspace::{WorkspaceServiceFs, types::KnownWorkspace};
 
-// static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
 pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
@@ -20,16 +18,32 @@ pub fn key_workspace(id: &WorkspaceId) -> String {
 }
 
 pub struct WorkspaceService {
-    discoverer: DynWorkspaceDiscoverer,
+    fs: Arc<dyn WorkspaceServiceFs>,
     storage: Arc<dyn Storage>,
 }
 
 impl WorkspaceService {
-    pub async fn new(discoverer: DynWorkspaceDiscoverer, storage: Arc<dyn Storage>) -> Self {
-        Self {
-            discoverer,
-            storage,
+    pub fn new(fs: Arc<dyn WorkspaceServiceFs>, storage: Arc<dyn Storage>) -> Self {
+        Self { fs, storage }
+    }
+
+    pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
+        // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
+        let deleted_path = self.fs.delete_workspace(id).await?;
+
+        if let Err(e) = self
+            .storage
+            .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
+            .await
+        {
+            tracing::warn!(
+                "failed to remove database entries for workspace `{}`: {}",
+                id,
+                e.to_string()
+            );
         }
+
+        Ok(deleted_path)
     }
 
     pub async fn known_workspaces(&self) -> joinerror::Result<Vec<KnownWorkspace>> {
@@ -44,10 +58,10 @@ impl WorkspaceService {
         };
 
         let discovered_workspaces = self
-            .discoverer
-            .discover_workspaces()
+            .fs
+            .lookup_workspaces()
             .await
-            .join_err::<()>("failed to discover workspaces")?;
+            .join_err::<()>("failed to lookup workspaces")?;
 
         let workspaces = discovered_workspaces
             .into_iter()

@@ -265,6 +265,7 @@ pub async fn run<R: TauriRuntime>() {
             // Main
             //
             commands::main__cancel_request,
+            commands::main__update_workspace,
             //
             // Welcome
             //

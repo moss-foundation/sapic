@@ -133,17 +133,17 @@ pub struct LogEntryInfo {
 // ###                    Workspace                      ###
 // #########################################################
 
-/// @category Type
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct WorkspaceInfo {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub last_opened_at: Option<i64>,
+// /// @category Type
+// #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct WorkspaceInfo {
+//     pub id: WorkspaceId,
+//     pub name: String,
+//     pub last_opened_at: Option<i64>,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }

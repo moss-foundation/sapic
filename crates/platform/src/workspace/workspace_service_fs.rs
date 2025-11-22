@@ -1,29 +1,29 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_common::continue_if_err;
-use moss_fs::{FileSystem, FsResultExt};
+use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
 use sapic_system::workspace::{
-    WorkspaceDiscoverer as WorkspaceDiscovererPort, types::DiscoveredWorkspace,
+    WorkspaceServiceFs as WorkspaceServiceFsPort, types::DiscoveredWorkspace,
 };
 use std::{path::PathBuf, sync::Arc};
 
-const MANIFEST_FILE_NAME: &str = "Sapic.json";
+use crate::workspace::MANIFEST_FILE_NAME;
 
-pub struct WorkspaceDiscoverer {
+pub struct WorkspaceServiceFs {
     workspaces_dir: PathBuf,
     fs: Arc<dyn FileSystem>,
 }
 
-impl WorkspaceDiscoverer {
+impl WorkspaceServiceFs {
     pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Self {
         Self { fs, workspaces_dir }
     }
 }
 
 #[async_trait]
-impl WorkspaceDiscovererPort for WorkspaceDiscoverer {
-    async fn discover_workspaces(&self) -> joinerror::Result<Vec<DiscoveredWorkspace>> {
+impl WorkspaceServiceFsPort for WorkspaceServiceFs {
+    async fn lookup_workspaces(&self) -> joinerror::Result<Vec<DiscoveredWorkspace>> {
         let mut read_dir = self.fs.read_dir(&self.workspaces_dir).await?;
         let mut workspaces = vec![];
 
@@ -63,5 +63,25 @@ impl WorkspaceDiscovererPort for WorkspaceDiscoverer {
         }
 
         Ok(workspaces)
+    }
+
+    async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
+        let path = self.workspaces_dir.join(id.as_str());
+        if !path.exists() {
+            return Ok(None);
+        }
+
+        self.fs
+            .remove_dir(
+                &path,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await
+            .join_err_with::<()>(|| format!("failed to delete workspace `{}`", id.as_str()))?;
+
+        Ok(Some(path))
     }
 }

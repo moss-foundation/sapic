@@ -6,13 +6,19 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
-    server::HttpServerApiClient, theme::loader::ThemeLoader,
-    workspace::workspace_discoverer::WorkspaceDiscoverer,
+    server::HttpServerApiClient,
+    theme::loader::ThemeLoader,
+    workspace::{
+        workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
+    },
 };
 use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalThemeRegistry};
 use sapic_system::{
-    application::extensions_service::ExtensionsApiService, theme::theme_service::ThemeService,
-    workspace::workspace_service::WorkspaceService,
+    application::extensions_service::ExtensionsApiService,
+    theme::theme_service::ThemeService,
+    workspace::{
+        workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
+    },
 };
 use std::sync::Arc;
 
@@ -67,16 +73,20 @@ impl<R: AppRuntime> AppBuilder<R> {
         let server_api_client: Arc<HttpServerApiClient> =
             HttpServerApiClient::new(self.server_api_endpoint, self.http_client).into();
 
+        let workspace_edit_backend =
+            WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());
+        let workspace_edit_service = WorkspaceEditService::new(Arc::new(workspace_edit_backend));
+        let workspace_service = WorkspaceService::new(
+            Arc::new(WorkspaceServiceFs::new(
+                self.fs.clone(),
+                delegate.workspaces_dir(),
+            )),
+            storage.clone(),
+        );
+
         let services = AppServices {
-            workspace_service: WorkspaceService::new(
-                Arc::new(WorkspaceDiscoverer::new(
-                    self.fs.clone(),
-                    delegate.workspaces_dir(),
-                )),
-                storage.clone(),
-            )
-            .await
-            .into(),
+            workspace_service: workspace_service.into(),
+            workspace_edit_service: workspace_edit_service.into(),
             theme_service: ThemeService::new(
                 GlobalThemeRegistry::get(delegate),
                 ThemeLoader::new(

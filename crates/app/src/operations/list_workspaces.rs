@@ -1,6 +1,7 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use sapic_window::models::{operations::ListWorkspacesOutput, types::WorkspaceInfo};
+use sapic_base::workspace::types::WorkspaceInfo;
+use sapic_ipc::contracts::workspace::ListWorkspacesOutput;
 
 use crate::App;
 

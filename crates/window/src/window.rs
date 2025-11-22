@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[derive(Deref)]
-pub struct Window<R: AppRuntime> {
+pub struct OldSapicWindow<R: AppRuntime> {
     #[deref]
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
@@ -26,7 +26,7 @@ pub struct Window<R: AppRuntime> {
     // pub(super) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub fn session_id(&self) -> &SessionId {
         self.session_service.session_id()
     }
@@ -53,7 +53,7 @@ impl<R: AppRuntime> Window<R> {
 }
 
 #[cfg(feature = "integration-tests")]
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     // pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
     //     self.tracked_cancellations.clone()
     // }

@@ -2,19 +2,17 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::FailedPrecondition};
 use moss_user::models::types::ProfileInfo;
+use sapic_base::workspace::types::WorkspaceInfo;
 use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 
 use crate::{
-    models::{
-        operations::DescribeAppOutput,
-        types::{Configuration, WorkspaceInfo},
-    },
-    window::Window,
+    models::{operations::DescribeAppOutput, types::Configuration},
+    window::OldSapicWindow,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn describe_app(
         &self,
         _ctx: &R::AsyncContext,
