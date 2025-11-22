@@ -1,16 +1,7 @@
 use sapic_base::workspace::types::primitives::WorkspaceId;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
 
-pub struct DiscoveredWorkspace {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub abs_path: PathBuf,
-}
-
-pub struct KnownWorkspace {
+pub struct RestoredWorkspace {
     pub id: WorkspaceId,
     pub name: String,
     pub abs_path: Arc<Path>, // TODO: do we need Arc here?

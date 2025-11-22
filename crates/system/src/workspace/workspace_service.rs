@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
@@ -5,7 +6,7 @@ use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::workspace::{WorkspaceServiceFs, types::KnownWorkspace};
+use crate::workspace::{WorkspaceCreateOp, WorkspaceServiceFs, types::RestoredWorkspace};
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
@@ -15,6 +16,12 @@ pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
 
 pub fn key_workspace(id: &WorkspaceId) -> String {
     format!("{KEY_WORKSPACE_PREFIX}.{}", id.to_string())
+}
+
+pub struct CreatedWorkspace {
+    pub id: WorkspaceId,
+    pub name: String,
+    pub abs_path: PathBuf,
 }
 
 pub struct WorkspaceService {
@@ -46,7 +53,7 @@ impl WorkspaceService {
         Ok(deleted_path)
     }
 
-    pub async fn known_workspaces(&self) -> joinerror::Result<Vec<KnownWorkspace>> {
+    pub async fn restore_workspaces(&self) -> joinerror::Result<Vec<RestoredWorkspace>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
             .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
@@ -75,7 +82,7 @@ impl WorkspaceService {
                     .get(&key_workspace_last_opened_at(&discovered.id))
                     .and_then(|value| value.as_i64());
 
-                KnownWorkspace {
+                RestoredWorkspace {
                     id: discovered.id,
                     name: discovered.name,
                     abs_path: Arc::from(discovered.abs_path),
@@ -85,5 +92,15 @@ impl WorkspaceService {
             .collect();
 
         Ok(workspaces)
+    }
+}
+
+#[async_trait]
+impl WorkspaceCreateOp for WorkspaceService {
+    async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
+        let id = WorkspaceId::new();
+        let abs_path = self.fs.create_workspace(&id, &name).await?;
+
+        Ok(CreatedWorkspace { id, name, abs_path })
     }
 }

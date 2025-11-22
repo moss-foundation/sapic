@@ -1,10 +1,9 @@
 use derive_more::Deref;
+use sapic_base::workspace::types::{WorkspaceInfo, primitives::WorkspaceId};
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
-
-use sapic_base::workspace::types::{WorkspaceInfo, primitives::WorkspaceId};
 
 //
 // Delete Workspace
@@ -40,7 +39,7 @@ pub struct DeleteWorkspaceOutput {
 pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 
 //
-// Update Workspace Attributes
+// Update Workspace
 //
 
 /// @category Operation

@@ -33,6 +33,7 @@ joinerror = { workspace = true }
 tokio = { workspace = true }
 async-trait = { workspace = true }
 validator = { workspace = true }
+futures = { workspace = true }
 
 [features]
 integration-tests = []

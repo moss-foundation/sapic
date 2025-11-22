@@ -2,10 +2,7 @@ use derive_more::Deref;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use moss_user::models::{primitives::AccountId, types::ProfileInfo};
-use sapic_base::workspace::types::{
-    WorkspaceInfo,
-    primitives::{WorkspaceId, WorkspaceMode},
-};
+use sapic_base::workspace::types::{WorkspaceInfo, primitives::WorkspaceId};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -185,43 +182,43 @@ pub struct OpenWorkspaceOutput {
     pub abs_path: Arc<Path>,
 }
 
-// Create Workspace
+// // Create Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS, Clone)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateWorkspaceInput {
-    #[validate(length(min = 1))]
-    pub name: String,
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS, Clone)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateWorkspaceInput {
+//     #[validate(length(min = 1))]
+//     pub name: String,
 
-    // FIXME: Do we need this anymore?
-    #[serde(default)]
-    #[ts(type = "WorkspaceMode")]
-    pub mode: WorkspaceMode,
+//     // FIXME: Do we need this anymore?
+//     #[serde(default)]
+//     #[ts(type = "WorkspaceMode")]
+//     pub mode: WorkspaceMode,
 
-    #[serde(default = "default_open_on_creation")]
-    pub open_on_creation: bool,
-}
+//     #[serde(default = "default_open_on_creation")]
+//     pub open_on_creation: bool,
+// }
 
-fn default_open_on_creation() -> bool {
-    true
-}
+// fn default_open_on_creation() -> bool {
+//     true
+// }
 
-/// @category Operation
-#[derive(Debug, Validate, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// @category Operation
+// #[derive(Debug, Validate, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    pub active: bool,
+//     pub active: bool,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
 // // Delete Workspace
 

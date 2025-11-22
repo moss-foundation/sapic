@@ -4,8 +4,10 @@ use moss_applib::{AppRuntime, errors::TauriResultExt};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
-use sapic_main::{MainWindow, workspace::Workspace};
-use sapic_welcome::{WELCOME_WINDOW_LABEL, WelcomeWindow};
+use sapic_main::{MainWindow, workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_welcome::{
+    WELCOME_WINDOW_LABEL, WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps,
+};
 use sapic_window::OldSapicWindow;
 use sapic_window2::AppWindowApi;
 use std::sync::{
@@ -118,12 +120,13 @@ impl<R: AppRuntime> WindowManager<R> {
     pub async fn create_welcome_window(
         &self,
         delegate: &AppDelegate<R>,
+        workspace_ops: WelcomeWindowWorkspaceOps,
     ) -> joinerror::Result<WelcomeWindow<R>> {
         if let Some(w) = self.welcome_window().await {
             return Ok(w);
         }
 
-        let window = WelcomeWindow::new(delegate).await?;
+        let window = WelcomeWindow::new(delegate, workspace_ops).await?;
         self.windows.write().await.insert(
             WELCOME_WINDOW_LABEL.to_string(),
             AppWindow::Welcome(window.clone()),
@@ -164,15 +167,16 @@ impl<R: AppRuntime> WindowManager<R> {
     pub async fn create_main_window(
         &self,
         delegate: &AppDelegate<R>,
-
         old_window: OldSapicWindow<R>,
         workspace: Arc<dyn Workspace>,
+        workspace_ops: MainWindowWorkspaceOps,
     ) -> joinerror::Result<MainWindow<R>> {
         let window = MainWindow::new(
             delegate,
             self.next_window_id.fetch_add(1, Ordering::Relaxed),
             old_window,
             workspace.clone(),
+            workspace_ops,
         )
         .await?;
 

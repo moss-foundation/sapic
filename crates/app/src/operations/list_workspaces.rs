@@ -14,7 +14,7 @@ impl<R: AppRuntime> App<R> {
         let workspaces = self
             .services
             .workspace_service
-            .known_workspaces()
+            .restore_workspaces()
             .await?
             .into_iter()
             .map(|item| WorkspaceInfo {

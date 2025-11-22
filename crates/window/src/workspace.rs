@@ -2,13 +2,13 @@ use chrono::Utc;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
+use moss_fs::FileSystem;
 use moss_logging::session;
 use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use moss_workspace::{
     builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
-    workspace::{WorkspaceModifyParams, WorkspaceSummary},
+    workspace::WorkspaceSummary,
 };
 use serde_json::Value as JsonValue;
 use std::{
@@ -31,10 +31,6 @@ use crate::{
 
 pub(crate) struct WorkspaceItemCreateParams {
     pub name: String,
-}
-
-pub(crate) struct WorkspaceItemUpdateParams {
-    pub name: Option<String>,
 }
 
 #[derive(Debug, Clone)]
@@ -108,38 +104,38 @@ impl<R: AppRuntime> WorkspaceService<R> {
             })
     }
 
-    pub(crate) async fn update_workspace(
-        &self,
-        params: WorkspaceItemUpdateParams,
-    ) -> joinerror::Result<()> {
-        let mut state_lock = self.state.write().await;
-        let workspace = state_lock
-            .active_workspace
-            .as_ref()
-            .ok_or_join_err::<()>("no active workspace")?;
+    // pub(crate) async fn update_workspace(
+    //     &self,
+    //     params: WorkspaceItemUpdateParams,
+    // ) -> joinerror::Result<()> {
+    //     let mut state_lock = self.state.write().await;
+    //     let workspace = state_lock
+    //         .active_workspace
+    //         .as_ref()
+    //         .ok_or_join_err::<()>("no active workspace")?;
 
-        let mut descriptor = state_lock
-            .known_workspaces
-            .get(&workspace.id)
-            .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", workspace.id))?
-            .clone();
+    //     let mut descriptor = state_lock
+    //         .known_workspaces
+    //         .get(&workspace.id)
+    //         .ok_or_join_err_with::<()>(|| format!("workspace `{}` not found", workspace.id))?
+    //         .clone();
 
-        workspace
-            .modify(WorkspaceModifyParams {
-                name: params.name.clone(),
-            })
-            .await?;
+    //     workspace
+    //         .modify(WorkspaceModifyParams {
+    //             name: params.name.clone(),
+    //         })
+    //         .await?;
 
-        if let Some(new_name) = params.name {
-            descriptor.name = new_name;
-        }
+    //     if let Some(new_name) = params.name {
+    //         descriptor.name = new_name;
+    //     }
 
-        state_lock
-            .known_workspaces
-            .insert(descriptor.id.clone(), descriptor);
+    //     state_lock
+    //         .known_workspaces
+    //         .insert(descriptor.id.clone(), descriptor);
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     // pub(crate) async fn delete_workspace(
     //     &self,

@@ -15,7 +15,7 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
-use sapic_main::{MainWindow, workspace::RuntimeWorkspace};
+use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -24,7 +24,7 @@ use sapic_system::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
 };
-use sapic_welcome::WelcomeWindow;
+use sapic_welcome::{WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps};
 use sapic_window::OldSapicWindowBuilder;
 use sapic_window2::AppWindowApi;
 use std::{
@@ -98,14 +98,20 @@ impl<R: AppRuntime> App<R> {
     pub async fn ensure_welcome(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
         let maybe_welcome_window = self.windows.welcome_window().await;
         if let Some(welcome_window) = maybe_welcome_window {
-            if let Err(err) = welcome_window.handle.set_focus() {
+            if let Err(err) = welcome_window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
 
             return Ok(());
         } else {
-            let welcome_window = self.windows.create_welcome_window(delegate).await?;
-            if let Err(err) = welcome_window.handle.set_focus() {
+            let workspace_ops =
+                WelcomeWindowWorkspaceOps::new(self.services.workspace_service.clone());
+
+            let welcome_window = self
+                .windows
+                .create_welcome_window(delegate, workspace_ops)
+                .await?;
+            if let Err(err) = welcome_window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
 
@@ -150,9 +156,11 @@ impl<R: AppRuntime> App<R> {
         .build(ctx, delegate)
         .await?;
 
+        let workspace_ops = MainWindowWorkspaceOps::new(self.services.workspace_service.clone());
+
         let main_window = self
             .windows
-            .create_main_window(delegate, old_window, workspace)
+            .create_main_window(delegate, old_window, workspace, workspace_ops)
             .await?;
 
         if let Err(err) = main_window.handle.set_focus() {

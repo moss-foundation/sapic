@@ -20,7 +20,7 @@ pub async fn describe_app<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
+        |ctx, _, app_delegate, window| async move {
             window.inner().describe_app(&ctx, &app_delegate).await
         },
     )
@@ -41,7 +41,7 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
+        |ctx, _, app_delegate, window| async move {
             window
                 .inner()
                 .update_configuration(&ctx, &app_delegate, input)
@@ -139,7 +139,7 @@ pub async fn list_languages<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, window| async move { window.inner().list_languages(&ctx).await },
+        |ctx, _, _, window| async move { window.inner().list_languages(&ctx).await },
     )
     .await
 }
@@ -158,31 +158,7 @@ pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, window| async move { window.inner().get_translation_namespace(&ctx, &input).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: CreateWorkspaceInput,
-    options: Options,
-) -> TauriResult<CreateWorkspaceOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app_delegate, window| async move {
-            window
-                .inner()
-                .create_workspace(&ctx, &app_delegate, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.inner().get_translation_namespace(&ctx, &input).await },
     )
     .await
 }
@@ -201,7 +177,7 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
+        |ctx, _, app_delegate, window| async move {
             window
                 .inner()
                 .close_workspace(&ctx, &app_delegate, &input)
@@ -284,7 +260,7 @@ pub async fn create_profile<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
+        |ctx, _, app_delegate, window| async move {
             window
                 .inner()
                 .create_profile(&ctx, &app_delegate, input)
@@ -308,7 +284,7 @@ pub async fn update_profile<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
+        |ctx, _, app_delegate, window| async move {
             window
                 .inner()
                 .update_profile(&ctx, &app_delegate, input)

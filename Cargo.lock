@@ -3587,6 +3587,7 @@ dependencies = [
  "base",
  "core",
  "derive_more 2.0.1",
+ "futures",
  "ipc",
  "joinerror",
  "moss_activity_broadcaster",
@@ -5140,6 +5141,7 @@ dependencies = [
  "moss_applib",
  "moss_common",
  "moss_edit",
+ "moss_environment",
  "moss_fs",
  "moss_git",
  "moss_text",
@@ -8894,6 +8896,7 @@ dependencies = [
  "system",
  "tauri",
  "tokio",
+ "validator",
  "window",
  "window2",
 ]

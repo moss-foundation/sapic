@@ -1,5 +1,6 @@
 pub mod operations;
 pub mod workspace;
+pub mod workspace_ops;
 
 use async_trait::async_trait;
 use derive_more::Deref;
@@ -13,7 +14,7 @@ use sapic_window2::{
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::workspace::Workspace;
+use crate::{workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
 
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
@@ -30,6 +31,8 @@ pub struct MainWindow<R: AppRuntime> {
     // functionality and fully get rid of the separate `window` crate.
     w: Arc<sapic_window::OldSapicWindow<R>>,
 
+    pub(crate) workspace_ops: MainWindowWorkspaceOps,
+
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
 }
@@ -40,6 +43,7 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
             handle: self.handle.clone(),
             workspace: self.workspace.clone(),
             w: self.w.clone(),
+            workspace_ops: self.workspace_ops.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
@@ -51,6 +55,7 @@ impl<R: AppRuntime> MainWindow<R> {
         window_id: usize,
         old_window: sapic_window::OldSapicWindow<R>,
         workspace: Arc<dyn Workspace>,
+        workspace_ops: MainWindowWorkspaceOps,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
         let label = format!("{MAIN_WINDOW_LABEL_PREFIX}{}", window_id);
@@ -85,6 +90,7 @@ impl<R: AppRuntime> MainWindow<R> {
             handle: WindowHandle::new(webview_window),
             w: Arc::new(old_window),
             workspace,
+            workspace_ops,
             tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
     }
