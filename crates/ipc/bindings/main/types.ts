@@ -3,4 +3,4 @@
 /**
  * @category Type
  */
-export type WorkspaceMode = "LIVE" | "DESIGN";
+export type OpenInTarget = "NEW_WINDOW" | "CURRENT_WINDOW";

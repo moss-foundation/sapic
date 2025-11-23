@@ -1,12 +1,10 @@
-use sapic_ipc::{
-    TauriError, TauriResult,
-    contracts::{configuration::*, extension::*, theme::*, workspace::*},
-};
+use sapic_ipc::{TauriError, TauriResult};
 use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_app<'a, R: tauri::Runtime>(
@@ -27,6 +25,7 @@ pub async fn describe_app<'a, R: tauri::Runtime>(
     .await
 }
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_configuration<'a, R: tauri::Runtime>(
@@ -47,81 +46,6 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
                 .update_configuration(&ctx, &app_delegate, input)
                 .await
         },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> TauriResult<ListConfigurationSchemasOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, app_delegate| async move {
-            app.list_configuration_schemas(&ctx, &app_delegate).await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_extensions<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> TauriResult<ListExtensionsOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, _| async move { app.list_extensions(&ctx).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
-pub async fn describe_color_theme<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: GetColorThemeInput,
-    options: Options,
-) -> TauriResult<GetColorThemeOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, _| async move { app.get_color_theme(&ctx, &input).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_color_themes<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> TauriResult<ListColorThemesOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, _| async move { app.list_color_themes(&ctx).await },
     )
     .await
 }
@@ -183,64 +107,6 @@ pub async fn close_workspace<'a, R: tauri::Runtime>(
                 .close_workspace(&ctx, &app_delegate, &input)
                 .await
         },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_workspaces<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> TauriResult<ListWorkspacesOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, app_delegate| async move { app.list_workspaces(&ctx, &app_delegate).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn delete_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: DeleteWorkspaceInput,
-    options: Options,
-) -> TauriResult<DeleteWorkspaceOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, app_delegate| async move {
-            app.delete_workspace(&ctx, &app_delegate, &input).await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn update_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: UpdateWorkspaceInput,
-    options: Options,
-) -> TauriResult<UpdateWorkspaceOutput> {
-    super::with_app_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app, _| async move { app.update_workspace(&ctx, &input).await },
     )
     .await
 }

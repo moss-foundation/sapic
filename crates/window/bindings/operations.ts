@@ -2,7 +2,6 @@
 import { ConfigurationTarget, ProfileInfo } from "@repo/base";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { LanguageInfo } from "@repo/moss-language";
-import { WorkspaceMode } from "@repo/moss-workspace";
 import type { LogLevel } from "./primitives";
 import type {
   AddAccountParams,
@@ -58,26 +57,6 @@ export type CreateProfileInput = { name: string; isDefault?: boolean };
 export type CreateProfileOutput = { profile_id: string };
 
 /**
- * @category Operation
- */
-export type CreateWorkspaceInput = { name: string; mode: WorkspaceMode; openOnCreation: boolean };
-
-/**
- * @category Operation
- */
-export type CreateWorkspaceOutput = { id: string; active: boolean };
-
-/**
- * @category Operation
- */
-export type DeleteWorkspaceInput = { id: string };
-
-/**
- * @category Operation
- */
-export type DeleteWorkspaceOutput = { id: string };
-
-/**
  * DEPRECATED
  * @category Operation
  */
@@ -126,11 +105,6 @@ export type ListLogsOutput = { contents: Array<LogEntryInfo> };
 /**
  * @category Operation
  */
-export type ListWorkspacesOutput = Array<WorkspaceInfo>;
-
-/**
- * @category Operation
- */
 export type OpenWorkspaceInput = { id: string };
 
 /**
@@ -163,15 +137,4 @@ export type UpdateProfileOutput = {
   added_accounts: Array<string>;
   removed_accounts: Array<string>;
   updated_accounts: Array<string>;
-};
-
-/**
- * @category Operation
- */
-export type UpdateWorkspaceInput = {
-  /**
-   * A new name for the workspace, if provided, the workspace
-   * will be renamed to this name.
-   */
-  name?: string;
 };

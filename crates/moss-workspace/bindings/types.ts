@@ -45,19 +45,6 @@ export type EntryChange = { projectId: string; path: string; status: FileStatus 
  */
 export type EnvironmentGroup = { projectId: string; expanded: boolean; order?: number };
 
-/**
- * @category Type
- */
-export type EnvironmentInfo = {
-  id: string;
-  projectId?: string;
-  name: string;
-  displayName: string;
-  order: number;
-  color?: string;
-  variables: Array<VariableInfo>;
-};
-
 export type ExportProjectParams = {
   id: string;
   /**
@@ -179,19 +166,6 @@ export type UpdateVariableParams = {
   order?: number;
   desc?: ChangeString;
   options?: VariableOptions;
-};
-
-/**
- * @category Type
- */
-export type VariableInfo = {
-  id: string;
-  name: string;
-  globalValue?: JsonValue;
-  localValue?: JsonValue;
-  disabled: boolean;
-  order?: number;
-  desc?: string;
 };
 
 /**

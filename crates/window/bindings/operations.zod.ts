@@ -3,7 +3,6 @@
 import { configurationTargetSchema, profileInfoSchema } from "@repo/base";
 import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { languageInfoSchema } from "@repo/moss-language";
-import { workspaceModeSchema } from "@repo/moss-workspace";
 import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
 import {
@@ -37,19 +36,6 @@ export const createProfileOutputSchema = z.object({
   profile_id: z.string(),
 });
 
-export const createWorkspaceOutputSchema = z.object({
-  id: z.string(),
-  active: z.boolean(),
-});
-
-export const deleteWorkspaceInputSchema = z.object({
-  id: z.string(),
-});
-
-export const deleteWorkspaceOutputSchema = z.object({
-  id: z.string(),
-});
-
 export const describeWorkbenchStateOutputSchema = z.object({
   prevWorkspaceId: z.string().optional(),
 });
@@ -72,18 +58,8 @@ export const updateProfileOutputSchema = z.object({
   removed_accounts: z.array(z.string()),
   updated_accounts: z.array(z.string()),
 });
-
-export const updateWorkspaceInputSchema = z.object({
-  name: z.string().optional(),
-});
 export const batchDeleteLogOutputSchema = z.object({
   deletedEntries: z.array(logItemSourceInfoSchema),
-});
-
-export const createWorkspaceInputSchema = z.object({
-  name: z.string(),
-  mode: workspaceModeSchema,
-  openOnCreation: z.boolean(),
 });
 
 export const describeAppOutputSchema = z.object({
@@ -107,8 +83,6 @@ export const listLogsInputSchema = z.object({
 export const listLogsOutputSchema = z.object({
   contents: z.array(logEntryInfoSchema),
 });
-
-export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
 
 export const updateConfigurationInputSchema = z.object({
   key: z.string(),

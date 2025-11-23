@@ -1,5 +1,5 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/window";
+import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";

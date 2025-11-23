@@ -6,7 +6,11 @@ import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemp
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatMistralAI } from "@langchain/mistralai";
-import { CreateWorkspaceInput, createWorkspaceInputSchema, CreateWorkspaceOutput } from "@repo/window";
+import {
+  MainWindow_CreateWorkspaceInput,
+  mainWindowCreateWorkspaceInputSchema,
+  MainWindow_CreateWorkspaceOutput,
+} from "@repo/ipc";
 
 async function setupModel() {
   const result = await invokeTauriIpc<string>("get_mistral_api_key");
@@ -45,9 +49,12 @@ async function setupToolAgent() {
   // @ts-expect-error We will fix the demo when we revisit AI
   const createWorkspaceTool = tool(
     async (input) => {
-      const result = await invokeTauriIpc<CreateWorkspaceOutput, CreateWorkspaceInput>("create_workspace", {
-        input,
-      });
+      const result = await invokeTauriIpc<MainWindow_CreateWorkspaceOutput, MainWindow_CreateWorkspaceInput>(
+        "create_workspace",
+        {
+          input,
+        }
+      );
 
       if (result.status === "error") {
         throw new Error(String(result.error));
@@ -58,7 +65,7 @@ async function setupToolAgent() {
     {
       name: "create_workspace",
       description: "Create a workspace.",
-      schema: createWorkspaceInputSchema,
+      schema: mainWindowCreateWorkspaceInputSchema,
     }
   );
 

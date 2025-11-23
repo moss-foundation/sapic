@@ -6,7 +6,7 @@ use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::workspace::{WorkspaceCreateOp, WorkspaceServiceFs, types::RestoredWorkspace};
+use crate::workspace::{WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem};
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
@@ -53,7 +53,7 @@ impl WorkspaceService {
         Ok(deleted_path)
     }
 
-    pub async fn restore_workspaces(&self) -> joinerror::Result<Vec<RestoredWorkspace>> {
+    pub async fn workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
             .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
@@ -82,7 +82,7 @@ impl WorkspaceService {
                     .get(&key_workspace_last_opened_at(&discovered.id))
                     .and_then(|value| value.as_i64());
 
-                RestoredWorkspace {
+                WorkspaceItem {
                     id: discovered.id,
                     name: discovered.name,
                     abs_path: Arc::from(discovered.abs_path),

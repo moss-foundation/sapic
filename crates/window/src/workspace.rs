@@ -7,7 +7,7 @@ use moss_logging::session;
 use moss_storage2::Storage;
 use moss_user::profile::Profile;
 use moss_workspace::{
-    builder::{CreateWorkspaceParams, LoadWorkspaceParams, WorkspaceBuilder},
+    builder::{LoadWorkspaceParams, WorkspaceBuilder},
     workspace::WorkspaceSummary,
 };
 use serde_json::Value as JsonValue;
@@ -28,10 +28,6 @@ use crate::{
         key_workspace_last_opened_at,
     },
 };
-
-pub(crate) struct WorkspaceItemCreateParams {
-    pub name: String,
-}
 
 #[derive(Debug, Clone)]
 pub(crate) struct WorkspaceItem {
@@ -199,57 +195,57 @@ impl<R: AppRuntime> WorkspaceService<R> {
     //     Ok(())
     // }
 
-    pub(crate) async fn create_workspace(
-        &self,
-        id: &WorkspaceId,
-        params: WorkspaceItemCreateParams,
-    ) -> joinerror::Result<WorkspaceDetails> {
-        let mut state_lock = self.state.write().await;
+    // pub(crate) async fn create_workspace(
+    //     &self,
+    //     id: &WorkspaceId,
+    //     params: WorkspaceItemCreateParams,
+    // ) -> joinerror::Result<WorkspaceDetails> {
+    //     let mut state_lock = self.state.write().await;
 
-        let id_str = id.to_string();
+    //     let id_str = id.to_string();
 
-        let abs_path: Arc<Path> = self.absolutize(&id_str).into();
+    //     let abs_path: Arc<Path> = self.absolutize(&id_str).into();
 
-        let mut rb = self.fs.start_rollback().await?;
+    //     let mut rb = self.fs.start_rollback().await?;
 
-        self.fs
-            .create_dir_with_rollback(&mut rb, abs_path.as_ref())
-            .await
-            .join_err::<()>("failed to create workspace directory")?;
+    //     self.fs
+    //         .create_dir_with_rollback(&mut rb, abs_path.as_ref())
+    //         .await
+    //         .join_err::<()>("failed to create workspace directory")?;
 
-        if let Err(e) = WorkspaceBuilder::<R>::initialize(
-            self.fs.clone(),
-            id.clone(),
-            CreateWorkspaceParams {
-                name: params.name.clone(),
-                abs_path: abs_path.clone(),
-            },
-        )
-        .await
-        {
-            let _ = rb.rollback().await.map_err(|e| {
-                session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
-            });
-            return Err(e.join::<()>("failed to initialize workspace"));
-        }
+    //     if let Err(e) = WorkspaceBuilder::<R>::initialize(
+    //         self.fs.clone(),
+    //         id.clone(),
+    //         CreateWorkspaceParams {
+    //             name: params.name.clone(),
+    //             abs_path: abs_path.clone(),
+    //         },
+    //     )
+    //     .await
+    //     {
+    //         let _ = rb.rollback().await.map_err(|e| {
+    //             session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+    //         });
+    //         return Err(e.join::<()>("failed to initialize workspace"));
+    //     }
 
-        state_lock.known_workspaces.insert(
-            id.clone(),
-            WorkspaceItem {
-                id: id.clone(),
-                name: params.name.clone(),
-                last_opened_at: None,
-                abs_path: Arc::clone(&abs_path),
-            },
-        );
+    //     state_lock.known_workspaces.insert(
+    //         id.clone(),
+    //         WorkspaceItem {
+    //             id: id.clone(),
+    //             name: params.name.clone(),
+    //             last_opened_at: None,
+    //             abs_path: Arc::clone(&abs_path),
+    //         },
+    //     );
 
-        Ok(WorkspaceDetails {
-            id: id.to_owned(),
-            name: params.name,
-            abs_path: Arc::clone(&abs_path),
-            last_opened_at: None,
-        })
-    }
+    //     Ok(WorkspaceDetails {
+    //         id: id.to_owned(),
+    //         name: params.name,
+    //         abs_path: Arc::clone(&abs_path),
+    //         last_opened_at: None,
+    //     })
+    // }
 
     pub(crate) async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
         let state_lock = self.state.read().await;

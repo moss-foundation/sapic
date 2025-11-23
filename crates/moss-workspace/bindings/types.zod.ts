@@ -135,16 +135,6 @@ export const entryChangeSchema = z.object({
   status: fileStatusSchema,
 });
 
-export const variableInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  globalValue: jsonValueSchema.optional(),
-  localValue: jsonValueSchema.optional(),
-  disabled: z.boolean(),
-  order: z.number().optional(),
-  desc: z.string().optional(),
-});
-
 export const importProjectParamsSchema = z.object({
   name: z.string(),
   order: z.number(),
@@ -169,16 +159,6 @@ export const updateProjectParamsSchema = z.object({
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
   expanded: z.boolean().optional(),
-});
-
-export const environmentInfoSchema = z.object({
-  id: z.string(),
-  projectId: z.string().optional(),
-  name: z.string(),
-  displayName: z.string(),
-  order: z.number(),
-  color: z.string().optional(),
-  variables: z.array(variableInfoSchema),
 });
 
 export const updateEnvironmentParamsSchema = z.object({
