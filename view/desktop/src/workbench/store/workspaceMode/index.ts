@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import { WorkspaceMode } from "@repo/moss-workspace";
+import { WorkspaceMode } from "@repo/base";
 
 interface WorkspaceModeStore {
   displayMode: WorkspaceMode;
