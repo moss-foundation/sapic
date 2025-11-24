@@ -11,12 +11,11 @@ use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::{continue_if_err, continue_if_none};
-use moss_db::primitives::AnyValue;
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
-use moss_storage::primitives::segkey::SegKeyBuf;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_text::sanitized::{desanitize, sanitize};
 use serde_json::{Value as JsonValue, json};
 use std::{
@@ -38,8 +37,8 @@ use crate::{
     models::{
         operations::DescribeResourceOutput,
         primitives::{
-            FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceId, ResourceKind,
-            ResourceProtocol, UrlencodedParamId,
+            FormDataParamId, HeaderId, PathParamId, ProjectId, QueryParamId, ResourceId,
+            ResourceKind, ResourceProtocol, UrlencodedParamId,
         },
         types::{
             BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
@@ -51,12 +50,11 @@ use crate::{
         },
     },
     storage::{
-        StorageService, segments,
-        segments::{
-            segkey_entry_body_formdata_param_order, segkey_entry_body_urlencoded_param_order,
-            segkey_entry_header_order, segkey_entry_path_param_order,
-            segkey_entry_query_param_order,
-        },
+        KEY_EXPANDED_ENTRIES, key_resource, key_resource_body, key_resource_body_formdata_param,
+        key_resource_body_formdata_param_order, key_resource_body_urlencoded_param,
+        key_resource_body_urlencoded_param_order, key_resource_header, key_resource_header_order,
+        key_resource_order, key_resource_path_param, key_resource_path_param_order,
+        key_resource_query_param, key_resource_query_param_order,
     },
     worktree::entry::{
         Entry, EntryDescription, EntryMetadata,
@@ -121,9 +119,12 @@ struct WorktreeState {
 }
 
 pub(crate) struct Worktree<R: AppRuntime> {
+    // Used for storage scope
+    project_id: ProjectId,
+    // TODO: Remove it since it doesn't belong to business logic
+    app_delegate: AppDelegate<R>,
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
-    storage: Arc<StorageService<R>>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
@@ -159,7 +160,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn remove_entry(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ResourceId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -186,17 +187,39 @@ impl<R: AppRuntime> Worktree<R> {
             )
             .await?;
 
-        state_lock.expanded_entries.remove(&id);
-        self.storage
-            .put_expanded_entries(
-                ctx,
-                state_lock
-                    .expanded_entries
-                    .iter()
-                    .cloned()
-                    .collect::<Vec<_>>(),
+        let storage = <dyn Storage>::global(&self.app_delegate);
+
+        if let Err(e) = storage
+            .remove_batch_by_prefix(
+                StorageScope::Project(self.project_id.inner()),
+                &key_resource(id),
             )
-            .await?;
+            .await
+        {
+            session::warn!(format!(
+                "failed to update database after removing resource entry: {}",
+                e
+            ));
+        }
+
+        let update_expanded_entries = state_lock.expanded_entries.remove(&id);
+        if !update_expanded_entries {
+            return Ok(());
+        }
+
+        if let Err(e) = storage
+            .put(
+                StorageScope::Project(self.project_id.inner()),
+                KEY_EXPANDED_ENTRIES,
+                serde_json::to_value(&state_lock.expanded_entries)?,
+            )
+            .await
+        {
+            session::warn!(format!(
+                "failed to update extended_entries after removing resource entry: {} ",
+                e
+            ));
+        }
 
         Ok(())
     }
@@ -207,7 +230,7 @@ impl<R: AppRuntime> Worktree<R> {
         app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<ResourceId>>,
-        all_entry_keys: Arc<HashMap<SegKeyBuf, AnyValue>>,
+        all_entry_keys: Arc<HashMap<String, JsonValue>>,
         sender: mpsc::UnboundedSender<EntryDescription>,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
@@ -387,7 +410,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn create_item_entry(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -424,30 +447,27 @@ impl<R: AppRuntime> Worktree<R> {
             },
         );
 
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let order_key = key_resource_order(&id);
+
+        let mut batch_input = vec![(order_key.as_str(), serde_json::to_value(order)?)];
+
+        if expanded {
+            state_lock.expanded_entries.insert(id);
+            batch_input.push((
+                KEY_EXPANDED_ENTRIES,
+                serde_json::to_value(&state_lock.expanded_entries)?,
+            ));
+        }
+
+        if let Err(e) = storage
+            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .await
         {
-            let mut txn = self.storage.begin_write(ctx).await?;
-
-            self.storage
-                .put_entry_order_txn(ctx, &mut txn, &id, order)
-                .await?;
-
-            if expanded {
-                state_lock.expanded_entries.insert(id);
-
-                self.storage
-                    .put_expanded_entries_txn(
-                        ctx,
-                        &mut txn,
-                        state_lock
-                            .expanded_entries
-                            .iter()
-                            .cloned()
-                            .collect::<Vec<_>>(),
-                    )
-                    .await?;
-            }
-
-            txn.commit()?;
+            session::warn!(format!(
+                "failed to update database after creating item entry: {}",
+                e
+            ));
         }
 
         Ok(())
@@ -455,7 +475,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn create_dir_entry(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -489,29 +509,27 @@ impl<R: AppRuntime> Worktree<R> {
             },
         );
 
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let order_key = key_resource_order(&id);
+
+        let mut batch_input = vec![(order_key.as_str(), serde_json::to_value(order)?)];
+
+        if expanded {
+            state_lock.expanded_entries.insert(id);
+            batch_input.push((
+                KEY_EXPANDED_ENTRIES,
+                serde_json::to_value(&state_lock.expanded_entries)?,
+            ));
+        }
+
+        if let Err(e) = storage
+            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .await
         {
-            let mut txn = self.storage.begin_write(ctx).await?;
-            self.storage
-                .put_entry_order_txn(ctx, &mut txn, &id, order)
-                .await?;
-
-            if expanded {
-                state_lock.expanded_entries.insert(id);
-
-                self.storage
-                    .put_expanded_entries_txn(
-                        ctx,
-                        &mut txn,
-                        state_lock
-                            .expanded_entries
-                            .iter()
-                            .cloned()
-                            .collect::<Vec<_>>(),
-                    )
-                    .await?;
-            }
-
-            txn.commit()?;
+            session::warn!(format!(
+                "failed to update database after creating dir entry: {}",
+                e
+            ));
         }
 
         Ok(())
@@ -519,11 +537,12 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn update_dir_entry(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
         let mut state_lock = self.state.write().await;
+
         let entry = state_lock
             .entries
             .get_mut(&id)
@@ -571,43 +590,40 @@ impl<R: AppRuntime> Worktree<R> {
         // TODO: patch the dir entry
 
         let path = entry.path_rx.borrow().clone();
-        drop(state_lock);
 
-        let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
-        if !is_db_update_needed {
-            return Ok(path);
-        }
-
-        let mut txn = self.storage.begin_write(ctx).await?;
+        let mut batch_input = vec![];
+        let order_key = key_resource_order(&id);
 
         if let Some(order) = params.order {
-            self.storage
-                .put_entry_order_txn(ctx, &mut txn, id, order)
-                .await?;
+            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
         }
 
-        let mut state_lock = self.state.write().await;
         if let Some(expanded) = params.expanded {
             if expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
             } else {
                 state_lock.expanded_entries.remove(id);
             }
-
-            self.storage
-                .put_expanded_entries_txn(
-                    ctx,
-                    &mut txn,
-                    state_lock
-                        .expanded_entries
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>(),
-                )
-                .await?;
+            batch_input.push((
+                KEY_EXPANDED_ENTRIES,
+                serde_json::to_value(&state_lock.expanded_entries)?,
+            ));
         }
 
-        txn.commit()?;
+        if batch_input.is_empty() {
+            return Ok(path);
+        }
+
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        if let Err(e) = storage
+            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .await
+        {
+            session::warn!(format!(
+                "failed to update database after updating dir entry: {}",
+                e
+            ));
+        }
 
         Ok(path)
     }
@@ -668,50 +684,47 @@ impl<R: AppRuntime> Worktree<R> {
             .await?;
 
         let path = entry.path_rx.borrow().clone();
-        drop(state_lock);
 
-        let is_db_update_needed = params.order.is_some() || params.expanded.is_some();
-        if !is_db_update_needed {
-            return Ok(path);
-        }
-
-        let mut txn = self.storage.begin_write(ctx).await?;
+        let mut batch_input = vec![];
+        let order_key = key_resource_order(&id);
 
         if let Some(order) = params.order {
-            self.storage
-                .put_entry_order_txn(ctx, &mut txn, id, order)
-                .await?;
+            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
         }
 
-        let mut state_lock = self.state.write().await;
         if let Some(expanded) = params.expanded {
             if expanded {
                 state_lock.expanded_entries.insert(id.to_owned());
             } else {
                 state_lock.expanded_entries.remove(id);
             }
-
-            self.storage
-                .put_expanded_entries_txn(
-                    ctx,
-                    &mut txn,
-                    state_lock
-                        .expanded_entries
-                        .iter()
-                        .cloned()
-                        .collect::<Vec<_>>(),
-                )
-                .await?;
+            batch_input.push((
+                KEY_EXPANDED_ENTRIES,
+                serde_json::to_value(&state_lock.expanded_entries)?,
+            ));
         }
 
-        txn.commit()?;
+        if batch_input.is_empty() {
+            return Ok(path);
+        }
+
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        if let Err(e) = storage
+            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .await
+        {
+            session::warn!(format!(
+                "failed to update database after updating dir entry: {}",
+                e
+            ));
+        }
 
         Ok(path)
     }
 
     pub async fn describe_entry(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ResourceId,
     ) -> joinerror::Result<DescribeResourceOutput> {
@@ -749,14 +762,19 @@ impl<R: AppRuntime> Worktree<R> {
                 body: None,
             });
         } else if item_config_path.exists() {
-            let entry_keys = self
-                .storage
-                .get_entry_keys(ctx, id)
+            let storage = <dyn Storage>::global(&self.app_delegate);
+            let entry_keys = storage
+                .get_batch_by_prefix(
+                    StorageScope::Project(self.project_id.inner()),
+                    &key_resource(&id),
+                )
                 .await
-                .unwrap_or_else(|err| {
-                    session::error!(format!("failed to get entry cache: {}", err.to_string()));
-                    HashMap::new()
-                });
+                .unwrap_or_else(|e| {
+                    session::error!(format!("failed to get entry cache: {}", e));
+                    Vec::new()
+                })
+                .into_iter()
+                .collect::<HashMap<_, _>>();
 
             let mut rdr = self.fs.open_file(&item_config_path).await?;
             let model: EntryModel =
@@ -795,8 +813,8 @@ impl<R: AppRuntime> Worktree<R> {
                         disabled: header_spec.options.disabled,
                         propagate: header_spec.options.propagate,
                         order: entry_keys
-                            .get(&segkey_entry_header_order(id, &header_id))
-                            .and_then(|value| value.deserialize().ok()),
+                            .get(&key_resource_header_order(id, &header_id))
+                            .and_then(|value| serde_json::from_value(value.clone()).ok()),
                     })
                 }
             }
@@ -828,8 +846,8 @@ impl<R: AppRuntime> Worktree<R> {
                         disabled: path_param_spec.options.disabled,
                         propagate: path_param_spec.options.propagate,
                         order: entry_keys
-                            .get(&segkey_entry_path_param_order(id, &path_param_id))
-                            .and_then(|value| value.deserialize().ok()),
+                            .get(&key_resource_path_param_order(id, &path_param_id))
+                            .and_then(|value| serde_json::from_value(value.clone()).ok()),
                     })
                 }
             }
@@ -861,8 +879,8 @@ impl<R: AppRuntime> Worktree<R> {
                         disabled: query_param_spec.options.disabled,
                         propagate: query_param_spec.options.propagate,
                         order: entry_keys
-                            .get(&segkey_entry_query_param_order(id, &query_param_id))
-                            .and_then(|value| value.deserialize().ok()),
+                            .get(&key_resource_query_param_order(id, &query_param_id))
+                            .and_then(|value| serde_json::from_value(value.clone()).ok()),
                     })
                 }
             }
@@ -892,14 +910,16 @@ impl<R: AppRuntime> Worktree<R> {
 
 impl<R: AppRuntime> Worktree<R> {
     pub fn new(
+        project_id: ProjectId,
+        app_delegate: AppDelegate<R>,
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<StorageService<R>>,
     ) -> Self {
         Self {
+            project_id,
+            app_delegate,
             abs_path,
             fs,
-            storage,
             state: Default::default(),
         }
     }
@@ -970,14 +990,15 @@ impl<R: AppRuntime> Worktree<R> {
             }));
         }
 
-        // TODO: Extract order storage into one database transaction?
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let storage_scope = StorageScope::Project(self.project_id.inner());
 
         for header_to_add in &params.headers_to_add {
             let id = HeaderId::new();
             let id_str = id.to_string();
 
             let value = continue_if_err!(json_to_hcl(&header_to_add.value), |err| {
-                session::error!("failed to convert value expression: {}", err);
+                session::error!(format!("failed to convert value expression: {}", err));
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "expression_conversion_error",
                     title: "Failed to convert value expression".to_string(),
@@ -1018,20 +1039,16 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .put_entry_header_order_txn(ctx, &mut txn, &entry.id, &id, header_to_add.order)
-                    .await,
-                |err| { session::error!(format!("failed to put header order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .put(
+                    storage_scope.clone(),
+                    &key_resource_header_order(&entry.id, &id),
+                    serde_json::to_value(&header_to_add.order)?,
+                )
+                .await
+            {
+                session::warn!(format!("failed to put header order in the database: {}", e));
+            }
         }
 
         for header_to_update in &params.headers_to_update {
@@ -1158,26 +1175,16 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = header_to_update.order {
-                // We don't want database failure to stop the function
-                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                    session::error!(format!("failed to start a write transaction: {}", err))
-                });
-
-                continue_if_err!(
-                    self.storage
-                        .put_entry_header_order_txn(
-                            ctx,
-                            &mut txn,
-                            &entry.id,
-                            &header_to_update.id,
-                            order
-                        )
-                        .await,
-                    |err| { session::error!(format!("failed to put header order: {}", err)) }
-                );
-                continue_if_err!(txn.commit(), |err| {
-                    session::error!(format!("failed to commit transaction: {}", err))
-                });
+                if let Err(e) = storage
+                    .put(
+                        storage_scope.clone(),
+                        &key_resource_header_order(&entry.id, &header_to_update.id),
+                        serde_json::to_value(&order)?,
+                    )
+                    .await
+                {
+                    session::warn!(format!("failed to put header order in the database: {}", e));
+                }
             }
         }
 
@@ -1192,20 +1199,12 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .remove_entry_header_order_txn(ctx, &mut txn, &entry.id, &id,)
-                    .await,
-                |err| { session::error!(format!("failed to remove header order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .remove_batch_by_prefix(storage_scope.clone(), &key_resource_header(&entry.id, id))
+                .await
+            {
+                session::warn!(format!("failed to remove header cache: {}", e));
+            }
         }
 
         for path_param_to_add in &params.path_params_to_add {
@@ -1257,26 +1256,19 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .put_entry_path_param_order_txn(
-                        ctx,
-                        &mut txn,
-                        &entry.id,
-                        &id,
-                        path_param_to_add.order
-                    )
-                    .await,
-                |err| { session::error!(format!("failed to put path param order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .put(
+                    storage_scope.clone(),
+                    &key_resource_path_param_order(&entry.id, &id),
+                    serde_json::to_value(&path_param_to_add.order)?,
+                )
+                .await
+            {
+                session::warn!(format!(
+                    "failed to put path param order in the database: {}",
+                    e
+                ));
+            }
         }
 
         for path_param_to_update in &params.path_params_to_update {
@@ -1403,26 +1395,19 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = path_param_to_update.order {
-                // We don't want database failure to stop the function
-                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                    session::error!(format!("failed to start a write transaction: {}", err))
-                });
-
-                continue_if_err!(
-                    self.storage
-                        .put_entry_path_param_order_txn(
-                            ctx,
-                            &mut txn,
-                            &entry.id,
-                            &path_param_to_update.id,
-                            order
-                        )
-                        .await,
-                    |err| { session::error!(format!("failed to put path param order: {}", err)) }
-                );
-                continue_if_err!(txn.commit(), |err| {
-                    session::error!(format!("failed to commit transaction: {}", err))
-                });
+                if let Err(e) = storage
+                    .put(
+                        storage_scope.clone(),
+                        &key_resource_path_param_order(&entry.id, &path_param_to_update.id),
+                        serde_json::to_value(&order)?,
+                    )
+                    .await
+                {
+                    session::warn!(format!(
+                        "failed to put path param order in the database: {}",
+                        e
+                    ));
+                }
             }
         }
 
@@ -1437,20 +1422,15 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .remove_entry_path_param_order_txn(ctx, &mut txn, &entry.id, &id,)
-                    .await,
-                |err| { session::error!(format!("failed to remove path param order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .remove_batch_by_prefix(
+                    storage_scope.clone(),
+                    &key_resource_path_param(&entry.id, id),
+                )
+                .await
+            {
+                session::warn!(format!("failed to remove path param cache: {}", e));
+            }
         }
 
         for query_param_to_add in &params.query_params_to_add {
@@ -1502,26 +1482,19 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .put_entry_query_param_order_txn(
-                        ctx,
-                        &mut txn,
-                        &entry.id,
-                        &id,
-                        query_param_to_add.order
-                    )
-                    .await,
-                |err| { session::error!(format!("failed to put query param order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .put(
+                    storage_scope.clone(),
+                    &key_resource_query_param_order(&entry.id, &id),
+                    serde_json::to_value(&query_param_to_add.order)?,
+                )
+                .await
+            {
+                session::warn!(format!(
+                    "failed to put query param order in the database: {}",
+                    e
+                ));
+            }
         }
 
         for query_param_to_update in &params.query_params_to_update {
@@ -1648,26 +1621,19 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = query_param_to_update.order {
-                // We don't want database failure to stop the function
-                let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                    session::error!(format!("failed to start a write transaction: {}", err))
-                });
-
-                continue_if_err!(
-                    self.storage
-                        .put_entry_query_param_order_txn(
-                            ctx,
-                            &mut txn,
-                            &entry.id,
-                            &query_param_to_update.id,
-                            order
-                        )
-                        .await,
-                    |err| { session::error!(format!("failed to put query param order: {}", err)) }
-                );
-                continue_if_err!(txn.commit(), |err| {
-                    session::error!(format!("failed to commit transaction: {}", err))
-                });
+                if let Err(e) = storage
+                    .put(
+                        storage_scope.clone(),
+                        &key_resource_query_param_order(&entry.id, &query_param_to_update.id),
+                        serde_json::to_value(&order)?,
+                    )
+                    .await
+                {
+                    session::warn!(format!(
+                        "failed to put query param order in the database: {}",
+                        e
+                    ));
+                }
             }
         }
 
@@ -1682,20 +1648,15 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.storage.begin_write(ctx).await, |err| {
-                session::error!(format!("failed to start a write transaction: {}", err))
-            });
-
-            continue_if_err!(
-                self.storage
-                    .remove_entry_query_param_order_txn(ctx, &mut txn, &entry.id, id,)
-                    .await,
-                |err| { session::error!(format!("failed to remove query param order: {}", err)) }
-            );
-            continue_if_err!(txn.commit(), |err| {
-                session::error!(format!("failed to commit transaction: {}", err))
-            });
+            if let Err(e) = storage
+                .remove_batch_by_prefix(
+                    storage_scope.clone(),
+                    &key_resource_query_param(&entry.id, id),
+                )
+                .await
+            {
+                session::warn!(format!("failed to remove query param cache: {}", e));
+            }
         }
 
         if let Some(body) = &params.body {
@@ -1742,18 +1703,25 @@ async fn patch_item_body<R: AppRuntime>(
     ctx: &R::AsyncContext,
     app_delegate: &AppDelegate<R>,
     current_body_kind: Option<BodyKind>,
-    entry_id: ResourceId,
+    resource_id: ResourceId,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
     params: &UpdateBodyParams,
 ) -> joinerror::Result<Option<BodyKind>> {
+    let storage = <dyn Storage>::global(&app_delegate);
+    let storage_scope = StorageScope::Project(worktree.project_id.inner());
     let new_body_kind = match params {
         UpdateBodyParams::Remove => {
-            clear_item_body(worktree, ctx, entry_id, patches).await?;
+            if let Err(e) = clear_item_body(worktree, ctx, &resource_id, storage, patches).await {
+                session::warn!(format!("failed to clear old item body cache: {}", e));
+            }
             None
         }
         UpdateBodyParams::Text(text) => {
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Text) {
-                clear_item_body(worktree, ctx, entry_id, patches).await?;
+                if let Err(e) = clear_item_body(worktree, ctx, &resource_id, storage, patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
             }
 
             patches.push((
@@ -1770,7 +1738,10 @@ async fn patch_item_body<R: AppRuntime>(
         }
         UpdateBodyParams::Json(json) => {
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Json) {
-                clear_item_body(worktree, ctx, entry_id, patches).await?;
+                if let Err(e) = clear_item_body(worktree, ctx, &resource_id, storage, patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
             }
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
@@ -1786,7 +1757,10 @@ async fn patch_item_body<R: AppRuntime>(
         }
         UpdateBodyParams::Xml(xml) => {
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Xml) {
-                clear_item_body(worktree, ctx, entry_id, patches).await?;
+                if let Err(e) = clear_item_body(worktree, ctx, &resource_id, storage, patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
             }
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
@@ -1802,7 +1776,10 @@ async fn patch_item_body<R: AppRuntime>(
         }
         UpdateBodyParams::Binary(path) => {
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Binary) {
-                clear_item_body(worktree, ctx, entry_id, patches).await?;
+                if let Err(e) = clear_item_body(worktree, ctx, &resource_id, storage, patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
             }
             patches.push((
                 PatchOperation::Replace(ReplaceOperation {
@@ -1823,7 +1800,11 @@ async fn patch_item_body<R: AppRuntime>(
         } => {
             let body_block = "/body/x-www-form-urlencoded";
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::Urlencoded) {
-                clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
+                if let Err(e) =
+                    clear_item_body(worktree, ctx, &resource_id, storage.clone(), patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
                 // Create the body block even if no parameter is given
                 patches.push((
                     PatchOperation::Add(AddOperation {
@@ -1840,7 +1821,7 @@ async fn patch_item_body<R: AppRuntime>(
             }
 
             let mut param_order_updates = HashMap::new();
-            let mut param_order_removes = Vec::new();
+            let mut param_removes = Vec::new();
 
             for urlencoded_param_to_add in params_to_add {
                 let id = urlencoded_param_to_add
@@ -2027,42 +2008,34 @@ async fn patch_item_body<R: AppRuntime>(
                         ignore_if_not_exists: false,
                     },
                 ));
-                param_order_removes.push(id);
+                param_removes.push(id);
             }
-
-            // We don't want database failures to stop the operation
-            let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
-                txn
-            } else {
-                return Ok(Some(BodyKind::Urlencoded));
-            };
 
             for (id, order) in param_order_updates {
-                if let Err(e) = worktree
-                    .storage
-                    .put_entry_body_urlencoded_param_order_txn(ctx, &mut txn, &entry_id, &id, order)
+                if let Err(e) = storage
+                    .put(
+                        storage_scope.clone(),
+                        &key_resource_body_urlencoded_param_order(&resource_id, &id),
+                        serde_json::to_value(order)?,
+                    )
                     .await
                 {
-                    session::error!(format!("failed to update urlencoded param order: {}", e));
-                    return Ok(Some(BodyKind::Urlencoded));
+                    session::warn!(format!("failed to update urlencoded param order: {}", e));
                 }
             }
 
-            for id in param_order_removes {
-                if let Err(e) = worktree
-                    .storage
-                    .remove_entry_body_urlencoded_param_order_txn(ctx, &mut txn, &entry_id, &id)
+            for id in param_removes {
+                if let Err(e) = storage
+                    .remove(
+                        storage_scope.clone(),
+                        &key_resource_body_urlencoded_param(&resource_id, &id),
+                    )
                     .await
                 {
-                    session::error!(format!("failed to remove urlencoded param order: {}", e));
-                    return Ok(Some(BodyKind::Urlencoded));
+                    session::warn!(format!("failed to remove urlencoded param cache: {}", e));
                 }
             }
 
-            if let Err(e) = txn.commit() {
-                session::error!(format!("failed to commit transaction: {}", e));
-                return Ok(Some(BodyKind::Urlencoded));
-            }
             Some(BodyKind::Urlencoded)
         }
         UpdateBodyParams::FormData {
@@ -2072,7 +2045,11 @@ async fn patch_item_body<R: AppRuntime>(
         } => {
             let body_block = "/body/form-data";
             if current_body_kind.is_some() && current_body_kind != Some(BodyKind::FormData) {
-                clear_item_body(worktree, ctx, entry_id.clone(), patches).await?;
+                if let Err(e) =
+                    clear_item_body(worktree, ctx, &resource_id, storage.clone(), patches).await
+                {
+                    session::warn!(format!("failed to clear old item body cache: {}", e));
+                }
                 // Create the body block even if no parameter is given
                 patches.push((
                     PatchOperation::Add(AddOperation {
@@ -2089,7 +2066,7 @@ async fn patch_item_body<R: AppRuntime>(
             }
 
             let mut param_order_updates = HashMap::new();
-            let mut param_order_removes = Vec::new();
+            let mut param_removes = Vec::new();
 
             for formdata_param_to_add in params_to_add {
                 let id = formdata_param_to_add
@@ -2276,42 +2253,34 @@ async fn patch_item_body<R: AppRuntime>(
                         ignore_if_not_exists: false,
                     },
                 ));
-                param_order_removes.push(id);
+                param_removes.push(id);
             }
-
-            // We don't want database failures to stop the operation
-            let mut txn = if let Ok(txn) = worktree.storage.begin_write(ctx).await {
-                txn
-            } else {
-                return Ok(Some(BodyKind::FormData));
-            };
 
             for (id, order) in param_order_updates {
-                if let Err(e) = worktree
-                    .storage
-                    .put_entry_body_formdata_param_order_txn(ctx, &mut txn, &entry_id, &id, order)
+                if let Err(e) = storage
+                    .put(
+                        storage_scope.clone(),
+                        &key_resource_body_formdata_param_order(&resource_id, &id),
+                        serde_json::to_value(order)?,
+                    )
                     .await
                 {
-                    session::error!(format!("failed to update formdata param order: {}", e));
-                    return Ok(Some(BodyKind::FormData));
+                    session::warn!(format!("failed to update formdata param order: {}", e));
                 }
             }
 
-            for id in param_order_removes {
-                if let Err(e) = worktree
-                    .storage
-                    .remove_entry_body_formdata_param_order_txn(ctx, &mut txn, &entry_id, &id)
+            for id in param_removes {
+                if let Err(e) = storage
+                    .remove(
+                        storage_scope.clone(),
+                        &key_resource_body_formdata_param(&resource_id, &id),
+                    )
                     .await
                 {
-                    session::error!(format!("failed to remove formdata param order: {}", e));
-                    return Ok(Some(BodyKind::FormData));
+                    session::warn!(format!("failed to remove formdata param cache: {}", e));
                 }
             }
 
-            if let Err(e) = txn.commit() {
-                session::error!(format!("failed to commit transaction: {}", e));
-                return Ok(Some(BodyKind::FormData));
-            }
             Some(BodyKind::FormData)
         }
     };
@@ -2321,11 +2290,11 @@ async fn patch_item_body<R: AppRuntime>(
 
 async fn clear_item_body<R: AppRuntime>(
     worktree: &Worktree<R>,
-    ctx: &R::AsyncContext,
-    id: ResourceId,
+    _ctx: &R::AsyncContext,
+    id: &ResourceId,
+    storage: Arc<dyn Storage>,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
 ) -> joinerror::Result<()> {
-    worktree.storage.remove_entry_body_cache(ctx, &id).await?;
     patches.push((
         PatchOperation::Remove(RemoveOperation {
             path: unsafe { PointerBuf::new_unchecked("/body") },
@@ -2335,6 +2304,17 @@ async fn clear_item_body<R: AppRuntime>(
             ignore_if_not_exists: true,
         },
     ));
+
+    if let Err(e) = storage
+        .remove_batch_by_prefix(
+            StorageScope::Project(worktree.project_id.inner()),
+            &key_resource_body(id),
+        )
+        .await
+    {
+        return Err(e);
+    }
+
     Ok(())
 }
 
@@ -2362,7 +2342,7 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 
 async fn process_entry(
     path: Arc<Path>,
-    all_entry_keys: &HashMap<SegKeyBuf, AnyValue>,
+    all_entry_keys: &HashMap<String, JsonValue>,
     expanded_entries: &HashSet<ResourceId>,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
@@ -2405,8 +2385,8 @@ async fn process_entry(
             kind: ResourceKind::Dir,
             protocol: None,
             order: all_entry_keys
-                .get(&segments::segkey_entry_order(&id))
-                .and_then(|o| o.deserialize().ok()),
+                .get(&key_resource_order(&id))
+                .and_then(|value| serde_json::from_value(value.clone()).ok()),
             expanded: expanded_entries.contains(&id),
         };
         let (path_tx, path_rx) = watch::channel(desanitize_path(&path, None)?.into());
@@ -2436,8 +2416,8 @@ async fn process_entry(
             kind: ResourceKind::Item,
             protocol: model.protocol(),
             order: all_entry_keys
-                .get(&segments::segkey_entry_order(&id))
-                .and_then(|o| o.deserialize().ok()),
+                .get(&key_resource_order(&id))
+                .and_then(|value| serde_json::from_value(value.clone()).ok()),
             expanded: expanded_entries.contains(&id),
         };
 
@@ -2475,7 +2455,7 @@ async fn describe_body<R: AppRuntime>(
     app_delegate: &AppDelegate<R>,
     entry_id: &ResourceId,
     body: LabeledBlock<IndexMap<BodyKind, BodySpec>>,
-    entry_keys: &HashMap<SegKeyBuf, AnyValue>,
+    entry_keys: &HashMap<String, JsonValue>,
 ) -> Option<BodyInfo> {
     let (kind, spec) = body
         .iter()
@@ -2518,10 +2498,10 @@ async fn describe_body<R: AppRuntime>(
                     disabled: param_spec.options.disabled,
                     propagate: param_spec.options.propagate,
                     order: entry_keys
-                        .get(&segkey_entry_body_urlencoded_param_order(
+                        .get(&key_resource_body_urlencoded_param_order(
                             entry_id, &param_id,
                         ))
-                        .and_then(|value| value.deserialize().ok()),
+                        .and_then(|value| serde_json::from_value(value.clone()).ok()),
                 });
             }
             BodyInfo::Urlencoded(param_infos)
@@ -2558,8 +2538,8 @@ async fn describe_body<R: AppRuntime>(
                     disabled: param_spec.options.disabled,
                     propagate: param_spec.options.propagate,
                     order: entry_keys
-                        .get(&segkey_entry_body_formdata_param_order(entry_id, &param_id))
-                        .and_then(|value| value.deserialize().ok()),
+                        .get(&key_resource_body_formdata_param_order(entry_id, &param_id))
+                        .and_then(|value| serde_json::from_value(value.clone()).ok()),
                 });
             }
             BodyInfo::FormData(param_infos)

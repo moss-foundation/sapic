@@ -67,7 +67,7 @@ async fn batch_create_entry_success() {
     assert!(inner_config.is_file());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -97,7 +97,7 @@ async fn batch_create_entry_missing_parent() {
     assert!(result.is_err());
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }
 
 #[tokio::test]
@@ -110,5 +110,5 @@ async fn batch_create_entry_empty_input() {
     assert_eq!(output.ids.len(), 0);
 
     // Cleanup
-    cleanup();
+    cleanup().await;
 }

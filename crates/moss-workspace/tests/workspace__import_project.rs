@@ -5,21 +5,20 @@
 // These tests should be done manually
 // Since it requires authentication and env variables
 
-use moss_applib::context::AnyAsyncContext;
+use crate::shared::{setup_external_project, setup_test_workspace};
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
         operations::ImportProjectInput,
-        primitives::ProjectId,
         types::{ImportDiskParams, ImportGitHubParams, ImportProjectParams, ImportProjectSource},
     },
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use sapic_core::context::AnyAsyncContext;
 use std::{collections::HashSet, env, ops::Deref};
 use tauri::ipc::Channel;
-
-use crate::shared::{setup_external_project, setup_test_workspace};
 
 pub mod shared;
 
@@ -31,7 +30,9 @@ async fn clone_project_success() {
     dotenvy::dotenv().ok();
 
     let account_id = ctx
-        .value::<AccountId>("account_id")
+        .value("account_id")
+        .unwrap()
+        .downcast::<AccountId>()
         .unwrap()
         .deref()
         .clone();

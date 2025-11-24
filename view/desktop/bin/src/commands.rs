@@ -16,12 +16,11 @@ use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
-    context::{AnyAsyncContext, AnyContext},
     errors::{FailedPrecondition, NotFound, Unavailable},
 };
-use moss_project::Project;
-use moss_workspace::models::primitives::ProjectId;
+use moss_project::{Project, models::primitives::ProjectId};
 use primitives::Options;
+use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
@@ -36,7 +35,7 @@ pub mod primitives {
     use tauri::State;
 
     pub(super) type Options = Option<sapic_ipc::contracts::Options>;
-    pub(super) type AsyncContext<'a> = State<'a, moss_applib::context::AsyncContext>;
+    pub(super) type AsyncContext<'a> = State<'a, sapic_core::context::ArcContext>;
     pub(super) type App<'a, R> = State<'a, Arc<sapic_app::App<moss_applib::TauriAppRuntime<R>>>>;
 }
 
@@ -48,7 +47,7 @@ pub(super) async fn with_app_timeout<'a, R, T, F, Fut>(
     f: F,
 ) -> TauriResult<T>
 where
-    R: AppRuntime,
+    R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
@@ -57,8 +56,16 @@ where
         .and_then(|opts| opts.timeout.map(Duration::from_secs))
         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
 
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
     let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
+
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
 
     let window = app
         .window(window.label())
@@ -68,14 +75,13 @@ where
         })?;
 
     if let Some(request_id) = &request_id {
-        ctx.with_value("request_id", request_id.clone());
         window
             .track_cancellation(request_id, ctx.get_canceller())
             .await;
     }
 
     let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
-    let result = f(ctx.freeze(), app.inner().clone(), delegate).await;
+    let result = f(ctx, app.inner().clone(), delegate).await;
 
     if let Some(request_id) = &request_id {
         window.release_cancellation(request_id).await;
@@ -92,7 +98,7 @@ pub(super) async fn with_welcome_window_timeout<'a, R, T, F, Fut>(
     f: F,
 ) -> TauriResult<T>
 where
-    R: AppRuntime,
+    R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, WelcomeWindow<R>) -> Fut
         + Send
         + 'static,
@@ -103,8 +109,16 @@ where
         .and_then(|opts| opts.timeout.map(Duration::from_secs))
         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
 
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
     let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
+
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
 
     let window = app
         .welcome_window()
@@ -112,14 +126,13 @@ where
         .ok_or_join_err_with::<Unavailable>(|| format!("welcome window is unavailable"))?;
 
     if let Some(request_id) = &request_id {
-        ctx.with_value("request_id", request_id.clone());
         window
             .track_cancellation(request_id, ctx.get_canceller())
             .await;
     }
 
     let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
-    let result = f(ctx.freeze(), app.inner().clone(), delegate, window.clone()).await;
+    let result = f(ctx, app.inner().clone(), delegate, window.clone()).await;
 
     if let Some(request_id) = &request_id {
         window.release_cancellation(request_id).await;
@@ -136,7 +149,7 @@ pub(super) async fn with_main_window_timeout<'a, R, T, F, Fut>(
     f: F,
 ) -> TauriResult<T>
 where
-    R: AppRuntime,
+    R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, AppDelegate<R>, MainWindow<R>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
@@ -144,8 +157,16 @@ where
         .as_ref()
         .and_then(|opts| opts.timeout.map(Duration::from_secs))
         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
     let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
+
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
 
     let window = app
         .main_window(window.label())
@@ -155,14 +176,13 @@ where
         })?;
 
     if let Some(request_id) = &request_id {
-        ctx.with_value("request_id", request_id.clone());
         window
             .track_cancellation(request_id, ctx.get_canceller())
             .await;
     }
 
     let result = f(
-        ctx.freeze(),
+        ctx,
         app.handle().state::<AppDelegate<R>>().inner().clone(),
         window.clone(),
     )
@@ -184,7 +204,7 @@ pub(super) async fn with_project_timeout<R, T, F, Fut>(
     f: F,
 ) -> TauriResult<T>
 where
-    R: AppRuntime,
+    R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
@@ -193,7 +213,17 @@ where
         .and_then(|opts| opts.timeout.map(Duration::from_secs))
         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
 
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
+    let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
+
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
+
     let window = app
         .main_window(window.label())
         .await
@@ -212,17 +242,14 @@ where
         .await
         .ok_or_join_err::<NotFound>("project is not found")?;
 
-    let request_id = options.and_then(|opts| opts.request_id);
-
     if let Some(request_id) = &request_id {
-        ctx.with_value("request_id", request_id.clone());
         window
             .track_cancellation(&request_id, ctx.get_canceller())
             .await;
     }
 
     let result = f(
-        ctx.freeze(),
+        ctx,
         app.handle().state::<AppDelegate<R>>().inner().clone(),
         project,
     )
@@ -242,7 +269,7 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
     f: F,
 ) -> TauriResult<T>
 where
-    R: AppRuntime,
+    R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
@@ -265,17 +292,24 @@ where
         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
 
     let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
 
-    let mut ctx = R::AsyncContext::new_with_timeout(ctx.clone(), timeout);
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
+
     if let Some(request_id) = &request_id {
-        ctx.with_value("request_id", request_id.clone());
         window
             .track_cancellation(request_id, ctx.get_canceller())
             .await;
     }
 
     let result = f(
-        ctx.freeze(),
+        ctx,
         app.handle().state::<AppDelegate<R>>().inner().clone(),
         workspace,
     )

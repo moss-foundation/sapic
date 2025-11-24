@@ -4,13 +4,17 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sapic-core.workspace = true
 moss_text.workspace = true
+moss_id_macro.workspace = true
 
-ts-rs.workspace = true
+ts-rs = { workspace = true, features = ["chrono-impl"] }
 serde = { workspace = true, features = ["derive", "rc"] }
 serde_json.workspace = true
 derive_more = { workspace = true, features = ["deref", "display"] }
 joinerror.workspace = true
+chrono = { workspace = true, features = ["serde"] }
+nanoid.workspace = true
 
 [features]
 integration-tests = []

@@ -8,6 +8,7 @@ description = "Main window controller for the application"
 path = "src/window.rs"
 
 [dependencies]
+sapic-core = { workspace = true }
 sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
@@ -20,7 +21,6 @@ moss_server_api = { workspace = true }
 moss_activity_broadcaster = { workspace = true }
 moss_applib = { workspace = true }
 moss_common = { workspace = true }
-moss_db = { workspace = true }
 moss_project = { workspace = true }
 moss_fs = { workspace = true }
 moss_text = { workspace = true }

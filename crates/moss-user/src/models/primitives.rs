@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 #[cfg(any(test, feature = "integration-tests"))]
-use moss_applib::context::ContextValue;
+use sapic_core::context::ContextValue;
 
 ids!([ProfileId, AccountId]);
 

@@ -76,16 +76,6 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/app/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/window/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/window/tests" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/base/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/ipc/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/main/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/platform/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/runtime/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/system/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/welcome/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/crates/window2/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/plugins/settings-storage/src" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/plugins/url-parser/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

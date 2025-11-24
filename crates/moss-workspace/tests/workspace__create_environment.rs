@@ -28,6 +28,7 @@ async fn create_environment_success() {
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: None,
@@ -49,7 +50,10 @@ async fn create_environment_success() {
     let id = create_environment_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 2); // Expected two because of 1 global + 1 created
 
     assert!(create_environment_output.abs_path.exists());
@@ -77,12 +81,13 @@ async fn create_environment_success() {
 
 #[tokio::test]
 async fn create_environment_already_exists() {
-    let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
+    let (ctx, app_delegate, workspace, cleanup) = setup_test_workspace().await;
 
     let environment_name = random_environment_name();
     let _ = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: None,
@@ -97,6 +102,7 @@ async fn create_environment_already_exists() {
     let result = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: None,
@@ -140,6 +146,7 @@ async fn create_collection_environment_success() {
     let create_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: Some(collection_id),
@@ -161,7 +168,10 @@ async fn create_collection_environment_success() {
     let id = create_environment_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 2); // Expected two because of 1 global + 1 created
 
     assert!(create_environment_output.abs_path.exists());
@@ -215,6 +225,7 @@ async fn create_collection_environment_already_exists() {
     let _ = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: Some(collection_id.clone()),
@@ -229,6 +240,7 @@ async fn create_collection_environment_already_exists() {
     let result = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: Some(collection_id.clone()),
@@ -272,6 +284,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     let collection_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: Some(collection_id.clone()),
@@ -288,6 +301,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     let workspace_environment_output = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 name: environment_name.clone(),
                 project_id: None,
@@ -302,7 +316,10 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     let workspace_env_id = workspace_environment_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 3); // 1 global + 1 workspace + 1 collection
 
     assert!(collection_environment_output.abs_path.exists());

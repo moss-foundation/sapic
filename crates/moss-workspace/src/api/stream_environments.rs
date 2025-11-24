@@ -1,23 +1,26 @@
 use futures::StreamExt;
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_logging::session;
+use moss_project::models::primitives::ProjectId;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
     Workspace,
-    models::{
-        events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput,
-        primitives::ProjectId,
-    },
+    models::{events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput},
 };
 
 impl<R: AppRuntime> Workspace<R> {
     pub async fn stream_environments(
         &self,
         ctx: &R::AsyncContext,
+        app_delegate: AppDelegate<R>,
         channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> joinerror::Result<StreamEnvironmentsOutput> {
-        let stream = self.environment_service.list_environments(ctx).await;
+        let stream = self
+            .environment_service
+            .list_environments(ctx, app_delegate)
+            .await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

@@ -3,18 +3,15 @@ use joinerror::{OptionExt, ResultExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
 };
+use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
-use moss_db::{DatabaseError, primitives::AnyValue};
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
-use moss_storage::{
-    common::VariableStore,
-    primitives::segkey::SegKeyBuf,
-    storage::operations::{GetItem, TransactionalPutItem, TransactionalRemoveItem},
-};
+use moss_logging::session;
+use moss_storage2::{Storage, models::primitives::StorageScope};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -28,7 +25,7 @@ use crate::{
     configuration::{SourceFile, VariableDecl},
     edit::EnvironmentEditing,
     models::{primitives::VariableId, types::VariableInfo},
-    segments::{SEGKEY_VARIABLE_LOCALVALUE, SEGKEY_VARIABLE_ORDER},
+    storage::{key_variable, key_variable_local_value, key_variable_order},
     utils,
 };
 
@@ -65,7 +62,10 @@ pub struct Environment<R: AppRuntime> {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) abs_path_rx: watch::Receiver<EnvironmentPath>,
     pub(super) edit: EnvironmentEditing,
-    pub(super) variable_store: Arc<dyn VariableStore<R::AsyncContext>>,
+    // Environment variables are stored in workspace database
+    // We use Arc<String> instead of WorkspaceId to avoid circular dependency
+    pub(super) workspace_id: Arc<String>,
+    pub(super) app_delegate: AppDelegate<R>,
 }
 
 unsafe impl<R: AppRuntime> Send for Environment<R> {}
@@ -84,7 +84,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     // TODO: add variables()
 
     // TODO: rename to details
-    async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
+    async fn describe(&self, _ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
@@ -99,44 +99,39 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
 
         if let Some(vars) = parsed.variables.as_ref() {
+            let storage = <dyn Storage>::global(&self.app_delegate);
+            let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
+
             for (id, var) in vars.iter() {
                 let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
                     println!("failed to convert global value expression: {}", err); // TODO: log error
                 });
 
-                // TODO: log error when failed to fetch from the database
-                let local_value: Option<JsonValue> = {
-                    let segkey = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE);
-
-                    match GetItem::get(self.variable_store.as_ref(), ctx, segkey)
-                        .await
-                        .and_then(|v| {
-                            v.deserialize::<JsonValue>()
-                                .map_err(|e| DatabaseError::Serialization(e.to_string()))
-                        }) {
-                        Ok(value) => Some(value),
-                        Err(e) => {
-                            // TODO: log error
-                            println!("failed to fetch local_value from the database: {}", e);
-                            None
-                        }
+                let local_value: Option<JsonValue> = match storage
+                    .get(storage_scope.clone(), &key_variable_local_value(id))
+                    .await
+                {
+                    Ok(value) => value,
+                    Err(e) => {
+                        session::warn!(format!(
+                            "failed to get variable localValue from the database: {}",
+                            e
+                        ));
+                        None
                     }
                 };
 
-                let order: Option<isize> = {
-                    let segkey = SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER);
-                    match GetItem::get(self.variable_store.as_ref(), ctx, segkey)
-                        .await
-                        .and_then(|v| {
-                            v.deserialize::<isize>()
-                                .map_err(|e| DatabaseError::Serialization(e.to_string()))
-                        }) {
-                        Ok(order) => Some(order),
-                        Err(e) => {
-                            // TODO: log error
-                            println!("failed to fetch order from the database: {}", e);
-                            None
-                        }
+                let order: Option<isize> = match storage
+                    .get(storage_scope.clone(), &key_variable_order(&id))
+                    .await
+                {
+                    Ok(value) => value.and_then(|value| serde_json::from_value(value).ok()),
+                    Err(e) => {
+                        session::warn!(format!(
+                            "failed to get variable order from the database: {}",
+                            e
+                        ));
+                        None
                     }
                 };
 
@@ -166,7 +161,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
     async fn modify(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &R::AsyncContext,
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
@@ -202,6 +197,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             _ => {}
         };
 
+        let storage = <dyn Storage>::global(&self.app_delegate);
+        let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
         for var_to_add in params.vars_to_add {
             let id = VariableId::new();
             let id_str = id.to_string();
@@ -232,51 +229,20 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            // We don't want database failure to stop the function
-            let mut txn = continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
-                println!("failed to start a write transaction: {}", err);
-            });
+            let local_value_key = key_variable_local_value(&id);
+            let order_key = key_variable_order(&id);
 
-            let local_value =
-                continue_if_err!(AnyValue::serialize(&var_to_add.local_value), |err| {
-                    println!("failed to serialize localvalue: {}", err);
-                });
+            let batch_input = vec![
+                (local_value_key.as_str(), var_to_add.local_value),
+                (order_key.as_str(), serde_json::to_value(&var_to_add.order)?),
+            ];
 
-            continue_if_err!(
-                TransactionalPutItem::put_with_context(
-                    self.variable_store.as_ref(),
-                    ctx,
-                    &mut txn,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE),
-                    local_value,
-                )
-                .await,
-                |err| {
-                    println!("failed to put local_value in the database: {}", err);
-                }
-            );
-
-            let order = continue_if_err!(AnyValue::serialize(&var_to_add.order), |err| {
-                println!("failed to serialize order: {}", err);
-            });
-
-            continue_if_err!(
-                TransactionalPutItem::put_with_context(
-                    self.variable_store.as_ref(),
-                    ctx,
-                    &mut txn,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER),
-                    order,
-                )
-                .await,
-                |err| {
-                    println!("failed to put local_value in the database: {}", err);
-                }
-            );
-
-            continue_if_err!(txn.commit(), |err| {
-                println!("failed to commit transaction: {}", err);
-            });
+            if let Err(e) = storage.put_batch(storage_scope.clone(), &batch_input).await {
+                session::warn!(format!(
+                    "failed to add variable cache to the database: {}",
+                    e
+                ));
+            }
         }
 
         for var_to_update in params.vars_to_update {
@@ -400,76 +366,43 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 ));
             }
 
-            let mut transaction =
-                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
-                    println!("failed to start a write transaction: {}", err);
-                });
-
+            let local_value_key = key_variable_local_value(&var_to_update.id);
             match var_to_update.local_value {
                 Some(ChangeJsonValue::Update(value)) => {
-                    let local_value = continue_if_err!(AnyValue::serialize(&value), |err| {
-                        println!("failed to serialize local_value: {}", err);
-                    });
-
-                    continue_if_err!(
-                        TransactionalPutItem::put_with_context(
-                            self.variable_store.as_ref(),
-                            ctx,
-                            &mut transaction,
-                            SegKeyBuf::from(var_to_update.id.as_str())
-                                .join(SEGKEY_VARIABLE_LOCALVALUE),
-                            local_value,
-                        )
-                        .await,
-                        |err| {
-                            println!("failed to put local_value in the database: {}", err);
-                        }
-                    );
+                    if let Err(e) = storage
+                        .put(storage_scope.clone(), &local_value_key, value)
+                        .await
+                    {
+                        session::warn!(format!("failed to update variable localValue: {}", e));
+                    }
                 }
                 Some(ChangeJsonValue::Remove) => {
-                    continue_if_err!(
-                        TransactionalRemoveItem::remove(
-                            self.variable_store.as_ref(),
-                            ctx,
-                            &mut transaction,
-                            SegKeyBuf::from(var_to_update.id.as_str())
-                                .join(SEGKEY_VARIABLE_LOCALVALUE),
-                        )
-                        .await,
-                        |err| {
-                            println!("failed to remove local_value in the database: {}", err);
-                        }
-                    );
-                }
-                _ => {}
-            }
-
-            match var_to_update.order {
-                Some(order) => {
-                    let order = continue_if_err!(AnyValue::serialize(&order), |err| {
-                        println!("failed to serialize order: {}", err);
-                    });
-
-                    continue_if_err!(
-                        TransactionalPutItem::put_with_context(
-                            self.variable_store.as_ref(),
-                            ctx,
-                            &mut transaction,
-                            SegKeyBuf::from(var_to_update.id.as_str()).join(SEGKEY_VARIABLE_ORDER),
-                            order,
-                        )
-                        .await,
-                        |err| {
-                            println!("failed to put order in the database: {}", err);
-                        }
-                    )
+                    if let Err(e) = storage
+                        .remove(storage_scope.clone(), &local_value_key)
+                        .await
+                    {
+                        session::warn!(format!("failed to remove variable localValue: {}", e));
+                    }
                 }
                 None => {}
             }
 
-            continue_if_err!(transaction.commit(), |err| {
-                println!("failed to commit transaction: {}", err);
-            });
+            let order_key = key_variable_order(&var_to_update.id);
+            match var_to_update.order {
+                Some(order) => {
+                    if let Err(e) = storage
+                        .put(
+                            storage_scope.clone(),
+                            &order_key,
+                            serde_json::to_value(&order)?,
+                        )
+                        .await
+                    {
+                        session::warn!(format!("failed to update variable order: {}", e));
+                    }
+                }
+                None => {}
+            }
         }
 
         for id in params.vars_to_delete {
@@ -485,40 +418,15 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            let mut transaction =
-                continue_if_err!(self.variable_store.begin_write(&ctx).await, |err| {
-                    println!("failed to start a write transaction: {}", err);
-                });
-
-            continue_if_err!(
-                TransactionalRemoveItem::remove(
-                    self.variable_store.as_ref(),
-                    ctx,
-                    &mut transaction,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_LOCALVALUE)
-                )
-                .await,
-                |err| {
-                    println!("failed to remove local_value in the database: {}", err);
-                }
-            );
-
-            continue_if_err!(
-                TransactionalRemoveItem::remove(
-                    self.variable_store.as_ref(),
-                    ctx,
-                    &mut transaction,
-                    SegKeyBuf::from(id.as_str()).join(SEGKEY_VARIABLE_ORDER)
-                )
-                .await,
-                |err| {
-                    println!("failed to remove order in the database: {}", err);
-                }
-            );
-
-            continue_if_err!(transaction.commit(), |err| {
-                println!("failed to commit transaction: {}", err);
-            })
+            if let Err(e) = storage
+                .remove_batch_by_prefix(storage_scope.clone(), &key_variable(&id))
+                .await
+            {
+                session::warn!(format!(
+                    "failed to remove variable cache from database: {}",
+                    e
+                ));
+            }
         }
 
         self.edit

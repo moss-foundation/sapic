@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 moss_applib = { workspace = true }
+sapic-core.workspace = true
 
 async-trait = { workspace = true }
 tauri = { workspace = true }

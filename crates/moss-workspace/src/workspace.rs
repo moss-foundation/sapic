@@ -9,7 +9,7 @@ use moss_applib::{
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment, models::primitives::EnvironmentId};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_project::Project;
+use moss_project::{Project, models::primitives::ProjectId};
 use moss_user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -18,11 +18,9 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
     environment::EnvironmentService,
-    layout::LayoutService,
     manifest::{MANIFEST_FILE_NAME, ManifestFile},
-    models::primitives::{ProjectId, WorkspaceId},
+    models::primitives::WorkspaceId,
     project::ProjectService,
-    storage_old::StorageService,
 };
 
 pub struct WorkspaceSummary {
@@ -64,11 +62,8 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile<R>>,
-    pub(super) layout_service: LayoutService<R>,
     pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
-    // FIXME: Remove after removing the layout functionalities from the backend
-    pub(super) storage_service_old: Arc<StorageService<R>>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
     pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }
@@ -88,7 +83,6 @@ impl<R: AppRuntime> Workspace<R> {
             .subscribe(move |event| {
                 let project_service_clone = project_service.clone();
                 let environment_service_clone = environment_service.clone();
-
                 async move {
                     let project = project_service_clone.project(&event.project_id).await;
 
@@ -111,7 +105,6 @@ impl<R: AppRuntime> Workspace<R> {
         on_did_delete_project_event
             .subscribe(move |event| {
                 let environment_service_clone = environment_service.clone();
-
                 async move {
                     environment_service_clone
                         .remove_source(&event.project_id.inner())
@@ -167,12 +160,5 @@ impl<R: AppRuntime> Workspace<R> {
             self._on_did_add_project.unsubscribe().await;
             self._on_did_delete_project.unsubscribe().await;
         }
-    }
-}
-
-#[cfg(any(test, feature = "integration-tests"))]
-impl<R: AppRuntime> Workspace<R> {
-    pub fn db(&self) -> &Arc<dyn moss_storage::WorkspaceStorage<R::AsyncContext>> {
-        self.storage_service_old.storage()
     }
 }

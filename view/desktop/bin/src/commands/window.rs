@@ -1,6 +1,6 @@
 use sapic_ipc::{
     TauriError, TauriResult,
-    contracts::{configuration::*, theme::*},
+    contracts::{configuration::*, extension::*, theme::*},
 };
 use sapic_window::models::operations::*;
 use tauri::Window as TauriWindow;
@@ -79,14 +79,12 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     options: Options,
 ) -> TauriResult<ListExtensionsOutput> {
-    super::with_main_window_timeout(
+    super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, window| async move {
-            window.inner().list_extensions(&ctx, &app_delegate).await
-        },
+        |ctx, app, _| async move { app.list_extensions(&ctx).await },
     )
     .await
 }

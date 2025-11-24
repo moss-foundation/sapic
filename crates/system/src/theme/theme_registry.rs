@@ -3,12 +3,7 @@ use sapic_base::theme::types::primitives::{ThemeId, ThemeMode};
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
-#[async_trait]
-pub trait ThemeRegistry: Send + Sync {
-    async fn register(&self, items: Vec<ThemeRegistryItem>);
-    async fn get(&self, identifier: &ThemeId) -> Option<ThemeRegistryItem>;
-    async fn list(&self) -> HashMap<ThemeId, ThemeRegistryItem>;
-}
+use crate::theme::ThemeRegistry;
 
 #[derive(Debug, Clone)]
 pub struct ThemeRegistryItem {

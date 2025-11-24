@@ -2,17 +2,17 @@
 
 pub mod shared;
 
+use crate::shared::{generate_random_icon, setup_test_workspace};
+use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
-    models::{operations::CreateProjectInput, primitives::ProjectId, types::CreateProjectParams},
+    models::{operations::CreateProjectInput, types::CreateProjectParams},
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
 use serde_json::Value as JsonValue;
 use std::{collections::HashSet, path::Path};
 use tauri::ipc::Channel;
-
-use crate::shared::{generate_random_icon, setup_test_workspace};
 
 #[tokio::test]
 async fn create_project_success() {
@@ -398,10 +398,8 @@ async fn create_project_external_success() {
     // Verify the internal directory is created
     assert!(create_project_output.abs_path.exists());
 
-    // Verify the internal directory has state database
     let internal_path = create_project_output.abs_path;
     assert!(internal_path.exists());
-    assert!(internal_path.join("state.db").exists());
 
     // Verify the correct config is created in internal directory
     let config_path = internal_path.join("config.json");

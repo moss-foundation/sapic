@@ -1,9 +1,11 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
-use sapic_base::theme::contribution::ThemeContributionDecl;
-use sapic_runtime::globals::GlobalThemeRegistry;
+use sapic_base::{
+    extension::{contribution::ContributionKey, types::LoadedExtensionInfo},
+    theme::contribution::ThemeContributionDecl,
+};
+use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalThemeRegistry};
 use sapic_system::theme::theme_registry::ThemeRegistryItem;
 use serde_json::Value as JsonValue;
 
@@ -26,7 +28,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for ThemeExtensionPoint {
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        info: &ExtensionInfo,
+        info: &LoadedExtensionInfo,
         contribution: JsonValue,
     ) -> joinerror::Result<()> {
         if !contribution.is_array() {

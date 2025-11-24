@@ -3,14 +3,12 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    context::{self, ContextResultExt},
-};
+use moss_applib::AppRuntime;
 use moss_git::url::GitUrl;
 use moss_user::AccountSession;
 use oauth2::http::header::{ACCEPT, AUTHORIZATION};
 use reqwest::{Client as HttpClient, RequestBuilder};
+use sapic_core::context::{self, ContextResultExt};
 
 use crate::gitlab::response::{
     GetContributorsResponse, GetRepositoryResponse, GetUserResponse, PATExpiresAtResponse,

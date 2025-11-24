@@ -2,6 +2,7 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
+use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime, EventMarker,
     subscription::{Event, EventEmitter},
@@ -29,8 +30,8 @@ use crate::{
     edit::ProjectEdit,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
+    models::primitives::ProjectId,
     set_icon::SetIconService,
-    storage::StorageService,
     vcs::{ProjectVcs, Vcs},
     worktree::Worktree,
 };
@@ -83,6 +84,7 @@ impl From<ManifestVcs> for VcsDetails {
 }
 
 pub struct Project<R: AppRuntime> {
+    pub(super) id: ProjectId,
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) internal_abs_path: Arc<Path>,
@@ -90,7 +92,8 @@ pub struct Project<R: AppRuntime> {
     pub(super) edit: ProjectEdit,
     pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
     pub(super) set_icon_service: SetIconService,
-    pub(super) storage_service: Arc<StorageService<R>>,
+    // TODO: Remove this since it doesn't belong to business logic
+    pub(super) app_delegate: AppDelegate<R>,
     pub(super) vcs: OnceCell<Vcs<R>>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     pub(super) archived: AtomicBool,
@@ -108,12 +111,17 @@ impl<R: AppRuntime> Project<R> {
         self.worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
+                    self.id.clone(),
+                    self.app_delegate.clone(),
                     self.abs_path(),
                     self.fs.clone(),
-                    self.storage_service.clone(),
                 ))
             })
             .await
+    }
+
+    pub fn id(&self) -> &ProjectId {
+        &self.id
     }
 
     pub fn is_archived(&self) -> bool {
@@ -442,9 +450,10 @@ impl<R: AppRuntime> Project<R> {
             .worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
+                    self.id.clone(),
+                    self.app_delegate.clone(),
                     self.internal_abs_path.clone(),
                     self.fs.clone(),
-                    self.storage_service.clone(),
                 ))
             })
             .await;
@@ -475,12 +484,5 @@ impl<R: AppRuntime> Project<R> {
             .await?;
 
         Ok(archive_path)
-    }
-}
-
-#[cfg(any(test, feature = "integration-tests"))]
-impl<R: AppRuntime> Project<R> {
-    pub fn db(&self) -> &Arc<dyn moss_storage::CollectionStorage<R::AsyncContext>> {
-        self.storage_service.storage()
     }
 }

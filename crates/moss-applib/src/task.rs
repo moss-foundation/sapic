@@ -1,22 +1,22 @@
+// TODO: should be moved to core crate
+
 use std::{
     future::Future,
     pin::Pin,
     task::{Context as TaskContext, Poll},
 };
 
+use sapic_core::context::{AnyAsyncContext, ArcContext, AwaitCancel, Reason};
 use tokio::task::JoinHandle;
 
-use crate::{
-    context::{AnyContext, AsyncContext, AwaitCancel, Reason},
-    errors::{Cancelled, Timeout},
-};
+use crate::errors::{Cancelled, Timeout};
 
 /// A detached task that runs in the background with context support.
 /// Can be cancelled via context or awaited to get the result.
 #[must_use = "detached tasks should be awaited or explicitly dropped"]
 pub struct DetachedTask<T> {
     handle: JoinHandle<joinerror::Result<T>>,
-    ctx: AsyncContext,
+    ctx: ArcContext,
 }
 
 impl<T> DetachedTask<T> {
@@ -36,7 +36,7 @@ impl<T> DetachedTask<T> {
     }
 
     /// Get a reference to the task's context.
-    pub fn context(&self) -> &AsyncContext {
+    pub fn context(&self) -> &ArcContext {
         &self.ctx
     }
 
@@ -109,7 +109,7 @@ enum TaskState<T> {
     /// A task that is currently running with context
     Spawned {
         inner: Pin<Box<dyn Future<Output = joinerror::Result<T>> + Send>>,
-        ctx: AsyncContext,
+        ctx: ArcContext,
     },
 }
 
@@ -124,7 +124,7 @@ impl<T: Send + 'static> Task<T> {
 
     /// Creates a task with context support.
     /// The task will be cancelled if the context is cancelled or times out.
-    pub fn with_context<F>(ctx: &AsyncContext, future: F) -> Self
+    pub fn with_context<F>(ctx: &ArcContext, future: F) -> Self
     where
         F: Future<Output = joinerror::Result<T>> + Send + 'static,
     {
@@ -158,7 +158,7 @@ impl<T: Send + 'static> Task<T> {
     where
         F: Future<Output = joinerror::Result<T>> + Send + 'static,
     {
-        let ctx = crate::context::MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         Self::with_context(&ctx, future)
     }
 
@@ -167,7 +167,7 @@ impl<T: Send + 'static> Task<T> {
     where
         F: Future<Output = joinerror::Result<T>> + Send + 'static,
     {
-        let ctx = crate::context::MutableContext::background_with_timeout(timeout).freeze();
+        let ctx = ArcContext::background_with_timeout(timeout);
         Self::with_context(&ctx, future)
     }
 
@@ -179,7 +179,7 @@ impl<T: Send + 'static> Task<T> {
     }
 
     /// Get a reference to the task's context (if spawned).
-    pub fn context(&self) -> Option<&AsyncContext> {
+    pub fn context(&self) -> Option<&ArcContext> {
         match &self.state {
             TaskState::Ready(_) => None,
             TaskState::Spawned { ctx, .. } => Some(ctx),
@@ -191,7 +191,7 @@ impl<T: Send + 'static> Task<T> {
     pub fn detach(self) -> DetachedTask<T> {
         match self.state {
             TaskState::Ready(result) => {
-                let ctx = crate::context::MutableContext::background().freeze();
+                let ctx = ArcContext::background();
                 // For ready tasks, spawn a task that immediately returns the value
                 let handle = tokio::spawn(async move { result.unwrap() });
                 DetachedTask { handle, ctx }
@@ -244,13 +244,13 @@ fn reason_to_error(reason: Reason) -> joinerror::Error {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::context::MutableContext;
+    use sapic_core::context::ArcContext;
     use std::time::Duration;
     use tokio::time::sleep;
 
     #[tokio::test]
     async fn test_task_with_context_success() {
-        let ctx = MutableContext::background_with_timeout(Duration::from_millis(200)).freeze();
+        let ctx = ArcContext::background_with_timeout(Duration::from_millis(200));
 
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
@@ -264,7 +264,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_task_with_context_timeout() {
-        let ctx = MutableContext::background_with_timeout(Duration::from_millis(20)).freeze();
+        let ctx = ArcContext::background_with_timeout(Duration::from_millis(20));
 
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(200)).await;
@@ -278,7 +278,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_task_with_context_cancel() {
-        let ctx = MutableContext::background_with_timeout(Duration::from_secs(5)).freeze();
+        let ctx = ArcContext::background_with_timeout(Duration::from_secs(5));
         let canceller = ctx.get_canceller();
 
         let task = Task::with_context(&ctx, async {
@@ -352,7 +352,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_task_cancel_method() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(200)).await;
             Ok(42)
@@ -368,7 +368,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_success() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(50)).await;
             Ok(42)
@@ -382,7 +382,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_cancel() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(200)).await;
             Ok(42)
@@ -401,7 +401,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_abort() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(200)).await;
             Ok(42)
@@ -419,7 +419,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_is_finished() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(50)).await;
             Ok(42)
@@ -439,10 +439,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_context_hierarchy() {
-        use crate::context::AnyAsyncContext;
-
-        let parent_ctx = MutableContext::background().freeze();
-        let child_ctx = <AsyncContext as AnyAsyncContext>::new(parent_ctx.clone()).freeze();
+        let parent_ctx = ArcContext::background();
+        let child_ctx = ArcContext::new(parent_ctx.clone());
 
         let task1 = Task::with_context(&parent_ctx, async {
             sleep(Duration::from_millis(200)).await;
@@ -472,7 +470,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_log_if_err_success() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
             Ok(42)
@@ -487,7 +485,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_log_if_err_error() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task: Task<i32> = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
             Err(joinerror::Error::new::<crate::errors::Internal>(
@@ -517,7 +515,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_detach_log_if_err_cancelled() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let canceller = ctx.get_canceller();
 
         let task = Task::with_context(&ctx, async {
@@ -540,7 +538,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_log_if_err_fire_and_forget() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
             Ok(())
@@ -583,7 +581,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_task_context_access() {
-        let ctx = MutableContext::background().freeze();
+        let ctx = ArcContext::background();
         let task = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
             Ok(42)

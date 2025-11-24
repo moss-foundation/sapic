@@ -38,6 +38,7 @@ async fn update_environment_group_expand() {
     let _ = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: Some(collection_id.clone()),
                 name: environment_name.clone(),
@@ -69,7 +70,7 @@ async fn update_environment_group_expand() {
     let channel = Channel::new(move |_| Ok(()));
 
     let output = workspace
-        .stream_environments(&ctx, channel.clone())
+        .stream_environments(&ctx, app_delegate.clone(), channel.clone())
         .await
         .unwrap();
 
@@ -90,7 +91,10 @@ async fn update_environment_group_expand() {
         .await
         .unwrap();
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
     assert!(output.groups[0].expanded);
 
     cleanup().await;
@@ -122,6 +126,7 @@ async fn update_environment_group_order() {
     let _ = workspace
         .create_environment(
             &ctx,
+            app_delegate.clone(),
             CreateEnvironmentInput {
                 project_id: Some(project_id.clone()),
                 name: environment_name,
@@ -149,7 +154,10 @@ async fn update_environment_group_order() {
 
     let channel = Channel::new(move |_| Ok(()));
 
-    let output = workspace.stream_environments(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .await
+        .unwrap();
 
     assert_eq!(output.groups[0].order, Some(42));
 

@@ -1,10 +1,11 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_extension::{ExtensionInfo, ExtensionPoint, contribution::ContributionKey};
 use moss_project::registries::{
     GlobalResourceStatusRegistry, resource_statuses::ResourceStatusRegistryItem,
 };
+use sapic_base::extension::{contribution::ContributionKey, types::LoadedExtensionInfo};
+use sapic_runtime::extension_point::ExtensionPoint;
 use serde_json::Value as JsonValue;
 
 const RESOURCE_STATUSES_KEY: ContributionKey = ContributionKey::new("resource_statuses");
@@ -26,7 +27,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for ResourceStatusesExtensionPoint {
     async fn handle(
         &self,
         app_delegate: &AppDelegate<R>,
-        _: &ExtensionInfo,
+        _: &LoadedExtensionInfo,
         data: JsonValue,
     ) -> joinerror::Result<()> {
         if !data.is_array() {

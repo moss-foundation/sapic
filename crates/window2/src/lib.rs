@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use moss_applib::context::Canceller;
+use sapic_core::context::Canceller;
 use tauri::Runtime as TauriRuntime;
 
 pub mod constants {

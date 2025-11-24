@@ -1,9 +1,9 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{ArchiveProjectInput, CreateProjectInput, UnarchiveProjectInput},
-    primitives::ProjectId,
     types::CreateProjectParams,
 };
 

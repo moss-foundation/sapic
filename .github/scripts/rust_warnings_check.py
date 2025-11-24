@@ -19,7 +19,7 @@ Usage Examples:
     python warnings_check.py
     
     # Check specific package
-    python warnings_check.py -p moss_db
+    python warnings_check.py -p moss_storage2
     
     # Check workspace excluding specific packages
     python warnings_check.py --exclude test-crate --exclude example-crate
