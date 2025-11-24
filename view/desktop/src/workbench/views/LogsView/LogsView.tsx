@@ -8,9 +8,10 @@ import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventS
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
 import { ExtensionInfo } from "@repo/base";
-import { AccountKind } from "@repo/moss-user";
-import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { ListExtensionsOutput } from "@repo/ipc";
+import { AccountKind } from "@repo/moss-user";
+import { ParsedUrl, ParseUrlOutput } from "@repo/url-parser";
+import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
@@ -181,6 +182,13 @@ export const LogsView = () => {
 
   return (
     <PageContent className="space-y-6">
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">Url Parser</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <UrlParserTest />
+        </div>
+      </section>
+
       <section className="mb-6">
         <h2 className="mb-2 text-xl">Extension Registry</h2>
         <div className="rounded bg-gray-50 p-4">
@@ -491,6 +499,45 @@ const ExtensionRegistryTest = () => {
         onClick={handleListExtensionsButton}
       >
         List Available Extensions From the Extension Registry
+      </button>
+    </div>
+  );
+};
+
+const UrlParserTest = () => {
+  const [url, setUrl] = useState<string>();
+  const [parsedUrl, setParsedUrl] = useState<ParsedUrl>();
+
+  async function handleParseUrlButton() {
+    try {
+      const result = await invoke<ParseUrlOutput>("plugin:url-parser|parse_url", {
+        input: {
+          url: url,
+        },
+      });
+      setParsedUrl(result);
+    } catch (e) {
+      alert(`Failed to parse url: ${e}`);
+    }
+  }
+
+  return (
+    <div className={"overflow-x-auto rounded-md"}>
+      <input
+        type="text"
+        placeholder="https://url.to.be.parsed"
+        value={url}
+        onChange={(e) => {
+          setUrl(e.target.value);
+        }}
+        className="w-full rounded-md border border-gray-300 bg-white p-2"
+      />
+      <textarea value={JSON.stringify(parsedUrl, null, 2)} readOnly className="h-50 mt-4 w-full bg-white" />
+      <button
+        className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
+        onClick={handleParseUrlButton}
+      >
+        Parse Url
       </button>
     </div>
   );

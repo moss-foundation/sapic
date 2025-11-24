@@ -1,7 +1,6 @@
-use pest::Parser;
 use sapic_ipc::TauriResult;
 use tauri::{
-    Runtime,
+    AppHandle, Runtime,
     plugin::{Builder, TauriPlugin},
 };
 use tracing::instrument;
@@ -21,8 +20,11 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
-async fn parse_url<'a, R: Runtime>(input: ParseUrlInput) -> TauriResult<ParseUrlOutput> {
+#[instrument(level = "trace")]
+async fn parse_url<'a, R: Runtime>(
+    #[allow(unused)] app_handle: AppHandle<R>,
+    input: ParseUrlInput,
+) -> TauriResult<ParseUrlOutput> {
     let parsed_url = UrlParser::parse_url(&input.url)?;
 
     Ok(ParseUrlOutput(parsed_url))

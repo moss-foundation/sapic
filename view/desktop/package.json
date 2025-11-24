@@ -41,6 +41,7 @@
     "@repo/moss-workspace": "workspace:*",
     "@repo/shared-storage": "workspace:*",
     "@repo/settings-storage": "workspace:*",
+    "@repo/url-parser": "workspace:*",
     "@repo/ipc": "workspace:*",
     "@repo/window": "workspace:*",
     "@tanstack/react-pacer": "0.16.1",

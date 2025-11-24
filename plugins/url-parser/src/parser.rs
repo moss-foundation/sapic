@@ -1,7 +1,6 @@
 use joinerror::{OptionExt, Result, bail};
 use pest::{Parser, iterators::Pair};
 use pest_derive::Parser;
-use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
 use crate::models::types::{ParsedUrl, ParsedValue};
@@ -116,7 +115,7 @@ fn parse_path_part(path: Pair<Rule>) -> Result<Vec<ParsedValue>> {
 }
 
 fn parse_query_param(param: Pair<Rule>) -> Result<(String, ParsedValue)> {
-    let mut param_parts = param.into_inner().collect::<Vec<_>>();
+    let param_parts = param.into_inner().collect::<Vec<_>>();
 
     let query_key_pair = param_parts
         .get(0)
@@ -161,7 +160,6 @@ fn parse_fragment_part(fragment: Pair<Rule>) -> Result<Option<ParsedValue>> {
 
 #[cfg(test)]
 mod tests {
-
     use crate::{
         models::types::ParsedUrl,
         parser::{ParsedValue, UrlParser},

@@ -92,7 +92,8 @@ pub async fn run<R: TauriRuntime>() {
                 .clone();
 
             Ok(GlobalSettingsStorage::get(&delegate))
-        }));
+        }))
+        .plugin(url_parser::init());
 
     #[cfg(target_os = "macos")]
     {

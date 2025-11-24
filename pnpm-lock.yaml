@@ -382,6 +382,22 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
+  plugins/url-parser:
+    dependencies:
+      typescript:
+        specifier: 5.9.2
+        version: 5.9.2
+      zod:
+        specifier: 3.24.4
+        version: 3.24.4
+    devDependencies:
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../../crates/moss-bindingutils
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/config-typescript
+
   tools/gen-bindings:
     dependencies:
       ts-morph:
@@ -487,6 +503,9 @@ importers:
       '@repo/shared-storage':
         specifier: workspace:*
         version: link:../../plugins/shared_storage
+      '@repo/url-parser':
+        specifier: workspace:*
+        version: link:../../plugins/url-parser
       '@repo/window':
         specifier: workspace:*
         version: link:../../crates/window

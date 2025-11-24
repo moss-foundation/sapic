@@ -1,5 +1,5 @@
 {
-    "name": "@repo/settings-storage",
+    "name": "@repo/url-parser",
     "exports": {
       ".": "./index.ts"
     },

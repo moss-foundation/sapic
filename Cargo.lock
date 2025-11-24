@@ -1660,6 +1660,7 @@ dependencies = [
  "tauri-plugin-window-state",
  "tokio",
  "tracing",
+ "url-parser",
  "welcome",
  "window",
  "window2",

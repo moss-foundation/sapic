@@ -57,6 +57,7 @@ LANGUAGE_MODELS_DIR := crates/moss-language
 
 SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
 SETTINGS_STORAGE_MODELS_DIR := plugins/settings-storage
+URL_PARSER_MODELS_DIR := plugins/url-parser
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -155,6 +156,7 @@ $(eval $(call gen_bindings,base,BASE_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 $(eval $(call gen_bindings,settings-storage,SETTINGS_STORAGE_MODELS_DIR))
+$(eval $(call gen_bindings,url-parser,URL_PARSER_MODELS_DIR))
 
 gen-window-bindings:
 gen-project-bindings:
@@ -168,6 +170,7 @@ gen-user-bindings:
 gen-language-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
+gen-url-parser-bindings:
 gen-base-bindings:
 
 ## Generate all TypeScript bindings
@@ -185,6 +188,7 @@ gen-bindings: \
 	gen-language-bindings \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \
+	gen-url-parser-bindings \
 	gen-base-bindings
 
 
