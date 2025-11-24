@@ -202,7 +202,6 @@ impl<R: AppRuntime> App<R> {
         // is created. In the new workspace, since we won't be storing the list of projects on
         // the backend, this problem won't exist (and in the worst case, we can load the projects lazily).
 
-        dbg!("adding workspace to storage 2");
         let storage = <dyn Storage>::global(delegate);
         joinerror::ResultExt::join_err::<()>(
             storage.add_workspace(workspace_id.inner()).await,

@@ -214,9 +214,6 @@ impl SubstoreManager for AppStorage {
     ) -> joinerror::Result<()> {
         let mut workspace_projects_lock = self.workspace_to_projects.write().await;
 
-        dbg!(&workspace_projects_lock.keys());
-        dbg!(&self.workspaces.read().await.keys());
-
         let projects = if let Some(projects) = workspace_projects_lock.get_mut(&workspace_id) {
             projects
         } else {
@@ -509,9 +506,6 @@ impl AppStorage {
 
     async fn project(&self, project_id: Arc<String>) -> joinerror::Result<Arc<dyn KeyedStorage>> {
         let projects = self.projects.read().await;
-
-        dbg!(&projects.keys());
-        dbg!(&project_id);
 
         Ok(projects
             .get(&project_id)

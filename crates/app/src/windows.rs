@@ -206,11 +206,6 @@ impl<R: AppRuntime> WindowManager<R> {
             .await
             .insert(workspace.id(), label.clone());
 
-        joinerror::ResultExt::join_err::<()>(
-            storage.add_workspace(workspace.id().inner()).await,
-            "failed to add workspace to storage",
-        )?;
-
         Ok(window)
     }
 

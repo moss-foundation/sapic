@@ -28,8 +28,6 @@ impl<R: AppRuntime> OldSapicWindow<R> {
                 None
             };
 
-        dbg!(&maybe_workspace_details);
-
         let active_profile = self
             .profile_service
             .active_profile()
