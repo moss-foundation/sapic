@@ -51,7 +51,18 @@ impl UrlParser {
     }
 }
 
+// {{ident}}
 fn parse_var(var: Pair<Rule>) -> Result<ParsedValue> {
+    let var_ident = var
+        .into_inner()
+        .next()
+        .ok_or_join_err::<()>("failed to parse variable")?
+        .as_str();
+    Ok(ParsedValue::Variable(var_ident.to_owned()))
+}
+
+// {{:ident}}
+fn parse_path_var(var: Pair<Rule>) -> Result<ParsedValue> {
     let var_ident = var
         .into_inner()
         .next()
@@ -101,7 +112,7 @@ fn parse_path_segment(segment: Pair<Rule>) -> Result<ParsedValue> {
         .ok_or_join_err::<()>("failed to parse path segment")?;
     match path_segment_inner.as_rule() {
         Rule::path_text => Ok(ParsedValue::String(path_segment_inner.as_str().to_owned())),
-        Rule::var => parse_var(path_segment_inner),
+        Rule::path_var => parse_path_var(path_segment_inner),
         _ => bail!("Invalid path segment: `{}`", path_segment_inner),
     }
 }

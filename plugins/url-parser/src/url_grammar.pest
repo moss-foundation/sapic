@@ -18,7 +18,8 @@ host_literal = @{
 }
 
 path_part = { ("/" ~ path_segment)* }
-path_segment = { (var | path_text)+ }
+path_var = { ":" ~ ident }
+path_segment = { (path_var | path_text)+ }
 path_text = @{
     (!("/" | "?" | "#" | "{") ~ ANY)+
 }
