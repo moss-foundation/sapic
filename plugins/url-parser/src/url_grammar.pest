@@ -1,0 +1,45 @@
+// FIXME: Most literal|var should be refined to allow mixing of literal and variable
+// For example: {{env}}-test.sapic.com
+
+
+url = { scheme_part? ~ "://" ~ host_part ~ path_part? ~ query_part? ~ fragment_part? }
+
+var = { "{{" ~ ident ~ "}}" }
+ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
+
+scheme_part = { scheme_literal | var }
+scheme_literal = @{
+    ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
+}
+
+
+host_part = { host_piece ~ ("." ~ host_piece)* }
+host_piece = { var | host_literal }
+host_literal = @{
+    (ASCII_ALPHANUMERIC | "-" )+
+}
+
+
+path_part = { ("/" ~ path_segment)* }
+path_segment = { (var | path_text)+ }
+path_text = @{
+    (!("/" | "?" | "#" | "{") ~ ANY)+
+}
+
+query_part = { "?" ~ query_param ~ ("&" ~ query_param)* }
+query_param = { query_key ~ ("=" ~ query_value)? }
+// FIXME: Maybe we should allow query_key to also be a variable?
+query_key = @{
+    (ASCII_ALPHANUMERIC | "_" | "-" )+
+}
+query_value = { (var | query_text)+ }
+query_text = @{
+    // Любой текст до "&", "#", или начала "{{"
+    (!("&" | "#" | "{") ~ ANY)+
+}
+
+fragment_part = { "#" ~ (var | fragment_text)+ }
+fragment_text = @{
+    // Любой текст до начала "{{"
+    (!"{" ~ ANY)+
+}
