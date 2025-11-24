@@ -152,6 +152,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "chrono",
  "core",
  "derive_more 2.0.1",
  "inventory",
@@ -200,6 +201,12 @@ name = "arbitrary"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c3d036a3c4ab069c7b410a2ce876bd74808d2d0888a82667669f8e783a898bf1"
+
+[[package]]
+name = "arc-swap"
+version = "1.7.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "69f7f8c3906b62b754cd5326047894316021dcfe5a194c8ea52bdd94934a3457"
 
 [[package]]
 name = "arcstr"
@@ -3583,6 +3590,7 @@ dependencies = [
 name = "main"
 version = "0.1.0"
 dependencies = [
+ "arc-swap",
  "async-trait",
  "base",
  "core",
@@ -3598,11 +3606,13 @@ dependencies = [
  "moss_keyring",
  "moss_project",
  "moss_server_api",
+ "moss_storage2",
  "moss_text",
  "moss_workspace",
  "system",
  "tauri",
  "tokio",
+ "tracing",
  "validator",
  "window",
  "window2",

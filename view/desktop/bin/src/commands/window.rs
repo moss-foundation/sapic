@@ -87,30 +87,6 @@ pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
     .await
 }
 
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn close_workspace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: CloseWorkspaceInput,
-    options: Options,
-) -> TauriResult<CloseWorkspaceOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, app_delegate, window| async move {
-            window
-                .inner()
-                .close_workspace(&ctx, &app_delegate, &input)
-                .await
-        },
-    )
-    .await
-}
-
 #[allow(dead_code)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]

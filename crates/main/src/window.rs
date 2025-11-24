@@ -2,6 +2,7 @@ pub mod operations;
 pub mod workspace;
 pub mod workspace_ops;
 
+use arc_swap::ArcSwap;
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
@@ -19,17 +20,36 @@ use crate::{workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
 
+/// Newtype wrapper for Workspace to use with ArcSwap.
+/// This allows atomic lock-free swapping of workspace instances.
+#[derive(Deref, Clone)]
+pub struct WorkspaceHandle(Arc<dyn Workspace>);
+
+impl WorkspaceHandle {
+    pub fn new(workspace: Arc<dyn Workspace>) -> Self {
+        Self(workspace)
+    }
+
+    pub fn get(&self) -> Arc<dyn Workspace> {
+        self.0.clone()
+    }
+
+    pub fn into_inner(self) -> Arc<dyn Workspace> {
+        self.0
+    }
+}
+
 /// Main window controller. This window is used to display a workspace.
 #[derive(Deref)]
 pub struct MainWindow<R: AppRuntime> {
     #[deref]
     pub handle: WindowHandle<R::EventLoop>,
 
-    pub workspace: Arc<dyn Workspace>,
+    pub workspace: Arc<ArcSwap<WorkspaceHandle>>,
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    w: Arc<sapic_window::OldSapicWindow<R>>,
+    w: Arc<ArcSwap<sapic_window::OldSapicWindow<R>>>,
 
     pub(crate) workspace_ops: MainWindowWorkspaceOps,
 
@@ -88,8 +108,8 @@ impl<R: AppRuntime> MainWindow<R> {
 
         Ok(Self {
             handle: WindowHandle::new(webview_window),
-            w: Arc::new(old_window),
-            workspace,
+            w: ArcSwap::from_pointee(old_window).into(),
+            workspace: ArcSwap::from_pointee(WorkspaceHandle::new(workspace)).into(),
             workspace_ops,
             tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
@@ -97,12 +117,33 @@ impl<R: AppRuntime> MainWindow<R> {
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    pub fn inner(&self) -> &sapic_window::OldSapicWindow<R> {
-        &self.w
+    pub fn inner(&self) -> Arc<sapic_window::OldSapicWindow<R>> {
+        self.w.load_full()
     }
 
-    pub async fn workspace(&self) -> Arc<dyn Workspace> {
-        self.workspace.clone()
+    pub fn workspace(&self) -> Arc<dyn Workspace> {
+        self.workspace.load().get()
+    }
+
+    pub async fn swap_workspace(
+        &self,
+        new_workspace: Arc<dyn Workspace>,
+
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        old_window: sapic_window::OldSapicWindow<R>,
+    ) -> joinerror::Result<()> {
+        joinerror::ResultExt::join_err::<()>(
+            self.workspace.load_full().dispose().await,
+            "failed to dispose old workspace",
+        )?;
+
+        self.workspace
+            .store(Arc::new(WorkspaceHandle::new(new_workspace)));
+
+        self.w.store(Arc::new(old_window));
+
+        Ok(())
     }
 }
 

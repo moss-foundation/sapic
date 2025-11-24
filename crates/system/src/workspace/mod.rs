@@ -6,8 +6,6 @@ use async_trait::async_trait;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use std::path::PathBuf;
 
-use crate::workspace::workspace_service::CreatedWorkspace;
-
 pub struct LookedUpWorkspace {
     pub id: WorkspaceId,
     pub name: String,
@@ -33,6 +31,12 @@ pub trait WorkspaceEditBackend: Send + Sync {
 #[async_trait]
 pub trait WorkspaceEditOp: Send + Sync {
     async fn edit(&self, id: &WorkspaceId, params: WorkspaceEditParams) -> joinerror::Result<()>;
+}
+
+pub struct CreatedWorkspace {
+    pub id: WorkspaceId,
+    pub name: String,
+    pub abs_path: PathBuf,
 }
 
 #[async_trait]

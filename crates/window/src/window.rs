@@ -1,11 +1,12 @@
 use derive_more::Deref;
 use moss_applib::AppRuntime;
+use moss_workspace::Workspace;
 use std::sync::Arc;
 use tauri::AppHandle;
 
 use crate::{
-    ActiveWorkspace, language::LanguageService, logging::LogService, models::primitives::SessionId,
-    profile::ProfileService, session::SessionService, workspace::WorkspaceService,
+    language::LanguageService, logging::LogService, models::primitives::SessionId,
+    profile::ProfileService, session::SessionService, workspace::OldWorkspaceService,
 };
 
 #[derive(Deref)]
@@ -14,7 +15,7 @@ pub struct OldSapicWindow<R: AppRuntime> {
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService,
-    pub(super) workspace_service: WorkspaceService<R>,
+    pub(super) workspace_service: OldWorkspaceService<R>,
     pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService<R>,
@@ -35,7 +36,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         self.app_handle.clone()
     }
 
-    pub async fn workspace(&self) -> Option<Arc<ActiveWorkspace<R>>> {
+    pub async fn workspace(&self) -> Option<Arc<Workspace<R>>> {
         self.workspace_service.workspace().await
     }
 

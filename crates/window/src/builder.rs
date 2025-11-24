@@ -1,3 +1,4 @@
+use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
@@ -5,8 +6,10 @@ use moss_keyring::KeyringClient;
 use moss_language::registry::LanguageRegistry;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
+use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
 // use moss_theme::registry::ThemeRegistry;
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_system::workspace::workspace_service::WorkspaceService;
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 
@@ -19,7 +22,7 @@ use crate::{
     session::SessionService,
     // theme::ThemeService,
     window::OldSapicWindow,
-    workspace::WorkspaceService,
+    workspace::OldWorkspaceService,
 };
 
 pub struct OldSapicWindowBuilder {
@@ -27,6 +30,7 @@ pub struct OldSapicWindowBuilder {
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
     auth_api_client: Arc<AccountAuthGatewayApiClient>,
+    workspace_service: Arc<WorkspaceService>,
 }
 
 impl OldSapicWindowBuilder {
@@ -35,12 +39,14 @@ impl OldSapicWindowBuilder {
         keyring: Arc<dyn KeyringClient>,
         auth_api_client: Arc<AccountAuthGatewayApiClient>,
         workspace_id: WorkspaceId,
+        workspace_service: Arc<WorkspaceService>,
     ) -> Self {
         Self {
             workspace_id,
             fs,
             keyring,
             auth_api_client,
+            workspace_service,
         }
     }
 
@@ -87,7 +93,6 @@ impl OldSapicWindowBuilder {
                 .expect("Failed to create language service");
         let session_service = SessionService::new();
 
-        let storage = <dyn Storage>::global(&delegate);
         let log_service = LogService::new::<R>(
             self.fs.clone(),
             tao_handle.clone(),
@@ -108,21 +113,38 @@ impl OldSapicWindowBuilder {
         // functionality and fully get rid of the separate `window` crate.
         profile_service.activate_profile().await?;
 
-        let workspace_service =
-            WorkspaceService::<R>::new(ctx, storage.clone(), self.fs.clone(), &user_dir)
-                .await
-                .expect("Failed to create workspace service");
+        let workspace = WorkspaceBuilder::new(
+            self.fs.clone(),
+            profile_service.active_profile().await.unwrap(),
+            self.workspace_id.clone(),
+        )
+        .load(
+            ctx,
+            delegate,
+            LoadWorkspaceParams {
+                abs_path: delegate
+                    .workspaces_dir()
+                    .join(self.workspace_id.to_string())
+                    .into(),
+            },
+        )
+        .await
+        .join_err::<()>("failed to load the workspace")?;
+
+        let workspace_service = OldWorkspaceService::<R>::new(workspace, self.workspace_service)
+            .await
+            .expect("Failed to create workspace service");
 
         // HACK: this is a temporary solution until we migrate all the necessary
         // functionality and fully get rid of the separate `window` crate.
-        workspace_service
-            .activate_workspace(
-                ctx,
-                delegate,
-                &self.workspace_id,
-                profile_service.active_profile().await.unwrap(),
-            )
-            .await?;
+        // workspace_service
+        //     .activate_workspace(
+        //         ctx,
+        //         delegate,
+        //         &self.workspace_id,
+        //         profile_service.active_profile().await.unwrap(),
+        //     )
+        //     .await?;
 
         Ok(OldSapicWindow {
             app_handle: tao_handle.clone(),

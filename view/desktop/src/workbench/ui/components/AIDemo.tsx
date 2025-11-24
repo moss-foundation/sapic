@@ -50,7 +50,7 @@ async function setupToolAgent() {
   const createWorkspaceTool = tool(
     async (input) => {
       const result = await invokeTauriIpc<MainWindow_CreateWorkspaceOutput, MainWindow_CreateWorkspaceInput>(
-        "create_workspace",
+        "main__create_workspace",
         {
           input,
         }

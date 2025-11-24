@@ -12,6 +12,7 @@ use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
+use moss_storage2::Storage;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
@@ -104,8 +105,10 @@ impl<R: AppRuntime> App<R> {
 
             return Ok(());
         } else {
-            let workspace_ops =
-                WelcomeWindowWorkspaceOps::new(self.services.workspace_service.clone());
+            let workspace_ops = WelcomeWindowWorkspaceOps::new(
+                self.services.workspace_service.clone(),
+                self.services.workspace_edit_service.clone(),
+            );
 
             let welcome_window = self
                 .windows
@@ -142,6 +145,17 @@ impl<R: AppRuntime> App<R> {
             .workspaces_dir()
             .join(workspace_id.to_string())
             .into();
+
+        // HACK: We're forced to add the store here instead of in the window creation
+        // function because projects are currently loaded right away when an old workspace
+        // is created. In the new workspace, since we won't be storing the list of projects on
+        // the backend, this problem won't exist (and in the worst case, we can load the projects lazily).
+        let storage = <dyn Storage>::global(delegate);
+        joinerror::ResultExt::join_err::<()>(
+            storage.add_workspace(workspace_id.inner()).await,
+            "failed to add workspace to storage",
+        )?;
+
         let workspace = Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
             abs_path,
@@ -152,6 +166,7 @@ impl<R: AppRuntime> App<R> {
             self.keyring.clone(),
             self.auth_api_client.clone(),
             workspace_id.clone(),
+            self.services.workspace_service.clone(),
         )
         .build(ctx, delegate)
         .await?;
@@ -170,12 +185,61 @@ impl<R: AppRuntime> App<R> {
         Ok(())
     }
 
+    pub async fn swap_main_window_workspace(
+        &self,
+        ctx: &R::AsyncContext,
+        delegate: &AppDelegate<R>,
+        workspace_id: WorkspaceId,
+        label: &str,
+    ) -> joinerror::Result<()> {
+        let abs_path = delegate
+            .workspaces_dir()
+            .join(workspace_id.to_string())
+            .into();
+
+        // HACK: We're forced to add the store here instead of in the window creation
+        // function because projects are currently loaded right away when an old workspace
+        // is created. In the new workspace, since we won't be storing the list of projects on
+        // the backend, this problem won't exist (and in the worst case, we can load the projects lazily).
+
+        dbg!("adding workspace to storage 2");
+        let storage = <dyn Storage>::global(delegate);
+        joinerror::ResultExt::join_err::<()>(
+            storage.add_workspace(workspace_id.inner()).await,
+            "failed to add workspace to storage",
+        )?;
+
+        let workspace = Arc::new(RuntimeWorkspace::new(
+            workspace_id.clone(),
+            abs_path,
+            self.services.workspace_edit_service.clone(),
+        ));
+
+        let old_window = OldSapicWindowBuilder::new(
+            self.fs.clone(),
+            self.keyring.clone(),
+            self.auth_api_client.clone(),
+            workspace_id.clone(),
+            self.services.workspace_service.clone(),
+        )
+        .build(ctx, delegate)
+        .await?;
+
+        self.windows
+            .swap_main_window_workspace(delegate, label, workspace, old_window)
+            .await
+    }
+
     pub async fn main_window(&self, label: &str) -> Option<MainWindow<R>> {
         self.windows.main_window(label).await
     }
 
-    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
-        self.windows.close_main_window(label).await
+    pub async fn close_main_window(
+        &self,
+        delegate: &AppDelegate<R>,
+        label: &str,
+    ) -> joinerror::Result<()> {
+        self.windows.close_main_window(delegate, label).await
     }
 
     pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {

@@ -24,7 +24,6 @@ use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
-use sapic_window::ActiveWorkspace;
 use sapic_window2::AppWindowApi;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
@@ -268,7 +267,9 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace<R>>) -> Fut
+        + Send
+        + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let window = app

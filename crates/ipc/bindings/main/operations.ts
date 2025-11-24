@@ -4,7 +4,7 @@ import type { OpenInTarget } from "./types";
 /**
  * @category Operation
  */
-export type MainWindow_CreateWorkspaceInput = { name: string; openOnCreation?: OpenInTarget };
+export type MainWindow_CreateWorkspaceInput = { name: string; openOnCreation: OpenInTarget };
 
 /**
  * @category Operation
@@ -21,6 +21,11 @@ export type MainWindow_CreateWorkspaceOutput = {
    */
   willReplace: boolean;
 };
+
+/**
+ * @category Operation
+ */
+export type MainWindow_OpenWorkspaceInput = { id: string; openInTarget: OpenInTarget };
 
 /**
  * @category Operation

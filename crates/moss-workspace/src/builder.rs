@@ -37,6 +37,7 @@ pub struct CreateWorkspaceParams {
     pub abs_path: Arc<Path>,
 }
 
+// DEPRECATED
 pub struct WorkspaceBuilder<R: AppRuntime> {
     fs: Arc<dyn FileSystem>,
     active_profile: Arc<Profile<R>>,

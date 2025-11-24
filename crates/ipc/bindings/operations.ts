@@ -43,22 +43,3 @@ export type ListExtensionsOutput = ExtensionInfo[];
  * @category Operation
  */
 export type ListWorkspacesOutput = Array<WorkspaceInfo>;
-
-/**
- * @category Operation
- *
- * Used for updating any workspace from any window.
- */
-export type UpdateWorkspaceInput = {
-  id: string;
-  /**
-   * A new name for the workspace, if provided, the workspace
-   * will be renamed to this name.
-   */
-  name?: string;
-};
-
-/**
- * @category Operation
- */
-export type UpdateWorkspaceOutput = Record<string, never>;

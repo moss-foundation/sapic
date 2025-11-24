@@ -14,29 +14,8 @@ pub mod storage;
 #[cfg(not(feature = "integration-tests"))]
 mod storage;
 
-#[macro_use]
-extern crate derive_more;
-
 pub use builder::OldSapicWindowBuilder;
-use moss_applib::AppRuntime;
-use moss_workspace::Workspace;
-use sapic_base::workspace::types::primitives::WorkspaceId;
 pub use window::OldSapicWindow;
-
-#[derive(Deref, DerefMut)]
-pub struct ActiveWorkspace<R: AppRuntime> {
-    id: WorkspaceId,
-
-    #[deref]
-    #[deref_mut]
-    handle: Workspace<R>,
-}
-
-impl<R: AppRuntime> ActiveWorkspace<R> {
-    pub fn id(&self) -> WorkspaceId {
-        self.id.clone()
-    }
-}
 
 #[rustfmt::skip]
 pub mod constants {

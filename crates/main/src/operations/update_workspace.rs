@@ -14,6 +14,7 @@ impl<R: AppRuntime> MainWindow<R> {
         input.validate().join_err_bare()?;
 
         self.workspace
+            .load()
             .edit(WorkspaceEditParams {
                 name: input.name.clone(),
             })

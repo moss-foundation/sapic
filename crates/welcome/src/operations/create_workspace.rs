@@ -12,7 +12,10 @@ impl<R: AppRuntime> WelcomeWindow<R> {
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
-        let output = self.workspace_ops.create(input.name.clone()).await?;
+        let output = self
+            .workspace_ops
+            .create_workspace(input.name.clone())
+            .await?;
 
         Ok(CreateWorkspaceOutput {
             id: output.id,

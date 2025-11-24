@@ -19,7 +19,7 @@ impl<R: AppRuntime> MainWindow<R> {
 
         Ok(CreateWorkspaceOutput {
             id: output.id,
-            will_replace: matches!(input.open_on_creation, Some(OpenInTarget::CurrentWindow)),
+            will_replace: matches!(input.open_on_creation, OpenInTarget::CurrentWindow),
             abs_path: output.abs_path,
         })
     }

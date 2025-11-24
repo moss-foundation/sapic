@@ -6,7 +6,7 @@ import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
-import { WorkspaceMode } from "@repo/moss-workspace";
+import { WorkspaceMode } from "@repo/base";
 
 import { ModalWrapperProps } from "../types";
 

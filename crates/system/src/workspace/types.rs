@@ -1,6 +1,7 @@
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use std::{path::Path, sync::Arc};
 
+#[derive(Debug)]
 pub struct WorkspaceItem {
     pub id: WorkspaceId,
     pub name: String,

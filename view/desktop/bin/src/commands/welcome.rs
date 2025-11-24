@@ -4,7 +4,6 @@ use sapic_ipc::{
     TauriResult,
     contracts::{other::*, welcome::workspace::*},
 };
-use sapic_window::models::operations::OpenWorkspaceInput;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
@@ -80,6 +79,26 @@ pub async fn welcome__create_workspace<'a, R: tauri::Runtime>(
 
             Ok(output)
         },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn welcome__update_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: UpdateWorkspaceInput,
+    options: Options,
+) -> TauriResult<UpdateWorkspaceOutput> {
+    super::with_welcome_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move { window.update_workspace(&ctx, &input).await },
     )
     .await
 }

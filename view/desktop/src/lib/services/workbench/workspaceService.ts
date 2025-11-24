@@ -1,21 +1,18 @@
 import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
 import {
-  CloseWorkspaceInput,
-  CloseWorkspaceOutput,
-  CreateWorkspaceInput,
-  CreateWorkspaceOutput,
   DeleteWorkspaceInput,
   DeleteWorkspaceOutput,
   ListWorkspacesOutput,
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
-  UpdateWorkspaceInput,
-} from "@repo/window";
+  MainWindow_CreateWorkspaceInput,
+  MainWindow_CreateWorkspaceOutput,
+  MainWindow_UpdateWorkspaceInput,
+} from "@repo/ipc";
+import { CloseWorkspaceInput, CloseWorkspaceOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/window";
 
 export const workspaceService = {
-  createWorkspace: async (input: CreateWorkspaceInput) => {
-    return await invokeTauriServiceIpc<CreateWorkspaceInput, CreateWorkspaceOutput>({
-      cmd: "create_workspace",
+  createWorkspace: async (input: MainWindow_CreateWorkspaceInput) => {
+    return await invokeTauriServiceIpc<MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput>({
+      cmd: "main__create_workspace",
       args: {
         input,
       },
@@ -40,15 +37,15 @@ export const workspaceService = {
   },
   closeWorkspace: async (input: CloseWorkspaceInput) => {
     return await invokeTauriServiceIpc<CloseWorkspaceInput, CloseWorkspaceOutput>({
-      cmd: "close_workspace",
+      cmd: "main__close_workspace",
       args: {
         input,
       },
     });
   },
 
-  updateWorkspace: async (input: UpdateWorkspaceInput) => {
-    return await invokeTauriServiceIpc<UpdateWorkspaceInput, void>({
+  updateWorkspace: async (input: MainWindow_UpdateWorkspaceInput) => {
+    return await invokeTauriServiceIpc<MainWindow_UpdateWorkspaceInput, void>({
       cmd: "main__update_workspace",
       args: {
         input,

@@ -21,11 +21,14 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         let maybe_workspace_details =
             if let Some(workspace) = self.workspace_service.workspace().await {
                 self.workspace_service
-                    .workspace_details(&workspace.id)
+                    .workspace_details(&workspace.id())
                     .await
+                    .unwrap()
             } else {
                 None
             };
+
+        dbg!(&maybe_workspace_details);
 
         let active_profile = self
             .profile_service

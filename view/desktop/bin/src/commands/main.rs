@@ -66,13 +66,94 @@ pub async fn main__create_workspace<'a, R: tauri::Runtime>(
         |ctx, app, app_delegate, window| async move {
             let output = window.create_workspace(&ctx, &input).await?;
 
-            if matches!(input.open_on_creation, Some(OpenInTarget::CurrentWindow)) {
-                app.ensure_main_for_workspace(&ctx, &app_delegate, output.id.clone())
+            match input.open_on_creation {
+                OpenInTarget::NewWindow => {
+                    app.ensure_main_for_workspace(&ctx, &app_delegate, output.id.clone())
+                        .await
+                        .join_err::<()>("failed to open a new window for workspace")?;
+                }
+                OpenInTarget::CurrentWindow => {
+                    app.swap_main_window_workspace(
+                        &ctx,
+                        &app_delegate,
+                        output.id.clone(),
+                        window.label(),
+                    )
                     .await
-                    .join_err::<()>("failed to open a new window for workspace")?;
+                    .join_err::<()>("failed to swap main window workspace")?;
+                }
             }
 
             Ok(output)
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__open_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: OpenWorkspaceInput,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, app_delegate, window| async move {
+            match input.open_in_target {
+                OpenInTarget::NewWindow => {
+                    app.ensure_main_for_workspace(&ctx, &app_delegate, input.id.clone())
+                        .await
+                        .join_err::<()>("failed to open a new window for workspace")?;
+                }
+                OpenInTarget::CurrentWindow => {
+                    app.swap_main_window_workspace(
+                        &ctx,
+                        &app_delegate,
+                        input.id.clone(),
+                        window.label(),
+                    )
+                    .await
+                    .join_err::<()>("failed to swap main window workspace")?;
+                }
+            }
+
+            Ok(())
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__close_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> TauriResult<()> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |_, app, app_delegate, window| async move {
+            app.ensure_welcome(&app_delegate)
+                .await
+                .join_err::<()>("failed to ensure welcome window")?;
+
+            app.close_main_window(&app_delegate, window.label())
+                .await
+                .join_err::<()>("failed to close main window")?;
+
+            Ok(())
         },
     )
     .await

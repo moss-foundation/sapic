@@ -18,13 +18,6 @@ export const deleteWorkspaceOutputSchema = z.object({
 export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
 });
-
-export const updateWorkspaceInputSchema = z.object({
-  id: z.string(),
-  name: z.string().optional(),
-});
-
-export const updateWorkspaceOutputSchema = z.record(z.string(), z.never());
 export const getColorThemeInputSchema = z.object({
   id: themeIdSchema,
 });

@@ -14,7 +14,7 @@ use moss_project::{
     },
     project::Project,
 };
-use moss_storage2::{AppStorage, AppStorageOptions, Storage};
+use moss_storage2::{AppStorage, AppStorageOptions, Storage, SubstoreManager};
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use sapic_core::context::{AsyncContext, MutableContext};

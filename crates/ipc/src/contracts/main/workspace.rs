@@ -15,17 +15,17 @@ use crate::contracts::main::OpenInTarget;
 #[serde(rename = "MainWindow_CreateWorkspaceInput")]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "main/workspace.ts")]
+#[ts(export, export_to = "main/operations.ts")]
 pub struct CreateWorkspaceInput {
     #[validate(length(min = 1))]
     pub name: String,
 
     #[serde(default = "default_open_on_creation")]
-    pub open_on_creation: Option<OpenInTarget>,
+    pub open_on_creation: OpenInTarget,
 }
 
-fn default_open_on_creation() -> Option<OpenInTarget> {
-    Some(OpenInTarget::NewWindow)
+fn default_open_on_creation() -> OpenInTarget {
+    OpenInTarget::NewWindow
 }
 
 /// @category Operation
@@ -33,7 +33,7 @@ fn default_open_on_creation() -> Option<OpenInTarget> {
 #[serde(rename = "MainWindow_CreateWorkspaceOutput")]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "main/workspace.ts")]
+#[ts(export, export_to = "main/operations.ts")]
 pub struct CreateWorkspaceOutput {
     pub id: WorkspaceId,
 
@@ -61,7 +61,7 @@ pub struct CreateWorkspaceOutput {
 #[serde(rename = "MainWindow_UpdateWorkspaceInput")]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "main/workspace.ts")]
+#[ts(export, export_to = "main/operations.ts")]
 pub struct UpdateWorkspaceInput {
     /// A new name for the workspace, if provided, the workspace
     /// will be renamed to this name.
@@ -74,5 +74,25 @@ pub struct UpdateWorkspaceInput {
 #[serde(rename = "MainWindow_UpdateWorkspaceOutput")]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "main/workspace.ts")]
+#[ts(export, export_to = "main/operations.ts")]
 pub struct UpdateWorkspaceOutput {}
+
+//
+// Open Workspace
+//
+
+/// @category Operation
+#[derive(Debug, Validate, Deserialize, TS)]
+#[serde(rename = "MainWindow_OpenWorkspaceInput")]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "main/operations.ts")]
+pub struct OpenWorkspaceInput {
+    pub id: WorkspaceId,
+
+    #[serde(default = "default_open_in_target")]
+    pub open_in_target: OpenInTarget,
+}
+
+fn default_open_in_target() -> OpenInTarget {
+    OpenInTarget::CurrentWindow
+}

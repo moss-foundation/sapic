@@ -8,6 +8,7 @@ pub trait Workspace: Send + Sync {
     fn id(&self) -> WorkspaceId;
     fn abs_path(&self) -> Arc<Path>;
 
+    async fn dispose(&self) -> joinerror::Result<()>;
     async fn edit(&self, params: WorkspaceEditParams) -> joinerror::Result<()>;
 }
 
@@ -39,5 +40,9 @@ impl Workspace for RuntimeWorkspace {
 
     async fn edit(&self, params: WorkspaceEditParams) -> joinerror::Result<()> {
         self.edit.edit(&self.id, params).await
+    }
+
+    async fn dispose(&self) -> joinerror::Result<()> {
+        Ok(())
     }
 }

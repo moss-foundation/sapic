@@ -702,6 +702,8 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
 
         let mut scan_tasks = Vec::new();
 
+        dbg!(&self.sources);
+
         let workspace_id = self.workspace_id.clone();
         for (source_id, source) in self.sources.iter() {
             let provider_tx_clone = provider_tx.clone();

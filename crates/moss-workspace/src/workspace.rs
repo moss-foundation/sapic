@@ -60,6 +60,7 @@ pub trait AnyWorkspace<R: AppRuntime> {
     type Environment: AnyEnvironment<R>;
 }
 
+// DEPRECATED
 pub struct Workspace<R: AppRuntime> {
     pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,

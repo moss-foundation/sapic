@@ -159,28 +159,28 @@ pub struct BatchDeleteLogOutput {
 // #[ts(export, export_to = "operations.ts")]
 // pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 
-// Open Workspace
+// // Open Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenWorkspaceInput {
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct OpenWorkspaceInput {
+//     pub id: WorkspaceId,
+// }
 
-/// DEPRECATED
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// DEPRECATED
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct OpenWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
 // // Create Workspace
 

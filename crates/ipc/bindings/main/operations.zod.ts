@@ -14,5 +14,10 @@ export const mainWindowUpdateWorkspaceInputSchema = z.object({
 export const mainWindowUpdateWorkspaceOutputSchema = z.record(z.string(), z.never());
 export const mainWindowCreateWorkspaceInputSchema = z.object({
   name: z.string(),
-  openOnCreation: openInTargetSchema.optional(),
+  openOnCreation: openInTargetSchema,
+});
+
+export const mainWindowOpenWorkspaceInputSchema = z.object({
+  id: z.string(),
+  openInTarget: openInTargetSchema,
 });

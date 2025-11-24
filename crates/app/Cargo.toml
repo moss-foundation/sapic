@@ -47,6 +47,7 @@ tracing.workspace = true
 inventory.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 validator = { workspace = true }
+chrono = { workspace = true }
 
 [dev-dependencies]
 

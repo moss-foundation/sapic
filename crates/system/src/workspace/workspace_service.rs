@@ -6,7 +6,9 @@ use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::workspace::{WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem};
+use crate::workspace::{
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
+};
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
@@ -16,12 +18,6 @@ pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
 
 pub fn key_workspace(id: &WorkspaceId) -> String {
     format!("{KEY_WORKSPACE_PREFIX}.{}", id.to_string())
-}
-
-pub struct CreatedWorkspace {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub abs_path: PathBuf,
 }
 
 pub struct WorkspaceService {

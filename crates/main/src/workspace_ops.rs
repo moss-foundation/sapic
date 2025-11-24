@@ -1,4 +1,4 @@
-use sapic_system::workspace::{WorkspaceCreateOp, workspace_service::CreatedWorkspace};
+use sapic_system::workspace::{CreatedWorkspace, WorkspaceCreateOp};
 use std::sync::Arc;
 
 #[derive(Clone)]

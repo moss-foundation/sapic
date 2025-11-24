@@ -256,7 +256,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::get_translation_namespace,
             commands::list_workspaces,
             commands::delete_workspace,
-            commands::close_workspace,
             commands::update_profile,
             //
             // Main
@@ -264,12 +263,15 @@ pub async fn run<R: TauriRuntime>() {
             commands::main__cancel_request,
             commands::main__update_workspace,
             commands::main__create_workspace,
+            commands::main__open_workspace,
+            commands::main__close_workspace,
             //
             // Welcome
             //
             commands::welcome__cancel_request,
             commands::welcome__create_workspace,
             commands::welcome__open_workspace,
+            commands::welcome__update_workspace,
             //
             // Workspace
             //
