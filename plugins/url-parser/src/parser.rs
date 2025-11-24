@@ -179,7 +179,7 @@ mod tests {
     #[test]
     fn it_works() {
         let input =
-            "{{test0}}://test1-example.com/{{test2}}/api/users?limit=10&sort={{test3}}#{{test4}}";
+            "{{test0}}://test1-example.com/:test1/api/users?limit=10&sort={{test2}}#{{test3}}";
 
         let result = UrlParser::parse_url(input).unwrap();
 
@@ -188,7 +188,7 @@ mod tests {
 
     #[test]
     fn example() {
-        let input = "https://{{var1}}.example.com/{{var2}}/api/users?limit=10&sort={{var3}}#top";
+        let input = "https://{{var1}}.example.com/:var2/api/users?limit=10&sort={{var3}}#top";
 
         let output = ParsedUrl {
             scheme_part: Some(ParsedValue::String("https".to_string())),

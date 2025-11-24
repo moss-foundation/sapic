@@ -1,12 +1,11 @@
 // FIXME: Most literal|var should be refined to allow mixing of literal and variable
 // For example: {{env}}-test.sapic.com
 
-url = { scheme_part? ~ "://" ~ host_part ~ path_part? ~ query_part? ~ fragment_part? }
-
+url = { scheme_part? ~ host_part ~ path_part? ~ query_part? ~ fragment_part? }
 var = { "{{" ~ ident ~ "}}" }
 ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
 
-scheme_part = { scheme_literal | var }
+scheme_part = { (scheme_literal | var) ~ "://" }
 scheme_literal = @{
     ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
 }
