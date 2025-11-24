@@ -181,7 +181,6 @@ impl<R: AppRuntime> WindowManager<R> {
         workspace: Arc<dyn Workspace>,
         workspace_ops: MainWindowWorkspaceOps,
     ) -> joinerror::Result<MainWindow<R>> {
-        let storage = <dyn Storage>::global(delegate);
         let window = MainWindow::new(
             delegate,
             self.next_window_id.fetch_add(1, Ordering::Relaxed),
