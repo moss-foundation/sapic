@@ -19,12 +19,6 @@ export const updateAccountParamsSchema = z.object({
   id: z.string(),
   pat: z.string().optional(),
 });
-
-export const workspaceInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  lastOpenedAt: z.bigint().optional(),
-});
 export const addAccountParamsSchema = z.object({
   host: z.string(),
   kind: accountKindSchema,

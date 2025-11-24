@@ -6,8 +6,8 @@ import {
   MainWindow_CreateWorkspaceInput,
   MainWindow_CreateWorkspaceOutput,
   MainWindow_UpdateWorkspaceInput,
+  WelcomeWindow_OpenWorkspaceInput,
 } from "@repo/ipc";
-import { CloseWorkspaceInput, CloseWorkspaceOutput, OpenWorkspaceInput, OpenWorkspaceOutput } from "@repo/window";
 
 export const workspaceService = {
   createWorkspace: async (input: MainWindow_CreateWorkspaceInput) => {
@@ -27,20 +27,18 @@ export const workspaceService = {
     });
   },
 
-  openWorkspace: async (input: OpenWorkspaceInput) => {
-    return await invokeTauriServiceIpc<OpenWorkspaceInput, OpenWorkspaceOutput>({
+  openWorkspace: async (input: WelcomeWindow_OpenWorkspaceInput) => {
+    return await invokeTauriServiceIpc<WelcomeWindow_OpenWorkspaceInput, void>({
       cmd: "welcome__open_workspace",
       args: {
         input,
       },
     });
   },
-  closeWorkspace: async (input: CloseWorkspaceInput) => {
-    return await invokeTauriServiceIpc<CloseWorkspaceInput, CloseWorkspaceOutput>({
+  closeWorkspace: async () => {
+    return await invokeTauriServiceIpc<void, void>({
       cmd: "main__close_workspace",
-      args: {
-        input,
-      },
+      args: {},
     });
   },
 
