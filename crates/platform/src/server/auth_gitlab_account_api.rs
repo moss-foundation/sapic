@@ -11,6 +11,8 @@ use sapic_system::ports::server_api::{
 
 use super::HttpServerApiClient;
 
+const BASE_SEGMENT: &str = "account-auth-gateway";
+
 #[async_trait]
 impl GitLabTokenRefreshApiReq for HttpServerApiClient {
     async fn gitlab_token_refresh(
@@ -21,7 +23,10 @@ impl GitLabTokenRefreshApiReq for HttpServerApiClient {
         context::abortable(ctx, async {
             let resp = self
                 .client
-                .post(format!("{}/auth/gitlab/refresh", self.base_url))
+                .post(format!(
+                    "{}/{BASE_SEGMENT}/auth/gitlab/refresh",
+                    self.base_url
+                ))
                 .json(&request)
                 .send()
                 .await
@@ -51,7 +56,10 @@ impl GitLabRevokeApiReq for HttpServerApiClient {
         context::abortable(ctx, async {
             let resp = self
                 .client
-                .post(format!("{}/auth/gitlab/revoke", self.base_url))
+                .post(format!(
+                    "{}/{BASE_SEGMENT}/auth/gitlab/revoke",
+                    self.base_url
+                ))
                 .json(&request)
                 .send()
                 .await
@@ -79,7 +87,10 @@ impl GitLabPkceTokenExchangeApiReq for HttpServerApiClient {
         context::abortable(ctx, async {
             let resp = self
                 .client
-                .post(format!("{}/auth/gitlab/token", self.base_url))
+                .post(format!(
+                    "{}/{BASE_SEGMENT}/auth/gitlab/token",
+                    self.base_url
+                ))
                 .json(&request)
                 .send()
                 .await

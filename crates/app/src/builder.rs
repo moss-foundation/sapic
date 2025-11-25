@@ -72,14 +72,16 @@ impl<R: AppRuntime> AppBuilder<R> {
         let github_api_client = Arc::new(AppGitHubApiClient::new(self.http_client.clone()));
         let gitlab_api_client = Arc::new(AppGitLabApiClient::new(self.http_client.clone()));
 
+        let auth_gateway_url: Arc<String> = server_api_client.base_url().to_string().into();
+
         let github_auth_adapter: Arc<dyn GitHubAuthAdapter> = Arc::new(AppGitHubAuthAdapter::new(
             server_api_client.clone(),
-            format!("{}/account-auth-gateway", server_api_client.base_url()).into(),
+            auth_gateway_url.clone(),
             8080,
         ));
         let gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter> = Arc::new(AppGitLabAuthAdapter::new(
             server_api_client.clone(),
-            format!("{}/account-auth-gateway", server_api_client.base_url()).into(),
+            auth_gateway_url,
             8081,
         ));
 
