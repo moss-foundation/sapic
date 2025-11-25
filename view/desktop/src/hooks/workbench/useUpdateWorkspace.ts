@@ -1,5 +1,6 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { DescribeAppOutput, ListWorkspacesOutput, UpdateWorkspaceInput } from "@repo/window";
+import { ListWorkspacesOutput, MainWindow_UpdateWorkspaceInput } from "@repo/ipc";
+import { DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
@@ -8,7 +9,7 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
 
-const updateWorkspaceFn = async (input: UpdateWorkspaceInput): Promise<void> => {
+const updateWorkspaceFn = async (input: MainWindow_UpdateWorkspaceInput): Promise<void> => {
   const result = await workspaceService.updateWorkspace(input);
 
   if (result.status === "error") {
@@ -22,7 +23,7 @@ export const useUpdateWorkspace = () => {
   const { activeWorkspace } = useActiveWorkspace();
 
   const queryClient = useQueryClient();
-  return useMutation<void, Error, UpdateWorkspaceInput>({
+  return useMutation<void, Error, MainWindow_UpdateWorkspaceInput>({
     mutationKey: [USE_UPDATE_WORKSPACE_MUTATION_KEY],
     mutationFn: updateWorkspaceFn,
     onSuccess: (_, variables) => {

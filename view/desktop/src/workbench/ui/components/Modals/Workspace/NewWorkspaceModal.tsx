@@ -9,9 +9,10 @@ import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
-import { WorkspaceMode } from "@repo/moss-workspace";
+import { WorkspaceMode } from "@repo/base";
 
 import { ModalWrapperProps } from "../types";
+import { OpenInTargetEnum } from "@/main/types";
 
 export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -23,7 +24,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
 
   const [name, setName] = useState("New Workspace");
   const [mode, setMode] = useState<WorkspaceMode>("LIVE");
-  const [openAutomatically, setOpenAutomatically] = useState(true);
+  const [openInCurrentWindow, setOpenInCurrentWindow] = useState(true);
 
   const isLoadingWorkspaces = isCreatingWorkspace || isOpeningWorkspace;
 
@@ -32,11 +33,10 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
 
     const createWorkspaceOutput = await createWorkspace({
       name: name.trim(),
-      mode,
-      openOnCreation: openAutomatically,
+      openOnCreation: openInCurrentWindow ? OpenInTargetEnum.CURRENT_WINDOW : OpenInTargetEnum.NEW_WINDOW,
     });
 
-    if (openAutomatically && !createWorkspaceOutput.active) {
+    if (openInCurrentWindow && !createWorkspaceOutput.willReplace) {
       await openWorkspace(createWorkspaceOutput.id);
     }
 
@@ -53,7 +53,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
     setTimeout(() => {
       setName("");
       setMode("LIVE");
-      setOpenAutomatically(true);
+      setOpenInCurrentWindow(true);
     }, 200);
   };
 
@@ -117,10 +117,10 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
       footer={
         <div className="py-0.75 flex items-center justify-between">
           <CheckboxWithLabel
-            label="Open automatically after creation"
-            checked={openAutomatically}
+            label="Open in current window after creation"
+            checked={openInCurrentWindow}
             onCheckedChange={(check) => {
-              if (check !== "indeterminate") setOpenAutomatically(check);
+              if (check !== "indeterminate") setOpenInCurrentWindow(check);
             }}
           />
           <div className="px-0.25 py-1.25 flex gap-3">

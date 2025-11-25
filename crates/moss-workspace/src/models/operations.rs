@@ -1,8 +1,6 @@
-use moss_environment::models::{
-    primitives::EnvironmentId,
-    types::{AddVariableParams, VariableInfo},
-};
+use moss_environment::models::types::AddVariableParams;
 use moss_project::models::primitives::ProjectId;
+use sapic_base::environment::types::{VariableInfo, primitives::EnvironmentId};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},

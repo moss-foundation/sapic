@@ -26,12 +26,17 @@ moss_fs = { workspace = true }
 moss_text = { workspace = true }
 moss_workspace = { workspace = true }
 moss_keyring = { workspace = true }
+moss_storage2 = { workspace = true }
 
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
 joinerror = { workspace = true }
 tokio = { workspace = true }
 async-trait = { workspace = true }
+validator = { workspace = true }
+futures = { workspace = true }
+arc-swap = { workspace = true }
+tracing.workspace = true
 
 [features]
 integration-tests = []

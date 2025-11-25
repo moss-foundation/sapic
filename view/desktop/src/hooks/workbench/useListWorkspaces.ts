@@ -1,5 +1,5 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { ListWorkspacesOutput } from "@repo/window";
+import { ListWorkspacesOutput } from "@repo/ipc";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_WORKSPACES_QUERY_KEY = "listWorkspaces";

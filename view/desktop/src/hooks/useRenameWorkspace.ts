@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { WorkspaceInfo } from "@repo/window";
+import { WorkspaceInfo } from "@repo/base";
 
 import { useUpdateWorkspace } from "./workbench/useUpdateWorkspace";
 

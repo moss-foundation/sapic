@@ -22,13 +22,11 @@ use crate::{
     errors::{
         ErrorEnvironmentAlreadyExists, ErrorEnvironmentNotFound, ErrorFailedToEncode, ErrorIo,
     },
-    models::{
-        primitives::{EnvironmentId, VariableId},
-        types::AddVariableParams,
-    },
+    models::types::AddVariableParams,
     storage::{key_variable_local_value, key_variable_order},
     utils,
 };
+use sapic_base::environment::types::primitives::{EnvironmentId, VariableId};
 
 pub struct CreateEnvironmentParams<'a> {
     pub name: String,

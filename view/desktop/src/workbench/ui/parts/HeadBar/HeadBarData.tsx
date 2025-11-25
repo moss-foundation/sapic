@@ -1,5 +1,5 @@
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
-import { ListWorkspacesOutput } from "@repo/window";
+import { ListWorkspacesOutput } from "@repo/ipc";
 
 const createStandardMenuItems = (prefix = ""): MenuItemProps[] => {
   const idPrefix = prefix ? `${prefix}-` : "";

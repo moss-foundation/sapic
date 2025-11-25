@@ -1,12 +1,8 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
 import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
-import {
-  CreateWorkspaceInput,
-  CreateWorkspaceOutput,
-  DescribeAppOutput,
-  ListWorkspacesOutput,
-  WorkspaceInfo,
-} from "@repo/window";
+import { WorkspaceInfo } from "@repo/base";
+import { ListWorkspacesOutput, MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput } from "@repo/ipc";
+import { DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
@@ -15,7 +11,7 @@ import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
 
-const createWorkspaceFn = async (input: CreateWorkspaceInput): Promise<CreateWorkspaceOutput> => {
+const createWorkspaceFn = async (input: MainWindow_CreateWorkspaceInput): Promise<MainWindow_CreateWorkspaceOutput> => {
   const result = await workspaceService.createWorkspace(input);
 
   if (result.status === "error") {
@@ -30,7 +26,7 @@ export const useCreateWorkspace = () => {
 
   const { mutateAsync: updateLayout } = useUpdateLayout();
 
-  return useMutation<CreateWorkspaceOutput, Error, CreateWorkspaceInput>({
+  return useMutation<MainWindow_CreateWorkspaceOutput, Error, MainWindow_CreateWorkspaceInput>({
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
     mutationFn: createWorkspaceFn,
     onSuccess: async (data, variables) => {
@@ -47,7 +43,7 @@ export const useCreateWorkspace = () => {
         return [...oldData, newWorkspace];
       });
 
-      if (data.active) {
+      if (data.willReplace) {
         queryClient.setQueryData<DescribeAppOutput>([USE_DESCRIBE_APP_QUERY_KEY], (oldData) => {
           if (!oldData) return oldData;
           return {

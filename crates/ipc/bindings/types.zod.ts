@@ -5,3 +5,9 @@ export const optionsSchema = z.object({
   request_id: z.string().optional(),
   timeout: z.bigint().optional(),
 });
+
+export const workspaceInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  lastOpenedAt: z.bigint().optional(),
+});

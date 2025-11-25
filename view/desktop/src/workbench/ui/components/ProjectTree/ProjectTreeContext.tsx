@@ -1,6 +1,6 @@
 import { createContext } from "react";
 
-import { WorkspaceMode } from "@repo/moss-workspace";
+import { WorkspaceMode } from "@repo/base";
 
 import { BaseTreeContextProps } from "../../../../lib/ui/Tree/types";
 

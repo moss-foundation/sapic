@@ -3,10 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;
 
-use crate::models::primitives::VariableId;
-
-pub type VariableName = String;
-pub type EnvironmentName = String;
+use sapic_base::environment::types::primitives::{VariableId, VariableName};
 
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Serialize, TS)]
@@ -51,30 +48,32 @@ pub struct UpdateVariableParams {
     pub options: Option<VariableOptions>,
 }
 
-/// @category Type
-#[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
-#[ts(export, export_to = "types.ts")]
-pub enum VariableKind {
-    #[serde(rename = "secret")]
-    Secret,
-    #[serde(rename = "default")]
-    Default,
-}
+// INFO: moved to sapic-base
+// /// @category Type
+// #[derive(Clone, Debug, Deserialize, Serialize, TS, PartialEq, Eq)]
+// #[ts(export, export_to = "types.ts")]
+// pub enum VariableKind {
+//     #[serde(rename = "secret")]
+//     Secret,
+//     #[serde(rename = "default")]
+//     Default,
+// }
 
-/// @category Type
-#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct VariableInfo {
-    pub id: VariableId,
-    pub name: VariableName,
-    #[ts(optional, type = "JsonValue")]
-    pub global_value: Option<JsonValue>,
-    #[ts(optional, type = "JsonValue")]
-    pub local_value: Option<JsonValue>,
-    pub disabled: bool,
-    // pub kind: VariableKind,
-    pub order: Option<isize>,
-    pub desc: Option<String>,
-}
+// INFO: moved to sapic-base
+// /// @category Type
+// #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct VariableInfo {
+//     pub id: VariableId,
+//     pub name: VariableName,
+//     #[ts(optional, type = "JsonValue")]
+//     pub global_value: Option<JsonValue>,
+//     #[ts(optional, type = "JsonValue")]
+//     pub local_value: Option<JsonValue>,
+//     pub disabled: bool,
+//     // pub kind: VariableKind,
+//     pub order: Option<isize>,
+//     pub desc: Option<String>,
+// }

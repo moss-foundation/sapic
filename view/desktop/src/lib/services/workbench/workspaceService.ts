@@ -1,21 +1,18 @@
 import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
 import {
-  CloseWorkspaceInput,
-  CloseWorkspaceOutput,
-  CreateWorkspaceInput,
-  CreateWorkspaceOutput,
   DeleteWorkspaceInput,
   DeleteWorkspaceOutput,
   ListWorkspacesOutput,
-  OpenWorkspaceInput,
-  OpenWorkspaceOutput,
-  UpdateWorkspaceInput,
-} from "@repo/window";
+  MainWindow_CreateWorkspaceInput,
+  MainWindow_CreateWorkspaceOutput,
+  MainWindow_UpdateWorkspaceInput,
+  WelcomeWindow_OpenWorkspaceInput,
+} from "@repo/ipc";
 
 export const workspaceService = {
-  createWorkspace: async (input: CreateWorkspaceInput) => {
-    return await invokeTauriServiceIpc<CreateWorkspaceInput, CreateWorkspaceOutput>({
-      cmd: "create_workspace",
+  createWorkspace: async (input: MainWindow_CreateWorkspaceInput) => {
+    return await invokeTauriServiceIpc<MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput>({
+      cmd: "main__create_workspace",
       args: {
         input,
       },
@@ -30,26 +27,24 @@ export const workspaceService = {
     });
   },
 
-  openWorkspace: async (input: OpenWorkspaceInput) => {
-    return await invokeTauriServiceIpc<OpenWorkspaceInput, OpenWorkspaceOutput>({
+  openWorkspace: async (input: WelcomeWindow_OpenWorkspaceInput) => {
+    return await invokeTauriServiceIpc<WelcomeWindow_OpenWorkspaceInput, void>({
       cmd: "welcome__open_workspace",
       args: {
         input,
       },
     });
   },
-  closeWorkspace: async (input: CloseWorkspaceInput) => {
-    return await invokeTauriServiceIpc<CloseWorkspaceInput, CloseWorkspaceOutput>({
-      cmd: "close_workspace",
-      args: {
-        input,
-      },
+  closeWorkspace: async () => {
+    return await invokeTauriServiceIpc<void, void>({
+      cmd: "main__close_workspace",
+      args: {},
     });
   },
 
-  updateWorkspace: async (input: UpdateWorkspaceInput) => {
-    return await invokeTauriServiceIpc<UpdateWorkspaceInput, void>({
-      cmd: "update_workspace",
+  updateWorkspace: async (input: MainWindow_UpdateWorkspaceInput) => {
+    return await invokeTauriServiceIpc<MainWindow_UpdateWorkspaceInput, void>({
+      cmd: "main__update_workspace",
       args: {
         input,
       },

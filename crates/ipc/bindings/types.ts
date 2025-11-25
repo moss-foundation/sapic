@@ -28,3 +28,8 @@ export type Options = {
    */
   timeout?: bigint;
 };
+
+/**
+ * @category Type
+ */
+export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint };

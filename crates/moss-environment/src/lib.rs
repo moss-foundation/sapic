@@ -10,12 +10,13 @@ pub use environment::Environment;
 
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
+use sapic_base::environment::types::{
+    VariableInfo,
+    primitives::{EnvironmentId, VariableId},
+};
 use std::{collections::HashMap, path::Path, sync::Arc};
 
-use crate::models::{
-    primitives::{EnvironmentId, VariableId},
-    types::{AddVariableParams, UpdateVariableParams, VariableInfo},
-};
+use crate::models::types::{AddVariableParams, UpdateVariableParams};
 
 pub mod constants {
     pub const ENVIRONMENT_FILE_EXTENSION: &str = "env.sap";

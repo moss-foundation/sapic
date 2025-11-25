@@ -1,6 +1,6 @@
 // Segments are joined using .
 
-use moss_workspace::models::primitives::WorkspaceId;
+use sapic_base::workspace::types::primitives::WorkspaceId;
 
 pub static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
 

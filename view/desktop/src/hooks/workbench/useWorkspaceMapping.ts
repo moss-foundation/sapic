@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 
-import { WorkspaceInfo } from "@repo/window";
+import { WorkspaceInfo } from "@repo/base";
 
 import { useListWorkspaces } from "./useListWorkspaces";
 

@@ -3,10 +3,7 @@
 
 use moss_environment::{
     AnyEnvironment,
-    models::{
-        primitives::EnvironmentId,
-        types::{AddVariableParams, VariableOptions},
-    },
+    models::types::{AddVariableParams, VariableOptions},
     storage::key_variable,
 };
 use moss_storage2::{Storage, models::primitives::StorageScope};
@@ -18,6 +15,7 @@ use moss_workspace::{
     },
     storage::key_environment_order,
 };
+use sapic_base::environment::types::primitives::EnvironmentId;
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;
 

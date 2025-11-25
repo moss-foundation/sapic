@@ -2,10 +2,10 @@ use moss_applib::AppRuntime;
 
 use crate::{
     models::operations::{GetTranslationNamespaceInput, GetTranslationNamespaceOutput},
-    window::Window,
+    window::OldSapicWindow,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn get_translation_namespace(
         &self,
         _ctx: &R::AsyncContext,

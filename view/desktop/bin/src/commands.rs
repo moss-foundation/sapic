@@ -24,7 +24,6 @@ use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
 use sapic_main::MainWindow;
 use sapic_welcome::WelcomeWindow;
-use sapic_window::ActiveWorkspace;
 use sapic_window2::AppWindowApi;
 use std::{sync::Arc, time::Duration};
 use tauri::{Manager, State, Window as TauriWindow};
@@ -150,7 +149,9 @@ pub(super) async fn with_main_window_timeout<'a, R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, MainWindow<R>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, MainWindow<R>) -> Fut
+        + Send
+        + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -181,12 +182,8 @@ where
             .await;
     }
 
-    let result = f(
-        ctx,
-        app.handle().state::<AppDelegate<R>>().inner().clone(),
-        window.clone(),
-    )
-    .await;
+    let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
+    let result = f(ctx, app.inner().clone(), delegate, window.clone()).await;
 
     if let Some(request_id) = &request_id {
         window.release_cancellation(request_id).await;
@@ -270,7 +267,9 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 ) -> TauriResult<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<ActiveWorkspace<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace<R>>) -> Fut
+        + Send
+        + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let window = app

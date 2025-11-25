@@ -1,10 +1,9 @@
 import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { OpenWorkspaceOutput } from "@repo/window";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
-const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput> => {
+const openWorkspaceFn = async (workspaceId: string): Promise<void> => {
   const result = await workspaceService.openWorkspace({
     id: workspaceId,
   });
@@ -17,7 +16,7 @@ const openWorkspaceFn = async (workspaceId: string): Promise<OpenWorkspaceOutput
 };
 
 export const useOpenWorkspace = () => {
-  return useMutation<OpenWorkspaceOutput, Error, string>({
+  return useMutation<void, Error, string>({
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
     mutationFn: openWorkspaceFn,
   });

@@ -2,6 +2,10 @@ pub mod configuration;
 pub mod extension;
 pub mod other;
 pub mod theme;
+pub mod workspace;
+
+pub mod main;
+pub mod welcome;
 
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
