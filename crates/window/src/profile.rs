@@ -19,7 +19,11 @@ use sapic_system::{
     ports::{
         github_api::{GitHubApiClient, GitHubAuthAdapter},
         gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
-        server_api::ServerApiClient,
+        server_api::{
+            ServerApiClient,
+            auth_github_account_api::GitHubRevokeApiReq,
+            auth_gitlab_account_api::{GitLabRevokeApiReq, GitLabTokenRefreshApiReq},
+        },
     },
     user::{
         account::{
@@ -184,10 +188,7 @@ impl ProfileService {
 
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
-        if let Err(err) = active_profile
-            .remove_account(ctx, self.server_api_client.clone(), &account_id)
-            .await
-        {
+        if let Err(err) = active_profile.remove_account(ctx, &account_id).await {
             session::warn!(&format!(
                 "failed to remove account `{}`: {}",
                 account_id,
@@ -236,6 +237,7 @@ impl ProfileService {
                         AccountSession::github_oauth(
                             account_id.clone(),
                             host.to_string(),
+                            self.server_api_client.clone() as Arc<dyn GitHubRevokeApiReq>,
                             Some(GitHubInitialToken {
                                 access_token: token.access_token,
                             }),
@@ -280,7 +282,8 @@ impl ProfileService {
                         AccountSession::gitlab_oauth(
                             account_id.clone(),
                             host.to_string(),
-                            self.server_api_client.clone(),
+                            self.server_api_client.clone() as Arc<dyn GitLabTokenRefreshApiReq>,
+                            self.server_api_client.clone() as Arc<dyn GitLabRevokeApiReq>,
                             Some(GitLabInitialToken {
                                 access_token: token.access_token,
                                 refresh_token: token.refresh_token,
@@ -462,6 +465,7 @@ async fn activate_profile(
                 AccountSession::github_oauth(
                     account.id.clone(),
                     account.host.clone(),
+                    server_api_client.clone() as Arc<dyn GitHubRevokeApiReq>,
                     None,
                     keyring.clone(),
                 )
@@ -480,7 +484,8 @@ async fn activate_profile(
                 AccountSession::gitlab_oauth(
                     account.id.clone(),
                     account.host.clone(),
-                    server_api_client.clone(),
+                    server_api_client.clone() as Arc<dyn GitLabTokenRefreshApiReq>,
+                    server_api_client.clone() as Arc<dyn GitLabRevokeApiReq>,
                     None,
                     keyring.clone(),
                 )

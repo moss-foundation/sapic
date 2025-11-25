@@ -8,13 +8,9 @@ use sapic_base::user::types::{
     primitives::{AccountId, AccountKind},
 };
 use sapic_core::context::AnyAsyncContext;
-use std::{
-    sync::Arc,
-    time::{Duration, Instant},
-};
+use std::time::{Duration, Instant};
 
 use super::account::session::AccountSession;
-use crate::ports::server_api::RevokeApiReq;
 
 pub fn make_secret_key(prefix: &str, host: &str, account_id: &AccountId) -> String {
     format!("{prefix}:{host}:{account_id}")
@@ -103,12 +99,8 @@ impl Account {
         }
     }
 
-    pub async fn revoke(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        api_client: Arc<dyn RevokeApiReq>,
-    ) -> joinerror::Result<()> {
-        self.session.revoke(ctx, api_client).await
+    pub async fn revoke(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+        self.session.revoke(ctx).await
     }
 
     // Update PAT and returns the old PAT
