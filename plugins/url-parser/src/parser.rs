@@ -1,4 +1,4 @@
-use joinerror::{OptionExt, Result, bail};
+use joinerror::{Error, OptionExt, Result, bail};
 use pest::{Parser, iterators::Pair};
 use pest_derive::Parser;
 use std::fmt::Debug;
@@ -11,7 +11,12 @@ pub struct UrlParser;
 
 impl UrlParser {
     pub fn parse_url(url: &str) -> Result<ParsedUrl> {
-        let url = UrlParser::parse(Rule::url, url).unwrap().next().unwrap();
+        // let url = UrlParser::parse(Rule::url, url).unwrap().next().unwrap();
+
+        let url = UrlParser::parse(Rule::url, url)
+            .map_err(|e| Error::new::<()>(format!("failed to part url: {}", e.to_string())))?
+            .next()
+            .ok_or_join_err::<()>("no url is matched")?;
 
         let mut scheme_part: Option<ParsedValue> = None;
         let mut host_part = Vec::new();
@@ -125,29 +130,41 @@ fn parse_path_part(path: Pair<Rule>) -> Result<Vec<ParsedValue>> {
     Ok(path_segments)
 }
 
-fn parse_query_param(param: Pair<Rule>) -> Result<(String, ParsedValue)> {
+fn parse_query_param(param: Pair<Rule>) -> Result<(String, Option<ParsedValue>)> {
     let param_parts = param.into_inner().collect::<Vec<_>>();
+
+    dbg!(&param_parts);
 
     let query_key_pair = param_parts
         .get(0)
         .ok_or_join_err::<()>("failed to parse query parameter key")?;
     let query_key = query_key_pair.as_str().to_owned();
 
-    let query_value_inner = param_parts
-        .get(1)
-        .and_then(|p| p.clone().into_inner().next())
-        .ok_or_join_err::<()>("failed to parse query parameter value")?;
+    let query_value_pair = param_parts.get(1);
+    if query_value_pair.is_none() {
+        // Handling cases where the query param does not have a query value
+        // such as /emails?unread
+        return Ok((query_key, None));
+    }
 
-    let query_value = match query_value_inner.as_rule() {
-        Rule::query_text => ParsedValue::String(query_value_inner.as_str().to_owned()),
-        Rule::var => parse_var(query_value_inner)?,
-        _ => bail!("Invalid query parameter value: `{}`", query_value_inner),
+    let query_value_inner = query_value_pair.unwrap().clone().into_inner().next();
+
+    let query_value = if let Some(query_value_inner) = query_value_inner {
+        match query_value_inner.as_rule() {
+            Rule::query_text => Some(ParsedValue::String(query_value_inner.as_str().to_owned())),
+            Rule::var => Some(parse_var(query_value_inner)?),
+            _ => bail!("Invalid query parameter value: `{}`", query_value_inner),
+        }
+    } else {
+        // This is where the query value is an empty string
+        // such as /api?q=
+        Some(ParsedValue::String("".to_string()))
     };
 
     Ok((query_key, query_value))
 }
 
-fn parse_query_part(part: Pair<Rule>) -> Result<Vec<(String, ParsedValue)>> {
+fn parse_query_part(part: Pair<Rule>) -> Result<Vec<(String, Option<ParsedValue>)>> {
     let mut query_params = Vec::new();
     for query_param in part.into_inner() {
         query_params.push(parse_query_param(query_param)?);
@@ -203,10 +220,13 @@ mod tests {
                 ParsedValue::String("users".to_string()),
             ],
             query_part: vec![
-                ("limit".to_string(), ParsedValue::String("10".to_string())),
+                (
+                    "limit".to_string(),
+                    Some(ParsedValue::String("10".to_string())),
+                ),
                 (
                     "sort".to_string(),
-                    ParsedValue::Variable("var3".to_string()),
+                    Some(ParsedValue::Variable("var3".to_string())),
                 ),
             ],
             fragment_part: Some(ParsedValue::String("top".to_string())),

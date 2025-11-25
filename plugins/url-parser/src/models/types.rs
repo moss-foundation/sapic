@@ -19,6 +19,6 @@ pub struct ParsedUrl {
     pub scheme_part: Option<ParsedValue>,
     pub host_part: Vec<ParsedValue>,
     pub path_part: Vec<ParsedValue>,
-    pub query_part: Vec<(String, ParsedValue)>,
+    pub query_part: Vec<(String, Option<ParsedValue>)>,
     pub fragment_part: Option<ParsedValue>,
 }

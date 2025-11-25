@@ -1,7 +1,29 @@
 // FIXME: Most literal|var should be refined to allow mixing of literal and variable
 // For example: {{env}}-test.sapic.com
 
-url = { scheme_part? ~ host_part ~ path_part? ~ query_part? ~ fragment_part? }
+// host.com
+// host.com#fragment
+// host.com?query
+// host.com?query=
+// host.com?query=1
+// host.com?query=1#fragment
+// host.com/
+// host.com/#fragment
+// host.com/path
+// host.com/path#fragment
+// host.com/path?query=1
+// host.com/path?query=1#fragment
+
+url = {
+    SOI ~
+    scheme_part? ~
+    host_part ~
+    // Ensure we can handle trailing slash immediately after the host part without a path part
+    (path_part|"/"?) ~
+    query_part? ~
+    fragment_part? ~
+    EOI
+    }
 var = { "{{" ~ ident ~ "}}" }
 ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
 
@@ -16,7 +38,8 @@ host_literal = @{
     (ASCII_ALPHANUMERIC | "-" )+
 }
 
-path_part = { ("/" ~ path_segment)* }
+// Allow trailing slash
+path_part = { ("/" ~ path_segment)+ ~ "/"? }
 path_var = { ":" ~ ident }
 path_segment = { (path_var | path_text)+ }
 path_text = @{
@@ -28,7 +51,8 @@ query_param = { query_key ~ ("=" ~ query_value)? }
 query_key = @{
     (ASCII_ALPHANUMERIC | "_" | "-" )+
 }
-query_value = { (var | query_text)+ }
+// Allow missing value like ?q=, where the value is interpreted as an empty string
+query_value = { (var | query_text)* }
 query_text = @{
     (!("&" | "#" | "{") ~ ANY)+
 }
