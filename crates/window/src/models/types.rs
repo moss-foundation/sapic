@@ -1,6 +1,8 @@
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::{AccountId, AccountKind};
-use sapic_base::configuration::types::primitives::ConfigurationTarget;
+use sapic_base::{
+    configuration::types::primitives::ConfigurationTarget,
+    user::types::primitives::{AccountId, AccountKind},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf};

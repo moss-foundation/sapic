@@ -1,4 +1,4 @@
-use moss_user::models::primitives::AccountId;
+use sapic_base::user::types::primitives::AccountId;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 

@@ -10,11 +10,11 @@ use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment};
 use moss_fs::{FileSystem, FsResultExt};
 use moss_project::{Project, models::primitives::ProjectId};
-use moss_user::profile::Profile;
 use sapic_base::{
     environment::types::primitives::EnvironmentId,
     workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
 };
+use sapic_system::user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 
@@ -65,7 +65,7 @@ pub struct Workspace<R: AppRuntime> {
     pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
-    pub(super) active_profile: Arc<Profile<R>>,
+    pub(super) active_profile: Arc<Profile>,
     pub(super) project_service: Arc<ProjectService<R>>,
     pub(super) environment_service: Arc<EnvironmentService<R>>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,

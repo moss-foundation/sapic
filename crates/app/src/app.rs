@@ -11,7 +11,6 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
@@ -20,6 +19,11 @@ use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWin
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
+    ports::{
+        github_api::{GitHubApiClient, GitHubAuthAdapter},
+        gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
+        server_api::ServerApiClient,
+    },
     theme::theme_service::ThemeService,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
@@ -75,7 +79,12 @@ pub struct App<R: AppRuntime> {
     pub(crate) tao_handle: TauriAppHandle<R::EventLoop>,
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) keyring: Arc<dyn KeyringClient>,
-    pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
+    // pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
+    pub(crate) server_api_client: Arc<dyn ServerApiClient>,
+    pub(crate) github_api_client: Arc<dyn GitHubApiClient>,
+    pub(crate) gitlab_api_client: Arc<dyn GitLabApiClient>,
+    pub(crate) github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
+    pub(crate) gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
     pub(crate) commands: AppCommands<R::EventLoop>,
     pub(crate) services: AppServices,
     pub(crate) windows: WindowManager<R>,
@@ -164,7 +173,11 @@ impl<R: AppRuntime> App<R> {
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
             self.keyring.clone(),
-            self.auth_api_client.clone(),
+            self.server_api_client.clone(),
+            self.github_api_client.clone(),
+            self.gitlab_api_client.clone(),
+            self.github_auth_adapter.clone(),
+            self.gitlab_auth_adapter.clone(),
             workspace_id.clone(),
             self.services.workspace_service.clone(),
         )
@@ -217,7 +230,11 @@ impl<R: AppRuntime> App<R> {
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
             self.keyring.clone(),
-            self.auth_api_client.clone(),
+            self.server_api_client.clone(),
+            self.github_api_client.clone(),
+            self.gitlab_api_client.clone(),
+            self.github_auth_adapter.clone(),
+            self.gitlab_auth_adapter.clone(),
             workspace_id.clone(),
             self.services.workspace_service.clone(),
         )

@@ -12,6 +12,7 @@ sapic-runtime.workspace = true
 sapic-platform.workspace = true
 sapic-base.workspace = true
 sapic-system.workspace = true
+sapic-core.workspace = true
 
 moss_app_delegate.workspace = true
 moss_server_api.workspace = true

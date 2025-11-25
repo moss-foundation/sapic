@@ -4031,6 +4031,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "base",
  "chrono",
  "core",
  "derive_more 2.0.1",
@@ -4065,6 +4066,7 @@ dependencies = [
  "rustc-hash",
  "serde",
  "serde_json",
+ "system",
  "tauri",
  "tokio",
  "tracing",
@@ -9021,6 +9023,7 @@ dependencies = [
  "async-trait",
  "base",
  "chrono",
+ "core",
  "derive_more 2.0.1",
  "futures",
  "indexmap 2.12.0",

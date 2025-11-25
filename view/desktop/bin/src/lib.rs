@@ -16,14 +16,14 @@ use moss_extension_points::{
     themes::ThemeExtensionPoint,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{
-    github::{
-        AppGitHubApiClient, AppGitHubAuthAdapter, auth::GitHubAuthAdapter, client::GitHubApiClient,
-    },
-    gitlab::{
-        AppGitLabApiClient, AppGitLabAuthAdapter, auth::GitLabAuthAdapter, client::GitLabApiClient,
-    },
-};
+// use moss_git_hosting_provider::{
+//     github::{
+//         AppGitHubApiClient, AppGitHubAuthAdapter, auth::GitHubAuthAdapter, client::GitHubApiClient,
+//     },
+//     gitlab::{
+//         AppGitLabApiClient, AppGitLabAuthAdapter, auth::GitLabAuthAdapter, client::GitLabApiClient,
+//     },
+// };
 use moss_keyring::KeyringClientImpl;
 use moss_language::{
     RegisterTranslationContribution,
@@ -133,38 +133,38 @@ pub async fn run<R: TauriRuntime>() {
                             .expect("failed to create storage");
                     <dyn Storage>::set_global(&delegate, storage);
 
-                    let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
-                    let github_auth_adapter =
-                        Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
-                            auth_api_client.clone(),
-                            auth_api_client.base_url(),
-                            8080,
-                        ));
-                    let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
-                    let gitlab_auth_adapter =
-                        Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
-                            auth_api_client.clone(),
-                            auth_api_client.base_url(),
-                            8081,
-                        ));
+                    // let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
+                    // let github_auth_adapter =
+                    //     Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
+                    //         auth_api_client.clone(),
+                    //         auth_api_client.base_url(),
+                    //         8080,
+                    //     ));
+                    // let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
+                    // let gitlab_auth_adapter =
+                    //     Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
+                    //         auth_api_client.clone(),
+                    //         auth_api_client.base_url(),
+                    //         8081,
+                    //     ));
 
-                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        github_api_client,
-                    );
-                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        github_auth_adapter,
-                    );
+                    // <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     github_api_client,
+                    // );
+                    // <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     github_auth_adapter,
+                    // );
 
-                    <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        gitlab_api_client,
-                    );
-                    <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        gitlab_auth_adapter,
-                    );
+                    // <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     gitlab_api_client,
+                    // );
+                    // <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     gitlab_auth_adapter,
+                    // );
 
                     let theme_registry = AppThemeRegistry::new();
                     let languages_registry = AppLanguageRegistry::new();

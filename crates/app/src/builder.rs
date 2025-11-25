@@ -6,6 +6,8 @@ use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
+    github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
+    gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
     server::HttpServerApiClient,
     theme::loader::ThemeLoader,
     workspace::{
@@ -15,6 +17,7 @@ use sapic_platform::{
 use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalThemeRegistry};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
+    ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
     theme::theme_service::ThemeService,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
@@ -63,15 +66,29 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
+        let server_api_client: Arc<HttpServerApiClient> =
+            HttpServerApiClient::new(self.server_api_endpoint, self.http_client.clone()).into();
+
+        let github_api_client = Arc::new(AppGitHubApiClient::new(self.http_client.clone()));
+        let gitlab_api_client = Arc::new(AppGitLabApiClient::new(self.http_client.clone()));
+
+        let github_auth_adapter: Arc<dyn GitHubAuthAdapter> = Arc::new(AppGitHubAuthAdapter::new(
+            server_api_client.clone(),
+            format!("{}/account-auth-gateway", server_api_client.base_url()).into(),
+            8080,
+        ));
+        let gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter> = Arc::new(AppGitLabAuthAdapter::new(
+            server_api_client.clone(),
+            format!("{}/account-auth-gateway", server_api_client.base_url()).into(),
+            8081,
+        ));
+
         let extension_service =
             ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
                 .await
                 .expect("Failed to create extension service");
 
         let storage = <dyn Storage>::global(&delegate);
-
-        let server_api_client: Arc<HttpServerApiClient> =
-            HttpServerApiClient::new(self.server_api_endpoint, self.http_client).into();
 
         let workspace_edit_backend =
             WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());
@@ -97,14 +114,18 @@ impl<R: AppRuntime> AppBuilder<R> {
             .await
             .expect("Failed to create theme service")
             .into(),
-            extension_api_service: ExtensionsApiService::new(server_api_client).into(),
+            extension_api_service: ExtensionsApiService::new(server_api_client.clone()).into(),
         };
 
         App {
             tao_handle: delegate.handle(),
             fs: self.fs,
             keyring: self.keyring,
-            auth_api_client: self.auth_api_client,
+            server_api_client,
+            github_api_client,
+            gitlab_api_client,
+            github_auth_adapter,
+            gitlab_auth_adapter,
             extension_service,
             commands: self.commands,
             windows: WindowManager::new(),

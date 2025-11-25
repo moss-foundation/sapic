@@ -1,21 +1,21 @@
-pub mod github;
-pub mod gitlab;
+// pub mod github;
+// pub mod gitlab;
 
-use async_trait::async_trait;
-use moss_applib::AppRuntime;
+// use async_trait::async_trait;
+// use moss_applib::AppRuntime;
 
-#[derive(Debug, Clone)]
-pub enum GitProviderKind {
-    GitHub,
-    GitLab,
-}
+// #[derive(Debug, Clone)]
+// pub enum GitProviderKind {
+//     GitHub,
+//     GitLab,
+// }
 
-#[async_trait]
-pub trait GitAuthAdapter<R: AppRuntime> {
-    type PkceToken;
+// #[async_trait]
+// pub trait GitAuthAdapter<R: AppRuntime> {
+//     type PkceToken;
 
-    async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken>;
-}
+//     async fn auth_with_pkce(&self, ctx: &R::AsyncContext) -> joinerror::Result<Self::PkceToken>;
+// }
 
 #[cfg(any(test, feature = "integration-tests"))]
 pub mod envvar_keys {

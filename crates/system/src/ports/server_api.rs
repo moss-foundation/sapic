@@ -93,5 +93,6 @@ pub trait ServerApiClient:
     + ExtensionApiOperations
     + auth_gitlab_account_api::AuthGitLabAccountApiOperations
     + auth_github_account_api::AuthGitHubAccountApiOperations
+    + RevokeApiReq
 {
 }

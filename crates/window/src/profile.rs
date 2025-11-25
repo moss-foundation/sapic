@@ -1,6 +1,6 @@
 mod registry;
 
-use joinerror::{Error, OptionExt};
+use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{
     AppRuntime,
@@ -8,25 +8,28 @@ use moss_applib::{
 };
 use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
 use moss_fs::{CreateOptions, FileSystem};
-use moss_git_hosting_provider::{
-    github::{auth::GitHubAuthAdapter, client::GitHubApiClient},
-    gitlab::{auth::GitLabAuthAdapter, client::GitLabApiClient},
-};
 use moss_keyring::KeyringClient;
 use moss_logging::session;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use moss_user::{
-    AccountSession,
-    account::{
-        Account,
-        github::{GitHubInitialToken, GitHubPAT},
-        gitlab::{GitLabInitialToken, GitLabPAT},
+use sapic_base::user::types::{
+    AccountInfo, AccountMetadata,
+    primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+};
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::{
+    ports::{
+        github_api::{GitHubApiClient, GitHubAuthAdapter},
+        gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
+        server_api::ServerApiClient,
     },
-    models::{
-        primitives::{AccountId, AccountKind, ProfileId, SessionKind},
-        types::{AccountInfo, AccountMetadata},
+    user::{
+        account::{
+            Account,
+            github_session::{GitHubInitialToken, GitHubPAT},
+            gitlab_session::{GitLabInitialToken, GitLabPAT},
+            session::AccountSession,
+        },
+        profile::Profile,
     },
-    profile::Profile,
 };
 use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
@@ -58,19 +61,27 @@ struct ServiceCache {
     profiles: NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
 }
 
-pub(crate) struct ProfileService<R: AppRuntime> {
+pub(crate) struct ProfileService {
     fs: Arc<dyn FileSystem>,
-    auth_api_client: Arc<AccountAuthGatewayApiClient>,
+    server_api_client: Arc<dyn ServerApiClient>,
+    github_api_client: Arc<dyn GitHubApiClient>,
+    gitlab_api_client: Arc<dyn GitLabApiClient>,
+    github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
+    gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
     keyring: Arc<dyn KeyringClient>,
-    active_profile: RwLock<Option<Arc<Profile<R>>>>,
+    active_profile: RwLock<Option<Arc<Profile>>>,
     cache: RwLock<ServiceCache>,
 }
 
-impl<R: AppRuntime> ProfileService<R> {
+impl ProfileService {
     pub async fn new(
         dir_abs: &Path,
         fs: Arc<dyn FileSystem>,
-        auth_api_client: Arc<AccountAuthGatewayApiClient>,
+        server_api_client: Arc<dyn ServerApiClient>,
+        github_api_client: Arc<dyn GitHubApiClient>,
+        gitlab_api_client: Arc<dyn GitLabApiClient>,
+        github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
+        gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         let profiles = load_or_init_profiles(fs.as_ref(), dir_abs).await?;
@@ -89,7 +100,11 @@ impl<R: AppRuntime> ProfileService<R> {
 
         Ok(Self {
             fs,
-            auth_api_client,
+            server_api_client,
+            github_api_client,
+            gitlab_api_client,
+            github_auth_adapter,
+            gitlab_auth_adapter,
             keyring,
             active_profile: RwLock::new(None),
             cache: RwLock::new(ServiceCache { profiles: profiles }),
@@ -118,14 +133,14 @@ impl<R: AppRuntime> ProfileService<R> {
         })
     }
 
-    pub async fn activate_profile(&self) -> joinerror::Result<Arc<Profile<R>>> {
+    pub async fn activate_profile(&self) -> joinerror::Result<Arc<Profile>> {
         // HACK: since we don't support having multiple profiles yet, we select
         // the first profile in the folder (which is the default one) as the active one.
         let cache_lock = self.cache.read().await;
-        let active_profile: Arc<Profile<R>> = activate_profile::<R>(
+        let active_profile: Arc<Profile> = activate_profile(
             cache_lock.profiles.first().1,
             self.keyring.clone(),
-            self.auth_api_client.clone(),
+            self.server_api_client.clone(),
         )
         .await?
         .into();
@@ -139,13 +154,13 @@ impl<R: AppRuntime> ProfileService<R> {
         Ok(active_profile)
     }
 
-    pub async fn active_profile(&self) -> Option<Arc<Profile<R>>> {
+    pub async fn active_profile(&self) -> Option<Arc<Profile>> {
         self.active_profile.read().await.clone()
     }
 
-    pub async fn remove_account(
+    pub async fn remove_account<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         account_id: AccountId,
     ) -> joinerror::Result<AccountId> {
@@ -170,7 +185,7 @@ impl<R: AppRuntime> ProfileService<R> {
         // In this case, the error isn't critical. Since we removed the account from
         // the profile file, the next time a session for that account won't be established.
         if let Err(err) = active_profile
-            .remove_account(ctx, self.auth_api_client.clone(), &account_id)
+            .remove_account(ctx, self.server_api_client.clone(), &account_id)
             .await
         {
             session::warn!(&format!(
@@ -183,9 +198,9 @@ impl<R: AppRuntime> ProfileService<R> {
         Ok(account_id)
     }
 
-    pub async fn add_account(
+    pub async fn add_account<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         host: String,
         kind: AccountKind,
@@ -211,8 +226,11 @@ impl<R: AppRuntime> ProfileService<R> {
                         SessionKind::PAT,
                     )
                 } else {
-                    let auth_client = <dyn GitHubAuthAdapter<R>>::global(app_delegate);
-                    let token = auth_client.auth_with_pkce(ctx).await.unwrap();
+                    let auth_client = self.github_auth_adapter.clone();
+                    let token = auth_client
+                        .auth_with_pkce(ctx)
+                        .await
+                        .join_err::<()>("failed to authenticate with GitHub")?;
 
                     (
                         AccountSession::github_oauth(
@@ -228,7 +246,7 @@ impl<R: AppRuntime> ProfileService<R> {
                     )
                 };
 
-                let api_client = <dyn GitHubApiClient<R>>::global(app_delegate);
+                let api_client = self.github_api_client.clone();
                 let user = api_client.get_user(ctx, &session).await?;
 
                 let expires_at = if session_kind == SessionKind::PAT {
@@ -252,14 +270,17 @@ impl<R: AppRuntime> ProfileService<R> {
                         SessionKind::PAT,
                     )
                 } else {
-                    let auth_client = <dyn GitLabAuthAdapter<R>>::global(app_delegate);
-                    let token = auth_client.auth_with_pkce(ctx).await?;
+                    let auth_client = self.gitlab_auth_adapter.clone();
+                    let token = auth_client
+                        .auth_with_pkce(ctx)
+                        .await
+                        .join_err::<()>("failed to authenticate with GitLab")?;
 
                     (
                         AccountSession::gitlab_oauth(
                             account_id.clone(),
                             host.to_string(),
-                            self.auth_api_client.clone(),
+                            self.server_api_client.clone(),
                             Some(GitLabInitialToken {
                                 access_token: token.access_token,
                                 refresh_token: token.refresh_token,
@@ -272,7 +293,7 @@ impl<R: AppRuntime> ProfileService<R> {
                     )
                 };
 
-                let api_client = <dyn GitLabApiClient<R>>::global(app_delegate);
+                let api_client = self.gitlab_api_client.clone();
                 let user = api_client.get_user(ctx, &session).await?;
 
                 let expires_at = if session_kind == SessionKind::PAT {
@@ -332,8 +353,7 @@ impl<R: AppRuntime> ProfileService<R> {
 
     pub async fn update_account(
         &self,
-        ctx: &R::AsyncContext,
-        app_delegate: &AppDelegate<R>,
+        ctx: &dyn AnyAsyncContext,
         params: &UpdateAccountParams,
     ) -> joinerror::Result<()> {
         let active_profile_lock = self.active_profile.write().await;
@@ -347,7 +367,8 @@ impl<R: AppRuntime> ProfileService<R> {
 
         if let Some(ref pat) = params.pat {
             let old_pat = account.update_pat(ctx, pat).await?;
-            let user_response = <dyn GitHubApiClient<R>>::global(app_delegate)
+            let user_response = self
+                .github_api_client
                 .get_user(ctx, account.session())
                 .await;
 
@@ -370,7 +391,7 @@ impl<R: AppRuntime> ProfileService<R> {
         Ok(())
     }
 
-    pub async fn create_profile(
+    pub async fn create_profile<R: AppRuntime>(
         &self,
         app_delegate: &AppDelegate<R>,
         name: String,
@@ -397,7 +418,7 @@ impl<R: AppRuntime> ProfileService<R> {
     }
 
     /// Save all profiles to the registry file
-    async fn save_profiles_registry(
+    async fn save_profiles_registry<R: AppRuntime>(
         &self,
         app_delegate: &AppDelegate<R>,
         profiles: &NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
@@ -428,11 +449,11 @@ impl<R: AppRuntime> ProfileService<R> {
     }
 }
 
-async fn activate_profile<R: AppRuntime>(
+async fn activate_profile(
     profile_item: &ProfileRegistryItem,
     keyring: Arc<dyn KeyringClient>,
-    auth_api_client: Arc<AccountAuthGatewayApiClient>,
-) -> joinerror::Result<Profile<R>> {
+    server_api_client: Arc<dyn ServerApiClient>,
+) -> joinerror::Result<Profile> {
     let mut accounts = HashMap::with_capacity(profile_item.accounts.len());
 
     for account in profile_item.accounts.iter() {
@@ -459,7 +480,7 @@ async fn activate_profile<R: AppRuntime>(
                 AccountSession::gitlab_oauth(
                     account.id.clone(),
                     account.host.clone(),
-                    auth_api_client.clone(),
+                    server_api_client.clone(),
                     None,
                     keyring.clone(),
                 )
