@@ -7,9 +7,23 @@ use ts_rs::TS;
 pub enum ParsedValue {
     String(String),
     Variable(String),
-    // TODO: Implement this after updating the grammar for composite segment
-    Composite(Vec<ParsedValue>),
 }
+
+// "hostPart": [
+//     {
+//     "composite": [
+//         {
+//         "string": "api-"
+//         },
+//         {
+//         "variable": "env"
+//         },
+//         {
+//         "string": "-sapic"
+//         }
+//     ]
+
+// ["api-", {var: env}, ".sapic.dev"], ["path1/", {path_var: path2}, "/path3"]
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -17,6 +31,7 @@ pub enum ParsedValue {
 #[ts(export, export_to = "types.ts")]
 pub struct ParsedUrl {
     pub scheme_part: Option<ParsedValue>,
+    // TODO: No need to split the host by dot
     pub host_part: Vec<ParsedValue>,
     pub path_part: Vec<ParsedValue>,
     pub query_part: Vec<(String, Option<ParsedValue>)>,

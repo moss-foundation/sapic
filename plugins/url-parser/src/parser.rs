@@ -66,7 +66,7 @@ fn parse_var(var: Pair<Rule>) -> Result<ParsedValue> {
     Ok(ParsedValue::Variable(var_ident.to_owned()))
 }
 
-// {{:ident}}
+// :ident
 fn parse_path_var(var: Pair<Rule>) -> Result<ParsedValue> {
     let var_ident = var
         .into_inner()
@@ -88,25 +88,17 @@ fn parse_scheme_part(scheme: Pair<Rule>) -> Result<ParsedValue> {
     }
 }
 
-fn parse_host_piece(piece: Pair<Rule>) -> Result<ParsedValue> {
-    let host_piece_inner = piece
-        .into_inner()
-        .next()
-        .ok_or_join_err::<()>("failed to parse host piece")?;
-    match host_piece_inner.as_rule() {
-        Rule::host_literal => Ok(ParsedValue::String(host_piece_inner.as_str().to_owned())),
-        Rule::var => parse_var(host_piece_inner),
-        _ => {
-            bail!("Invalid host piece: `{}`", host_piece_inner);
-        }
-    }
-}
-
 fn parse_host_part(host: Pair<Rule>) -> Result<Vec<ParsedValue>> {
     let mut host_parts = Vec::new();
     for pair in host.into_inner() {
-        host_parts.push(parse_host_piece(pair)?);
+        let part = match pair.as_rule() {
+            Rule::host_raw => ParsedValue::String(pair.as_str().to_string()),
+            Rule::var => parse_var(pair)?,
+            _ => bail!("Invalid host part: `{}`", pair.as_str()),
+        };
+        host_parts.push(part);
     }
+
     Ok(host_parts)
 }
 
@@ -132,8 +124,6 @@ fn parse_path_part(path: Pair<Rule>) -> Result<Vec<ParsedValue>> {
 
 fn parse_query_param(param: Pair<Rule>) -> Result<(String, Option<ParsedValue>)> {
     let param_parts = param.into_inner().collect::<Vec<_>>();
-
-    dbg!(&param_parts);
 
     let query_key_pair = param_parts
         .get(0)
@@ -196,11 +186,11 @@ mod tests {
     #[test]
     fn it_works() {
         let input =
-            "{{test0}}://test1-example.com/:test1/api/users?limit=10&sort={{test2}}#{{test3}}";
+            "{{test0}}://api-{{env}}.sapic.dev/:test1/api/users?limit=10&sort={{test2}}#{{test3}}";
 
         let result = UrlParser::parse_url(input).unwrap();
 
-        dbg!(result);
+        dbg!(&result);
     }
 
     #[test]

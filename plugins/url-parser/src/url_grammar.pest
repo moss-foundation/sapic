@@ -27,21 +27,22 @@ url = {
 var = { "{{" ~ ident ~ "}}" }
 ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
 
-scheme_part = { (scheme_literal | var) ~ "://" }
+scheme_part = { (var | scheme_literal) ~ "://" }
 scheme_literal = @{
     ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
 }
 
-host_part = { host_piece ~ ("." ~ host_piece)* }
-host_piece = { var | host_literal }
-host_literal = @{
-    (ASCII_ALPHANUMERIC | "-" )+
-}
+// HOST
+// host_part must stop before '/', '?' or '#'. Inside host_part we only split on var boundaries.
+// host_raw will not consume '{' sequences or any of the host terminators.
+host_part  = { (var | host_raw)+ }
+host_raw   = @{ (!"{{" ~ !"/" ~ !"?" ~ !"#" ~ (ASCII_ALPHANUMERIC | "-" | "."))+ }
+
 
 // Allow trailing slash
 path_part = { ("/" ~ path_segment)+ ~ "/"? }
 path_var = { ":" ~ ident }
-path_segment = { (path_var | path_text)+ }
+path_segment = { path_var | path_text }
 path_text = @{
     (!("/" | "?" | "#" | "{") ~ ANY)+
 }
@@ -61,3 +62,6 @@ fragment_part = { "#" ~ (var | fragment_text)+ }
 fragment_text = @{
     (!"{" ~ ANY)+
 }
+
+// Variable rule -> parser used by either url or body parser
+// Find out if it supports import?
