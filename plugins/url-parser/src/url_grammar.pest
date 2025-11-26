@@ -1,16 +1,3 @@
-// host.com
-// host.com#fragment
-// host.com?query
-// host.com?query=
-// host.com?query=1
-// host.com?query=1#fragment
-// host.com/
-// host.com/#fragment
-// host.com/path
-// host.com/path#fragment
-// host.com/path?query=1
-// host.com/path?query=1#fragment
-
 // A simplified version of RFC-3986
 unreserved = {ASCII_ALPHANUMERIC | "-" | "." | "_" | "~" }
 sub_delims = { "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" }

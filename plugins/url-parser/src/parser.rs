@@ -46,10 +46,12 @@ impl UrlParser {
 
         // Construct raw url
         let mut raw = Vec::new();
-        raw.extend(scheme_part.iter().cloned());
-        raw.push(ParsedValue::String("://".to_string()));
-        raw.extend(host_part.iter().cloned());
+        if scheme_part.len() > 0 {
+            raw.extend(scheme_part.iter().cloned());
+            raw.push(ParsedValue::String("://".to_string()));
+        }
 
+        raw.extend(host_part.iter().cloned());
         if path_part.len() > 0 {
             raw.push(ParsedValue::String("/".to_string()));
             raw.extend(path_part.iter().cloned());
