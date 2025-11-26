@@ -2,6 +2,7 @@ import React, { createContext, ReactNode, useContext } from "react";
 
 import { useListWorkspaces } from "@/hooks/workbench/useListWorkspaces";
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
+import { useParams } from "@tanstack/react-router";
 
 import {
   additionalSelectedWorkspaceMenuItems,
@@ -25,9 +26,12 @@ const WorkspaceMenuContext = createContext<WorkspaceMenuContextType>({
 export const useWorkspaceMenu = () => useContext(WorkspaceMenuContext);
 
 export const WorkspaceMenuProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const { workspaceId } = useParams({ strict: false });
   const { data: workspaces, isLoading } = useListWorkspaces();
 
-  const allWorkspacesMenuSection = createAllWorkspacesMenuSection(workspaces || []);
+  const workspacesWithoutCurrent = workspaces?.filter((workspace) => workspace.id !== workspaceId) || [];
+
+  const allWorkspacesMenuSection = createAllWorkspacesMenuSection(workspacesWithoutCurrent || []);
 
   // Combine base menu items with the dynamic workspaces section
   const workspaceMenuItems = [...baseWorkspaceMenuItems, allWorkspacesMenuSection];
