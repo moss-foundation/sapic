@@ -14,7 +14,6 @@ Default permissions for the url-parser plugin
 <th>Description</th>
 </tr>
 
-
 <tr>
 <td>
 

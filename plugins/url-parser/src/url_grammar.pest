@@ -1,6 +1,3 @@
-// FIXME: Most literal|var should be refined to allow mixing of literal and variable
-// For example: {{env}}-test.sapic.com
-
 // host.com
 // host.com#fragment
 // host.com?query
@@ -14,54 +11,56 @@
 // host.com/path?query=1
 // host.com/path?query=1#fragment
 
+// A simplified version of RFC-3986
+unreserved = {ASCII_ALPHANUMERIC | "-" | "." | "_" | "~" }
+sub_delims = { "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" }
+
+// Technically, the specification allows colon to be used in path part
+// However we reserved it for path variables
+// The user can still bypass this constraint by storing the colon literal in the path variable
+p_char = {unreserved | sub_delims | "%" | "@"}
+
+
+ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
+var = { "{{" ~ ident ~ "}}" }
+path_var = { ":" ~ ident }
+
 url = {
     SOI ~
     scheme_part? ~
     host_part ~
-    // Ensure we can handle trailing slash immediately after the host part without a path part
-    (path_part|"/"?) ~
+    path_part? ~
     query_part? ~
     fragment_part? ~
     EOI
-    }
-var = { "{{" ~ ident ~ "}}" }
-ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
+}
 
-scheme_part = { (var | scheme_literal) ~ "://" }
+scheme_part = { (var | scheme_literal)+ ~ "://" }
 scheme_literal = @{
     ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
 }
 
 // HOST
-// host_part must stop before '/', '?' or '#'. Inside host_part we only split on var boundaries.
-// host_raw will not consume '{' sequences or any of the host terminators.
-host_part  = { (var | host_raw)+ }
-host_raw   = @{ (!"{{" ~ !"/" ~ !"?" ~ !"#" ~ (ASCII_ALPHANUMERIC | "-" | "."))+ }
+host_part  = { (var | host_raw)+ ~ "/"? }
+host_raw   = @{ (unreserved | sub_delims | "%")+ }
+
+// PATH
+path_part  = {  (path_var | path_raw)+ }
+path_raw   = @{ (p_char | "/")+ }
+
+// QUERY
+query_part = {
+    "?" ~ query_param ~ ("&" ~ query_param)*
+}
+query_param = { query_key ~ ("=" ~ query_value)?}
+query_key = { (var | query_raw)+}
+// Allow for empty string as value
+query_value = { (var | query_raw)*}
+query_raw = @{ (!("&" | "=") ~ p_char | ":" | "/" | "?")+ }
 
 
-// Allow trailing slash
-path_part = { ("/" ~ path_segment)+ ~ "/"? }
-path_var = { ":" ~ ident }
-path_segment = { path_var | path_text }
-path_text = @{
-    (!("/" | "?" | "#" | "{") ~ ANY)+
-}
-
-query_part = { "?" ~ query_param ~ ("&" ~ query_param)* }
-query_param = { query_key ~ ("=" ~ query_value)? }
-query_key = @{
-    (ASCII_ALPHANUMERIC | "_" | "-" )+
-}
-// Allow missing value like ?q=, where the value is interpreted as an empty string
-query_value = { (var | query_text)* }
-query_text = @{
-    (!("&" | "#" | "{") ~ ANY)+
-}
-
-fragment_part = { "#" ~ (var | fragment_text)+ }
-fragment_text = @{
-    (!"{" ~ ANY)+
-}
+fragment_part = { "#" ~ (var | fragment_raw)* }
+fragment_raw = @{ (p_char | ":" | "/" | "?")+ }
 
 // Variable rule -> parser used by either url or body parser
 // Find out if it supports import?
