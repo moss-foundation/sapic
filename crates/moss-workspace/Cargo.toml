@@ -52,6 +52,7 @@ rustc-hash = { workspace = true }
 tracing.workspace = true
 
 [dev-dependencies]
+sapic-platform = { workspace = true }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }

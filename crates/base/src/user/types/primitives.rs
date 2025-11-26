@@ -1,13 +1,11 @@
 use moss_id_macro::ids;
+use sapic_core::context::ContextValue;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-#[cfg(any(test, feature = "integration-tests"))]
-use sapic_core::context::ContextValue;
-
 ids!([ProfileId, AccountId]);
 
-#[cfg(any(test, feature = "integration-tests"))]
+impl ContextValue for ProfileId {}
 impl ContextValue for AccountId {}
 
 /// @category Primitive

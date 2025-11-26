@@ -2,7 +2,6 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::Storage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
@@ -34,7 +33,6 @@ pub struct AppBuilder<R: AppRuntime> {
     commands: AppCommands<R::EventLoop>,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
-    auth_api_client: Arc<AccountAuthGatewayApiClient>,
     extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     server_api_endpoint: String,
     http_client: HttpClient,
@@ -44,7 +42,6 @@ impl<R: AppRuntime> AppBuilder<R> {
     pub fn new(
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
-        auth_api_client: Arc<AccountAuthGatewayApiClient>,
         extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
         server_api_endpoint: String,
         http_client: HttpClient,
@@ -53,7 +50,6 @@ impl<R: AppRuntime> AppBuilder<R> {
             commands: Default::default(),
             fs,
             keyring,
-            auth_api_client,
             extension_points,
             server_api_endpoint,
             http_client,

@@ -4187,6 +4187,7 @@ dependencies = [
  "moss_user",
  "nanoid",
  "oauth2",
+ "platform",
  "rand 0.9.2",
  "reqwest",
  "rustc-hash",
