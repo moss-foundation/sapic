@@ -63,7 +63,7 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
       <PageView>
         <PageWrapper>
           <header className="flex items-center justify-between gap-2 pb-3.5 pt-1">
-            <h1 className="text-lg font-medium">Accounts</h1>{" "}
+            <h1 className="text-lg font-medium">Accounts</h1>
             <Button intent="primary" onClick={openNewAccountModal}>
               Connect
             </Button>
@@ -97,14 +97,7 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
         </PageWrapper>
       </PageView>
 
-      <NewAccountModal
-        showModal={isNewAccountModalOpen}
-        closeModal={closeNewAccountModal}
-        onAccountAdded={() => {
-          console.log("Account added successfully");
-          refetchDescribeApp();
-        }}
-      />
+      <NewAccountModal showModal={isNewAccountModalOpen} closeModal={closeNewAccountModal} />
     </>
   );
 };
@@ -143,9 +136,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             {getProviderIcon(account.kind)}
-            <span className="text-sm">
-              {account.username} | {account.id}
-            </span>
+            <span className="text-sm">{account.username}</span>
             <span className="background-(--moss-gray-12) leading-3.5 rounded-full px-[5px] text-[10px]">
               {account.method === "PAT" ? "PAT" : "OAuth"}
             </span>
@@ -175,13 +166,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
       {/*  Modals */}
 
       {isEditModalOpen && (
-        <EditAccountModal
-          showModal={isEditModalOpen}
-          closeModal={() => {
-            closeEditModal();
-          }}
-          account={account}
-        />
+        <EditAccountModal showModal={isEditModalOpen} closeModal={closeEditModal} account={account} />
       )}
 
       {isRevokeModalOpen && (

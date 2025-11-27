@@ -15,8 +15,7 @@ interface EditAccountModalProps extends ModalWrapperProps {
 
 export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpdated }: EditAccountModalProps) => {
   const [token, setToken] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -24,7 +23,6 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
     if (!account || !token) return;
 
     try {
-      setIsSubmitting(true);
       const accountParams: UpdateAccountParams = {
         id: account.id,
         pat: token,
@@ -43,8 +41,6 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
     } catch (error) {
       console.error("Error updating account:", error);
       alert(`Failed to update account: ${error}`);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -59,7 +55,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
     }, 200);
   };
 
-  const isSubmitDisabled = isSubmitting || !token;
+  const isSubmitDisabled = isUpdatingProfile || !token;
 
   if (!account) return null;
 
@@ -95,11 +91,11 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
         </div>
 
         <div className="border-(--moss-border) flex items-center justify-end gap-3 border-t px-6 py-4">
-          <Button intent="outlined" type="button" onClick={handleClose} disabled={isSubmitting}>
+          <Button intent="outlined" type="button" onClick={handleClose} disabled={isUpdatingProfile}>
             Close
           </Button>
           <Button intent="primary" disabled={isSubmitDisabled} type="submit">
-            {isSubmitting ? "Saving..." : "Save"}
+            {isUpdatingProfile ? "Saving..." : "Save"}
           </Button>
         </div>
       </form>
