@@ -25,7 +25,6 @@ members = [
     "crates/moss-applib",
     "crates/moss-app-delegate",
     "crates/moss-git",
-    "crates/moss-git-hosting-provider",
     "crates/moss-text",
     "crates/moss-project",
     "crates/moss-fs",
@@ -91,7 +90,6 @@ moss_project = { path = "crates/moss-project" }
 moss_applib = { path = "crates/moss-applib" }
 moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
-moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }

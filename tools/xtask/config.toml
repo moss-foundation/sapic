@@ -31,4 +31,4 @@ desktop = [
 xtask = ["cargo_metadata", "clap", "futures", "pathdiff", "toml", "smol"]
 
 moss_git = ["libssh2-sys"]
-moss_git_hosting_provider = ["libssh2-sys"]
+platform = ["libssh2-sys"]

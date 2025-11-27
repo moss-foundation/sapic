@@ -197,7 +197,6 @@ jobs:
           - main
 
           - moss_git
-          - moss_git_hosting_provider
           - moss_text
           - moss_project
           - moss_applib
@@ -317,7 +316,6 @@ jobs:
           - main
 
           - moss_git
-          - moss_git_hosting_provider
           - moss_text
           - moss_project
           - moss_applib

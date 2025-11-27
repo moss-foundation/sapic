@@ -1639,7 +1639,6 @@ dependencies = [
  "moss_environment",
  "moss_extension_points",
  "moss_fs",
- "moss_git_hosting_provider",
  "moss_keyring",
  "moss_language",
  "moss_project",
@@ -3925,33 +3924,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_git_hosting_provider"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "chrono",
- "core",
- "dotenvy",
- "git2",
- "joinerror",
- "keyring",
- "libssh2-sys",
- "moss_app_delegate",
- "moss_applib",
- "moss_git",
- "moss_keyring",
- "oauth2",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "ts-rs",
- "url",
- "urlencoding",
- "webbrowser",
-]
-
-[[package]]
 name = "moss_hcl"
 version = "0.1.0"
 dependencies = [
@@ -4044,7 +4016,6 @@ dependencies = [
  "moss_environment",
  "moss_fs",
  "moss_git",
- "moss_git_hosting_provider",
  "moss_hcl",
  "moss_id_macro",
  "moss_keyring",
@@ -4133,7 +4104,6 @@ dependencies = [
  "moss_environment",
  "moss_fs",
  "moss_git",
- "moss_git_hosting_provider",
  "moss_id_macro",
  "moss_keyring",
  "moss_logging",
@@ -5107,6 +5077,7 @@ dependencies = [
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
+ "libssh2-sys",
  "moss_applib",
  "moss_common",
  "moss_edit",
@@ -8996,7 +8967,6 @@ dependencies = [
  "moss_environment",
  "moss_extension_points",
  "moss_fs",
- "moss_git_hosting_provider",
  "moss_id_macro",
  "moss_keyring",
  "moss_language",
