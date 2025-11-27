@@ -1,24 +1,18 @@
-import { workspaceService } from "@/lib/services/workbench/workspaceService";
+import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { WorkspaceInfo } from "@repo/base";
 import { ListWorkspacesOutput, MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput } from "@repo/ipc";
 import { DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
 import { useUpdateLayout } from "./layout/useUpdateLayout";
-import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_CREATE_WORKSPACE_MUTATION_KEY = "createWorkspace";
 
 const createWorkspaceFn = async (input: MainWindow_CreateWorkspaceInput): Promise<MainWindow_CreateWorkspaceOutput> => {
-  const result = await workspaceService.createWorkspace(input);
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
+  return await mainWorkspaceService.create(input);
 };
 
 export const useCreateWorkspace = () => {

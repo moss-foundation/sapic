@@ -1,9 +1,9 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
+import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace/useDeleteWorkspace";
 import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
-import { useDeleteWorkspace } from "@/hooks/workbench/useDeleteWorkspace";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
 import { PageHeader } from "@/workbench/ui/components/PageView/PageHeader";

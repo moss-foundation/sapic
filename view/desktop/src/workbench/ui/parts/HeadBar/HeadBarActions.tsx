@@ -1,9 +1,10 @@
 import { RefObject } from "react";
 
+import { useWorkspaceMapping } from "@/hooks/workbench/derived/useWorkspaceMapping";
 import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
-import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { OpenInTargetEnum } from "@/main/types";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
@@ -141,7 +142,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   return (action: string) => {
     if (action.startsWith("workspace:")) {
       const workspaceId = extractWorkspaceId(action);
-      openWorkspace(workspaceId);
+      openWorkspace({ id: workspaceId, openInTarget: OpenInTargetEnum.CURRENT_WINDOW });
       return;
     }
 
@@ -184,22 +185,25 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
 
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            openWorkspace(workspaceId, {
-              onSuccess: () => {
-                addOrFocusPanel({
-                  id: "WorkspaceSettings",
-                  component: "WorkspaceSettings",
-                  title: workspace.name,
-                  params: {
-                    iconType: "Workspace",
-                    workspace: true,
-                  },
-                });
-              },
-              onError: (error) => {
-                console.error("Failed to open workspace:", error.message);
-              },
-            });
+            openWorkspace(
+              { id: workspaceId, openInTarget: OpenInTargetEnum.CURRENT_WINDOW },
+              {
+                onSuccess: () => {
+                  addOrFocusPanel({
+                    id: "WorkspaceSettings",
+                    component: "WorkspaceSettings",
+                    title: workspace.name,
+                    params: {
+                      iconType: "Workspace",
+                      workspace: true,
+                    },
+                  });
+                },
+                onError: (error) => {
+                  console.error("Failed to open workspace:", error.message);
+                },
+              }
+            );
           } else {
             console.error(`Workspace not found for ID: ${workspaceId}`);
           }

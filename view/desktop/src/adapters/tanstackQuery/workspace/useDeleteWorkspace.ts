@@ -1,22 +1,16 @@
-import { workspaceService } from "@/lib/services/workbench/workspaceService";
+import { workspaceService } from "@/domains/workspace/workspaceService";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useActiveWorkspace } from "../workspace/derived/useActiveWorkspace";
-import { useRemoveLayout } from "./layout";
-import { useCloseWorkspace } from "./useCloseWorkspace";
+import { useRemoveLayout } from "../../../hooks/workbench/layout";
+import { useCloseWorkspace } from "../../../hooks/workbench/useCloseWorkspace";
+import { useActiveWorkspace } from "../../../hooks/workspace/derived/useActiveWorkspace";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_DELETE_WORKSPACE_MUTATION_KEY = "deleteWorkspace";
 
 const deleteWorkspaceFn = async (input: DeleteWorkspaceInput): Promise<DeleteWorkspaceOutput> => {
-  const result = await workspaceService.deleteWorkspace(input);
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
+  return await workspaceService.delete(input);
 };
 
 export const useDeleteWorkspace = () => {
@@ -24,12 +18,11 @@ export const useDeleteWorkspace = () => {
 
   const { activeWorkspaceId, hasActiveWorkspace } = useActiveWorkspace();
   const { mutateAsync: closeWorkspace } = useCloseWorkspace();
-
   const { mutateAsync: removeLayout } = useRemoveLayout();
 
   return useMutation<DeleteWorkspaceOutput, Error, DeleteWorkspaceInput>({
     mutationKey: [USE_DELETE_WORKSPACE_MUTATION_KEY],
-    mutationFn: async (input: DeleteWorkspaceInput) => {
+    mutationFn: async (input) => {
       if (hasActiveWorkspace && activeWorkspaceId === input.id) {
         try {
           await closeWorkspace(activeWorkspaceId);

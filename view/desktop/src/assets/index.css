@@ -1,10 +1,12 @@
 @import "tailwindcss";
 @config "@repo/tailwind-config";
-@source "./icons/";
+@source "./icons";
 @source "../lib";
+@source "../windows";
+@source "../pages";
 @source "../welcome";
 @source "../workbench";
-@source "../../src/";
+@source "../../src";
 
 @import "allotment/dist/style.css";
 @import "./dockview.css";

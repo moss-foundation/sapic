@@ -23,7 +23,7 @@ export const sharedStorageIpc: ISharedStorageIpc = {
     return await invoke("plugin:shared-storage|remove_item", {
       input: {
         key,
-        scope: scope ? { workspace: scope } : "application",
+        scope,
       },
     });
   },

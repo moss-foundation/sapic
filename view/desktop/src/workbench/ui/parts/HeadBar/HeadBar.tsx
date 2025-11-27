@@ -1,7 +1,7 @@
 import { useState } from "react";
 
+import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace";
 import { useModal } from "@/hooks/useModal";
-import { useDeleteWorkspace } from "@/hooks/workbench";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ConfirmationModal } from "@/workbench/ui/components";
