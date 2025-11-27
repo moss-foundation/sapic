@@ -2,7 +2,7 @@ import { useRef } from "react";
 
 import { Link } from "@/lib/ui";
 import { RadioGroup } from "@/workbench/ui/components";
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 
 import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../../accountUtils";
 import { Subheader } from "./Subheader";

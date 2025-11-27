@@ -13,7 +13,6 @@ sapic-system.workspace = true
 sapic-base.workspace = true
 
 moss_app_delegate.workspace = true
-moss_user.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
 moss_common.workspace = true

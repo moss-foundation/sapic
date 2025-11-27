@@ -1,4 +1,4 @@
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 
 export const getProviderName = (kind: AccountKind): string => {
   return kind === "GITHUB" ? "GitHub" : "GitLab";

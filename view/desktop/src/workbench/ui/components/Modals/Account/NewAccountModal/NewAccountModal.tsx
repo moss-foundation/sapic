@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 import { AddAccountParams, UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 

@@ -23,7 +23,6 @@ moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
-moss_user.workspace = true
 moss_text.workspace = true
 
 static_json.workspace = true
@@ -60,7 +59,6 @@ moss_applib = { workspace = true, features = ["test"] }
 [features]
 integration-tests = [
   "dotenvy",
-  "moss_user/integration-tests",
   "moss_project/integration-tests",
   "moss_git_hosting_provider/integration-tests",
   "oauth2",

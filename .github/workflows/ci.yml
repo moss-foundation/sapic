@@ -212,7 +212,6 @@ jobs:
           - moss_bindingutils
           - moss_hcl
           - moss_logging
-          - moss_user
           - moss_edit
           - moss_server_api
           - moss_extension_points
@@ -335,7 +334,6 @@ jobs:
           - moss_bindingutils
           - moss_hcl
           - moss_logging
-          - moss_user
           - moss_edit
           - moss_server_api
           - moss_extension_points

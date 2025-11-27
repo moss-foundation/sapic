@@ -16,7 +16,6 @@ sapic-core.workspace = true
 
 moss_app_delegate.workspace = true
 moss_server_api.workspace = true
-moss_user.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
 moss_applib.workspace = true
