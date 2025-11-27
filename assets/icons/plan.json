@@ -215,6 +215,9 @@
   "PreRequest": {
     "identical": false
   },
+  "Preferences": {
+    "identical": true
+  },
   "Profile": {
     "identical": true
   },

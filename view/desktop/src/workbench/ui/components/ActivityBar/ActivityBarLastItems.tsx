@@ -1,8 +1,10 @@
 import { useDescribeApp } from "@/hooks";
+import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
+import { ActionMenu } from "..";
 import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
@@ -19,32 +21,41 @@ export const ActivityBarLastItems = () => {
           activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
-      <ActivityBarButton
-        icon="Person"
-        id="1"
-        title="Profile"
-        order={1}
-        onClick={() =>
-          addOrFocusPanel({
-            id: "Profile",
-            component: "Profile",
-          })
-        }
-        isDraggable={false}
-      />
-      <ActivityBarButton
-        icon="Settings"
-        id="2"
-        title="Settings"
-        order={2}
-        onClick={() =>
-          addOrFocusPanel({
-            id: "Settings",
-            component: "Settings",
-          })
-        }
-        isDraggable={false}
-      />
+      <ActionMenu.Root>
+        <ActionMenu.Trigger asChild>
+          <ActivityBarButton icon="Preferences" id="1" title="Preferences" order={1} isDraggable={false} />
+        </ActionMenu.Trigger>
+        <ActionMenu.Content>
+          <ActionMenu.Item>
+            <button
+              className="flex w-full cursor-pointer items-center gap-2"
+              onClick={() => {
+                addOrFocusPanel({
+                  id: "Settings",
+                  component: "Settings",
+                });
+              }}
+            >
+              <Icon icon="Settings" />
+              <span>Settings</span>
+            </button>
+          </ActionMenu.Item>
+          <ActionMenu.Item>
+            <button
+              className="flex w-full cursor-pointer items-center gap-2"
+              onClick={() => {
+                addOrFocusPanel({
+                  id: "Accounts",
+                  component: "Accounts",
+                });
+              }}
+            >
+              <Icon icon="Person" />
+              <span>Accounts</span>
+            </button>
+          </ActionMenu.Item>
+        </ActionMenu.Content>
+      </ActionMenu.Root>
     </div>
   );
 };
