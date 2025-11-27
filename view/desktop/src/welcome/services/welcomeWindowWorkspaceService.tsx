@@ -17,12 +17,12 @@ interface IWelcomeWindowWorkspaceService extends IWorkspaceService {
 export const welcomeWindowWorkspaceService: IWelcomeWindowWorkspaceService = {
   ...workspaceService,
   create: async (input) => {
-    return await workspaceIpc.welcome_createWorkspace(input);
+    return await workspaceIpc.welcome__createWorkspace(input);
   },
   open: async (input) => {
-    return await workspaceIpc.welcome_openWorkspace(input);
+    return await workspaceIpc.welcome__openWorkspace(input);
   },
   update: async (input) => {
-    return await workspaceIpc.welcome_updateWorkspace(input);
+    return await workspaceIpc.welcome__updateWorkspace(input);
   },
 };

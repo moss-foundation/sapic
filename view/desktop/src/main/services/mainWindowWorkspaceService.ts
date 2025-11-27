@@ -18,15 +18,15 @@ interface IMainWorkspaceService extends IWorkspaceService {
 export const mainWorkspaceService: IMainWorkspaceService = {
   ...workspaceService,
   create: async (input) => {
-    return await workspaceIpc.main_createWorkspace(input);
+    return await workspaceIpc.main__createWorkspace(input);
   },
   open: async (input) => {
-    return await workspaceIpc.main_openWorkspace(input);
+    return await workspaceIpc.main__openWorkspace(input);
   },
   close: async () => {
-    return await workspaceIpc.main_closeWorkspace();
+    return await workspaceIpc.main__closeWorkspace();
   },
   update: async (input) => {
-    return await workspaceIpc.main_updateWorkspace(input);
+    return await workspaceIpc.main__updateWorkspace(input);
   },
 };

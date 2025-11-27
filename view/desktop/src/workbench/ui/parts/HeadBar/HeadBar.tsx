@@ -21,6 +21,7 @@ export const HeadBar = () => {
   const { showDebugPanels, setShowDebugPanels } = useTabbedPaneStore();
   const { openPanel } = useTabbedPaneStore();
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
+
   const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const {
@@ -36,22 +37,24 @@ export const HeadBar = () => {
   } = useModal();
 
   const {
-    showModal: showDeleteWorkspaceModal,
-    closeModal: closeDeleteWorkspaceModal,
-    openModal: openDeleteWorkspaceModal,
+    showModal: showDeleteConfirmModal,
+    closeModal: closeDeleteConfirmModal,
+    openModal: openDeleteConfirmModal,
   } = useModal();
 
   const actionProps: HeadBarActionProps = {
     openPanel,
     showDebugPanels,
     setShowDebugPanels,
+
     openNewWorkspaceModal,
     openOpenWorkspaceModal,
+
     workspaceToDelete,
     setWorkspaceToDelete,
-    showDeleteWorkspaceModal,
-    openDeleteWorkspaceModal,
-    closeDeleteWorkspaceModal,
+
+    showDeleteConfirmModal,
+    openDeleteConfirmModal,
   };
 
   const workspaceActionProps: HeadBarActionProps = { ...actionProps };
@@ -64,14 +67,12 @@ export const HeadBar = () => {
       deleteWorkspace(
         { id: workspaceToDelete.id },
         {
-          onSuccess: () => {
-            setWorkspaceToDelete(null);
-            closeDeleteWorkspaceModal();
-          },
           onError: (error) => {
             console.error("Failed to delete workspace:", error.message);
+          },
+          onSettled: () => {
             setWorkspaceToDelete(null);
-            closeDeleteWorkspaceModal();
+            closeDeleteConfirmModal();
           },
         }
       );
@@ -114,10 +115,10 @@ export const HeadBar = () => {
         <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
       )}
 
-      {showDeleteWorkspaceModal && (
+      {showDeleteConfirmModal && (
         <ConfirmationModal
-          showModal={showDeleteWorkspaceModal}
-          closeModal={closeDeleteWorkspaceModal}
+          showModal={showDeleteConfirmModal}
+          closeModal={closeDeleteConfirmModal}
           title="Delete"
           message={`Delete "${workspaceToDelete?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with projects in the workspace."

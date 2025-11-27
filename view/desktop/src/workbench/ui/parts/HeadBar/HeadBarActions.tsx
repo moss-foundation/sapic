@@ -24,13 +24,9 @@ export interface HeadBarActionProps {
   openNewWorkspaceModal?: () => void;
   openOpenWorkspaceModal?: () => void;
   showDeleteConfirmModal?: boolean;
-  setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
   setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
-  closeDeleteWorkspaceModal?: () => void;
-  showDeleteWorkspaceModal?: boolean;
-  setShowDeleteWorkspaceModal?: (show: boolean) => void;
-  openDeleteWorkspaceModal?: () => void;
+  openDeleteConfirmModal?: () => void;
 }
 
 /**
@@ -127,9 +123,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     showDebugPanels,
     openNewWorkspaceModal,
     openOpenWorkspaceModal,
-    setShowDeleteConfirmModal,
     setWorkspaceToDelete,
-    openDeleteWorkspaceModal,
+    openDeleteConfirmModal,
   } = props;
 
   const { mutate: openWorkspace } = useOpenWorkspace();
@@ -164,7 +159,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
               id: workspaceId,
               name: workspace.name,
             });
-            openDeleteWorkspaceModal?.();
+            openDeleteConfirmModal?.();
           }
           return;
         }
@@ -222,12 +217,12 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         openOpenWorkspaceModal?.();
         break;
       case "delete":
-        if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
-          setWorkspaceToDelete({
+        if (activeWorkspace) {
+          setWorkspaceToDelete?.({
             id: activeWorkspace.id,
             name: activeWorkspace.name,
           });
-          setShowDeleteConfirmModal(true);
+          openDeleteConfirmModal?.();
         }
         break;
       case "rename":

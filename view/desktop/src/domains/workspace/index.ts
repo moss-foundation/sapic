@@ -18,12 +18,12 @@ export interface IWorkspaceIpc {
   listWorkspaces: () => Promise<ListWorkspacesOutput>;
   deleteWorkspace: (input: DeleteWorkspaceInput) => Promise<DeleteWorkspaceOutput>;
 
-  main_openWorkspace: (input: MainWindow_OpenWorkspaceInput) => Promise<void>;
-  main_createWorkspace: (input: MainWindow_CreateWorkspaceInput) => Promise<MainWindow_CreateWorkspaceOutput>;
-  main_closeWorkspace: () => Promise<void>;
-  main_updateWorkspace: (input: MainWindow_UpdateWorkspaceInput) => Promise<MainWindow_UpdateWorkspaceOutput>;
+  main__openWorkspace: (input: MainWindow_OpenWorkspaceInput) => Promise<void>;
+  main__createWorkspace: (input: MainWindow_CreateWorkspaceInput) => Promise<MainWindow_CreateWorkspaceOutput>;
+  main__closeWorkspace: () => Promise<void>;
+  main__updateWorkspace: (input: MainWindow_UpdateWorkspaceInput) => Promise<MainWindow_UpdateWorkspaceOutput>;
 
-  welcome_createWorkspace: (input: WelcomeWindow_CreateWorkspaceInput) => Promise<WelcomeWindow_CreateWorkspaceOutput>;
-  welcome_openWorkspace: (input: WelcomeWindow_OpenWorkspaceInput) => Promise<void>;
-  welcome_updateWorkspace: (input: WelcomeWindow_UpdateWorkspaceInput) => Promise<WelcomeWindow_UpdateWorkspaceOutput>;
+  welcome__createWorkspace: (input: WelcomeWindow_CreateWorkspaceInput) => Promise<WelcomeWindow_CreateWorkspaceOutput>;
+  welcome__openWorkspace: (input: WelcomeWindow_OpenWorkspaceInput) => Promise<void>;
+  welcome__updateWorkspace: (input: WelcomeWindow_UpdateWorkspaceInput) => Promise<WelcomeWindow_UpdateWorkspaceOutput>;
 }
