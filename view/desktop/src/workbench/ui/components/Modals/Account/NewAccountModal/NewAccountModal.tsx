@@ -1,10 +1,10 @@
 import { FormEvent, useState } from "react";
 
+import { useUpdateProfile } from "@/adapters";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { AccountKind } from "@repo/moss-user";
 import { AddAccountParams, UpdateProfileInput } from "@repo/window";
-import { invoke } from "@tauri-apps/api/core";
 
 import { ModalWrapperProps } from "../../types";
 import { getProviderHost } from "../accountUtils";
@@ -20,6 +20,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
   const [token, setToken] = useState("");
   const [useAsDefault, setUseAsDefault] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutateAsync: updateProfile } = useUpdateProfile();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -39,7 +40,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
         accountsToUpdate: [],
       };
 
-      await invoke("update_profile", { input });
+      await updateProfile(input);
       console.log("Account added successfully");
 
       handleClose();

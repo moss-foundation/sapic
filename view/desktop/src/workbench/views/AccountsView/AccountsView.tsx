@@ -110,25 +110,23 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
 };
 
 const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean }) => {
-  const { refetch: refetchDescribeApp, data: appState, isFetching: isFetchingDescribeApp } = useDescribeApp();
+  const { isFetching: isFetchingDescribeApp } = useDescribeApp();
   const { mutateAsync: updateProfile } = useUpdateProfile();
 
   const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
   const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
 
-  const profile = appState?.profile;
-
   const handleRemoveAccount = async () => {
     try {
       const input: UpdateProfileInput = {
         accountsToAdd: [],
-        accountsToRemove: [profile?.id || ""],
+        accountsToRemove: [account.id],
         accountsToUpdate: [],
       };
+
       await updateProfile(input);
-      console.log("Account removed successfully");
+
       closeRevokeModal();
-      refetchDescribeApp();
     } catch (error) {
       console.error("Error removing account:", error);
       alert(`Failed to remove account: ${error}`);
@@ -145,7 +143,9 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-2">
             {getProviderIcon(account.kind)}
-            <span className="text-sm">{account.username}</span>
+            <span className="text-sm">
+              {account.username} | {account.id}
+            </span>
             <span className="background-(--moss-gray-12) leading-3.5 rounded-full px-[5px] text-[10px]">
               {account.method === "PAT" ? "PAT" : "OAuth"}
             </span>
@@ -181,9 +181,6 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
             closeEditModal();
           }}
           account={account}
-          onAccountUpdated={() => {
-            refetchDescribeApp();
-          }}
         />
       )}
 

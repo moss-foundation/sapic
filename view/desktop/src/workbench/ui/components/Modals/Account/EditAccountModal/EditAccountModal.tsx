@@ -1,9 +1,9 @@
 import { FormEvent, useState } from "react";
 
+import { useUpdateProfile } from "@/adapters";
 import { Button, Link, Modal } from "@/lib/ui";
-import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 import { AccountInfo } from "@repo/moss-user";
-import { invoke } from "@tauri-apps/api/core";
+import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 
 import { ModalWrapperProps } from "../../types";
 import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../accountUtils";
@@ -16,6 +16,7 @@ interface EditAccountModalProps extends ModalWrapperProps {
 export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpdated }: EditAccountModalProps) => {
   const [token, setToken] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { mutateAsync: updateProfile } = useUpdateProfile();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -35,7 +36,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
         accountsToUpdate: [accountParams],
       };
 
-      await invoke("update_profile", { input });
+      await updateProfile(input);
 
       handleClose();
       onAccountUpdated?.();
