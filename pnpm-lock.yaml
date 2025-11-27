@@ -250,6 +250,9 @@ importers:
         specifier: 3.25.32
         version: 3.25.32
     devDependencies:
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../base
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../moss-bindingutils

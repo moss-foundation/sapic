@@ -8,6 +8,7 @@
     "format": "prettier --plugin=prettier-plugin-tailwindcss --write \"**/*.{ts,tsx,md}\""
   },
   "devDependencies": {
+    "@repo/base": "workspace:*",
     "@repo/moss-bindingutils": "workspace:*",
     "@repo/moss-environment": "workspace:*",
     "@repo/moss-git": "workspace:*",
