@@ -213,7 +213,6 @@ jobs:
           - moss_hcl
           - moss_logging
           - moss_edit
-          - moss_server_api
           - moss_extension_points
           - moss_language
           - moss_storage2
@@ -335,7 +334,6 @@ jobs:
           - moss_hcl
           - moss_logging
           - moss_edit
-          - moss_server_api
           - moss_extension_points
           - moss_language
           - moss_storage2

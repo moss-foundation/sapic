@@ -41,7 +41,6 @@ members = [
     "crates/moss-wasm",
     "crates/moss-edit",
     "crates/moss-logging",
-    "crates/moss-server-api",
     "crates/moss-id-macro",
     "crates/moss-extension-points", 
     "crates/moss-language",
@@ -107,7 +106,6 @@ moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
-moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_extension_points = { path = "crates/moss-extension-points" }
 moss_language = { path = "crates/moss-language" }
