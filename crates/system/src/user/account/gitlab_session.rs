@@ -46,13 +46,21 @@ impl GitLabSessionHandle {
     pub(crate) async fn oauth(
         id: AccountId,
         host: String,
-        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        refresh_api_op: Arc<dyn GitLabTokenRefreshApiReq>,
+        revoke_api_op: Arc<dyn GitLabRevokeApiReq>,
         initial_token: Option<GitLabInitialToken>,
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         Ok(Self::OAuth(
-            GitLabOAuthSessionHandle::new(id, host, auth_api_client, initial_token, keyring)
-                .await?,
+            GitLabOAuthSessionHandle::new(
+                id,
+                host,
+                refresh_api_op,
+                revoke_api_op,
+                initial_token,
+                keyring,
+            )
+            .await?,
         ))
     }
 
@@ -96,10 +104,9 @@ impl GitLabSessionHandle {
         &self,
         ctx: &dyn AnyAsyncContext,
         keyring: &Arc<dyn KeyringClient>,
-        api_client: Arc<dyn GitLabRevokeApiReq>,
     ) -> joinerror::Result<()> {
         match self {
-            GitLabSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitLabSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring).await,
             GitLabSessionHandle::PAT(handle) => handle.revoke(keyring).await,
         }
     }
@@ -122,7 +129,9 @@ pub(crate) struct GitLabOAuthSessionHandle {
     pub id: AccountId,
     pub host: String,
 
-    auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+    refresh_api_op: Arc<dyn GitLabTokenRefreshApiReq>,
+    revoke_api_op: Arc<dyn GitLabRevokeApiReq>,
+
     token: RwLock<Option<LastAccessToken>>,
 }
 
@@ -130,7 +139,8 @@ impl GitLabOAuthSessionHandle {
     pub(crate) async fn new(
         id: AccountId,
         host: String,
-        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        refresh_api_op: Arc<dyn GitLabTokenRefreshApiReq>,
+        revoke_api_op: Arc<dyn GitLabRevokeApiReq>,
         initial_token: Option<GitLabInitialToken>,
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
@@ -153,7 +163,8 @@ impl GitLabOAuthSessionHandle {
         Ok(Self {
             id,
             host,
-            auth_api_client,
+            refresh_api_op,
+            revoke_api_op,
             token: RwLock::new(token),
         })
     }
@@ -178,7 +189,7 @@ impl GitLabOAuthSessionHandle {
         let old_refresh_token = String::from_utf8(bytes.to_vec())?;
 
         let resp = self
-            .auth_api_client
+            .refresh_api_op
             .gitlab_token_refresh(
                 ctx,
                 GitLabTokenRefreshRequest {
@@ -207,7 +218,6 @@ impl GitLabOAuthSessionHandle {
         &self,
         ctx: &dyn AnyAsyncContext,
         keyring: &Arc<dyn KeyringClient>,
-        api_client: Arc<dyn GitLabRevokeApiReq>,
     ) -> joinerror::Result<()> {
         // Revoke refresh token and (if it exists) access token
         let access_token = self.token.write().await.take().map(|token| token.token);
@@ -224,7 +234,7 @@ impl GitLabOAuthSessionHandle {
             .await
             .map_err(|e| Error::new::<()>(e.to_string()))?;
 
-        api_client
+        self.revoke_api_op
             .gitlab_revoke(
                 ctx,
                 GitLabRevokeRequest {

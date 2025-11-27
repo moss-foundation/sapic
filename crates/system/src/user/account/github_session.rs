@@ -28,11 +28,12 @@ impl GitHubSessionHandle {
     pub(crate) async fn oauth(
         id: AccountId,
         host: String,
+        revoke_api_op: Arc<dyn GitHubRevokeApiReq>,
         initial_token: Option<GitHubInitialToken>,
         keyring: &Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         Ok(Self::OAuth(
-            GitHubOAuthSessionHandle::new(id, host, initial_token, keyring).await?,
+            GitHubOAuthSessionHandle::new(id, host, revoke_api_op, initial_token, keyring).await?,
         ))
     }
     pub(crate) async fn pat(
@@ -74,10 +75,9 @@ impl GitHubSessionHandle {
         &self,
         ctx: &dyn AnyAsyncContext,
         keyring: &Arc<dyn KeyringClient>,
-        api_client: Arc<dyn GitHubRevokeApiReq>,
     ) -> joinerror::Result<()> {
         match self {
-            GitHubSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring, api_client).await,
+            GitHubSessionHandle::OAuth(handle) => handle.revoke(ctx, keyring).await,
             GitHubSessionHandle::PAT(handle) => handle.revoke(keyring).await,
         }
     }
@@ -99,13 +99,15 @@ impl GitHubSessionHandle {
 pub(crate) struct GitHubOAuthSessionHandle {
     pub id: AccountId,
     pub host: String,
+
+    revoke_api_op: Arc<dyn GitHubRevokeApiReq>,
 }
 
 impl GitHubOAuthSessionHandle {
     pub async fn new(
         id: AccountId,
         host: String,
-
+        revoke_api_op: Arc<dyn GitHubRevokeApiReq>,
         initial_token: Option<GitHubInitialToken>,
 
         keyring: &Arc<dyn KeyringClient>,
@@ -125,7 +127,11 @@ impl GitHubOAuthSessionHandle {
                 .map_err(|e| Error::new::<()>(e.to_string()))?;
         };
 
-        Ok(Self { id, host })
+        Ok(Self {
+            id,
+            host,
+            revoke_api_op,
+        })
     }
 
     pub async fn token(&self, keyring: &Arc<dyn KeyringClient>) -> joinerror::Result<String> {
@@ -147,7 +153,6 @@ impl GitHubOAuthSessionHandle {
         &self,
         ctx: &dyn AnyAsyncContext,
         keyring: &Arc<dyn KeyringClient>,
-        api_client: Arc<dyn GitHubRevokeApiReq>,
     ) -> joinerror::Result<()> {
         let key = make_secret_key(GITHUB_PREFIX, &self.host, &self.id);
         let bytes = keyring
@@ -162,7 +167,7 @@ impl GitHubOAuthSessionHandle {
             .await
             .map_err(|e| Error::new::<()>(e.to_string()))?;
 
-        api_client
+        self.revoke_api_op
             .github_revoke(ctx, GitHubRevokeRequest { access_token })
             .await
     }

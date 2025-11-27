@@ -1,11 +1,11 @@
 #![cfg(feature = "integration-tests")]
 
 use moss_git::models::types::BranchInfo;
-use moss_user::models::primitives::AccountId;
 use moss_workspace::models::{
     operations::{DeleteProjectInput, DescribeProjectInput, ImportProjectInput},
     types::{ImportGitHubParams, ImportProjectParams, ImportProjectSource, VcsInfo},
 };
+use sapic_base::user::types::primitives::AccountId;
 use sapic_core::context::AnyAsyncContext;
 use std::{env, ops::Deref};
 

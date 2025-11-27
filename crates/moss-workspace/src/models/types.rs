@@ -5,8 +5,10 @@ use moss_git::{
     url::GIT_URL_REGEX,
 };
 use moss_project::models::primitives::ProjectId;
-use moss_user::models::primitives::AccountId;
-use sapic_base::environment::types::primitives::{EnvironmentId, VariableId};
+use sapic_base::{
+    environment::types::primitives::{EnvironmentId, VariableId},
+    user::types::primitives::AccountId,
+};
 use serde::{Deserialize, Serialize};
 use std::{
     path::{Path, PathBuf},

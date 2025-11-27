@@ -1,3 +1,4 @@
+mod account_auth_api;
 mod auth_github_account_api;
 mod auth_gitlab_account_api;
 mod extensions_api;
@@ -14,6 +15,10 @@ pub struct HttpServerApiClient {
 impl HttpServerApiClient {
     pub fn new(base_url: String, client: HttpClient) -> Self {
         Self { base_url, client }
+    }
+
+    pub fn base_url(&self) -> &str {
+        &self.base_url
     }
 }
 

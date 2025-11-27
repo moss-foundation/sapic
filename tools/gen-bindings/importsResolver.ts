@@ -27,7 +27,6 @@ const KNOWN_PACKAGES = [
   "moss-bindingutils",
   "ipc",
   "moss-git",
-  "moss-user",
   "moss-language",
 ];
 

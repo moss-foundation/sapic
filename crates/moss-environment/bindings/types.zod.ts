@@ -6,8 +6,6 @@ import { z } from "zod";
 export const variableOptionsSchema = z.object({
   disabled: z.boolean(),
 });
-
-export const variableKindSchema = z.union([z.literal("secret"), z.literal("default")]);
 export const addVariableParamsSchema = z.object({
   name: z.string(),
   globalValue: jsonValueSchema,
@@ -25,14 +23,4 @@ export const updateVariableParamsSchema = z.object({
   order: z.number().optional(),
   desc: changeStringSchema.optional(),
   options: variableOptionsSchema.optional(),
-});
-
-export const variableInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  globalValue: jsonValueSchema.optional(),
-  localValue: jsonValueSchema.optional(),
-  disabled: z.boolean(),
-  order: z.number().optional(),
-  desc: z.string().optional(),
 });

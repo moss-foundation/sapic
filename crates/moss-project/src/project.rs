@@ -11,9 +11,10 @@ use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
-use moss_git_hosting_provider::GitProviderKind;
 use moss_text::sanitized::sanitize;
-use moss_user::models::primitives::AccountId;
+use sapic_base::user::types::primitives::AccountId;
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::ports::GitProviderKind;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
@@ -94,7 +95,7 @@ pub struct Project<R: AppRuntime> {
     pub(super) set_icon_service: SetIconService,
     // TODO: Remove this since it doesn't belong to business logic
     pub(super) app_delegate: AppDelegate<R>,
-    pub(super) vcs: OnceCell<Vcs<R>>,
+    pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     pub(super) archived: AtomicBool,
 }
@@ -157,8 +158,8 @@ impl<R: AppRuntime> Project<R> {
     }
     pub async fn init_vcs(
         &self,
-        ctx: &R::AsyncContext,
-        client: GitClient<R>,
+        ctx: &dyn AnyAsyncContext,
+        client: GitClient,
         url: GitUrl,
         default_branch: String,
     ) -> joinerror::Result<()> {
@@ -248,7 +249,7 @@ impl<R: AppRuntime> Project<R> {
         Ok(())
     }
 
-    pub async fn load_vcs(&self, client: GitClient<R>) -> joinerror::Result<()> {
+    pub async fn load_vcs(&self, client: GitClient) -> joinerror::Result<()> {
         let abs_path = self.abs_path();
         let repository = Repository::open(&abs_path)?;
 

@@ -1,7 +1,7 @@
 use joinerror::OptionExt;
 use moss_applib::AppRuntime;
-use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
+use sapic_system::ports::GitProviderKind;
 
 use crate::{
     Workspace,

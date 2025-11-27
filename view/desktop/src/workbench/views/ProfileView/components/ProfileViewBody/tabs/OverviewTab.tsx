@@ -7,7 +7,7 @@ import { EditAccountModal } from "@/workbench/ui/components/Modals/Account/EditA
 import { NewAccountModal } from "@/workbench/ui/components/Modals/Account/NewAccountModal";
 import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
 import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
-import { AccountInfo, ProfileInfo } from "@repo/moss-user";
+import { AccountInfo, ProfileInfo } from "@repo/base";
 import { UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 

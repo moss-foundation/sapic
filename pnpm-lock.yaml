@@ -241,19 +241,6 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  crates/moss-user:
-    dependencies:
-      typescript:
-        specifier: 5.9.2
-        version: 5.9.2
-      zod:
-        specifier: 3.25.32
-        version: 3.25.32
-    devDependencies:
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/config-typescript
-
   crates/moss-workspace:
     dependencies:
       typescript:
@@ -263,6 +250,9 @@ importers:
         specifier: 3.25.32
         version: 3.25.32
     devDependencies:
+      '@repo/base':
+        specifier: workspace:*
+        version: link:../base
       '@repo/moss-bindingutils':
         specifier: workspace:*
         version: link:../moss-bindingutils
@@ -294,9 +284,6 @@ importers:
       '@repo/moss-language':
         specifier: workspace:*
         version: link:../moss-language
-      '@repo/moss-user':
-        specifier: workspace:*
-        version: link:../moss-user
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../moss-workspace
@@ -475,9 +462,6 @@ importers:
       '@repo/moss-project':
         specifier: workspace:*
         version: link:../../crates/moss-project
-      '@repo/moss-user':
-        specifier: workspace:*
-        version: link:../../crates/moss-user
       '@repo/moss-workspace':
         specifier: workspace:*
         version: link:../../crates/moss-workspace

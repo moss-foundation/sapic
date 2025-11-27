@@ -52,7 +52,6 @@ WORKSPACE_MODELS_DIR := crates/moss-workspace
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 IPC_MODELS_DIR := crates/ipc
 GIT_MODELS_DIR := crates/moss-git
-USER_MODELS_DIR := crates/moss-user
 LANGUAGE_MODELS_DIR := crates/moss-language
 
 SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
@@ -149,7 +148,6 @@ $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR)
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,ipc,IPC_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
-$(eval $(call gen_bindings,user,USER_MODELS_DIR))
 $(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,base,BASE_DIR))
 
@@ -164,7 +162,6 @@ gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-ipc-bindings:
 gen-git-bindings:
-gen-user-bindings:
 gen-language-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
@@ -181,7 +178,6 @@ gen-bindings: \
 	gen-bindingutils-bindings \
 	gen-ipc-bindings \
 	gen-git-bindings \
-	gen-user-bindings \
 	gen-language-bindings \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \

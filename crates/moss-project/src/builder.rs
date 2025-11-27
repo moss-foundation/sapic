@@ -3,9 +3,10 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
-use moss_git_hosting_provider::GitProviderKind;
 use moss_logging::session;
-use moss_user::models::primitives::AccountId;
+use sapic_base::user::types::primitives::AccountId;
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::ports::GitProviderKind;
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
@@ -312,7 +313,7 @@ impl ProjectBuilder {
     pub async fn clone<R: AppRuntime>(
         self,
         ctx: &R::AsyncContext,
-        git_client: GitClient<R>,
+        git_client: GitClient,
         params: ProjectCloneParams,
         app_delegate: AppDelegate<R>,
     ) -> joinerror::Result<Project<R>> {
@@ -460,10 +461,10 @@ impl ProjectBuilder {
 }
 
 impl ProjectBuilder {
-    async fn do_clone<R: AppRuntime>(
+    async fn do_clone(
         &self,
-        ctx: &R::AsyncContext,
-        git_client: &GitClient<R>,
+        ctx: &dyn AnyAsyncContext,
+        git_client: &GitClient,
         abs_path: Arc<Path>,
         repo_url: String,
         branch: Option<String>,

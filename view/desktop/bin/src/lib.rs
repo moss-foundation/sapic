@@ -16,14 +16,6 @@ use moss_extension_points::{
     themes::ThemeExtensionPoint,
 };
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{
-    github::{
-        AppGitHubApiClient, AppGitHubAuthAdapter, auth::GitHubAuthAdapter, client::GitHubApiClient,
-    },
-    gitlab::{
-        AppGitLabApiClient, AppGitLabAuthAdapter, auth::GitLabAuthAdapter, client::GitLabApiClient,
-    },
-};
 use moss_keyring::KeyringClientImpl;
 use moss_language::{
     RegisterTranslationContribution,
@@ -33,7 +25,6 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
 use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
@@ -113,11 +104,6 @@ pub async fn run<R: TauriRuntime>() {
                 let server_api_endpoint =
                     dotenvy::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
 
-                let auth_api_client = Arc::new(AccountAuthGatewayApiClient::new(
-                    http_client.clone(),
-                    format!("{server_api_endpoint}/account-auth-gateway"),
-                ));
-
                 let tao_app_handle = tao.app_handle();
 
                 let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
@@ -133,38 +119,38 @@ pub async fn run<R: TauriRuntime>() {
                             .expect("failed to create storage");
                     <dyn Storage>::set_global(&delegate, storage);
 
-                    let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
-                    let github_auth_adapter =
-                        Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
-                            auth_api_client.clone(),
-                            auth_api_client.base_url(),
-                            8080,
-                        ));
-                    let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
-                    let gitlab_auth_adapter =
-                        Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
-                            auth_api_client.clone(),
-                            auth_api_client.base_url(),
-                            8081,
-                        ));
+                    // let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
+                    // let github_auth_adapter =
+                    //     Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
+                    //         auth_api_client.clone(),
+                    //         auth_api_client.base_url(),
+                    //         8080,
+                    //     ));
+                    // let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
+                    // let gitlab_auth_adapter =
+                    //     Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
+                    //         auth_api_client.clone(),
+                    //         auth_api_client.base_url(),
+                    //         8081,
+                    //     ));
 
-                    <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        github_api_client,
-                    );
-                    <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        github_auth_adapter,
-                    );
+                    // <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     github_api_client,
+                    // );
+                    // <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     github_auth_adapter,
+                    // );
 
-                    <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        gitlab_api_client,
-                    );
-                    <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                        &delegate,
-                        gitlab_auth_adapter,
-                    );
+                    // <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     gitlab_api_client,
+                    // );
+                    // <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
+                    //     &delegate,
+                    //     gitlab_auth_adapter,
+                    // );
 
                     let theme_registry = AppThemeRegistry::new();
                     let languages_registry = AppLanguageRegistry::new();
@@ -216,7 +202,6 @@ pub async fn run<R: TauriRuntime>() {
                     let app = AppBuilder::<TauriAppRuntime<R>>::new(
                         fs,
                         keyring,
-                        auth_api_client,
                         vec![
                             ThemeExtensionPoint::new(),
                             LanguageExtensionPoint::new(),

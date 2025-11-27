@@ -2,28 +2,29 @@ mod types;
 
 use std::sync::Arc;
 
-use moss_applib::AppRuntime;
+use sapic_base::user::types::primitives::AccountId;
+use sapic_core::context::AnyAsyncContext;
 pub use types::*;
 
 use moss_git::url::GitUrl;
-use moss_git_hosting_provider::{
-    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
+use sapic_system::{
+    ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
+    user::account::{Account, session::AccountSession},
 };
-use moss_user::{AccountSession, account::Account, models::primitives::AccountId};
 
 #[derive(Clone)]
-pub enum GitClient<R: AppRuntime> {
+pub enum GitClient {
     GitHub {
-        account: Account<R>,
-        api: Arc<dyn GitHubApiClient<R>>,
+        account: Account,
+        api: Arc<dyn GitHubApiClient>,
     },
     GitLab {
-        account: Account<R>,
-        api: Arc<dyn GitLabApiClient<R>>,
+        account: Account,
+        api: Arc<dyn GitLabApiClient>,
     },
 }
 
-impl<R: AppRuntime> GitClient<R> {
+impl GitClient {
     pub fn account_id(&self) -> AccountId {
         match self {
             GitClient::GitHub { account, .. } => account.id(),
@@ -38,7 +39,7 @@ impl<R: AppRuntime> GitClient<R> {
         }
     }
 
-    pub fn session(&self) -> &AccountSession<R> {
+    pub fn session(&self) -> &AccountSession {
         match self {
             GitClient::GitHub { account, .. } => account.session(),
             GitClient::GitLab { account, .. } => account.session(),
@@ -54,7 +55,7 @@ impl<R: AppRuntime> GitClient<R> {
 
     pub async fn repository(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         url: &GitUrl,
     ) -> joinerror::Result<RepositoryInfo> {
         match self {
@@ -83,7 +84,7 @@ impl<R: AppRuntime> GitClient<R> {
 
     pub async fn contributors(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         url: &GitUrl,
     ) -> joinerror::Result<Vec<ContributorInfo>> {
         match self {

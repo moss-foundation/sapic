@@ -18,7 +18,7 @@ pub struct OldSapicWindow<R: AppRuntime> {
     pub(super) workspace_service: OldWorkspaceService<R>,
     pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
-    pub(super) profile_service: ProfileService<R>,
+    pub(super) profile_service: ProfileService,
     // pub(super) configuration_service: ConfigurationServiceOld,
     // #[allow(unused)]
     // pub(super) extension_service: ExtensionService<R>,
@@ -59,7 +59,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
     //     self.tracked_cancellations.clone()
     // }
 
-    pub async fn active_profile(&self) -> Option<Arc<moss_user::profile::Profile<R>>> {
+    pub async fn active_profile(&self) -> Option<Arc<sapic_system::user::profile::Profile>> {
         self.profile_service.active_profile().await
     }
 }
