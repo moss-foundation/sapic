@@ -136,7 +136,11 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, app_delegate| async move {
-            app.delete_workspace(&ctx, &app_delegate, &input).await
+            let output = app.delete_workspace(&ctx, &app_delegate, &input).await?;
+
+            app.ensure_welcome(&app_delegate).await?;
+
+            Ok(output)
         },
     )
     .await
