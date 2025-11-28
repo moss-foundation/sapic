@@ -14,7 +14,7 @@ use moss_project::{
     },
     project::Project,
 };
-use moss_storage2::{AppStorage, AppStorageOptions, Storage, SubstoreManager};
+use moss_storage2::{AppStorage, AppStorageOptions, KvStorage, SubstoreManager};
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use sapic_core::context::{AsyncContext, MutableContext};
@@ -84,7 +84,7 @@ pub async fn create_test_project() -> (
 
     let app_delegate = {
         let delegate = AppDelegate::new(mock_app.handle().clone());
-        <dyn Storage>::set_global(&delegate, app_storage.clone());
+        <dyn KvStorage>::set_global(&delegate, app_storage.clone());
         delegate
     };
 

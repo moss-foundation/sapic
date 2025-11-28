@@ -4,7 +4,7 @@ use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     models::{
@@ -59,7 +59,7 @@ async fn create_environment_success() {
     assert!(create_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let stored_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),
@@ -177,7 +177,7 @@ async fn create_collection_environment_success() {
     assert!(create_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let stored_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),
@@ -326,7 +326,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     assert!(workspace_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let stored_project_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),

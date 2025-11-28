@@ -1,7 +1,5 @@
-use moss_workspace::{
-    api::BatchUpdateProjectOp,
-    models::{events::*, operations::*},
-};
+use moss_applib::TauriAppRuntime;
+use moss_workspace::models::{events::*, operations::*};
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
@@ -43,7 +41,11 @@ pub async fn stream_projects<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.stream_projects(&ctx, channel).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .stream_projects::<TauriAppRuntime<R>>(&ctx, channel)
+                .await
+        },
     )
     .await
 }
@@ -62,7 +64,11 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.describe_project(&ctx, &input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .describe_project::<TauriAppRuntime<R>>(&ctx, &input)
+                .await
+        },
     )
     .await
 }
@@ -82,7 +88,9 @@ pub async fn create_project<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app_delegate, workspace| async move {
-            workspace.create_project(&ctx, &app_delegate, &input).await
+            workspace
+                .create_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
+                .await
         },
     )
     .await
@@ -103,7 +111,9 @@ pub async fn import_project<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app_delegate, workspace| async move {
-            workspace.import_project(&ctx, &app_delegate, &input).await
+            workspace
+                .import_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
+                .await
         },
     )
     .await
@@ -123,7 +133,11 @@ pub async fn export_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.export_project(&ctx, &input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .export_project::<TauriAppRuntime<R>>(&ctx, &input)
+                .await
+        },
     )
     .await
 }
@@ -142,7 +156,11 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.delete_project(&ctx, &input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .delete_project::<TauriAppRuntime<R>>(&ctx, &input)
+                .await
+        },
     )
     .await
 }
@@ -161,7 +179,11 @@ pub async fn update_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.update_project(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .update_project::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -180,7 +202,11 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.archive_project(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .archive_project::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -199,7 +225,11 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.unarchive_project(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .unarchive_project::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -218,7 +248,11 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.batch_update_project(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .batch_update_project::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -236,7 +270,11 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.list_changes(&ctx).await },
+        |ctx, app_delegate, workspace| async move {
+            workspace
+                .list_changes::<TauriAppRuntime<R>>(&ctx, &app_delegate)
+                .await
+        },
     )
     .await
 }
@@ -255,7 +293,11 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.activate_environment(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .activate_environment::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -276,7 +318,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
         options,
         |ctx, appp_delegate, workspace| async move {
             workspace
-                .create_environment(&ctx, appp_delegate, input)
+                .create_environment::<TauriAppRuntime<R>>(&ctx, appp_delegate, input)
                 .await
         },
     )
@@ -297,7 +339,11 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.update_environment(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .update_environment::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -316,7 +362,11 @@ pub async fn batch_update_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.batch_update_environment(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .batch_update_environment::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -335,7 +385,11 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.delete_environment(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .delete_environment::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -354,7 +408,11 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, _, workspace| async move { workspace.update_environment_group(&ctx, input).await },
+        |ctx, _, workspace| async move {
+            workspace
+                .update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -368,11 +426,16 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentGroupInput,
     options: Options,
 ) -> joinerror::Result<()> {
-    super::with_workspace_timeout(ctx.inner(), app,
+    super::with_workspace_timeout(
+        ctx.inner(),
+        app,
         window,
         options,
         |ctx, _, workspace| async move {
-        workspace.batch_update_environment_group(&ctx, input).await
-    })
+            workspace
+                .batch_update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
+    )
     .await
 }

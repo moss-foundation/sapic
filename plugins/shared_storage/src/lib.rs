@@ -2,7 +2,7 @@ mod models;
 
 use joinerror::{OptionExt, ResultExt};
 use moss_logging::session;
-use moss_storage2::{FlushMode, Storage, StorageCapabilities};
+use moss_storage2::{FlushMode, KvStorage, KvStorageCapabilities};
 use sapic_core::task::Task;
 use sapic_runtime::app::GenericAppHandle;
 use serde_json::Value as JsonValue;
@@ -20,7 +20,7 @@ use tracing::instrument;
 use crate::models::operations::*;
 
 pub(crate) type ProviderCallback =
-    Arc<dyn Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn Storage>> + Send + Sync>;
+    Arc<dyn Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn KvStorage>> + Send + Sync>;
 
 pub(crate) static PROVIDER_CALLBACK: OnceLock<ProviderCallback> = OnceLock::new();
 
@@ -29,7 +29,7 @@ const CHECKPOINT_INTERVAL: Duration = Duration::from_secs(5 * 60); // 5 minutes
 
 pub fn init<
     R: Runtime,
-    F: Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn Storage>> + Send + Sync + 'static,
+    F: Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn KvStorage>> + Send + Sync + 'static,
 >(
     f: F,
 ) -> TauriPlugin<R> {
@@ -113,8 +113,8 @@ async fn on_event_window_close_requested<R: Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
-    let storage_capabilities: Arc<dyn StorageCapabilities> = storage.capabilities().await;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage_capabilities: Arc<dyn KvStorageCapabilities> = storage.capabilities().await;
 
     storage_capabilities
         .flush(FlushMode::Force)
@@ -130,8 +130,8 @@ async fn on_event_window_focused<R: Runtime>(app_handle: AppHandle<R>) -> joiner
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
-    let storage_capabilities: Arc<dyn StorageCapabilities> = storage.capabilities().await;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage_capabilities: Arc<dyn KvStorageCapabilities> = storage.capabilities().await;
 
     if let Some(last_time) = storage_capabilities.last_checkpoint().await {
         let elapsed = last_time.elapsed();
@@ -159,7 +159,7 @@ async fn get_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let value = storage
         .get(input.scope.clone().into(), &input.key)
         .await?
@@ -182,7 +182,7 @@ async fn put_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     storage
         .put(input.scope.into(), &input.key, input.value)
         .await
@@ -201,7 +201,7 @@ async fn remove_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let value = storage
         .remove(input.scope.clone().into(), &input.key)
         .await
@@ -223,7 +223,7 @@ async fn batch_put_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items: Vec<(&str, JsonValue)> = input
         .items
         .iter()
@@ -247,7 +247,7 @@ async fn batch_remove_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .remove_batch(
             input.scope.clone().into(),
@@ -274,7 +274,7 @@ async fn batch_get_item<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .get_batch(
             input.scope.clone().into(),
@@ -301,7 +301,7 @@ async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .get_batch_by_prefix(input.scope.clone().into(), &input.prefix)
         .await
@@ -324,7 +324,7 @@ async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
 
-    let storage: Arc<dyn Storage> = provider(&GenericAppHandle::new(app_handle))?;
+    let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .remove_batch_by_prefix(input.scope.clone().into(), &input.prefix)
         .await

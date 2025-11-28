@@ -13,6 +13,7 @@ sapic-core.workspace = true
 moss_applib.workspace = true
 moss_fs.workspace = true
 moss_app_delegate.workspace = true
+moss_storage2.workspace = true
 
 async-trait.workspace = true
 derive_more.workspace = true

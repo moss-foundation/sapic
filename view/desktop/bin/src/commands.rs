@@ -201,7 +201,7 @@ pub(super) async fn with_project_timeout<R, T, F, Fut>(
 ) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -266,7 +266,7 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
 ) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace<R>>) -> Fut
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace>) -> Fut
         + Send
         + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,

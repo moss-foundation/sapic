@@ -1,5 +1,6 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
+use moss_storage2::KvStorage;
 use sapic_system::{
     configuration::configuration_registry::ConfigurationRegistry, theme::ThemeRegistry,
 };
@@ -22,8 +23,11 @@ impl<T: ?Sized + AsGlobal> Global<T> {
 
 impl AsGlobal for dyn ThemeRegistry {}
 impl AsGlobal for dyn ConfigurationRegistry {}
+
 impl AsGlobal for dyn SettingsStorage {}
+impl AsGlobal for dyn KvStorage {}
 
 pub type GlobalThemeRegistry = Global<dyn ThemeRegistry>;
 pub type GlobalConfigurationRegistry = Global<dyn ConfigurationRegistry>;
 pub type GlobalSettingsStorage = Global<dyn SettingsStorage>;
+pub type GlobalKvStorage = Global<dyn KvStorage>;

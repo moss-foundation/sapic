@@ -7,8 +7,8 @@ use crate::{
     models::operations::{ExportProjectInput, ExportProjectOutput},
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn export_project(
+impl Workspace {
+    pub async fn export_project<R: AppRuntime>(
         &self,
         _ctx: &R::AsyncContext,
         input: &ExportProjectInput,

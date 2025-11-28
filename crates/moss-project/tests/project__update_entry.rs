@@ -22,7 +22,7 @@ use moss_project::{
     },
     storage::{KEY_EXPANDED_ENTRIES, key_resource_order},
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use serde_json::{Value as JsonValue, json};
@@ -200,7 +200,7 @@ async fn update_dir_entry_order() {
         .await
         .unwrap();
 
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated
@@ -226,7 +226,7 @@ async fn expand_and_collapse_dir_entry() {
 
     let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Expanding the entry

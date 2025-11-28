@@ -5,8 +5,8 @@ use crate::{
     models::operations::{UnarchiveProjectInput, UnarchiveProjectOutput},
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn unarchive_project(
+impl Workspace {
+    pub async fn unarchive_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UnarchiveProjectInput,

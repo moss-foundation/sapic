@@ -7,8 +7,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn update_environment(
+impl Workspace {
+    pub async fn update_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateEnvironmentInput,

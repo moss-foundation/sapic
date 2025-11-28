@@ -8,12 +8,12 @@ pub mod utils;
 
 pub use environment::Environment;
 
-use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::ChangeString;
 use sapic_base::environment::types::{
     VariableInfo,
     primitives::{EnvironmentId, VariableId},
 };
+use sapic_core::context::AnyAsyncContext;
 use std::{collections::HashMap, path::Path, sync::Arc};
 
 use crate::models::types::{AddVariableParams, UpdateVariableParams};
@@ -69,13 +69,13 @@ pub struct DescribeEnvironment {
 }
 
 #[allow(private_bounds, async_fn_in_trait)]
-pub trait AnyEnvironment<R: AppRuntime> {
+pub trait AnyEnvironment {
     async fn abs_path(&self) -> Arc<Path>;
     async fn name(&self) -> joinerror::Result<String>;
-    async fn describe(&self, ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment>;
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()>;
 }

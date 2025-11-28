@@ -4,7 +4,7 @@ use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::Storage;
+use moss_storage2::KvStorage;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
 use sapic_core::{
@@ -47,6 +47,7 @@ pub struct CreateWorkspaceParams {
 // DEPRECATED
 pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     active_profile: Arc<Profile>,
     github_api_client: Arc<dyn GitHubApiClient>,
     gitlab_api_client: Arc<dyn GitLabApiClient>,
@@ -69,6 +70,7 @@ impl EventMarker for OnDidAddProject {}
 impl WorkspaceBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
         active_profile: Arc<Profile>,
         workspace_id: WorkspaceId,
         github_api_client: Arc<dyn GitHubApiClient>,
@@ -76,6 +78,7 @@ impl WorkspaceBuilder {
     ) -> Self {
         Self {
             fs,
+            storage,
             active_profile,
             workspace_id,
             github_api_client,
@@ -85,6 +88,7 @@ impl WorkspaceBuilder {
 
     pub async fn initialize(
         fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
         workspace_id: WorkspaceId,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<()> {
@@ -103,7 +107,7 @@ impl WorkspaceBuilder {
         .join_err::<()>("failed to create manifest file")?;
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(workspace_id.inner(), fs.clone())
+            EnvironmentBuilder::new(workspace_id.inner(), fs.clone(), storage.clone())
                 .initialize(CreateEnvironmentParams {
                     name: env.name.clone(),
                     abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
@@ -124,7 +128,7 @@ impl WorkspaceBuilder {
         ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         params: LoadWorkspaceParams,
-    ) -> joinerror::Result<Workspace<R>> {
+    ) -> joinerror::Result<Workspace> {
         debug_assert!(params.abs_path.is_absolute());
 
         let mut environment_sources = FxHashMap::from_iter([(
@@ -138,11 +142,12 @@ impl WorkspaceBuilder {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let collection_service: Arc<ProjectService<R>> = ProjectService::new(
+        let collection_service: Arc<ProjectService> = ProjectService::new(
             ctx,
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
+            self.storage.clone(),
             self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
@@ -155,10 +160,10 @@ impl WorkspaceBuilder {
         .join_err::<()>("failed to create collection service")?
         .into();
 
-        let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
+        let environment_service: Arc<EnvironmentService> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
-            <dyn Storage>::global(app_delegate),
+            self.storage.clone(),
             self.workspace_id.clone(),
             environment_sources,
         )
@@ -198,12 +203,17 @@ impl WorkspaceBuilder {
         ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         params: CreateWorkspaceParams,
-    ) -> joinerror::Result<Workspace<R>> {
+    ) -> joinerror::Result<Workspace> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::initialize(self.fs.clone(), self.workspace_id.clone(), params.clone())
-            .await
-            .join_err::<()>("failed to initialize workspace")?;
+        WorkspaceBuilder::initialize(
+            self.fs.clone(),
+            self.storage.clone(),
+            self.workspace_id.clone(),
+            params.clone(),
+        )
+        .await
+        .join_err::<()>("failed to initialize workspace")?;
 
         let mut environment_sources = FxHashMap::from_iter([(
             "".to_string().into(),
@@ -216,11 +226,12 @@ impl WorkspaceBuilder {
         let on_did_delete_collection_event = on_did_delete_collection_emitter.event();
         let on_did_add_collection_event = on_did_add_collection_emitter.event();
 
-        let project_service: Arc<ProjectService<R>> = ProjectService::new(
+        let project_service: Arc<ProjectService> = ProjectService::new::<R>(
             ctx,
             app_delegate,
             &params.abs_path,
             self.fs.clone(),
+            self.storage.clone(),
             self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
@@ -232,10 +243,10 @@ impl WorkspaceBuilder {
         .await?
         .into();
 
-        let environment_service: Arc<EnvironmentService<R>> = EnvironmentService::new(
+        let environment_service: Arc<EnvironmentService> = EnvironmentService::new(
             &params.abs_path,
             self.fs.clone(),
-            <dyn Storage>::global(app_delegate),
+            self.storage.clone(),
             self.workspace_id.clone(),
             environment_sources,
         )

@@ -7,8 +7,8 @@ use crate::{
     project::Project,
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn delete_resource(
+impl Project {
+    pub async fn delete_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: DeleteResourceInput,

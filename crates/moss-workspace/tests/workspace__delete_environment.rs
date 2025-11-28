@@ -6,7 +6,7 @@ use moss_environment::{
     models::types::{AddVariableParams, VariableOptions},
     storage::key_variable,
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -108,7 +108,7 @@ async fn delete_environment_success() {
     assert!(!create_environment_output.abs_path.exists());
 
     // Check the environment is removed from the database
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
 
     let env_order_result = storage
         .get(
@@ -120,7 +120,7 @@ async fn delete_environment_success() {
     assert!(env_order_result.is_none());
 
     // Check variables associated with the environment are removed from the database
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     assert!(
         storage
             .get_batch_by_prefix(

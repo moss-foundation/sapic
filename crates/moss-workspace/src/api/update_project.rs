@@ -7,8 +7,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn update_project(
+impl Workspace {
+    pub async fn update_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateProjectInput,
@@ -17,7 +17,7 @@ impl<R: AppRuntime> Workspace<R> {
 
         let id = input.inner.id.clone().into();
         self.project_service
-            .update_project(ctx, &id, input.inner)
+            .update_project::<R>(ctx, &id, input.inner)
             .await?;
 
         Ok(UpdateProjectOutput { id })

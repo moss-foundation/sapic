@@ -7,7 +7,7 @@ use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, UpdateVariableParams, VariableOptions},
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -80,7 +80,7 @@ async fn update_environment_success() {
 
     let id = create_environment_output.id.clone();
     // Check db is updated
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check environment cache is updated with new order and expanded
     let stored_env_order_value = storage
         .get(

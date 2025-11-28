@@ -1,7 +1,7 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_logging::session;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use sapic_core::context::{AnyAsyncContext, Reason};
 use serde_json::Value as JsonValue;
 use std::{
@@ -24,8 +24,8 @@ use crate::{
     worktree::entry::EntryDescription,
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn stream_resources(
+impl Project {
+    pub async fn stream_resources<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -41,9 +41,9 @@ impl<R: AppRuntime> Project<R> {
             StreamResourcesInput::ReloadPath(path) => vec![path],
         };
 
-        let storage = <dyn Storage>::global(app_delegate);
         let storage_scope = StorageScope::Project(self.id.inner());
-        let expanded_entries: Arc<HashSet<ResourceId>> = match storage
+        let expanded_entries: Arc<HashSet<ResourceId>> = match self
+            .storage
             .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
             .await
         {
@@ -60,7 +60,8 @@ impl<R: AppRuntime> Project<R> {
             }
         };
 
-        let all_entry_keys: Arc<HashMap<String, JsonValue>> = match storage
+        let all_entry_keys: Arc<HashMap<String, JsonValue>> = match self
+            .storage
             .get_batch_by_prefix(storage_scope.clone(), KEY_RESOURCE_PREFIX)
             .await
         {

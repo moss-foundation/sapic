@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use chrono::Utc;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::TauriResultExt};
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
@@ -77,15 +77,17 @@ impl<R: AppRuntime> AppWindow<R> {
 
 pub(crate) struct WindowManager<R: AppRuntime> {
     next_window_id: AtomicUsize,
+    storage: Arc<dyn KvStorage>,
     windows: RwLock<FxHashMap<WindowLabel, AppWindow<R>>>,
     workspaces: RwLock<FxHashMap<WorkspaceId, Arc<dyn Workspace>>>,
     labels_by_workspace: RwLock<FxHashMap<WorkspaceId, WindowLabel>>,
 }
 
 impl<R: AppRuntime> WindowManager<R> {
-    pub fn new() -> Self {
+    pub fn new(storage: Arc<dyn KvStorage>) -> Self {
         Self {
             next_window_id: AtomicUsize::new(0),
+            storage,
             windows: RwLock::new(FxHashMap::default()),
             workspaces: RwLock::new(FxHashMap::default()),
             labels_by_workspace: RwLock::new(FxHashMap::default()),
@@ -212,18 +214,14 @@ impl<R: AppRuntime> WindowManager<R> {
         &self,
         delegate: &AppDelegate<R>,
         label: &str,
-    ) -> joinerror::Result<()> {
+    ) -> joinerror::Result<Option<MainWindow<R>>> {
         let window = if let Some(window) = self.main_window(label).await {
             window
         } else {
-            return Ok(());
+            return Ok(None);
         };
 
-        let storage = <dyn Storage>::global(delegate);
-        if let Err(e) = self
-            .clean_up_before_workspace_close(&window, storage.as_ref())
-            .await
-        {
+        if let Err(e) = self.clean_up_before_workspace_close(&window).await {
             tracing::warn!(
                 "failed to clean up before closing main window: {}",
                 e.to_string()
@@ -234,14 +232,16 @@ impl<R: AppRuntime> WindowManager<R> {
             .close()
             .join_err::<()>("failed to close main window")?;
 
-        self.windows.write().await.remove(label);
-
-        Ok(())
+        Ok(self
+            .windows
+            .write()
+            .await
+            .remove(label)
+            .and_then(|window| window.as_main().cloned()))
     }
 
     pub async fn swap_main_window_workspace(
         &self,
-        delegate: &AppDelegate<R>,
         label: &str,
         workspace: Arc<dyn Workspace>,
         old_window: OldSapicWindow<R>,
@@ -250,7 +250,6 @@ impl<R: AppRuntime> WindowManager<R> {
         // We need to think through what should happen if we've already dropped everything for the old workspace but then fail to open the new one.
         // The simplest option for now would be to just crash the window or display an error saying that we couldn't open the new workspace.
 
-        let storage = <dyn Storage>::global(delegate);
         let window = if let Some(window) = self.main_window(label).await {
             window
         } else {
@@ -265,16 +264,10 @@ impl<R: AppRuntime> WindowManager<R> {
         }
 
         // Dispose the current workspace
-        self.clean_up_before_workspace_close(&window, storage.as_ref())
-            .await?;
+        self.clean_up_before_workspace_close(&window).await?;
 
         // Activate the new workspace
         {
-            joinerror::ResultExt::join_err::<()>(
-                storage.add_workspace(workspace.id().inner()).await,
-                "failed to add workspace to storage",
-            )?;
-
             let new_workspace_id = workspace.id();
 
             self.workspaces
@@ -287,7 +280,8 @@ impl<R: AppRuntime> WindowManager<R> {
                 .insert(new_workspace_id.clone(), label.to_string());
 
             let last_opened_at = Utc::now().timestamp();
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Application,
                     &[
@@ -318,9 +312,9 @@ impl<R: AppRuntime> WindowManager<R> {
     async fn clean_up_before_workspace_close(
         &self,
         window: &MainWindow<R>,
-        storage: &dyn Storage,
     ) -> joinerror::Result<()> {
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .remove(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
             .await
         {
@@ -329,12 +323,6 @@ impl<R: AppRuntime> WindowManager<R> {
                 e.to_string()
             );
         }
-        joinerror::ResultExt::join_err::<()>(
-            storage
-                .remove_workspace(window.workspace().id().inner())
-                .await,
-            "failed to remove workspace from storage",
-        )?;
 
         self.workspaces
             .write()

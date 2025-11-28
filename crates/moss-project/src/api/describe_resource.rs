@@ -6,8 +6,8 @@ use crate::{
     models::{operations::DescribeResourceOutput, primitives::ResourceId},
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn describe_resource(
+impl Project {
+    pub async fn describe_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,

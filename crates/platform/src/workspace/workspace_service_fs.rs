@@ -3,6 +3,7 @@ use joinerror::ResultExt;
 use moss_common::continue_if_err;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt, RemoveOptions};
+use moss_storage2::KvStorage;
 use sapic_base::{
     environment::PredefinedEnvironment,
     errors::AlreadyExists,
@@ -75,7 +76,14 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
         Ok(workspaces)
     }
 
-    async fn create_workspace(&self, id: &WorkspaceId, name: &str) -> joinerror::Result<PathBuf> {
+    async fn create_workspace(
+        &self,
+        id: &WorkspaceId,
+        name: &str,
+
+        // FIXME: Passing the store here is a temporary solution until we move the environment creation out of this function.
+        storage: Arc<dyn KvStorage>,
+    ) -> joinerror::Result<PathBuf> {
         let abs_path = self.workspaces_dir.join(id.as_str());
         if abs_path.exists() {
             return Err(joinerror::Error::new::<AlreadyExists>(id.as_str()));
@@ -96,7 +104,7 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
         }
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(id.inner(), self.fs.clone())
+            EnvironmentBuilder::new(id.inner(), self.fs.clone(), storage.clone())
                 .initialize(CreateEnvironmentParams {
                     name: env.name.clone(),
                     abs_path: &abs_path.join("environments"),

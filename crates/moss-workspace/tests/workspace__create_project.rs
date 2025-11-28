@@ -4,7 +4,7 @@ pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, types::CreateProjectParams},
@@ -46,7 +46,7 @@ async fn create_project_success() {
 
     let id = create_project_output.id;
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -134,7 +134,7 @@ async fn create_project_special_chars() {
         let id = create_project_output.id;
 
         // Verify the db entries were created
-        let storage = <dyn Storage>::global(&app_delegate);
+        let storage = <dyn KvStorage>::global(&app_delegate);
         // Check order was stored
         let order_value = storage
             .get(
@@ -202,7 +202,7 @@ async fn create_project_with_order() {
     let id = create_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -271,7 +271,7 @@ async fn create_project_with_icon() {
     assert!(project.icon_path().is_some());
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -342,7 +342,7 @@ async fn create_multiple_projects_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both project ids
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
@@ -423,7 +423,7 @@ async fn create_project_external_success() {
     let id = create_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(

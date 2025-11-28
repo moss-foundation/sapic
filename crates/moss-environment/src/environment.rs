@@ -3,16 +3,15 @@ use joinerror::{OptionExt, ResultExt};
 use json_patch::{
     AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
 };
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
 use moss_edit::json::EditOptions;
 use moss_fs::{FileSystem, FsResultExt};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use sapic_base::environment::types::{VariableInfo, primitives::VariableId};
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -58,20 +57,20 @@ impl EnvironmentPath {
     }
 }
 
-pub struct Environment<R: AppRuntime> {
+pub struct Environment {
     pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) storage: Arc<dyn KvStorage>,
     pub(super) abs_path_rx: watch::Receiver<EnvironmentPath>,
     pub(super) edit: EnvironmentEditing,
     // Environment variables are stored in workspace database
     // We use Arc<String> instead of WorkspaceId to avoid circular dependency
     pub(super) workspace_id: Arc<String>,
-    pub(super) app_delegate: AppDelegate<R>,
 }
 
-unsafe impl<R: AppRuntime> Send for Environment<R> {}
-unsafe impl<R: AppRuntime> Sync for Environment<R> {}
+unsafe impl Send for Environment {}
+unsafe impl Sync for Environment {}
 
-impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
+impl AnyEnvironment for Environment {
     async fn abs_path(&self) -> Arc<Path> {
         self.abs_path_rx.borrow().full_path.clone()
     }
@@ -84,7 +83,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
     // TODO: add variables()
 
     // TODO: rename to details
-    async fn describe(&self, _ctx: &R::AsyncContext) -> joinerror::Result<DescribeEnvironment> {
+    async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
@@ -99,7 +98,6 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
 
         if let Some(vars) = parsed.variables.as_ref() {
-            let storage = <dyn Storage>::global(&self.app_delegate);
             let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
 
             for (id, var) in vars.iter() {
@@ -107,7 +105,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     println!("failed to convert global value expression: {}", err); // TODO: log error
                 });
 
-                let local_value: Option<JsonValue> = match storage
+                let local_value: Option<JsonValue> = match self
+                    .storage
                     .get(storage_scope.clone(), &key_variable_local_value(id))
                     .await
                 {
@@ -121,7 +120,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     }
                 };
 
-                let order: Option<isize> = match storage
+                let order: Option<isize> = match self
+                    .storage
                     .get(storage_scope.clone(), &key_variable_order(&id))
                     .await
                 {
@@ -161,7 +161,7 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
 
     async fn modify(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
@@ -197,7 +197,6 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             _ => {}
         };
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
         for var_to_add in params.vars_to_add {
             let id = VariableId::new();
@@ -237,7 +236,11 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 (order_key.as_str(), serde_json::to_value(&var_to_add.order)?),
             ];
 
-            if let Err(e) = storage.put_batch(storage_scope.clone(), &batch_input).await {
+            if let Err(e) = self
+                .storage
+                .put_batch(storage_scope.clone(), &batch_input)
+                .await
+            {
                 session::warn!(format!(
                     "failed to add variable cache to the database: {}",
                     e
@@ -369,7 +372,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             let local_value_key = key_variable_local_value(&var_to_update.id);
             match var_to_update.local_value {
                 Some(ChangeJsonValue::Update(value)) => {
-                    if let Err(e) = storage
+                    if let Err(e) = self
+                        .storage
                         .put(storage_scope.clone(), &local_value_key, value)
                         .await
                     {
@@ -377,7 +381,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                     }
                 }
                 Some(ChangeJsonValue::Remove) => {
-                    if let Err(e) = storage
+                    if let Err(e) = self
+                        .storage
                         .remove(storage_scope.clone(), &local_value_key)
                         .await
                     {
@@ -390,7 +395,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
             let order_key = key_variable_order(&var_to_update.id);
             match var_to_update.order {
                 Some(order) => {
-                    if let Err(e) = storage
+                    if let Err(e) = self
+                        .storage
                         .put(
                             storage_scope.clone(),
                             &order_key,
@@ -418,7 +424,8 @@ impl<R: AppRuntime> AnyEnvironment<R> for Environment<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .remove_batch_by_prefix(storage_scope.clone(), &key_variable(&id))
                 .await
             {

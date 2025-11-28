@@ -2,12 +2,12 @@ use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
-use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
+use moss_storage2::KvStorage;
 use moss_text::sanitized::sanitize;
 use sapic_base::user::types::primitives::AccountId;
 use sapic_core::{
@@ -84,36 +84,35 @@ impl From<ManifestVcs> for VcsDetails {
     }
 }
 
-pub struct Project<R: AppRuntime> {
+pub struct Project {
     pub(super) id: ProjectId,
     #[allow(dead_code)]
     pub(super) fs: Arc<dyn FileSystem>,
+    pub(super) storage: Arc<dyn KvStorage>,
     pub(super) internal_abs_path: Arc<Path>,
     pub(super) external_abs_path: Option<Arc<Path>>,
     pub(super) edit: ProjectEdit,
-    pub(super) worktree: OnceCell<Arc<Worktree<R>>>,
+    pub(super) worktree: OnceCell<Arc<Worktree>>,
     pub(super) set_icon_service: SetIconService,
-    // TODO: Remove this since it doesn't belong to business logic
-    pub(super) app_delegate: AppDelegate<R>,
     pub(super) vcs: OnceCell<Vcs>,
     pub(super) on_did_change: EventEmitter<OnDidChangeEvent>,
     pub(super) archived: AtomicBool,
 }
 
-unsafe impl<R: AppRuntime> Send for Project<R> {}
+unsafe impl Send for Project {}
 
 #[rustfmt::skip]
-impl<R: AppRuntime> Project<R> {
+impl Project {
     pub fn on_did_change(&self) -> Event<OnDidChangeEvent> { self.on_did_change.event() }
 }
 
-impl<R: AppRuntime> Project<R> {
-    pub(crate) async fn worktree(&self) -> &Arc<Worktree<R>> {
+impl Project {
+    pub(crate) async fn worktree(&self) -> &Arc<Worktree> {
         self.worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
+                    self.storage.clone(),
                     self.id.clone(),
-                    self.app_delegate.clone(),
                     self.abs_path(),
                     self.fs.clone(),
                 ))
@@ -153,7 +152,7 @@ impl<R: AppRuntime> Project<R> {
         self.abs_path().join(dirs::ENVIRONMENTS_DIR)
     }
 
-    pub fn vcs(&self) -> Option<&dyn ProjectVcs<R>> {
+    pub fn vcs<R: AppRuntime>(&self) -> Option<&dyn ProjectVcs<R>> {
         self.vcs.get().map(|vcs| vcs as &dyn ProjectVcs<R>)
     }
     pub async fn init_vcs(
@@ -451,8 +450,8 @@ impl<R: AppRuntime> Project<R> {
             .worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(
+                    self.storage.clone(),
                     self.id.clone(),
-                    self.app_delegate.clone(),
                     self.internal_abs_path.clone(),
                     self.fs.clone(),
                 ))

@@ -1,18 +1,17 @@
-use moss_applib::AppRuntime;
 use moss_workspace::Workspace;
 use sapic_system::workspace::{types::WorkspaceItem, workspace_service::WorkspaceService};
 use std::sync::Arc;
 
 use sapic_base::workspace::types::primitives::WorkspaceId;
 
-pub struct OldWorkspaceService<R: AppRuntime> {
-    active_workspace: Arc<Workspace<R>>,
+pub struct OldWorkspaceService {
+    active_workspace: Arc<Workspace>,
     workspace_service: Arc<WorkspaceService>,
 }
 
-impl<R: AppRuntime> OldWorkspaceService<R> {
+impl OldWorkspaceService {
     pub async fn new(
-        workspace: Workspace<R>,
+        workspace: Workspace,
         workspace_service: Arc<WorkspaceService>,
     ) -> joinerror::Result<Self> {
         // debug_assert!(abs_path.is_absolute());
@@ -219,7 +218,7 @@ impl<R: AppRuntime> OldWorkspaceService<R> {
     //     })
     // }
 
-    pub(crate) async fn workspace(&self) -> Option<Arc<Workspace<R>>> {
+    pub(crate) async fn workspace(&self) -> Option<Arc<Workspace>> {
         // let state_lock = self.state.read().await;
         // if state_lock.active_workspace.is_none() {
         //     return None;

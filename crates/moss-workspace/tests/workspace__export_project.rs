@@ -2,7 +2,7 @@
 
 use crate::shared::setup_test_workspace;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -89,7 +89,7 @@ pub async fn export_project_success() {
     let id = import_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
 
     // Check order was stored
     let order_value = storage

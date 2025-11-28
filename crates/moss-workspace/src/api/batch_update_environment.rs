@@ -4,8 +4,8 @@ use validator::Validate;
 
 use crate::{Workspace, models::operations::*};
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn batch_update_environment(
+impl Workspace {
+    pub async fn batch_update_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: BatchUpdateEnvironmentInput,

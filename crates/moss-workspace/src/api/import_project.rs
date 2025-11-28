@@ -17,8 +17,8 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn import_project(
+impl Workspace {
+    pub async fn import_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -80,7 +80,6 @@ impl<R: AppRuntime> Workspace<R> {
                 self.project_service
                     .import_archived_project(
                         ctx,
-                        app_delegate,
                         &id,
                         ProjectItemImportFromArchiveParams {
                             name: params.name.clone(),
@@ -92,7 +91,7 @@ impl<R: AppRuntime> Workspace<R> {
             }
             ImportProjectSource::Disk(external_params) => {
                 self.project_service
-                    .import_external_project(
+                    .import_external_project::<R>(
                         ctx,
                         &id,
                         ProjectItemImportFromDiskParams {

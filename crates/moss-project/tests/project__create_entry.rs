@@ -18,7 +18,7 @@ use moss_project::{
     },
     storage::key_resource_order,
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
 use serde_json::{Value as JsonValue, json};
@@ -84,7 +84,7 @@ async fn create_dir_entry_with_order() {
     let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated

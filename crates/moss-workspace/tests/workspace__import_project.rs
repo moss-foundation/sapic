@@ -7,7 +7,7 @@
 
 use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_workspace::{
     models::{
         operations::ImportProjectInput,
@@ -68,7 +68,7 @@ async fn clone_project_success() {
     let id = clone_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -134,7 +134,7 @@ async fn import_external_project_success() {
     let id = import_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(

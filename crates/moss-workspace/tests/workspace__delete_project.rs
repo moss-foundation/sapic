@@ -3,7 +3,7 @@ pub mod shared;
 
 use crate::shared::setup_test_workspace;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -49,7 +49,7 @@ async fn delete_project_success() {
     assert_eq!(output.total_returned, 0);
 
     // Check updating database
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = <dyn KvStorage>::global(&app_delegate);
 
     // Check that project-specific entries are removed
     let project_prefix = key_project(&id);

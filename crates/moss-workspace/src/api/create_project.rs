@@ -9,8 +9,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_project(
+impl Workspace {
+    pub async fn create_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,

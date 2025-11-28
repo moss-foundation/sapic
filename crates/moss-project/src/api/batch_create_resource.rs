@@ -7,8 +7,8 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn batch_create_resource(
+impl Project {
+    pub async fn batch_create_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: BatchCreateResourceInput,
@@ -39,12 +39,12 @@ impl<R: AppRuntime> Project<R> {
         });
 
         for dir in dirs {
-            let output = self.create_dir_resource(ctx, dir).await?;
+            let output = self.create_dir_resource::<R>(ctx, dir).await?;
             ids.push(output.id);
         }
 
         for item in items {
-            let output = self.create_item_resource(ctx, item).await?;
+            let output = self.create_item_resource::<R>(ctx, item).await?;
             ids.push(output.id);
         }
 

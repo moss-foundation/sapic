@@ -15,8 +15,9 @@ use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions, desanitize_path, utils::SanitizedPath};
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_text::sanitized::{desanitize, sanitize};
+use sapic_core::context::AnyAsyncContext;
 use serde_json::{Value as JsonValue, json};
 use std::{
     collections::{HashMap, HashSet},
@@ -118,18 +119,17 @@ struct WorktreeState {
     expanded_entries: HashSet<ResourceId>,
 }
 
-pub(crate) struct Worktree<R: AppRuntime> {
+pub(crate) struct Worktree {
+    storage: Arc<dyn KvStorage>,
     // Used for storage scope
     project_id: ProjectId,
-    // TODO: Remove it since it doesn't belong to business logic
-    app_delegate: AppDelegate<R>,
     abs_path: Arc<Path>,
     fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<WorktreeState>>,
 }
 
 // Required for OnceCell::set
-impl<R: AppRuntime> Debug for Worktree<R> {
+impl Debug for Worktree {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("Worktree")
             .field("abs_path", &self.abs_path)
@@ -137,7 +137,7 @@ impl<R: AppRuntime> Debug for Worktree<R> {
     }
 }
 
-impl<R: AppRuntime> Worktree<R> {
+impl Worktree {
     pub fn absolutize(&self, path: &Path) -> joinerror::Result<PathBuf> {
         debug_assert!(path.is_relative());
 
@@ -160,7 +160,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn remove_entry(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -187,9 +187,8 @@ impl<R: AppRuntime> Worktree<R> {
             )
             .await?;
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
-
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .remove_batch_by_prefix(
                 StorageScope::Project(self.project_id.inner()),
                 &key_resource(id),
@@ -207,7 +206,8 @@ impl<R: AppRuntime> Worktree<R> {
             return Ok(());
         }
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put(
                 StorageScope::Project(self.project_id.inner()),
                 KEY_EXPANDED_ENTRIES,
@@ -224,9 +224,9 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(())
     }
 
-    pub async fn scan(
+    pub async fn scan<R: AppRuntime>(
         &self,
-        _ctx: &R::AsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
+        _ctx: &dyn AnyAsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
         app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<ResourceId>>,
@@ -410,7 +410,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn create_item_entry(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -447,9 +447,7 @@ impl<R: AppRuntime> Worktree<R> {
             },
         );
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let order_key = key_resource_order(&id);
-
         let mut batch_input = vec![(order_key.as_str(), serde_json::to_value(order)?)];
 
         if expanded {
@@ -460,7 +458,8 @@ impl<R: AppRuntime> Worktree<R> {
             ));
         }
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
             .await
         {
@@ -475,7 +474,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn create_dir_entry(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -509,7 +508,6 @@ impl<R: AppRuntime> Worktree<R> {
             },
         );
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let order_key = key_resource_order(&id);
 
         let mut batch_input = vec![(order_key.as_str(), serde_json::to_value(order)?)];
@@ -522,7 +520,8 @@ impl<R: AppRuntime> Worktree<R> {
             ));
         }
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
             .await
         {
@@ -537,7 +536,7 @@ impl<R: AppRuntime> Worktree<R> {
 
     pub async fn update_dir_entry(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
@@ -614,8 +613,8 @@ impl<R: AppRuntime> Worktree<R> {
             return Ok(path);
         }
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
             .await
         {
@@ -628,9 +627,9 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(path)
     }
 
-    pub async fn update_item_entry(
+    pub async fn update_item_entry<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ResourceId,
         params: ModifyParams,
@@ -708,8 +707,8 @@ impl<R: AppRuntime> Worktree<R> {
             return Ok(path);
         }
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
             .await
         {
@@ -722,9 +721,9 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(path)
     }
 
-    pub async fn describe_entry(
+    pub async fn describe_entry<R: AppRuntime>(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ResourceId,
     ) -> joinerror::Result<DescribeResourceOutput> {
@@ -762,8 +761,8 @@ impl<R: AppRuntime> Worktree<R> {
                 body: None,
             });
         } else if item_config_path.exists() {
-            let storage = <dyn Storage>::global(&self.app_delegate);
-            let entry_keys = storage
+            let entry_keys = self
+                .storage
                 .get_batch_by_prefix(
                     StorageScope::Project(self.project_id.inner()),
                     &key_resource(&id),
@@ -908,16 +907,16 @@ impl<R: AppRuntime> Worktree<R> {
     }
 }
 
-impl<R: AppRuntime> Worktree<R> {
+impl Worktree {
     pub fn new(
+        storage: Arc<dyn KvStorage>,
         project_id: ProjectId,
-        app_delegate: AppDelegate<R>,
         abs_path: Arc<Path>,
         fs: Arc<dyn FileSystem>,
     ) -> Self {
         Self {
+            storage,
             project_id,
-            app_delegate,
             abs_path,
             fs,
             state: Default::default(),
@@ -925,7 +924,7 @@ impl<R: AppRuntime> Worktree<R> {
     }
 }
 
-impl<R: AppRuntime> Worktree<R> {
+impl Worktree {
     async fn create_entry_internal(
         &self,
         path: &SanitizedPath,
@@ -962,9 +961,9 @@ impl<R: AppRuntime> Worktree<R> {
         Ok(())
     }
 
-    async fn patch_item_entry(
+    async fn patch_item_entry<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         entry: &mut Entry,
         params: &ModifyParams,
@@ -990,7 +989,6 @@ impl<R: AppRuntime> Worktree<R> {
             }));
         }
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let storage_scope = StorageScope::Project(self.project_id.inner());
 
         for header_to_add in &params.headers_to_add {
@@ -1039,7 +1037,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put(
                     storage_scope.clone(),
                     &key_resource_header_order(&entry.id, &id),
@@ -1175,7 +1174,8 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = header_to_update.order {
-                if let Err(e) = storage
+                if let Err(e) = self
+                    .storage
                     .put(
                         storage_scope.clone(),
                         &key_resource_header_order(&entry.id, &header_to_update.id),
@@ -1199,7 +1199,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .remove_batch_by_prefix(storage_scope.clone(), &key_resource_header(&entry.id, id))
                 .await
             {
@@ -1256,7 +1257,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put(
                     storage_scope.clone(),
                     &key_resource_path_param_order(&entry.id, &id),
@@ -1395,7 +1397,8 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = path_param_to_update.order {
-                if let Err(e) = storage
+                if let Err(e) = self
+                    .storage
                     .put(
                         storage_scope.clone(),
                         &key_resource_path_param_order(&entry.id, &path_param_to_update.id),
@@ -1422,7 +1425,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .remove_batch_by_prefix(
                     storage_scope.clone(),
                     &key_resource_path_param(&entry.id, id),
@@ -1482,7 +1486,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put(
                     storage_scope.clone(),
                     &key_resource_query_param_order(&entry.id, &id),
@@ -1621,7 +1626,8 @@ impl<R: AppRuntime> Worktree<R> {
             }
 
             if let Some(order) = query_param_to_update.order {
-                if let Err(e) = storage
+                if let Err(e) = self
+                    .storage
                     .put(
                         storage_scope.clone(),
                         &key_resource_query_param_order(&entry.id, &query_param_to_update.id),
@@ -1648,7 +1654,8 @@ impl<R: AppRuntime> Worktree<R> {
                 },
             ));
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .remove_batch_by_prefix(
                     storage_scope.clone(),
                     &key_resource_query_param(&entry.id, id),
@@ -1699,15 +1706,15 @@ impl<R: AppRuntime> Worktree<R> {
 }
 
 async fn patch_item_body<R: AppRuntime>(
-    worktree: &Worktree<R>,
-    ctx: &R::AsyncContext,
+    worktree: &Worktree,
+    ctx: &dyn AnyAsyncContext,
     app_delegate: &AppDelegate<R>,
     current_body_kind: Option<BodyKind>,
     resource_id: ResourceId,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
     params: &UpdateBodyParams,
 ) -> joinerror::Result<Option<BodyKind>> {
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = worktree.storage.clone();
     let storage_scope = StorageScope::Project(worktree.project_id.inner());
     let new_body_kind = match params {
         UpdateBodyParams::Remove => {
@@ -2288,11 +2295,11 @@ async fn patch_item_body<R: AppRuntime>(
     Ok(new_body_kind)
 }
 
-async fn clear_item_body<R: AppRuntime>(
-    worktree: &Worktree<R>,
-    _ctx: &R::AsyncContext,
+async fn clear_item_body(
+    worktree: &Worktree,
+    _ctx: &dyn AnyAsyncContext,
     id: &ResourceId,
-    storage: Arc<dyn Storage>,
+    storage: Arc<dyn KvStorage>,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
 ) -> joinerror::Result<()> {
     patches.push((

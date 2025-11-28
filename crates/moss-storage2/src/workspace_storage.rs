@@ -26,11 +26,11 @@ impl WorkspaceStorageBackend {
         })
     }
 
-    pub(crate) async fn storage(&self) -> joinerror::Result<Arc<dyn KeyedStorage>> {
+    pub async fn storage(&self) -> joinerror::Result<Arc<dyn KeyedStorage>> {
         Ok(self.storage_internal().await?)
     }
 
-    pub(crate) async fn capabilities(&self) -> joinerror::Result<Capabilities> {
+    pub async fn capabilities(&self) -> joinerror::Result<Capabilities> {
         let capabilities = if let Some(capabilities) = self.capabilities.get() {
             capabilities.clone()
         } else {

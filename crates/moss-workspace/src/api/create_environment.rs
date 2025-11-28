@@ -9,8 +9,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_environment(
+impl Workspace {
+    pub async fn create_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: AppDelegate<R>,
@@ -22,7 +22,6 @@ impl<R: AppRuntime> Workspace<R> {
             .environment_service
             .create_environment(
                 ctx,
-                app_delegate,
                 CreateEnvironmentItemParams {
                     project_id: input.project_id,
                     name: input.name.clone(),

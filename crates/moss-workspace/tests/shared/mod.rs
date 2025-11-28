@@ -6,7 +6,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{AppStorage, AppStorageOptions, Storage};
+use moss_storage2::{AppStorage, AppStorageOptions, KvStorage};
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workspace::{
     Workspace,
@@ -87,7 +87,7 @@ pub async fn setup_test_workspace() -> (
 
     let app_delegate = {
         let delegate = AppDelegate::new(tao_app_handle.clone());
-        <dyn Storage>::set_global(&delegate, app_storage.clone());
+        <dyn KvStorage>::set_global(&delegate, app_storage.clone());
         delegate
     };
 
@@ -133,7 +133,7 @@ pub async fn setup_test_workspace() -> (
     });
 
     // Add workspace storage
-    <dyn Storage>::global(&app_delegate)
+    <dyn KvStorage>::global(&app_delegate)
         .add_workspace(workspace.id().inner())
         .await
         .unwrap();

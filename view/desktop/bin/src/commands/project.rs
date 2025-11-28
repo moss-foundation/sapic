@@ -1,3 +1,4 @@
+use moss_applib::TauriAppRuntime;
 use moss_project::models::{
     events::*,
     operations::*,
@@ -23,7 +24,11 @@ pub async fn create_project_resource<'a, R: tauri::Runtime>(
         window,
         project_id,
         options,
-        |ctx, _, project| async move { project.create_resource(&ctx, input).await },
+        |ctx, _, project| async move {
+            project
+                .create_resource::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -44,7 +49,11 @@ pub async fn delete_project_resource<'a, R: tauri::Runtime>(
         window,
         project_id,
         options,
-        |ctx, _, project| async move { project.delete_resource(&ctx, input).await },
+        |ctx, _, project| async move {
+            project
+                .delete_resource::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }
@@ -88,7 +97,11 @@ pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
         window,
         project_id,
         options,
-        |ctx, _, project| async move { project.batch_create_resource(&ctx, input).await },
+        |ctx, _, project| async move {
+            project
+                .batch_create_resource::<TauriAppRuntime<R>>(&ctx, input)
+                .await
+        },
     )
     .await
 }

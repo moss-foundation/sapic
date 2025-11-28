@@ -3,7 +3,6 @@ pub mod markers;
 pub mod subscription;
 pub mod task;
 
-pub use markers::*;
 pub use tauri::Wry;
 
 use tauri::Runtime as TauriRuntime;

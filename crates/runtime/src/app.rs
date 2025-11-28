@@ -1,3 +1,4 @@
+pub mod kv_storage;
 pub mod settings_storage;
 
 use sapic_core::context::{AnyAsyncContext, ArcContext};

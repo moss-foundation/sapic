@@ -10,8 +10,8 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn execute_vcs_operation(
+impl Project {
+    pub async fn execute_vcs_operation<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
