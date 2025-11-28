@@ -137,12 +137,14 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
           <div className="flex items-center gap-2">
             {getProviderIcon(account.kind)}
             <span className="text-sm">{account.username}</span>
-            <span className="background-(--moss-gray-12) leading-3.5 rounded-full px-[5px] text-[10px]">
+            {/*TODO: Background color should use a named theme variable when we decide how to name this component*/}
+            <span className="background-(--moss-gray-12) leading-3.5 rounded-full px-[5px] text-xs">
               {account.method === "PAT" ? "PAT" : "OAuth"}
             </span>
           </div>
 
           {account.metadata.patExpiresAt && (
+            //TODO: Text should use a named theme variable when we decide how to name this component
             <span className="text-(--moss-yellow-1) text-sm">Expires on {account.metadata.patExpiresAt}</span>
           )}
         </div>

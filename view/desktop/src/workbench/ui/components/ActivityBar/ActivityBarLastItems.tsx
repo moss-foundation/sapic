@@ -36,7 +36,7 @@ export const ActivityBarLastItems = () => {
                 });
               }}
             >
-              <Icon icon="Settings" />
+              <Icon icon="Settings" className="size-4.5" />
               <span>Settings</span>
             </button>
           </ActionMenu.Item>
@@ -50,7 +50,7 @@ export const ActivityBarLastItems = () => {
                 });
               }}
             >
-              <Icon icon="Person" />
+              <Icon icon="Accounts" className="size-4.5" />
               <span>Accounts</span>
             </button>
           </ActionMenu.Item>
