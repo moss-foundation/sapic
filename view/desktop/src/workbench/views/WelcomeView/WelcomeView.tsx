@@ -1,4 +1,6 @@
-import { useListWorkspaces } from "@/hooks";
+import { useRef } from "react";
+
+import { useListWorkspaces } from "@/adapters/tanstackQuery/workspace";
 import { useModal } from "@/hooks/useModal";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
@@ -11,14 +13,13 @@ import WelcomeViewRecentWorkspaces from "./WelcomeViewRecentWorkspaces";
 import WelcomeViewSteps from "./WelcomeViewSteps";
 
 export const WelcomeView = () => {
+  const learnMoreRef = useRef<HTMLAnchorElement>(null);
+
   const handleLearnMoreClick = (e: React.MouseEvent) => {
     e.preventDefault();
-    const element = document.getElementById("TestAnchorForWelcomePage");
-    if (!element) {
-      return;
-    }
-    element.scrollIntoView({ behavior: "smooth" });
+    learnMoreRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
   return (
     <Scrollbar className="relative h-full">
       <section className="relative flex min-h-[calc(100vh-98px)] flex-col gap-6 px-[20px] pt-32 lg:px-[60px] xl:px-[140px]">
@@ -40,6 +41,7 @@ export const WelcomeView = () => {
         </div>
 
         <a
+          ref={learnMoreRef}
           href="#TestAnchorForWelcomePage"
           onClick={handleLearnMoreClick}
           className="group/learn-more relative bottom-8 mt-auto flex cursor-pointer flex-col items-center gap-2 self-center pt-10 text-sm"

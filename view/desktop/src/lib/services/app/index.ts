@@ -2,7 +2,9 @@ import { appConfigService } from "./appConfigService";
 import { languagesService } from "./languagesService";
 import { themesService } from "./themesService";
 
-//FIXME services should take only a Input types ideally
+/**
+ * @deprecated this should be moved to domain
+ */
 export const AppService = {
   ...appConfigService,
   ...languagesService,

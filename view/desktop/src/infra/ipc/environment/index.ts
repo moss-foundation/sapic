@@ -1,6 +1,5 @@
 import { IEnvironmentIpc } from "@/domains/environment";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
-import { Channel, invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 
 export const environmentIpc: IEnvironmentIpc = {
   activateEnvironment: async (input) => {
@@ -23,7 +22,7 @@ export const environmentIpc: IEnvironmentIpc = {
     return await invoke("delete_environment", { input });
   },
 
-  streamEnvironments: async (channelEvent: Channel<StreamEnvironmentsEvent>) => {
+  streamEnvironments: async (channelEvent) => {
     return await invoke("stream_environments", { channel: channelEvent });
   },
 

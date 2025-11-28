@@ -1,9 +1,10 @@
 import { RefObject } from "react";
 
+import { useWorkspaceMapping } from "@/hooks/workbench/derived/useWorkspaceMapping";
 import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
-import { useWorkspaceMapping } from "@/hooks/workbench/useWorkspaceMapping";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { OpenInTargetEnum } from "@/main/types";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 // Helper to extract workspace ID from prefixed action ID
@@ -23,13 +24,9 @@ export interface HeadBarActionProps {
   openNewWorkspaceModal?: () => void;
   openOpenWorkspaceModal?: () => void;
   showDeleteConfirmModal?: boolean;
-  setShowDeleteConfirmModal?: (show: boolean) => void;
   workspaceToDelete?: { id: string; name: string } | null;
   setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
-  closeDeleteWorkspaceModal?: () => void;
-  showDeleteWorkspaceModal?: boolean;
-  setShowDeleteWorkspaceModal?: (show: boolean) => void;
-  openDeleteWorkspaceModal?: () => void;
+  openDeleteConfirmModal?: () => void;
 }
 
 /**
@@ -126,9 +123,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
     showDebugPanels,
     openNewWorkspaceModal,
     openOpenWorkspaceModal,
-    setShowDeleteConfirmModal,
     setWorkspaceToDelete,
-    openDeleteWorkspaceModal,
+    openDeleteConfirmModal,
   } = props;
 
   const { mutate: openWorkspace } = useOpenWorkspace();
@@ -141,7 +137,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   return (action: string) => {
     if (action.startsWith("workspace:")) {
       const workspaceId = extractWorkspaceId(action);
-      openWorkspace(workspaceId);
+      openWorkspace({ id: workspaceId, openInTarget: OpenInTargetEnum.CURRENT_WINDOW });
       return;
     }
 
@@ -163,7 +159,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
               id: workspaceId,
               name: workspace.name,
             });
-            openDeleteWorkspaceModal?.();
+            openDeleteConfirmModal?.();
           }
           return;
         }
@@ -184,22 +180,25 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
 
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            openWorkspace(workspaceId, {
-              onSuccess: () => {
-                addOrFocusPanel({
-                  id: "WorkspaceSettings",
-                  component: "WorkspaceSettings",
-                  title: workspace.name,
-                  params: {
-                    iconType: "Workspace",
-                    workspace: true,
-                  },
-                });
-              },
-              onError: (error) => {
-                console.error("Failed to open workspace:", error.message);
-              },
-            });
+            openWorkspace(
+              { id: workspaceId, openInTarget: OpenInTargetEnum.CURRENT_WINDOW },
+              {
+                onSuccess: () => {
+                  addOrFocusPanel({
+                    id: "WorkspaceSettings",
+                    component: "WorkspaceSettings",
+                    title: workspace.name,
+                    params: {
+                      iconType: "Workspace",
+                      workspace: true,
+                    },
+                  });
+                },
+                onError: (error) => {
+                  console.error("Failed to open workspace:", error.message);
+                },
+              }
+            );
           } else {
             console.error(`Workspace not found for ID: ${workspaceId}`);
           }
@@ -218,12 +217,12 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         openOpenWorkspaceModal?.();
         break;
       case "delete":
-        if (activeWorkspace && setShowDeleteConfirmModal && setWorkspaceToDelete) {
-          setWorkspaceToDelete({
+        if (activeWorkspace) {
+          setWorkspaceToDelete?.({
             id: activeWorkspace.id,
             name: activeWorkspace.name,
           });
-          setShowDeleteConfirmModal(true);
+          openDeleteConfirmModal?.();
         }
         break;
       case "rename":
