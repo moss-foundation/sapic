@@ -8,7 +8,7 @@ import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventS
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
 import { ExtensionInfo } from "@repo/base";
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { ListExtensionsOutput } from "@repo/ipc";
 import { invoke } from "@tauri-apps/api/core";

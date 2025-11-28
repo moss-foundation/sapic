@@ -3,7 +3,7 @@ import { FormEvent, useState } from "react";
 import { useUpdateProfile } from "@/adapters";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 import { AddAccountParams, UpdateProfileInput } from "@repo/window";
 
 import { ModalWrapperProps } from "../../types";

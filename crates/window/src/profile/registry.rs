@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use moss_user::models::primitives::{AccountId, AccountKind, ProfileId, SessionKind};
+use sapic_base::user::types::primitives::{AccountId, AccountKind, ProfileId, SessionKind};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

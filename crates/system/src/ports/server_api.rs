@@ -13,6 +13,14 @@ pub trait ExtensionApiOperations: Send + Sync {
     ) -> joinerror::Result<Vec<ExtensionInfo>>;
 }
 
+// pub trait AuthRevokeApiReq:
+//     Send
+//     + Sync
+//     + auth_github_account_api::GitHubRevokeApiReq
+//     + auth_gitlab_account_api::GitLabRevokeApiReq
+// {
+// }
+
 pub mod auth_gitlab_account_api {
     use super::*;
 
@@ -78,20 +86,12 @@ pub mod auth_github_account_api {
     }
 }
 
-#[async_trait]
-pub trait RevokeApiReq:
+pub trait AccountAuthApiOperations:
     Send
     + Sync
-    + auth_github_account_api::GitHubRevokeApiReq
-    + auth_gitlab_account_api::GitLabRevokeApiReq
+    + auth_github_account_api::AuthGitHubAccountApiOperations
+    + auth_gitlab_account_api::AuthGitLabAccountApiOperations
 {
 }
 
-pub trait ServerApiClient:
-    Send
-    + Sync
-    + ExtensionApiOperations
-    + auth_gitlab_account_api::AuthGitLabAccountApiOperations
-    + auth_github_account_api::AuthGitHubAccountApiOperations
-{
-}
+pub trait ServerApiClient: Send + Sync + ExtensionApiOperations + AccountAuthApiOperations {}

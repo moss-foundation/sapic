@@ -24,11 +24,9 @@ sapic-window = { workspace = true }
 
 moss_applib = { workspace = true }
 moss_language = { workspace = true }
-moss_user = { workspace = true }
 moss_app_delegate = { workspace = true }
 moss_fs = { workspace = true }
 moss_keyring = { workspace = true }
-moss_server_api = { workspace = true }
 moss_text = { workspace = true }
 moss_workspace = { workspace = true }
 moss_common = { workspace = true }

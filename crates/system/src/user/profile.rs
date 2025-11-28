@@ -3,10 +3,10 @@ use sapic_base::user::types::{
     primitives::{AccountId, AccountKind, ProfileId},
 };
 use sapic_core::context::AnyAsyncContext;
-use std::{collections::HashMap, sync::Arc};
+use std::collections::HashMap;
 use tokio::sync::RwLock;
 
-use crate::{ports::server_api::RevokeApiReq, user::account::Account};
+use crate::user::account::Account;
 
 pub struct Profile {
     id: ProfileId,
@@ -67,12 +67,11 @@ impl Profile {
     pub async fn remove_account(
         &self,
         ctx: &dyn AnyAsyncContext,
-        api_client: Arc<dyn RevokeApiReq>,
         account_id: &AccountId,
     ) -> joinerror::Result<()> {
         let account = self.accounts.write().await.remove(account_id);
         if let Some(account) = account {
-            account.revoke(ctx, api_client).await?;
+            account.revoke(ctx).await?;
         }
 
         Ok(())

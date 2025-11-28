@@ -2,7 +2,7 @@ import { FormEvent, useState } from "react";
 
 import { useUpdateProfile } from "@/adapters";
 import { Button, Link, Modal } from "@/lib/ui";
-import { AccountInfo } from "@repo/moss-user";
+import { AccountInfo } from "@repo/base";
 import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 
 import { ModalWrapperProps } from "../../types";

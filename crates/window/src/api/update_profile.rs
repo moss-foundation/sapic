@@ -40,7 +40,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         let mut updated_account_ids = Vec::with_capacity(input.accounts_to_update.len());
         for account_to_update in input.accounts_to_update {
             self.profile_service
-                .update_account(ctx, app_delegate, &account_to_update)
+                .update_account(ctx, &account_to_update)
                 .await?;
             updated_account_ids.push(account_to_update.id);
         }

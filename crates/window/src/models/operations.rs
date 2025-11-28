@@ -1,8 +1,10 @@
 use derive_more::Deref;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::{primitives::AccountId, types::ProfileInfo};
-use sapic_base::workspace::types::WorkspaceInfo;
+use sapic_base::{
+    user::types::{ProfileInfo, primitives::AccountId},
+    workspace::types::WorkspaceInfo,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use ts_rs::TS;

@@ -5,9 +5,13 @@ use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_project::models::primitives::ProjectId;
 use moss_storage2::Storage;
-use moss_user::profile::Profile;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::{
+    ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
+    user::profile::Profile,
+};
 use std::{cell::LazyCell, path::Path, sync::Arc};
 
 use crate::{
@@ -38,9 +42,11 @@ pub struct CreateWorkspaceParams {
 }
 
 // DEPRECATED
-pub struct WorkspaceBuilder<R: AppRuntime> {
+pub struct WorkspaceBuilder {
     fs: Arc<dyn FileSystem>,
-    active_profile: Arc<Profile<R>>,
+    active_profile: Arc<Profile>,
+    github_api_client: Arc<dyn GitHubApiClient>,
+    gitlab_api_client: Arc<dyn GitLabApiClient>,
     workspace_id: WorkspaceId,
 }
 
@@ -57,16 +63,20 @@ pub struct OnDidAddProject {
 impl EventMarker for OnDidDeleteProject {}
 impl EventMarker for OnDidAddProject {}
 
-impl<R: AppRuntime> WorkspaceBuilder<R> {
+impl WorkspaceBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
-        active_profile: Arc<Profile<R>>,
+        active_profile: Arc<Profile>,
         workspace_id: WorkspaceId,
+        github_api_client: Arc<dyn GitHubApiClient>,
+        gitlab_api_client: Arc<dyn GitLabApiClient>,
     ) -> Self {
         Self {
             fs,
             active_profile,
             workspace_id,
+            github_api_client,
+            gitlab_api_client,
         }
     }
 
@@ -106,9 +116,9 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         Ok(())
     }
 
-    pub async fn load(
+    pub async fn load<R: AppRuntime>(
         self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         params: LoadWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
@@ -133,6 +143,8 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
+            self.github_api_client.clone(),
+            self.gitlab_api_client.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )
@@ -178,21 +190,17 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
         })
     }
 
-    pub async fn create(
+    pub async fn create<R: AppRuntime>(
         self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<Workspace<R>> {
         debug_assert!(params.abs_path.is_absolute());
 
-        WorkspaceBuilder::<R>::initialize(
-            self.fs.clone(),
-            self.workspace_id.clone(),
-            params.clone(),
-        )
-        .await
-        .join_err::<()>("failed to initialize workspace")?;
+        WorkspaceBuilder::initialize(self.fs.clone(), self.workspace_id.clone(), params.clone())
+            .await
+            .join_err::<()>("failed to initialize workspace")?;
 
         let mut environment_sources = FxHashMap::from_iter([(
             "".to_string().into(),
@@ -213,6 +221,8 @@ impl<R: AppRuntime> WorkspaceBuilder<R> {
             self.workspace_id.clone(),
             &mut environment_sources,
             &self.active_profile,
+            self.github_api_client.clone(),
+            self.gitlab_api_client.clone(),
             on_did_delete_collection_emitter,
             on_did_add_collection_emitter,
         )

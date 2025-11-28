@@ -8,7 +8,6 @@
 use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
-use moss_user::models::primitives::AccountId;
 use moss_workspace::{
     models::{
         operations::ImportProjectInput,
@@ -16,6 +15,7 @@ use moss_workspace::{
     },
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use sapic_base::user::types::primitives::AccountId;
 use sapic_core::context::AnyAsyncContext;
 use std::{collections::HashSet, env, ops::Deref};
 use tauri::ipc::Channel;

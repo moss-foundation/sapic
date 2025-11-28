@@ -6,9 +6,6 @@ use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
-use moss_git_hosting_provider::{
-    GitProviderKind, github::client::GitHubApiClient, gitlab::client::GitLabApiClient,
-};
 use moss_logging::session;
 use moss_project::{
     Project as ProjectHandle, ProjectBuilder, ProjectModifyParams,
@@ -21,9 +18,13 @@ use moss_project::{
     vcs::VcsSummary,
 };
 use moss_storage2::{Storage, models::primitives::StorageScope};
-use moss_user::{account::Account, models::primitives::AccountId, profile::Profile};
 use rustc_hash::FxHashMap;
-use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_base::{user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId};
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::{
+    ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
+    user::{account::Account, profile::Profile},
+};
 use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
@@ -98,19 +99,23 @@ pub struct ProjectService<R: AppRuntime> {
     workspace_id: WorkspaceId,
     state: Arc<RwLock<ServiceState<R>>>,
     app_delegate: AppDelegate<R>,
+    global_github_api: Arc<dyn GitHubApiClient>,
+    global_gitlab_api: Arc<dyn GitLabApiClient>,
     on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
     on_did_add_project_emitter: EventEmitter<OnDidAddProject>,
 }
 
 impl<R: AppRuntime> ProjectService<R> {
     pub(crate) async fn new(
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
         workspace_id: WorkspaceId,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
-        active_profile: &Arc<Profile<R>>,
+        active_profile: &Arc<Profile>,
+        global_github_api: Arc<dyn GitHubApiClient>,
+        global_gitlab_api: Arc<dyn GitLabApiClient>,
         on_project_did_delete_emitter: EventEmitter<OnDidDeleteProject>,
         on_project_did_add_emitter: EventEmitter<OnDidAddProject>,
     ) -> joinerror::Result<Self> {
@@ -142,6 +147,8 @@ impl<R: AppRuntime> ProjectService<R> {
             &fs,
             workspace_id.clone(),
             active_profile,
+            global_github_api.clone(),
+            global_gitlab_api.clone(),
         )
         .await
         .join_err_with::<()>(|| format!("failed to restore collections, {}", abs_path.display()))?;
@@ -165,6 +172,8 @@ impl<R: AppRuntime> ProjectService<R> {
                 expanded_items,
             })),
             app_delegate: app_delegate.clone(),
+            global_github_api,
+            global_gitlab_api,
             on_did_delete_project_emitter: on_project_did_delete_emitter,
             on_did_add_project_emitter: on_project_did_add_emitter,
         })
@@ -180,7 +189,7 @@ impl<R: AppRuntime> ProjectService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ProjectId,
-        account: Option<Account<R>>,
+        account: Option<Account>,
         params: &CreateProjectParams,
     ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
@@ -286,11 +295,11 @@ impl<R: AppRuntime> ProjectService<R> {
             let client = match git_params.git_provider_type {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account: account,
-                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
+                    api: self.global_github_api.clone(),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account: account,
-                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
+                    api: self.global_gitlab_api.clone(),
                 },
             };
 
@@ -389,7 +398,7 @@ impl<R: AppRuntime> ProjectService<R> {
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ProjectId,
-        account: Account<R>,
+        account: Account,
         params: ProjectItemCloneParams,
     ) -> joinerror::Result<ProjectItemDescription> {
         let mut rb = self.fs.start_rollback().await?;
@@ -434,11 +443,11 @@ impl<R: AppRuntime> ProjectService<R> {
         let git_client = match params.git_provider_type {
             GitProviderKind::GitHub => GitClient::GitHub {
                 account: account,
-                api: <dyn GitHubApiClient<R>>::global(app_delegate),
+                api: self.global_github_api.clone(),
             },
             GitProviderKind::GitLab => GitClient::GitLab {
                 account: account,
-                api: <dyn GitLabApiClient<R>>::global(app_delegate),
+                api: self.global_gitlab_api.clone(),
             },
         };
         let collection = match builder
@@ -1064,12 +1073,14 @@ impl<R: AppRuntime> ProjectService<R> {
     }
 }
 async fn restore_projects<R: AppRuntime>(
-    _ctx: &R::AsyncContext,
+    _ctx: &dyn AnyAsyncContext,
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
     workspace_id: WorkspaceId,
-    active_profile: &Arc<Profile<R>>,
+    active_profile: &Arc<Profile>,
+    global_github_api: Arc<dyn GitHubApiClient>,
+    global_gitlab_api: Arc<dyn GitLabApiClient>,
 ) -> joinerror::Result<HashMap<ProjectId, ProjectItem<R>>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
@@ -1168,11 +1179,11 @@ async fn restore_projects<R: AppRuntime>(
             let client = match vcs.kind {
                 GitProviderKind::GitHub => GitClient::GitHub {
                     account,
-                    api: <dyn GitHubApiClient<R>>::global(app_delegate),
+                    api: global_github_api.clone(),
                 },
                 GitProviderKind::GitLab => GitClient::GitLab {
                     account,
-                    api: <dyn GitLabApiClient<R>>::global(app_delegate),
+                    api: global_gitlab_api.clone(),
                 },
             };
 

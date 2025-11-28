@@ -70,8 +70,6 @@ NUL
 # OAuth configuration files
 crates/moss-git/.env
 crates/moss-git/oauth.json
-crates/moss-git-hosting-provider/github_oauth.json
-crates/moss-git-hosting-provider/gitlab_oauth.json
 
 # Test data
 **/tests/data/

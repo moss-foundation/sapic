@@ -197,7 +197,6 @@ jobs:
           - main
 
           - moss_git
-          - moss_git_hosting_provider
           - moss_text
           - moss_project
           - moss_applib
@@ -212,9 +211,7 @@ jobs:
           - moss_bindingutils
           - moss_hcl
           - moss_logging
-          - moss_user
           - moss_edit
-          - moss_server_api
           - moss_extension_points
           - moss_language
           - moss_storage2
@@ -319,7 +316,6 @@ jobs:
           - main
 
           - moss_git
-          - moss_git_hosting_provider
           - moss_text
           - moss_project
           - moss_applib
@@ -335,9 +331,7 @@ jobs:
           - moss_bindingutils
           - moss_hcl
           - moss_logging
-          - moss_user
           - moss_edit
-          - moss_server_api
           - moss_extension_points
           - moss_language
           - moss_storage2

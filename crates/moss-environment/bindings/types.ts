@@ -30,22 +30,4 @@ export type UpdateVariableParams = {
 /**
  * @category Type
  */
-export type VariableInfo = {
-  id: string;
-  name: string;
-  globalValue?: JsonValue;
-  localValue?: JsonValue;
-  disabled: boolean;
-  order?: number;
-  desc?: string;
-};
-
-/**
- * @category Type
- */
-export type VariableKind = "secret" | "default";
-
-/**
- * @category Type
- */
 export type VariableOptions = { disabled: boolean };

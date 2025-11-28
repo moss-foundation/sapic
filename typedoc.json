@@ -13,7 +13,6 @@
     "crates/ipc",
     "crates/moss-git",
     "crates/moss-language",
-    "crates/moss-user",
 
     "plugins/shared_storage",
     "plugins/settings-storage"

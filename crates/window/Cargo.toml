@@ -12,10 +12,9 @@ sapic-runtime.workspace = true
 sapic-platform.workspace = true
 sapic-base.workspace = true
 sapic-system.workspace = true
+sapic-core.workspace = true
 
 moss_app_delegate.workspace = true
-moss_server_api.workspace = true
-moss_user.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true
 moss_applib.workspace = true
@@ -23,7 +22,6 @@ moss_text.workspace = true
 moss_workspace.workspace = true
 moss_activity_broadcaster.workspace = true
 moss_environment.workspace = true
-moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_id_macro.workspace = true
@@ -63,4 +61,4 @@ moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
 
 [features]
-integration-tests = ["moss_keyring/test", "moss_app_delegate/integration-tests", "moss_git_hosting_provider/test"]
+integration-tests = ["moss_keyring/test", "moss_app_delegate/integration-tests"]

@@ -55,7 +55,7 @@ impl GitAuthAdapter for AppGitHubAuthAdapter {
         let state = CsrfToken::new_random();
         let callback_url = format!("http://127.0.0.1:{}/oauth/callback", self.callback_port);
         let auth_url = format!(
-            "{}/auth/github/authorize?redirect_uri={}&state={}",
+            "{}/account-auth-gateway/auth/github/authorize?redirect_uri={}&state={}",
             self.url,
             urlencoding::encode(&callback_url),
             state.secret()
