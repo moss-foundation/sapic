@@ -1,5 +1,4 @@
 use joinerror::error::ErrorMarker;
-use sapic_errors::Internal;
 
 pub trait TauriResultExt<T> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T>;
@@ -12,18 +11,18 @@ pub trait TauriResultExt<T> {
 
 impl<T> TauriResultExt<T> for Result<T, tauri::Error> {
     fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T> {
-        self.map_err(|e| joinerror::Error::new::<Internal>(e.to_string()).join::<E>(details))
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join::<E>(details))
     }
 
     fn join_err_with<E: ErrorMarker>(
         self,
         details: impl FnOnce() -> String,
     ) -> joinerror::Result<T> {
-        self.map_err(|e| joinerror::Error::new::<Internal>(e.to_string()).join_with::<E>(details))
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join_with::<E>(details))
     }
 
     fn join_err_bare(self) -> joinerror::Result<T> {
-        self.map_err(|e| joinerror::Error::new::<Internal>(e.to_string()))
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()))
     }
 }
 

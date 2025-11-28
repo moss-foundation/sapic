@@ -10,9 +10,8 @@ use moss_git::{
     repository::Repository,
     url::GitUrl,
 };
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{errors::Internal, user::types::primitives::AccountId};
 use sapic_core::context::AnyAsyncContext;
-use sapic_errors::Internal;
 use sapic_system::ports::GitProviderKind;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;

@@ -1,8 +1,10 @@
 pub mod contracts;
+pub mod errors;
 
 use joinerror::error::ErrorMarker;
-use sapic_errors::InvalidInput;
 use validator::ValidationErrors;
+
+use crate::errors::InvalidInput;
 
 pub mod constants {
     use std::time::Duration;

@@ -8,6 +8,7 @@ sapic-system.workspace = true
 sapic-platform.workspace = true
 sapic-base.workspace = true
 sapic-errors.workspace = true
+sapic-core.workspace = true
 
 moss_applib.workspace = true
 moss_fs.workspace = true

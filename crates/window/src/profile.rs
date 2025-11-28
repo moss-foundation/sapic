@@ -7,12 +7,14 @@ use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::
 use moss_fs::{CreateOptions, FileSystem};
 use moss_keyring::KeyringClient;
 use moss_logging::session;
-use sapic_base::user::types::{
-    AccountInfo, AccountMetadata,
-    primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+use sapic_base::{
+    errors::{AlreadyExists, NotFound},
+    user::types::{
+        AccountInfo, AccountMetadata,
+        primitives::{AccountId, AccountKind, ProfileId, SessionKind},
+    },
 };
 use sapic_core::context::AnyAsyncContext;
-use sapic_errors::{AlreadyExists, FailedPrecondition, NotFound};
 use sapic_system::{
     ports::{
         github_api::{GitHubApiClient, GitHubAuthAdapter},
@@ -169,7 +171,7 @@ impl ProfileService {
         let active_profile_lock = self.active_profile.write().await;
         let active_profile = active_profile_lock
             .as_ref()
-            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
+            .ok_or_join_err::<()>("active profile not found")?;
 
         let mut cache_lock = self.cache.write().await;
         let profile = cache_lock
@@ -208,7 +210,7 @@ impl ProfileService {
         let active_profile_lock = self.active_profile.write().await;
         let active_profile = active_profile_lock
             .as_ref()
-            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
+            .ok_or_join_err::<()>("active profile not found")?;
 
         let account_id = AccountId::new();
         let (session, session_kind, username, expires_at) = match kind {
@@ -360,7 +362,7 @@ impl ProfileService {
         let active_profile_lock = self.active_profile.write().await;
         let active_profile = active_profile_lock
             .as_ref()
-            .ok_or_join_err::<FailedPrecondition>("active profile not found")?;
+            .ok_or_join_err::<()>("active profile not found")?;
         let account = active_profile
             .account(&params.id)
             .await

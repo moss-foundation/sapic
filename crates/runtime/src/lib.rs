@@ -1,10 +1,11 @@
 pub mod app;
+pub mod app_delegate;
+pub mod errors;
 pub mod extension_point;
 pub mod globals;
 pub mod user_settings;
 
 use joinerror::error::ErrorMarker;
-use sapic_errors::Internal;
 
 // type TauriResult<T> = Result<T, tauri::Error>;
 

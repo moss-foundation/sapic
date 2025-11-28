@@ -1,9 +1,9 @@
 mod models;
 
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::task::Task;
 use moss_logging::session;
 use moss_storage2::{FlushMode, Storage, StorageCapabilities};
+use sapic_core::task::Task;
 use sapic_runtime::app::GenericAppHandle;
 use serde_json::Value as JsonValue;
 use std::{

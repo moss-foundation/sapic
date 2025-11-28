@@ -1,4 +1,4 @@
-use moss_applib::EventMarker;
+use sapic_core::subscription::EventMarker;
 
 use crate::models::primitives::StorageScope;
 

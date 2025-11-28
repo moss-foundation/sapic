@@ -1,13 +1,16 @@
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, EventMarker, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_project::models::primitives::ProjectId;
 use moss_storage2::Storage;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
-use sapic_core::context::AnyAsyncContext;
+use sapic_core::{
+    context::AnyAsyncContext,
+    subscription::{EventEmitter, EventMarker},
+};
 use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::profile::Profile,

@@ -1,6 +1,8 @@
 use joinerror::OptionExt;
-use sapic_base::theme::types::{ColorThemeInfo, primitives::ThemeId};
-use sapic_errors::NotFound;
+use sapic_base::{
+    errors::NotFound,
+    theme::types::{ColorThemeInfo, primitives::ThemeId},
+};
 use std::collections::HashMap;
 
 use super::{DynThemeLoader, DynThemeRegistry};

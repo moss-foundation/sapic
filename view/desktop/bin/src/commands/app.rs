@@ -1,7 +1,7 @@
 use joinerror::Error;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
-use sapic_errors::NotFound;
+use sapic_base::errors::NotFound;
 use sapic_ipc::contracts::{configuration::*, extension::*, theme::*, workspace::*};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;

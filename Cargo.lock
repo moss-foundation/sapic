@@ -1122,10 +1122,13 @@ dependencies = [
 name = "core"
 version = "0.1.0"
 dependencies = [
- "errors",
+ "futures",
  "joinerror",
+ "rustc-hash",
  "serde",
  "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]
@@ -1622,10 +1625,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "app",
+ "base",
  "cocoa",
  "core",
  "dotenvy",
- "errors",
  "futures",
  "inventory",
  "ipc",
@@ -3793,7 +3796,6 @@ dependencies = [
  "core",
  "dashmap",
  "derive_more 2.0.1",
- "errors",
  "futures",
  "joinerror",
  "rustc-hash",
@@ -4055,6 +4057,7 @@ name = "moss_storage2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "joinerror",
  "moss_app_delegate",
@@ -5816,6 +5819,7 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "core",
  "derive_more 2.0.1",
  "errors",
  "inventory",
@@ -6390,6 +6394,7 @@ name = "shared-storage"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "ipc",
  "joinerror",

@@ -6,7 +6,6 @@ license = "MIT"
 
 [dependencies]
 sapic-core.workspace = true
-sapic-errors.workspace = true
 
 tauri = { workspace = true, features = ["wry"] }
 tokio = { workspace = true, features = ["full"] }

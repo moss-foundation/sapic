@@ -13,6 +13,7 @@ tauri-plugin.workspace = true
 [dependencies]
 sapic-runtime = { workspace = true }
 sapic-ipc = { workspace = true }
+sapic-core = { workspace = true }
 
 moss_storage2.workspace = true
 moss_applib.workspace = true

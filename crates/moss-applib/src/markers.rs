@@ -1,1 +1,1 @@
-pub trait EventMarker: 'static {}
+// pub trait EventMarker: 'static {}

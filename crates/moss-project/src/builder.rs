@@ -1,11 +1,11 @@
 use joinerror::{Error, ResultExt};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use sapic_base::user::types::primitives::AccountId;
-use sapic_core::context::AnyAsyncContext;
+use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::ports::GitProviderKind;
 use std::{
     cell::LazyCell,

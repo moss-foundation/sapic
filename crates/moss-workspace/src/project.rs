@@ -2,7 +2,7 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
@@ -20,7 +20,7 @@ use moss_project::{
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId};
-use sapic_core::context::AnyAsyncContext;
+use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{
     ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::{account::Account, profile::Profile},

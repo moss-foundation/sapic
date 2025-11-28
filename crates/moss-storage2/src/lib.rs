@@ -8,9 +8,10 @@ use async_trait::async_trait;
 use derive_more::Deref;
 use joinerror::{OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_logging::session;
 use rustc_hash::{FxHashMap, FxHashSet};
+use sapic_core::subscription::EventEmitter;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},

@@ -1,6 +1,6 @@
 use joinerror::{OptionExt, ResultExt};
-use sapic_errors::Unavailable;
 use sapic_ipc::contracts::{other::*, welcome::workspace::*};
+use sapic_runtime::errors::Unavailable;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;

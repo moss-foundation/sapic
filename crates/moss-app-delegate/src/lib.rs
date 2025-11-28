@@ -1,6 +1,5 @@
 use derive_more::Deref;
 use moss_activity_broadcaster::{AppActivityBroadcaster, ToLocation, handle::ActivityHandle};
-use moss_applib::AppRuntime;
 use std::path::PathBuf;
 use tauri::{AppHandle as TauriAppHandle, Manager};
 

@@ -4,8 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-sapic-errors.workspace = true
-
+tracing.workspace = true
+futures.workspace = true
+rustc-hash.workspace = true
+tokio-util.workspace = true
 joinerror.workspace = true
 serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true, features = ["macros", "time"] }
