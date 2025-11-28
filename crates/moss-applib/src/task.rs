@@ -48,8 +48,6 @@ impl<T> DetachedTask<T> {
     where
         T: Send + 'static,
     {
-        use moss_logging::ResultSessionLogExt;
-
         let location = std::panic::Location::caller();
         let location_str = format!("{}:{}", location.file(), location.line());
         let details_str = format!("{} at {}", details, location_str);
@@ -60,13 +58,23 @@ impl<T> DetachedTask<T> {
         // Create new handle that wraps the original and logs errors
         let new_handle = tokio::spawn(async move {
             let result = match handle.await {
-                Ok(inner_result) => inner_result.log_err(&details_str),
+                Ok(inner_result) => {
+                    if let Err(ref err) = inner_result {
+                        tracing::error!(
+                            error = %err,
+                            details = %details_str,
+                            "Task completed with error"
+                        );
+                    }
+                    inner_result
+                }
                 Err(join_error) => {
                     // Task panicked or was aborted
-                    moss_logging::session::error!(format!(
-                        "Task panicked or aborted: {} - {:?}",
-                        details_str, join_error
-                    ));
+                    tracing::error!(
+                        error = ?join_error,
+                        details = %details_str,
+                        "Task panicked or aborted"
+                    );
                     // Convert JoinError to a joinerror::Error
                     Err(joinerror::Error::new::<sapic_errors::Internal>(format!(
                         "Task join error: {:?}",
