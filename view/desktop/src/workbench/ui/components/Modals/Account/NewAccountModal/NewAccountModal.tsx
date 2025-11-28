@@ -1,10 +1,10 @@
 import { FormEvent, useState } from "react";
 
+import { useUpdateProfile } from "@/adapters";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
-import { AccountKind } from "@repo/moss-user";
+import { AccountKind } from "@repo/base";
 import { AddAccountParams, UpdateProfileInput } from "@repo/window";
-import { invoke } from "@tauri-apps/api/core";
 
 import { ModalWrapperProps } from "../../types";
 import { getProviderHost } from "../accountUtils";
@@ -15,18 +15,17 @@ interface NewAccountModalProps extends ModalWrapperProps {
 }
 
 export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAccountModalProps) => {
+  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+
   const [provider, setProvider] = useState<AccountKind>("GITHUB");
   const [method, setMethod] = useState<"OAUTH" | "PAT">("OAUTH");
   const [token, setToken] = useState("");
   const [useAsDefault, setUseAsDefault] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
-      setIsSubmitting(true);
-
       const accountParams: AddAccountParams = {
         host: getProviderHost(provider),
         kind: provider,
@@ -39,16 +38,13 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
         accountsToUpdate: [],
       };
 
-      await invoke("update_profile", { input });
-      console.log("Account added successfully");
+      await updateProfile(input);
 
       handleClose();
       onAccountAdded?.();
     } catch (error) {
       console.error("Error adding account:", error);
       alert(`Failed to add account: ${error}`);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -66,7 +62,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
     }, 200);
   };
 
-  const isSubmitDisabled = isSubmitting || (method === "PAT" && !token);
+  const isSubmitDisabled = isUpdatingProfile || (method === "PAT" && !token);
 
   return (
     <Modal onBackdropClick={handleClose} showModal={showModal} className="max-w-136 w-full">
@@ -110,7 +106,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
           setUseAsDefault={setUseAsDefault}
           handleCancel={handleClose}
           isSubmitDisabled={isSubmitDisabled}
-          isSubmitting={isSubmitting}
+          isSubmitting={isUpdatingProfile}
         />
       </form>
     </Modal>

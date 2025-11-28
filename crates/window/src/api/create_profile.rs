@@ -3,10 +3,10 @@ use moss_applib::AppRuntime;
 
 use crate::{
     models::operations::{CreateProfileInput, CreateProfileOutput},
-    window::Window,
+    window::OldSapicWindow,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn create_profile(
         &self,
         _ctx: &R::AsyncContext,

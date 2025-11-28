@@ -1,7 +1,9 @@
-use joinerror::OptionExt;
+use joinerror::{OptionExt, ResultExt};
 use moss_applib::errors::Unavailable;
-use sapic_ipc::{TauriResult, contracts::other::CancelRequestInput};
-use sapic_window::models::operations::OpenWorkspaceInput;
+use sapic_ipc::{
+    TauriResult,
+    contracts::{other::*, welcome::workspace::*},
+};
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
@@ -49,6 +51,54 @@ pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
 
             Ok(())
         },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn welcome__create_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: CreateWorkspaceInput,
+    options: Options,
+) -> TauriResult<CreateWorkspaceOutput> {
+    super::with_welcome_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, app_delegate, window| async move {
+            let output = window.create_workspace(&ctx, &input).await?;
+
+            app.ensure_main_for_workspace(&ctx, &app_delegate, output.id.clone())
+                .await
+                .join_err::<()>("failed to open a new window for workspace")?;
+
+            Ok(output)
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn welcome__update_workspace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: UpdateWorkspaceInput,
+    options: Options,
+) -> TauriResult<UpdateWorkspaceOutput> {
+    super::with_welcome_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move { window.update_workspace(&ctx, &input).await },
     )
     .await
 }

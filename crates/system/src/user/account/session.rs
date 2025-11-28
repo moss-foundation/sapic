@@ -4,7 +4,10 @@ use sapic_core::context::AnyAsyncContext;
 use std::sync::Arc;
 
 use crate::{
-    ports::server_api::{RevokeApiReq, auth_gitlab_account_api::GitLabTokenRefreshApiReq},
+    ports::server_api::{
+        auth_github_account_api::GitHubRevokeApiReq,
+        auth_gitlab_account_api::{GitLabRevokeApiReq, GitLabTokenRefreshApiReq},
+    },
     user::account::{
         github_session::{GitHubInitialToken, GitHubPAT, GitHubSessionHandle},
         gitlab_session::{GitLabInitialToken, GitLabPAT, GitLabSessionHandle},
@@ -34,10 +37,12 @@ impl AccountSession {
     pub async fn github_oauth(
         id: AccountId,
         host: String,
+        revoke_api_op: Arc<dyn GitHubRevokeApiReq>,
         initial_token: Option<GitHubInitialToken>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
-        let session = GitHubSessionHandle::oauth(id, host, initial_token, &keyring).await?;
+        let session =
+            GitHubSessionHandle::oauth(id, host, revoke_api_op, initial_token, &keyring).await?;
 
         Ok(Self {
             keyring,
@@ -62,12 +67,20 @@ impl AccountSession {
     pub async fn gitlab_oauth(
         id: AccountId,
         host: String,
-        auth_api_client: Arc<dyn GitLabTokenRefreshApiReq>,
+        refresh_api_op: Arc<dyn GitLabTokenRefreshApiReq>,
+        revoke_api_op: Arc<dyn GitLabRevokeApiReq>,
         initial_token: Option<GitLabInitialToken>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
-        let session =
-            GitLabSessionHandle::oauth(id, host, auth_api_client, initial_token, &keyring).await?;
+        let session = GitLabSessionHandle::oauth(
+            id,
+            host,
+            refresh_api_op,
+            revoke_api_op,
+            initial_token,
+            &keyring,
+        )
+        .await?;
 
         Ok(Self {
             // secrets,
@@ -111,14 +124,10 @@ impl AccountSession {
         }
     }
 
-    pub async fn revoke(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        api_client: Arc<dyn RevokeApiReq>,
-    ) -> joinerror::Result<()> {
+    pub async fn revoke(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         match self.inner.as_ref() {
-            Session::GitHub(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
-            Session::GitLab(handle) => handle.revoke(ctx, &self.keyring, api_client).await,
+            Session::GitHub(handle) => handle.revoke(ctx, &self.keyring).await,
+            Session::GitLab(handle) => handle.revoke(ctx, &self.keyring).await,
         }
     }
 

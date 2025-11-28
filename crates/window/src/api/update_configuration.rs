@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::{
     constants::ON_DID_CHANGE_CONFIGURATION_CHANNEL,
     models::{events::OnDidChangeConfigurationForFrontend, operations::UpdateConfigurationInput},
-    window::Window,
+    window::OldSapicWindow,
 };
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::ValidationResultExt};
@@ -12,7 +12,7 @@ use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettings
 use tauri::Emitter;
 use validator::Validate;
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn update_configuration(
         &self,
         _ctx: &R::AsyncContext,

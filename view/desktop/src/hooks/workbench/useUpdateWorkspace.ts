@@ -1,28 +1,23 @@
-import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { DescribeAppOutput, ListWorkspacesOutput, UpdateWorkspaceInput } from "@repo/window";
+import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
+import { ListWorkspacesOutput, MainWindow_UpdateWorkspaceInput, MainWindow_UpdateWorkspaceOutput } from "@repo/ipc";
+import { DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
 import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
 import { useActiveWorkspace } from "../workspace";
-import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
 
-const updateWorkspaceFn = async (input: UpdateWorkspaceInput): Promise<void> => {
-  const result = await workspaceService.updateWorkspace(input);
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
+const updateWorkspaceFn = async (input: MainWindow_UpdateWorkspaceInput): Promise<MainWindow_UpdateWorkspaceOutput> => {
+  return await mainWorkspaceService.update(input);
 };
 
 export const useUpdateWorkspace = () => {
   const { activeWorkspace } = useActiveWorkspace();
 
   const queryClient = useQueryClient();
-  return useMutation<void, Error, UpdateWorkspaceInput>({
+  return useMutation<MainWindow_UpdateWorkspaceOutput, Error, MainWindow_UpdateWorkspaceInput>({
     mutationKey: [USE_UPDATE_WORKSPACE_MUTATION_KEY],
     mutationFn: updateWorkspaceFn,
     onSuccess: (_, variables) => {

@@ -1,4 +1,5 @@
 pub mod operations;
+pub mod workspace_ops;
 
 use async_trait::async_trait;
 use derive_more::Deref;
@@ -14,6 +15,8 @@ use sapic_window2::{
     defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
 };
 
+use crate::workspace_ops::WelcomeWindowWorkspaceOps;
+
 pub const WELCOME_WINDOW_LABEL: &str = "welcome";
 const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
 
@@ -21,7 +24,9 @@ const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
 #[derive(Deref)]
 pub struct WelcomeWindow<R: AppRuntime> {
     #[deref]
-    pub handle: WindowHandle<R::EventLoop>,
+    pub(crate) handle: WindowHandle<R::EventLoop>,
+
+    pub(crate) workspace_ops: WelcomeWindowWorkspaceOps,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -31,13 +36,17 @@ impl<R: AppRuntime> Clone for WelcomeWindow<R> {
     fn clone(&self) -> Self {
         Self {
             handle: self.handle.clone(),
+            workspace_ops: self.workspace_ops.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
 }
 
 impl<R: AppRuntime> WelcomeWindow<R> {
-    pub async fn new(delegate: &AppDelegate<R>) -> joinerror::Result<Self> {
+    pub async fn new(
+        delegate: &AppDelegate<R>,
+        workspace_ops: WelcomeWindowWorkspaceOps,
+    ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
         let win_builder = tauri::WebviewWindowBuilder::new(
             &tao_handle,
@@ -72,6 +81,7 @@ impl<R: AppRuntime> WelcomeWindow<R> {
 
         Ok(Self {
             handle: WindowHandle::new(webview_window),
+            workspace_ops,
             tracked_cancellations: Default::default(),
         })
     }

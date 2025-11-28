@@ -1,11 +1,12 @@
 use derive_more::Deref;
 use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::{primitives::AccountId, types::ProfileInfo};
-use moss_workspace::models::primitives::{WorkspaceId, WorkspaceMode};
+use sapic_base::{
+    user::types::{ProfileInfo, primitives::AccountId},
+    workspace::types::WorkspaceInfo,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 
@@ -102,6 +103,7 @@ pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageIn
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeAppOutput {
     /// The id of the workspace that is currently opened.
+    #[ts(optional, type = "WorkspaceInfo")]
     pub workspace: Option<WorkspaceInfo>,
     /// The id of the profile that is currently active.
     #[ts(optional, type = "ProfileInfo")]
@@ -154,141 +156,141 @@ pub struct BatchDeleteLogOutput {
 
 // List Workspaces
 
-/// @category Operation
-#[derive(Debug, Serialize, Deref, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
+// /// @category Operation
+// #[derive(Debug, Serialize, Deref, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListWorkspacesOutput(pub Vec<WorkspaceInfo>);
 
-// Open Workspace
+// // Open Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenWorkspaceInput {
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct OpenWorkspaceInput {
+//     pub id: WorkspaceId,
+// }
 
-/// DEPRECATED
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct OpenWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// DEPRECATED
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct OpenWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
-// Create Workspace
+// // Create Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS, Clone)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateWorkspaceInput {
-    #[validate(length(min = 1))]
-    pub name: String,
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS, Clone)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateWorkspaceInput {
+//     #[validate(length(min = 1))]
+//     pub name: String,
 
-    // FIXME: Do we need this anymore?
-    #[serde(default)]
-    #[ts(type = "WorkspaceMode")]
-    pub mode: WorkspaceMode,
+//     // FIXME: Do we need this anymore?
+//     #[serde(default)]
+//     #[ts(type = "WorkspaceMode")]
+//     pub mode: WorkspaceMode,
 
-    #[serde(default = "default_open_on_creation")]
-    pub open_on_creation: bool,
-}
+//     #[serde(default = "default_open_on_creation")]
+//     pub open_on_creation: bool,
+// }
 
-fn default_open_on_creation() -> bool {
-    true
-}
+// fn default_open_on_creation() -> bool {
+//     true
+// }
 
-/// @category Operation
-#[derive(Debug, Validate, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// @category Operation
+// #[derive(Debug, Validate, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CreateWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    pub active: bool,
+//     pub active: bool,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
-// Delete Workspace
+// // Delete Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteWorkspaceInput {
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteWorkspaceInput {
+//     pub id: WorkspaceId,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteWorkspaceOutput {
-    pub id: WorkspaceId,
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DeleteWorkspaceOutput {
+//     pub id: WorkspaceId,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }
 
 // Rename Workspace
 
-/// @category Operation
-#[derive(Debug, Validate, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateWorkspaceInput {
-    /// A new name for the workspace, if provided, the workspace
-    /// will be renamed to this name.
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-}
+// /// @category Operation
+// #[derive(Debug, Validate, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct UpdateWorkspaceInput {
+//     /// A new name for the workspace, if provided, the workspace
+//     /// will be renamed to this name.
+//     #[validate(length(min = 1))]
+//     pub name: Option<String>,
+// }
 
 // Describe Workbench State
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeWorkbenchStateOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub active_workspace_id: Option<WorkspaceId>,
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DescribeWorkbenchStateOutput {
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub active_workspace_id: Option<WorkspaceId>,
 
-    #[ts(as = "Option<String>")]
-    pub prev_workspace_id: Option<WorkspaceId>,
-}
+//     #[ts(as = "Option<String>")]
+//     pub prev_workspace_id: Option<WorkspaceId>,
+// }
 
-// Close Workspace
+// // Close Workspace
 
-/// @category Operation
-#[derive(Debug, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CloseWorkspaceInput {
-    /// The workspace id is required to ensure the close function
-    /// is only called when a workspace is open.
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CloseWorkspaceInput {
+//     /// The workspace id is required to ensure the close function
+//     /// is only called when a workspace is open.
+//     pub id: WorkspaceId,
+// }
 
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CloseWorkspaceOutput {
-    /// The id of the workspace that was closed.
-    pub id: WorkspaceId,
-}
+// /// @category Operation
+// #[derive(Debug, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct CloseWorkspaceOutput {
+//     /// The id of the workspace that was closed.
+//     pub id: WorkspaceId,
+// }

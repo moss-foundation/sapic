@@ -5,6 +5,8 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-base.workspace = true
+
 moss_edit.workspace = true
 moss_common.workspace = true
 moss_fs.workspace = true

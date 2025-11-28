@@ -9,7 +9,7 @@ use moss_environment::{
     builder::{EnvironmentBuilder, EnvironmentLoadParams},
     constants::ENVIRONMENT_FILE_EXTENSION,
     errors::ErrorIo,
-    models::{primitives::EnvironmentId, types::AddVariableParams},
+    models::types::AddVariableParams,
     storage::key_variable,
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
@@ -17,6 +17,9 @@ use moss_logging::session;
 use moss_project::models::primitives::ProjectId;
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
+use sapic_base::{
+    environment::types::primitives::EnvironmentId, workspace::types::primitives::WorkspaceId,
+};
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -28,10 +31,7 @@ use tokio::sync::{RwLock, mpsc};
 use crate::{
     dirs,
     errors::ErrorNotFound,
-    models::{
-        primitives::WorkspaceId,
-        types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
-    },
+    models::types::{EnvironmentGroup, UpdateEnvironmentGroupParams, UpdateEnvironmentParams},
     storage::{
         KEY_ACTIVE_ENVIRONMENTS, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
         KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,

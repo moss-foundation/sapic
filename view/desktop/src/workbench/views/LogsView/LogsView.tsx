@@ -7,13 +7,13 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
-import { ExtensionInfo } from "@repo/base";
+import { AccountKind, ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
-import { AccountKind } from "@repo/moss-user";
-import { ParsedUrl, ParseUrlOutput } from "@repo/url-parser";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+
+import { ParsedUrl } from "../EndpointView/utils";
 
 interface CreateProfileData {
   name: string;
@@ -510,7 +510,7 @@ const UrlParserTest = () => {
 
   async function handleParseUrlButton() {
     try {
-      const result = await invoke<ParseUrlOutput>("plugin:url-parser|parse_url", {
+      const result = await invoke<ParsedUrl>("plugin:url-parser|parse_url", {
         input: {
           url: url,
         },

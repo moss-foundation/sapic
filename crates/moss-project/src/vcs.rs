@@ -10,8 +10,9 @@ use moss_git::{
     repository::Repository,
     url::GitUrl,
 };
-use moss_git_hosting_provider::GitProviderKind;
-use moss_user::models::primitives::AccountId;
+use sapic_base::user::types::primitives::AccountId;
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::ports::GitProviderKind;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
@@ -27,32 +28,35 @@ pub struct VcsSummary {
 
 #[async_trait]
 pub trait ProjectVcs<R: AppRuntime>: Send + Sync {
-    async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary>;
-    async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>>;
+    async fn summary(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<VcsSummary>;
+    async fn contributors(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<ContributorInfo>>;
     async fn statuses(&self) -> joinerror::Result<HashMap<PathBuf, FileStatus>>;
     fn owner(&self) -> AccountId;
     fn provider(&self) -> GitProviderKind;
 
     async fn stage_and_commit(&self, paths: Vec<PathBuf>, message: &str) -> joinerror::Result<()>;
-    async fn push(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
+    async fn push(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()>;
     async fn pull(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<()>;
-    async fn fetch(&self, ctx: &R::AsyncContext) -> joinerror::Result<()>;
+    async fn fetch(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()>;
     async fn discard_changes(&self, paths: Vec<PathBuf>) -> joinerror::Result<()>;
 }
 
-pub(crate) struct Vcs<R: AppRuntime> {
+pub(crate) struct Vcs {
     url: GitUrl,
     // An Option is used here to allow dropping it separately when cleaning up
     repository: Arc<RwLock<Option<Repository>>>,
-    client: GitClient<R>,
+    client: GitClient,
 }
 
-impl<R: AppRuntime> Vcs<R> {
-    pub(crate) fn new(url: GitUrl, repository: Repository, client: GitClient<R>) -> Self {
+impl Vcs {
+    pub(crate) fn new(url: GitUrl, repository: Repository, client: GitClient) -> Self {
         Self {
             url,
             repository: Arc::new(RwLock::new(Some(repository))),
@@ -99,8 +103,8 @@ impl<R: AppRuntime> Vcs<R> {
 }
 
 #[async_trait]
-impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
-    async fn summary(&self, ctx: &R::AsyncContext) -> joinerror::Result<VcsSummary> {
+impl<R: AppRuntime> ProjectVcs<R> for Vcs {
+    async fn summary(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<VcsSummary> {
         let repo = self.client.repository(ctx, &self.url).await?;
 
         let repo_lock = self.repository.read().await;
@@ -134,7 +138,10 @@ impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
         self.client.kind()
     }
 
-    async fn contributors(&self, ctx: &R::AsyncContext) -> joinerror::Result<Vec<ContributorInfo>> {
+    async fn contributors(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<ContributorInfo>> {
         self.client.contributors(ctx, &self.url).await
     }
 
@@ -168,7 +175,7 @@ impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
     }
 
     // Pushing currently checked-out branch to the configured refspec+remote
-    async fn push(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+    async fn push(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()
@@ -188,7 +195,7 @@ impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
 
     async fn pull(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<()> {
         let repo_lock = self.repository.write().await;
@@ -234,7 +241,7 @@ impl<R: AppRuntime> ProjectVcs<R> for Vcs<R> {
         Err(e)
     }
 
-    async fn fetch(&self, ctx: &R::AsyncContext) -> joinerror::Result<()> {
+    async fn fetch(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let repo_lock = self.repository.read().await;
         let repo_ref = repo_lock
             .as_ref()

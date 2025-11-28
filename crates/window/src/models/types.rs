@@ -1,14 +1,11 @@
 use moss_logging::models::primitives::LogEntryId;
-use moss_user::models::primitives::{AccountId, AccountKind};
-use moss_workspace::models::primitives::WorkspaceId;
-use sapic_base::configuration::types::primitives::ConfigurationTarget;
+use sapic_base::{
+    configuration::types::primitives::ConfigurationTarget,
+    user::types::primitives::{AccountId, AccountKind},
+};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{collections::HashMap, path::PathBuf};
 use ts_rs::TS;
 
 use crate::models::primitives::*;
@@ -131,17 +128,17 @@ pub struct LogEntryInfo {
 // ###                    Workspace                      ###
 // #########################################################
 
-/// @category Type
-#[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct WorkspaceInfo {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub last_opened_at: Option<i64>,
+// /// @category Type
+// #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct WorkspaceInfo {
+//     pub id: WorkspaceId,
+//     pub name: String,
+//     pub last_opened_at: Option<i64>,
 
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-}
+//     #[serde(skip)]
+//     #[ts(skip)]
+//     pub abs_path: Arc<Path>,
+// }

@@ -5,10 +5,7 @@ use crate::shared::setup_test_workspace;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
-    models::{
-        primitives::VariableId,
-        types::{AddVariableParams, UpdateVariableParams, VariableOptions},
-    },
+    models::types::{AddVariableParams, UpdateVariableParams, VariableOptions},
 };
 use moss_storage2::{Storage, models::primitives::StorageScope};
 use moss_testutils::random_name::random_environment_name;
@@ -19,6 +16,7 @@ use moss_workspace::{
     },
     storage::key_environment_order,
 };
+use sapic_base::environment::types::primitives::VariableId;
 use serde_json::Value as JsonValue;
 // TODO: Test updating collection_id once it's implemented
 // TODO: Update test once we switch variable store to new database

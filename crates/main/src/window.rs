@@ -1,15 +1,13 @@
 pub mod operations;
+pub mod workspace;
+pub mod workspace_ops;
 
+use arc_swap::ArcSwap;
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, errors::TauriResultExt};
-use moss_fs::FileSystem;
-use moss_keyring::KeyringClient;
-use moss_server_api::account_auth_gateway::AccountAuthGatewayApiClient;
-use moss_workspace::models::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
-use sapic_window::WindowBuilder;
 use sapic_window2::{
     AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
@@ -17,8 +15,29 @@ use sapic_window2::{
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
+use crate::{workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
+
 const MAIN_WINDOW_LABEL_PREFIX: &str = "main_";
 const MAIN_WINDOW_ENTRY_POINT: &str = "workspace.html";
+
+/// Newtype wrapper for Workspace to use with ArcSwap.
+/// This allows atomic lock-free swapping of workspace instances.
+#[derive(Deref, Clone)]
+pub struct WorkspaceHandle(Arc<dyn Workspace>);
+
+impl WorkspaceHandle {
+    pub fn new(workspace: Arc<dyn Workspace>) -> Self {
+        Self(workspace)
+    }
+
+    pub fn get(&self) -> Arc<dyn Workspace> {
+        self.0.clone()
+    }
+
+    pub fn into_inner(self) -> Arc<dyn Workspace> {
+        self.0
+    }
+}
 
 /// Main window controller. This window is used to display a workspace.
 #[derive(Deref)]
@@ -26,9 +45,13 @@ pub struct MainWindow<R: AppRuntime> {
     #[deref]
     pub handle: WindowHandle<R::EventLoop>,
 
+    pub workspace: Arc<ArcSwap<WorkspaceHandle>>,
+
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    w: Arc<sapic_window::Window<R>>,
+    w: Arc<ArcSwap<sapic_window::OldSapicWindow<R>>>,
+
+    pub(crate) workspace_ops: MainWindowWorkspaceOps,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -38,7 +61,9 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
     fn clone(&self) -> Self {
         Self {
             handle: self.handle.clone(),
+            workspace: self.workspace.clone(),
             w: self.w.clone(),
+            workspace_ops: self.workspace_ops.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
@@ -46,24 +71,20 @@ impl<R: AppRuntime> Clone for MainWindow<R> {
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn new(
-        ctx: &R::AsyncContext,
         delegate: &AppDelegate<R>,
-        fs: Arc<dyn FileSystem>,
-        keyring: Arc<dyn KeyringClient>,
-        auth_api_client: Arc<AccountAuthGatewayApiClient>,
         window_id: usize,
-        workspace_id: WorkspaceId,
+        old_window: sapic_window::OldSapicWindow<R>,
+        workspace: Arc<dyn Workspace>,
+        workspace_ops: MainWindowWorkspaceOps,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
-        let w = WindowBuilder::new(fs, keyring, auth_api_client, workspace_id.clone())
-            .build(ctx, delegate)
-            .await?;
-
         let label = format!("{MAIN_WINDOW_LABEL_PREFIX}{}", window_id);
         let win_builder = tauri::WebviewWindowBuilder::new(
             &tao_handle,
             label,
-            tauri::WebviewUrl::App(format!("{}#/{}", MAIN_WINDOW_ENTRY_POINT, workspace_id).into()),
+            tauri::WebviewUrl::App(
+                format!("{}#/{}", MAIN_WINDOW_ENTRY_POINT, workspace.id()).into(),
+            ),
         )
         .title("HARDCODED TITLE") // FIXME: HARDCODE
         .center()
@@ -87,15 +108,42 @@ impl<R: AppRuntime> MainWindow<R> {
 
         Ok(Self {
             handle: WindowHandle::new(webview_window),
-            w: Arc::new(w),
+            w: ArcSwap::from_pointee(old_window).into(),
+            workspace: ArcSwap::from_pointee(WorkspaceHandle::new(workspace)).into(),
+            workspace_ops,
             tracked_cancellations: Arc::new(RwLock::new(HashMap::new())),
         })
     }
 
     // HACK: this is a temporary solution until we migrate all the necessary
     // functionality and fully get rid of the separate `window` crate.
-    pub fn inner(&self) -> &sapic_window::Window<R> {
-        &self.w
+    pub fn inner(&self) -> Arc<sapic_window::OldSapicWindow<R>> {
+        self.w.load_full()
+    }
+
+    pub fn workspace(&self) -> Arc<dyn Workspace> {
+        self.workspace.load().get()
+    }
+
+    pub async fn swap_workspace(
+        &self,
+        new_workspace: Arc<dyn Workspace>,
+
+        // HACK: this is a temporary solution until we migrate all the necessary
+        // functionality and fully get rid of the separate `window` crate.
+        old_window: sapic_window::OldSapicWindow<R>,
+    ) -> joinerror::Result<()> {
+        joinerror::ResultExt::join_err::<()>(
+            self.workspace.load_full().dispose().await,
+            "failed to dispose old workspace",
+        )?;
+
+        self.workspace
+            .store(Arc::new(WorkspaceHandle::new(new_workspace)));
+
+        self.w.store(Arc::new(old_window));
+
+        Ok(())
     }
 }
 

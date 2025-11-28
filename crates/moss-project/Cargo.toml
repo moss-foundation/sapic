@@ -8,8 +8,11 @@ license = "MIT"
 serde_json.workspace = true
 
 [dependencies]
+sapic-core.workspace = true
+sapic-system.workspace = true
+sapic-base.workspace = true
+
 moss_app_delegate.workspace = true
-moss_user.workspace = true
 moss_edit.workspace = true
 moss_fs.workspace = true
 moss_common.workspace = true
@@ -17,12 +20,10 @@ moss_storage2.workspace = true
 moss_text.workspace = true
 moss_environment.workspace = true
 moss_git.workspace = true
-moss_git_hosting_provider.workspace = true
 moss_hcl.workspace = true
 moss_bindingutils.workspace = true
 moss_applib.workspace = true
 moss_keyring.workspace = true
-sapic-core.workspace = true
 moss_id_macro.workspace = true
 moss_logging.workspace = true
 

@@ -25,7 +25,6 @@ members = [
     "crates/moss-applib",
     "crates/moss-app-delegate",
     "crates/moss-git",
-    "crates/moss-git-hosting-provider",
     "crates/moss-text",
     "crates/moss-project",
     "crates/moss-fs",
@@ -41,8 +40,6 @@ members = [
     "crates/moss-wasm",
     "crates/moss-edit",
     "crates/moss-logging",
-    "crates/moss-user",
-    "crates/moss-server-api",
     "crates/moss-id-macro",
     "crates/moss-extension-points", 
     "crates/moss-language",
@@ -94,7 +91,6 @@ moss_project = { path = "crates/moss-project" }
 moss_applib = { path = "crates/moss-applib" }
 moss_app_delegate = { path = "crates/moss-app-delegate" }
 moss_git = { path = "crates/moss-git" }
-moss_git_hosting_provider = { path = "crates/moss-git-hosting-provider" }
 moss_fs = { path = "crates/moss-fs" }
 moss_keyring = { path = "crates/moss-keyring" }
 moss_vault = { path = "crates/moss-vault" }
@@ -109,8 +105,6 @@ moss_wasm = { path = "crates/moss-wasm" }
 moss_edit = { path = "crates/moss-edit" }
 moss_logging = { path = "crates/moss-logging" }
 moss_id_macro = { path = "crates/moss-id-macro"}
-moss_user = { path = "crates/moss-user" }
-moss_server_api = { path = "crates/moss-server-api" }
 moss_bootstrap = { path = "crates/moss-bootstrap" }
 moss_extension_points = { path = "crates/moss-extension-points" }
 moss_language = { path = "crates/moss-language" }
@@ -183,6 +177,7 @@ syn = {version = "2.0.106"}
 async_zip = {version = "0.0.18", default-features = false}
 regorus = {version = "0.5.0", default-features = false}
 inventory = "0.3.21"
+arc-swap = "1.7.1"
 pest = "2.8.3"
 pest_derive = "2.8.3"
 

@@ -22,16 +22,18 @@ export type TauriIpcCommand =
   | "list_languages"
   | "list_color_themes"
   | "list_extensions"
-  | "create_workspace"
   | "delete_workspace"
   | "update_workspace"
-  | "close_workspace"
   | "update_profile"
   | "get_mistral_api_key"
   //
   // Main
   //
   | "main__cancel_request"
+  | "main__update_workspace"
+  | "main__close_workspace"
+  | "main__open_workspace"
+  | "main__create_workspace"
   //
   // Welcome
   //

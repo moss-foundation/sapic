@@ -5,24 +5,24 @@ use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
-use moss_git_hosting_provider::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
 use moss_project::models::primitives::ProjectId;
 use moss_storage2::{AppStorage, AppStorageOptions, Storage};
 use moss_testutils::random_name::{random_string, random_workspace_name};
-use moss_user::profile::Profile;
 use moss_workspace::{
     Workspace,
     builder::{CreateWorkspaceParams, WorkspaceBuilder},
     models::{
         events::StreamProjectsEvent,
         operations::{CreateProjectInput, DeleteProjectInput, StreamProjectsOutput},
-        primitives::WorkspaceId,
         types::CreateProjectParams,
     },
 };
 use rand::Rng;
 use reqwest::ClientBuilder as HttpClientBuilder;
+use sapic_base::{user::types::primitives::ProfileId, workspace::types::primitives::WorkspaceId};
 use sapic_core::context::{AsyncContext, MutableContext};
+use sapic_platform::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
+use sapic_system::user::profile::Profile;
 use std::{
     collections::HashMap,
     fs,
@@ -66,19 +66,12 @@ pub async fn setup_test_workspace() -> (
     let fs = Arc::new(RealFileSystem::new(&tmp_path));
     let mock_app = tauri::test::mock_app();
     let tao_app_handle = mock_app.handle().clone();
-    {
-        let http_client = HttpClientBuilder::new()
-            .user_agent("SAPIC/1.0")
-            .build()
-            .expect("failed to build http client");
+    let http_client = HttpClientBuilder::new()
+        .user_agent("SAPIC/1.0")
+        .build()
+        .expect("failed to build http client");
 
-        let github_client = AppGitHubApiClient::new(http_client.clone());
-        let gitlab_client = AppGitLabApiClient::new(http_client.clone());
-
-        tao_app_handle.manage(http_client);
-        tao_app_handle.manage(github_client);
-        tao_app_handle.manage(gitlab_client);
-    }
+    tao_app_handle.manage(http_client.clone());
 
     let app_storage = AppStorage::new(
         &globals_path,
@@ -100,24 +93,29 @@ pub async fn setup_test_workspace() -> (
 
     let ctx = MutableContext::background_with_timeout(Duration::from_secs(30));
 
-    let active_profile = Profile::new(
-        moss_user::models::primitives::ProfileId::new(),
-        HashMap::new(),
-    );
+    let active_profile = Profile::new(ProfileId::new(), HashMap::new());
+
+    let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
+    let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
 
     let ctx = ctx.freeze();
-    let workspace: Workspace<MockAppRuntime> =
-        WorkspaceBuilder::new(fs.clone(), active_profile.into(), workspace_id.clone())
-            .create(
-                &ctx,
-                &app_delegate,
-                CreateWorkspaceParams {
-                    name: random_workspace_name(),
-                    abs_path: test_workspace_path.clone().into(),
-                },
-            )
-            .await
-            .unwrap();
+    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(
+        fs.clone(),
+        active_profile.into(),
+        workspace_id.clone(),
+        github_api_client.clone(),
+        gitlab_api_client.clone(),
+    )
+    .create(
+        &ctx,
+        &app_delegate,
+        CreateWorkspaceParams {
+            name: random_workspace_name(),
+            abs_path: test_workspace_path.clone().into(),
+        },
+    )
+    .await
+    .unwrap();
 
     let cleanup_fn = Box::new({
         let abs_path_clone = abs_path.clone();

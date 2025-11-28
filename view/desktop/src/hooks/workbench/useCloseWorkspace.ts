@@ -1,23 +1,14 @@
-import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { CloseWorkspaceOutput } from "@repo/window";
+import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_CLOSE_WORKSPACE_QUERY_KEY = "closeWorkspace";
 
-const closeWorkspaceFn = async (workspaceId: string): Promise<CloseWorkspaceOutput> => {
-  const result = await workspaceService.closeWorkspace({
-    id: workspaceId,
-  });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
+const closeWorkspaceFn = async (): Promise<void> => {
+  return await mainWorkspaceService.close();
 };
 
 export const useCloseWorkspace = () => {
-  return useMutation<CloseWorkspaceOutput, Error, string>({
+  return useMutation<void, Error, string>({
     mutationKey: [USE_CLOSE_WORKSPACE_QUERY_KEY],
     mutationFn: closeWorkspaceFn,
   });

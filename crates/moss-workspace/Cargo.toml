@@ -5,6 +5,8 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-base.workspace = true
+sapic-system.workspace = true
 sapic-core.workspace = true
 
 moss_app_delegate.workspace = true
@@ -16,12 +18,10 @@ moss_storage2.workspace = true
 moss_git.workspace = true
 moss_bindingutils.workspace = true
 moss_edit.workspace = true
-moss_git_hosting_provider.workspace = true
 moss_keyring.workspace = true
 moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
-moss_user.workspace = true
 moss_text.workspace = true
 
 static_json.workspace = true
@@ -50,6 +50,7 @@ rustc-hash = { workspace = true }
 tracing.workspace = true
 
 [dev-dependencies]
+sapic-platform = { workspace = true }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
@@ -57,9 +58,7 @@ moss_applib = { workspace = true, features = ["test"] }
 [features]
 integration-tests = [
   "dotenvy",
-  "moss_user/integration-tests",
   "moss_project/integration-tests",
-  "moss_git_hosting_provider/integration-tests",
   "oauth2",
   "moss_keyring/test",
   "moss_storage2/integration-tests",

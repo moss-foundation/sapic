@@ -1,8 +1,8 @@
 use moss_applib::AppRuntime;
 
-use crate::{models::operations::ListLanguagesOutput, window::Window};
+use crate::{models::operations::ListLanguagesOutput, window::OldSapicWindow};
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn list_languages(
         &self,
         _ctx: &R::AsyncContext,

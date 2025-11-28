@@ -1,12 +1,10 @@
 use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
 use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
+use sapic_base::environment::types::primitives::{EnvironmentId, VariableId, VariableName};
 use serde::{Deserialize, Serialize};
 
-use crate::models::{
-    primitives::{EnvironmentId, VariableId},
-    types::{VariableName, VariableOptions},
-};
+use crate::models::types::VariableOptions;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MetadataDecl {

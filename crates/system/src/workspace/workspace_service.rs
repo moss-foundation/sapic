@@ -1,15 +1,15 @@
-use moss_fs::FileSystem;
+use async_trait::async_trait;
+use joinerror::ResultExt;
 use moss_storage2::{Storage, models::primitives::StorageScope};
-use moss_workspace::{models::primitives::WorkspaceId, workspace::WorkspaceSummary};
 use rustc_hash::FxHashMap;
-
+use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
+use std::{path::PathBuf, sync::Arc};
+
+use crate::workspace::{
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
 };
 
-// static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
 pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
@@ -20,33 +20,36 @@ pub fn key_workspace(id: &WorkspaceId) -> String {
     format!("{KEY_WORKSPACE_PREFIX}.{}", id.to_string())
 }
 
-pub struct WorkspaceItem {
-    pub id: WorkspaceId,
-    pub name: String,
-    pub abs_path: Arc<Path>,
-    pub last_opened_at: Option<i64>,
-}
-
 pub struct WorkspaceService {
-    workspaces_dir: PathBuf,
-    fs: Arc<dyn FileSystem>,
+    fs: Arc<dyn WorkspaceServiceFs>,
     storage: Arc<dyn Storage>,
 }
 
 impl WorkspaceService {
-    pub async fn new(
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn Storage>,
-        workspaces_dir: PathBuf,
-    ) -> Self {
-        Self {
-            fs,
-            storage,
-            workspaces_dir,
-        }
+    pub fn new(fs: Arc<dyn WorkspaceServiceFs>, storage: Arc<dyn Storage>) -> Self {
+        Self { fs, storage }
     }
 
-    pub async fn known_workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+    pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
+        // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
+        let deleted_path = self.fs.delete_workspace(id).await?;
+
+        if let Err(e) = self
+            .storage
+            .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
+            .await
+        {
+            tracing::warn!(
+                "failed to remove database entries for workspace `{}`: {}",
+                id,
+                e.to_string()
+            );
+        }
+
+        Ok(deleted_path)
+    }
+
+    pub async fn workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
             .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
@@ -57,54 +60,43 @@ impl WorkspaceService {
             FxHashMap::default()
         };
 
-        let mut read_dir = self.fs.read_dir(&self.workspaces_dir).await?;
+        let discovered_workspaces = self
+            .fs
+            .lookup_workspaces()
+            .await
+            .join_err::<()>("failed to lookup workspaces")?;
 
-        let mut workspaces = vec![];
-        while let Some(entry) = read_dir.next_entry().await? {
-            if !entry.file_type().await?.is_dir() {
-                continue;
-            }
+        let workspaces = discovered_workspaces
+            .into_iter()
+            .map(|discovered| {
+                let filtered_items = restored_items
+                    .iter()
+                    .filter(|(key, _)| key.starts_with(&key_workspace(&discovered.id)))
+                    .collect::<FxHashMap<_, _>>();
 
-            let id_str = entry.file_name().to_string_lossy().to_string();
-            let id: WorkspaceId = id_str.into();
+                let last_opened_at = filtered_items
+                    .get(&key_workspace_last_opened_at(&discovered.id))
+                    .and_then(|value| value.as_i64());
 
-            // Log the error and skip when encountering a workspace with invalid manifest
-            let summary = match WorkspaceSummary::new(&self.fs, &entry.path()).await {
-                Ok(summary) => summary,
-                Err(e) => {
-                    // FIXME: We can't use session logs outside of a session.
-                    // session::error!(format!(
-                    //     "failed to parse workspace `{}` manifest: {}",
-                    //     id.as_str(),
-                    //     e.to_string()
-                    // ));
-
-                    println!(
-                        "ERROR: failed to parse workspace `{}` manifest: {}",
-                        id.as_str(),
-                        e.to_string()
-                    );
-                    continue;
+                WorkspaceItem {
+                    id: discovered.id,
+                    name: discovered.name,
+                    abs_path: Arc::from(discovered.abs_path),
+                    last_opened_at,
                 }
-            };
-
-            let filtered_items = restored_items
-                .iter()
-                .filter(|(key, _)| key.starts_with(&key_workspace(&id)))
-                .collect::<FxHashMap<_, _>>();
-
-            let last_opened_at = filtered_items
-                .get(&key_workspace_last_opened_at(&id))
-                .and_then(|value| value.as_i64());
-
-            workspaces.push(WorkspaceItem {
-                id,
-                name: summary.name,
-                abs_path: entry.path().into(),
-                last_opened_at,
-            });
-        }
+            })
+            .collect();
 
         Ok(workspaces)
+    }
+}
+
+#[async_trait]
+impl WorkspaceCreateOp for WorkspaceService {
+    async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
+        let id = WorkspaceId::new();
+        let abs_path = self.fs.create_workspace(&id, &name).await?;
+
+        Ok(CreatedWorkspace { id, name, abs_path })
     }
 }

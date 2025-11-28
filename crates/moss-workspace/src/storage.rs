@@ -1,5 +1,5 @@
-use moss_environment::models::primitives::EnvironmentId;
 use moss_project::models::primitives::ProjectId;
+use sapic_base::environment::types::primitives::EnvironmentId;
 
 pub static KEY_EXPANDED_ITEMS: &'static str = "expandedItems";
 

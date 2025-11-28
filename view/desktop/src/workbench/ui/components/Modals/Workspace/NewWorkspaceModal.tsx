@@ -7,37 +7,61 @@ import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
+import { OpenInTargetEnum } from "@/main/types";
+import { useWelcomeOpenWorkspace } from "@/welcome/adapters/tanstackQuery/workspace";
+import { useWelcomeCreateWorkspace } from "@/welcome/adapters/tanstackQuery/workspace/useWelcomeCreateWorkspace";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
-import { WorkspaceMode } from "@repo/moss-workspace";
+import { WorkspaceMode } from "@repo/base";
 
 import { ModalWrapperProps } from "../types";
 
-export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
+interface NewWorkspaceModalProps extends ModalWrapperProps {
+  forceNewWindow?: boolean;
+  window?: "welcome" | "main";
+}
+
+export const NewWorkspaceModal = ({
+  closeModal,
+  showModal,
+  forceNewWindow = false,
+  window = "main",
+}: NewWorkspaceModalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { mutateAsync: createWorkspace, isPending: isCreatingWorkspace } = useCreateWorkspace();
   const { mutateAsync: openWorkspace, isPending: isOpeningWorkspace } = useOpenWorkspace();
 
+  const { mutateAsync: openWelcomeWorkspace, isPending: isOpeningWelcomeWorkspace } = useWelcomeOpenWorkspace();
+  const { mutateAsync: createWelcomeWorkspace, isPending: isCreatingWelcomeWorkspace } = useWelcomeCreateWorkspace();
+
   useFocusInputOnMount({ inputRef });
 
   const [name, setName] = useState("New Workspace");
   const [mode, setMode] = useState<WorkspaceMode>("LIVE");
-  const [openAutomatically, setOpenAutomatically] = useState(true);
+  const [openInNewWindow, setOpenInNewWindow] = useState(true);
 
-  const isLoadingWorkspaces = isCreatingWorkspace || isOpeningWorkspace;
+  // Force openInNewWindow to true when forceNewWindow prop is enabled
+  const effectiveOpenInNewWindow = forceNewWindow ? true : openInNewWindow;
+
+  const isLoadingWorkspaces =
+    isCreatingWorkspace || isOpeningWorkspace || isCreatingWelcomeWorkspace || isOpeningWelcomeWorkspace;
 
   const handleSubmit = async () => {
     if (!name) return;
 
-    const createWorkspaceOutput = await createWorkspace({
-      name: name.trim(),
-      mode,
-      openOnCreation: openAutomatically,
-    });
-
-    if (openAutomatically && !createWorkspaceOutput.active) {
-      await openWorkspace(createWorkspaceOutput.id);
+    if (window === "welcome") {
+      const createWorkspaceOutput = await createWelcomeWorkspace({ name: name.trim() });
+      await openWelcomeWorkspace({ id: createWorkspaceOutput.id });
+    } else {
+      const createWorkspaceOutput = await createWorkspace({
+        name: name.trim(),
+        openOnCreation: effectiveOpenInNewWindow ? OpenInTargetEnum.NEW_WINDOW : OpenInTargetEnum.CURRENT_WINDOW,
+      });
+      await openWorkspace({
+        id: createWorkspaceOutput.id,
+        openInTarget: effectiveOpenInNewWindow ? OpenInTargetEnum.NEW_WINDOW : OpenInTargetEnum.CURRENT_WINDOW,
+      });
     }
 
     closeModal();
@@ -53,7 +77,7 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
     setTimeout(() => {
       setName("");
       setMode("LIVE");
-      setOpenAutomatically(true);
+      setOpenInNewWindow(true);
     }, 200);
   };
 
@@ -116,13 +140,16 @@ export const NewWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) 
       }
       footer={
         <div className="py-0.75 flex items-center justify-between">
-          <CheckboxWithLabel
-            label="Open automatically after creation"
-            checked={openAutomatically}
-            onCheckedChange={(check) => {
-              if (check !== "indeterminate") setOpenAutomatically(check);
-            }}
-          />
+          {!forceNewWindow && (
+            <CheckboxWithLabel
+              label="Open in a new window?"
+              checked={openInNewWindow}
+              onCheckedChange={(check) => {
+                if (check !== "indeterminate") setOpenInNewWindow(check);
+              }}
+            />
+          )}
+          {forceNewWindow && <div />}
           <div className="px-0.25 py-1.25 flex gap-3">
             <Button intent="outlined" type="button" onClick={handleCancel} disabled={isLoadingWorkspaces}>
               Close

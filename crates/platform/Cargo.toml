@@ -13,6 +13,8 @@ moss_edit = { workspace = true }
 moss_text = { workspace = true }
 moss_applib = { workspace = true }
 moss_git = { workspace = true }
+moss_common = { workspace = true }
+moss_environment = { workspace = true }
 
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -30,6 +32,11 @@ chrono = { workspace = true }
 url = { workspace = true }
 urlencoding = { workspace = true }
 webbrowser = { workspace = true }
+jsonptr = { workspace = true }
+
+# Making SSH work on Windows
+[target.'cfg(windows)'.dependencies]
+libssh2-sys = { version = "0.3.1", features = ["openssl-on-win32", "vendored-openssl"] }
 
 [features]
 integration-tests = []

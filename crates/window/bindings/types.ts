@@ -55,8 +55,3 @@ export type UpdateAccountParams = { id: string; pat?: string };
  * @category Type
  */
 export type UpdateConfigurationParams = { key: string; value: JsonValue; target: ConfigurationTarget };
-
-/**
- * @category Type
- */
-export type WorkspaceInfo = { id: string; name: string; lastOpenedAt?: bigint };

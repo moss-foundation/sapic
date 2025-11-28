@@ -8,6 +8,8 @@ use sapic_system::ports::server_api::{
 
 use super::HttpServerApiClient;
 
+const BASE_SEGMENT: &str = "account-auth-gateway";
+
 #[async_trait]
 impl GitHubPkceTokenExchangeApiReq for HttpServerApiClient {
     async fn github_pkce_token_exchange(
@@ -18,7 +20,10 @@ impl GitHubPkceTokenExchangeApiReq for HttpServerApiClient {
         context::abortable(ctx, async {
             let resp = self
                 .client
-                .post(format!("{}/auth/github/token", self.base_url))
+                .post(format!(
+                    "{}/{BASE_SEGMENT}/auth/github/token",
+                    self.base_url
+                ))
                 .json(&request)
                 .send()
                 .await
@@ -48,7 +53,10 @@ impl GitHubRevokeApiReq for HttpServerApiClient {
         context::abortable(ctx, async {
             let resp = self
                 .client
-                .post(format!("{}/auth/github/revoke", self.base_url))
+                .post(format!(
+                    "{}/{BASE_SEGMENT}/auth/github/revoke",
+                    self.base_url
+                ))
                 .json(&request)
                 .send()
                 .await

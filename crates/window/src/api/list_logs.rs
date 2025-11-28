@@ -4,10 +4,10 @@ use moss_applib::AppRuntime;
 use crate::{
     logging::LogFilter,
     models::operations::{ListLogsInput, ListLogsOutput},
-    window::Window,
+    window::OldSapicWindow,
 };
 
-impl<R: AppRuntime> Window<R> {
+impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn list_logs(
         &self,
         _ctx: &R::AsyncContext,
