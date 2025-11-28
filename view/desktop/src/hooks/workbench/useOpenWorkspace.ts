@@ -1,23 +1,30 @@
-import { workspaceService } from "@/lib/services/workbench/workspaceService";
-import { useMutation } from "@tanstack/react-query";
+import { USE_STREAM_PROJECTS_QUERY_KEY, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "@/adapters";
+import { mainRouter } from "@/main/router/router";
+import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
+import { OpenInTargetEnum } from "@/main/types";
+import { MainWindow_OpenWorkspaceInput } from "@repo/ipc";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
+import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
-const openWorkspaceFn = async (workspaceId: string): Promise<void> => {
-  const result = await workspaceService.openWorkspace({
-    id: workspaceId,
-  });
-
-  if (result.status === "error") {
-    throw new Error(String(result.error));
-  }
-
-  return result.data;
-};
-
 export const useOpenWorkspace = () => {
-  return useMutation<void, Error, string>({
+  const queryClient = useQueryClient();
+
+  return useMutation<void, Error, MainWindow_OpenWorkspaceInput>({
     mutationKey: [USE_OPEN_WORKSPACE_QUERY_KEY],
-    mutationFn: openWorkspaceFn,
+    mutationFn: mainWorkspaceService.open,
+    onSuccess: (_, { id, openInTarget }) => {
+      if (openInTarget === OpenInTargetEnum.CURRENT_WINDOW) {
+        mainRouter.navigate({ to: "/$workspaceId", params: { workspaceId: id } });
+
+        queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_QUERY_KEY] });
+        queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
+        queryClient.invalidateQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY] });
+        queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+      }
+    },
   });
 };

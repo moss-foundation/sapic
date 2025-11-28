@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { WorkspaceInfo } from "@repo/base";
 
-import { useListWorkspaces } from "./useListWorkspaces";
+import { useListWorkspaces } from "../../../adapters/tanstackQuery/workspace/useListWorkspaces";
 
 export const useWorkspaceMapping = () => {
   const { data: workspaces } = useListWorkspaces();

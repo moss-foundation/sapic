@@ -1,7 +1,5 @@
 import { IProjectIpc } from "@/domains/project";
-import { StreamResourcesEvent } from "@repo/moss-project";
-import { StreamProjectsEvent } from "@repo/moss-workspace";
-import { Channel, invoke } from "@tauri-apps/api/core";
+import { invoke } from "@tauri-apps/api/core";
 
 export const projectIpc: IProjectIpc = {
   batchCreateProjectResource: async (projectId, input) => {
@@ -40,13 +38,13 @@ export const projectIpc: IProjectIpc = {
     return await invoke("import_project", { input });
   },
 
-  streamProjects: async (channelEvent: Channel<StreamProjectsEvent>) => {
+  streamProjects: async (channelEvent) => {
     return await invoke("stream_projects", {
       channel: channelEvent,
     });
   },
 
-  streamProjectResources: async (projectId, channelEvent: Channel<StreamResourcesEvent>, path?: string) => {
+  streamProjectResources: async (projectId, channelEvent, path) => {
     return await invoke("stream_project_resources", {
       projectId,
       channel: channelEvent,

@@ -5,11 +5,11 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { PageContent, PageHeader, PageView } from "@/workbench/ui/components";
 import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import {
+  AccountsView,
   EndpointView,
   FolderSettingsView,
   KitchenSinkView,
   LogsView,
-  ProfileView,
   ProjectSettingsView,
   SettingsView,
   WelcomeView,
@@ -75,6 +75,6 @@ export const tabbedPaneComponents = {
   WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettingsView {...props} />,
   KitchenSink: () => <KitchenSinkView />,
   Settings: () => <SettingsView />,
-  Profile: (props: IDockviewPanelProps) => <ProfileView {...props} />,
+  Accounts: (props: IDockviewPanelProps) => <AccountsView {...props} />,
   Logs: () => <LogsView />,
 };

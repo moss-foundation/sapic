@@ -1,8 +1,10 @@
 import { useState } from "react";
 
-import { useListWorkspaces, useOpenWorkspace } from "@/hooks/workbench";
+import { useListWorkspaces } from "@/adapters/tanstackQuery/workspace";
+import { useOpenWorkspace } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
+import { OpenInTargetEnum } from "@/main/types";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
@@ -21,15 +23,18 @@ export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps)
   const handleSubmit = () => {
     if (!selectedWorkspace) return;
 
-    openWorkspace(selectedWorkspace, {
-      onSuccess: () => {
-        closeModal();
-        resetForm();
-      },
-      onError: (error) => {
-        console.error("Failed to open workspace:", error.message);
-      },
-    });
+    openWorkspace(
+      { id: selectedWorkspace, openInTarget: OpenInTargetEnum.CURRENT_WINDOW },
+      {
+        onSuccess: () => {
+          closeModal();
+          resetForm();
+        },
+        onError: (error) => {
+          console.error("Failed to open workspace:", error.message);
+        },
+      }
+    );
   };
 
   const handleCancel = () => {

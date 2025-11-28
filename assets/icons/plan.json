@@ -1,4 +1,7 @@
 {
+  "Accounts": {
+    "identical": true
+  },
   "Add": {
     "identical": true
   },
@@ -214,6 +217,9 @@
   },
   "PreRequest": {
     "identical": false
+  },
+  "Preferences": {
+    "identical": true
   },
   "Profile": {
     "identical": true
