@@ -1,7 +1,8 @@
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
 use moss_project::models::primitives::ProjectId;
+use sapic_ipc::ValidationResultExt;
 use sapic_system::ports::GitProviderKind;
 use validator::Validate;
 

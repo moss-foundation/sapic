@@ -1,11 +1,12 @@
 use hcl::ser::LabeledBlock;
 use indexmap::{IndexMap, indexmap};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{Storage, models::primitives::StorageScope};
+use sapic_ipc::ValidationResultExt;
 use std::collections::HashMap;
 use validator::Validate;
 

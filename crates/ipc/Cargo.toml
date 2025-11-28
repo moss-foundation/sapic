@@ -6,6 +6,7 @@ license = "MIT"
 
 [dependencies]
 sapic-base.workspace = true
+sapic-errors.workspace = true
 
 moss_applib.workspace = true
 moss_common.workspace = true

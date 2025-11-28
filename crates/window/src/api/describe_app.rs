@@ -1,7 +1,8 @@
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::FailedPrecondition};
+use moss_applib::AppRuntime;
 use sapic_base::{user::types::ProfileInfo, workspace::types::WorkspaceInfo};
+use sapic_errors::FailedPrecondition;
 use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;

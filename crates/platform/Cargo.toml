@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sapic-errors.workspace = true
 sapic-core.workspace = true
 sapic-system.workspace = true
 sapic-base = { workspace = true }

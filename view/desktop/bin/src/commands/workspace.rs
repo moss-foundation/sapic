@@ -2,7 +2,6 @@ use moss_workspace::{
     api::BatchUpdateProjectOp,
     models::{events::*, operations::*},
 };
-use sapic_ipc::TauriResult;
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
@@ -15,7 +14,7 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
     window: Window<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
-) -> TauriResult<StreamEnvironmentsOutput> {
+) -> joinerror::Result<StreamEnvironmentsOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -38,7 +37,7 @@ pub async fn stream_projects<'a, R: tauri::Runtime>(
     window: Window<R>,
     channel: TauriChannel<StreamProjectsEvent>,
     options: Options,
-) -> TauriResult<StreamProjectsOutput> {
+) -> joinerror::Result<StreamProjectsOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -57,7 +56,7 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: DescribeProjectInput,
     options: Options,
-) -> TauriResult<DescribeProjectOutput> {
+) -> joinerror::Result<DescribeProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -76,7 +75,7 @@ pub async fn create_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: CreateProjectInput,
     options: Options,
-) -> TauriResult<CreateProjectOutput> {
+) -> joinerror::Result<CreateProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -97,7 +96,7 @@ pub async fn import_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: ImportProjectInput,
     options: Options,
-) -> TauriResult<ImportProjectOutput> {
+) -> joinerror::Result<ImportProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -118,7 +117,7 @@ pub async fn export_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: ExportProjectInput,
     options: Options,
-) -> TauriResult<ExportProjectOutput> {
+) -> joinerror::Result<ExportProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -137,7 +136,7 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: DeleteProjectInput,
     options: Options,
-) -> TauriResult<DeleteProjectOutput> {
+) -> joinerror::Result<DeleteProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -156,7 +155,7 @@ pub async fn update_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: UpdateProjectInput,
     options: Options,
-) -> TauriResult<UpdateProjectOutput> {
+) -> joinerror::Result<UpdateProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -175,7 +174,7 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: ArchiveProjectInput,
     options: Options,
-) -> TauriResult<ArchiveProjectOutput> {
+) -> joinerror::Result<ArchiveProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -194,7 +193,7 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: UnarchiveProjectInput,
     options: Options,
-) -> TauriResult<UnarchiveProjectOutput> {
+) -> joinerror::Result<UnarchiveProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -213,7 +212,7 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: BatchUpdateProjectInput,
     options: Options,
-) -> TauriResult<BatchUpdateProjectOutput> {
+) -> joinerror::Result<BatchUpdateProjectOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -231,7 +230,7 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: Window<R>,
     options: Options,
-) -> TauriResult<ListChangesOutput> {
+) -> joinerror::Result<ListChangesOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -250,7 +249,7 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: ActivateEnvironmentInput,
     options: Options,
-) -> TauriResult<ActivateEnvironmentOutput> {
+) -> joinerror::Result<ActivateEnvironmentOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -269,7 +268,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: CreateEnvironmentInput,
     options: Options,
-) -> TauriResult<CreateEnvironmentOutput> {
+) -> joinerror::Result<CreateEnvironmentOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -292,7 +291,7 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: UpdateEnvironmentInput,
     options: Options,
-) -> TauriResult<UpdateEnvironmentOutput> {
+) -> joinerror::Result<UpdateEnvironmentOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -311,7 +310,7 @@ pub async fn batch_update_environment<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: BatchUpdateEnvironmentInput,
     options: Options,
-) -> TauriResult<BatchUpdateEnvironmentOutput> {
+) -> joinerror::Result<BatchUpdateEnvironmentOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -330,7 +329,7 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: DeleteEnvironmentInput,
     options: Options,
-) -> TauriResult<DeleteEnvironmentOutput> {
+) -> joinerror::Result<DeleteEnvironmentOutput> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -349,7 +348,7 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: UpdateEnvironmentGroupInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     super::with_workspace_timeout(
         ctx.inner(),
         app,
@@ -368,7 +367,7 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     window: Window<R>,
     input: BatchUpdateEnvironmentGroupInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     super::with_workspace_timeout(ctx.inner(), app,
         window,
         options,

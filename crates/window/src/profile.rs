@@ -2,10 +2,7 @@ mod registry;
 
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    errors::{AlreadyExists, FailedPrecondition, NotFound},
-};
+use moss_applib::AppRuntime;
 use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_keyring::KeyringClient;
@@ -15,6 +12,7 @@ use sapic_base::user::types::{
     primitives::{AccountId, AccountKind, ProfileId, SessionKind},
 };
 use sapic_core::context::AnyAsyncContext;
+use sapic_errors::{AlreadyExists, FailedPrecondition, NotFound};
 use sapic_system::{
     ports::{
         github_api::{GitHubApiClient, GitHubAuthAdapter},

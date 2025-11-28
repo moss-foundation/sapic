@@ -7,10 +7,11 @@ edition = "2024"
 sapic-system.workspace = true
 sapic-platform.workspace = true
 sapic-base.workspace = true
+sapic-errors.workspace = true
 
-moss_app_delegate.workspace = true
 moss_applib.workspace = true
 moss_fs.workspace = true
+moss_app_delegate.workspace = true
 
 async-trait.workspace = true
 derive_more.workspace = true
@@ -21,6 +22,7 @@ inventory.workspace = true
 joinerror.workspace = true
 tracing.workspace = true
 rustc-hash.workspace = true
+tauri.workspace = true
 
 [features]
 integration-tests = []

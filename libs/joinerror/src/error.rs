@@ -3,6 +3,8 @@ use std::{
     fmt::{self, Display},
 };
 
+use serde::Serialize;
+
 pub trait ErrorMarker: 'static {
     const MESSAGE: &'static str;
 }
@@ -99,6 +101,15 @@ impl std::error::Error for Error {
         self.source
             .as_ref()
             .map(|e| e.as_ref() as &(dyn std::error::Error + 'static))
+    }
+}
+
+impl Serialize for Error {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(self.to_string().as_str())
     }
 }
 

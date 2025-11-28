@@ -9,7 +9,7 @@ use std::{
 use sapic_core::context::{AnyAsyncContext, ArcContext, AwaitCancel, Reason};
 use tokio::task::JoinHandle;
 
-use crate::errors::{Cancelled, Timeout};
+use sapic_errors::{Cancelled, Timeout};
 
 /// A detached task that runs in the background with context support.
 /// Can be cancelled via context or awaited to get the result.
@@ -68,7 +68,7 @@ impl<T> DetachedTask<T> {
                         details_str, join_error
                     ));
                     // Convert JoinError to a joinerror::Error
-                    Err(joinerror::Error::new::<crate::errors::Internal>(format!(
+                    Err(joinerror::Error::new::<sapic_errors::Internal>(format!(
                         "Task join error: {:?}",
                         join_error
                     )))
@@ -307,11 +307,11 @@ mod tests {
 
     #[tokio::test]
     async fn test_task_ready_error() {
-        let error = joinerror::Error::new::<crate::errors::Internal>("test error");
+        let error = joinerror::Error::new::<sapic_errors::Internal>("test error");
         let task: Task<i32> = Task::ready(Err(error));
         let result = task.await;
         assert!(result.is_err());
-        assert!(result.unwrap_err().is::<crate::errors::Internal>());
+        assert!(result.unwrap_err().is::<sapic_errors::Internal>());
     }
 
     #[tokio::test]
@@ -488,7 +488,7 @@ mod tests {
         let ctx = ArcContext::background();
         let task: Task<i32> = Task::with_context(&ctx, async {
             sleep(Duration::from_millis(10)).await;
-            Err(joinerror::Error::new::<crate::errors::Internal>(
+            Err(joinerror::Error::new::<sapic_errors::Internal>(
                 "test error",
             ))
         });

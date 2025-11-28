@@ -1,4 +1,5 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{Workspace, models::operations::UpdateEnvironmentGroupInput};

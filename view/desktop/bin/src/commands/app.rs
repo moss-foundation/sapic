@@ -1,11 +1,8 @@
 use joinerror::Error;
-use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
-use sapic_ipc::{
-    TauriResult,
-    contracts::{configuration::*, extension::*, theme::*, workspace::*},
-};
+use sapic_errors::NotFound;
+use sapic_ipc::contracts::{configuration::*, extension::*, theme::*, workspace::*};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;
@@ -20,7 +17,7 @@ pub async fn execute_command<'a, R: tauri::Runtime>(
     cmd: ReadOnlyStr,
     args: HashMap<String, JsonValue>,
     options: Options,
-) -> TauriResult<JsonValue> {
+) -> joinerror::Result<JsonValue> {
     let command_cb = app.command(&cmd).ok_or_else(|| {
         Error::new::<NotFound>(format!("command with id {} is not found", quote!(cmd)))
     })?;
@@ -35,7 +32,7 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListConfigurationSchemasOutput> {
+) -> joinerror::Result<ListConfigurationSchemasOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -55,7 +52,7 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListExtensionsOutput> {
+) -> joinerror::Result<ListExtensionsOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -74,7 +71,7 @@ pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: GetColorThemeInput,
     options: Options,
-) -> TauriResult<GetColorThemeOutput> {
+) -> joinerror::Result<GetColorThemeOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -92,7 +89,7 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListColorThemesOutput> {
+) -> joinerror::Result<ListColorThemesOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -110,7 +107,7 @@ pub async fn list_workspaces<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListWorkspacesOutput> {
+) -> joinerror::Result<ListWorkspacesOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -129,7 +126,7 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: DeleteWorkspaceInput,
     options: Options,
-) -> TauriResult<DeleteWorkspaceOutput> {
+) -> joinerror::Result<DeleteWorkspaceOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,

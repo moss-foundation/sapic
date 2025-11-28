@@ -1,7 +1,11 @@
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use sapic_ipc::contracts::workspace::{DeleteWorkspaceInput, DeleteWorkspaceOutput};
+use moss_applib::AppRuntime;
+
+use sapic_ipc::{
+    ValidationResultExt,
+    contracts::workspace::{DeleteWorkspaceInput, DeleteWorkspaceOutput},
+};
 use validator::Validate;
 
 use crate::App;

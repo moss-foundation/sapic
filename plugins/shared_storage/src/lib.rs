@@ -1,10 +1,10 @@
 mod models;
 
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::{GenericAppHandle, task::Task};
+use moss_applib::task::Task;
 use moss_logging::session;
 use moss_storage2::{FlushMode, Storage, StorageCapabilities};
-use sapic_ipc::TauriResult;
+use sapic_runtime::app::GenericAppHandle;
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -154,7 +154,7 @@ async fn on_event_window_focused<R: Runtime>(app_handle: AppHandle<R>) -> joiner
 async fn get_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: GetItemInput,
-) -> TauriResult<GetItemOutput> {
+) -> joinerror::Result<GetItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -177,7 +177,7 @@ async fn get_item<'a, R: tauri::Runtime>(
 async fn put_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: PutItemInput,
-) -> TauriResult<PutItemOutput> {
+) -> joinerror::Result<PutItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -196,7 +196,7 @@ async fn put_item<'a, R: tauri::Runtime>(
 async fn remove_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: RemoveItemInput,
-) -> TauriResult<RemoveItemOutput> {
+) -> joinerror::Result<RemoveItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -218,7 +218,7 @@ async fn remove_item<'a, R: tauri::Runtime>(
 async fn batch_put_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchPutItemInput,
-) -> TauriResult<BatchPutItemOutput> {
+) -> joinerror::Result<BatchPutItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -242,7 +242,7 @@ async fn batch_put_item<'a, R: tauri::Runtime>(
 async fn batch_remove_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchRemoveItemInput,
-) -> TauriResult<BatchRemoveItemOutput> {
+) -> joinerror::Result<BatchRemoveItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -269,7 +269,7 @@ async fn batch_remove_item<'a, R: tauri::Runtime>(
 async fn batch_get_item<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchGetItemInput,
-) -> TauriResult<BatchGetItemOutput> {
+) -> joinerror::Result<BatchGetItemOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -296,7 +296,7 @@ async fn batch_get_item<'a, R: tauri::Runtime>(
 async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchGetItemByPrefixInput,
-) -> TauriResult<BatchGetItemByPrefixOutput> {
+) -> joinerror::Result<BatchGetItemByPrefixOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;
@@ -319,7 +319,7 @@ async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
 async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchRemoveItemByPrefixInput,
-) -> TauriResult<BatchRemoveItemByPrefixOutput> {
+) -> joinerror::Result<BatchRemoveItemByPrefixOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("storage provider not found")?;

@@ -3,7 +3,6 @@ use moss_project::models::{
     operations::*,
     primitives::{ProjectId, ResourceId},
 };
-use sapic_ipc::TauriResult;
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
@@ -17,7 +16,7 @@ pub async fn create_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: CreateResourceInput,
     options: Options,
-) -> TauriResult<CreateResourceOutput> {
+) -> joinerror::Result<CreateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -38,7 +37,7 @@ pub async fn delete_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: DeleteResourceInput,
     options: Options,
-) -> TauriResult<DeleteResourceOutput> {
+) -> joinerror::Result<DeleteResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -59,7 +58,7 @@ pub async fn update_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: UpdateResourceInput,
     options: Options,
-) -> TauriResult<UpdateResourceOutput> {
+) -> joinerror::Result<UpdateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -82,7 +81,7 @@ pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: BatchCreateResourceInput,
     options: Options,
-) -> TauriResult<BatchCreateResourceOutput> {
+) -> joinerror::Result<BatchCreateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -104,7 +103,7 @@ pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: BatchUpdateResourceInput,
     options: Options,
-) -> TauriResult<BatchUpdateResourceOutput> {
+) -> joinerror::Result<BatchUpdateResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -130,7 +129,7 @@ pub async fn stream_project_resources<'a, R: tauri::Runtime>(
     input: StreamResourcesInput,
     channel: TauriChannel<StreamResourcesEvent>,
     options: Options,
-) -> TauriResult<StreamResourcesOutput> {
+) -> joinerror::Result<StreamResourcesOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -155,7 +154,7 @@ pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     resource_id: ResourceId,
     options: Options,
-) -> TauriResult<DescribeResourceOutput> {
+) -> joinerror::Result<DescribeResourceOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
@@ -180,7 +179,7 @@ pub async fn execute_vcs_operation<'a, R: tauri::Runtime>(
     project_id: ProjectId,
     input: ExecuteVcsOperationInput,
     options: Options,
-) -> TauriResult<ExecuteVcsOperationOutput> {
+) -> joinerror::Result<ExecuteVcsOperationOutput> {
     super::with_project_timeout(
         ctx.inner(),
         app,
