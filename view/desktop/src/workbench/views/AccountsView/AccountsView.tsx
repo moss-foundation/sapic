@@ -15,7 +15,7 @@ import { UpdateProfileInput } from "@repo/window";
 export type AccountsViewProps = Record<string, never>;
 
 export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
-  const { data: appState, isLoading, error, refetch: refetchDescribeApp } = useDescribeApp();
+  const { data: appState, isLoading, error } = useDescribeApp();
   const profile = appState?.profile;
 
   const {
