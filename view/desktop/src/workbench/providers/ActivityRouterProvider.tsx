@@ -2,7 +2,8 @@ import React, { createContext, useCallback, useEffect, useMemo, useReducer, useR
 import { toast } from "sonner";
 
 import { createNotificationContent } from "@/lib/ui";
-import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
+import { ActivityEvent } from "@repo/ipc";
+import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events

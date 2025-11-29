@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useWindowActivityEvents } from "@/hooks/app";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
-import { ActivityEvent } from "@repo/moss-activity-broadcaster";
+import { ActivityEvent } from "@repo/ipc";
 
 // Generate a unique key for an event to track when it changes
 const getEventKey = (event: ActivityEvent | null): string | null => {

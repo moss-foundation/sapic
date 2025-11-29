@@ -1,8 +1,5 @@
 use async_trait::async_trait;
-use derive_more::Deref;
 use joinerror::{OptionExt, ResultExt};
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_core::subscription::EventEmitter;
 use serde_json::Value as JsonValue;
@@ -21,71 +18,6 @@ use moss_storage2::{
     project_storage::ProjectStorageBackend,
     workspace_storage::WorkspaceStorageBackend,
 };
-
-// #[async_trait]
-// pub trait SubstoreManager: Send + Sync {
-//     async fn add_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
-//     async fn remove_workspace(&self, workspace_id: Arc<String>) -> joinerror::Result<()>;
-//     async fn add_project(
-//         &self,
-//         workspace_id: Arc<String>,
-//         project_id: Arc<String>,
-//     ) -> joinerror::Result<()>;
-//     async fn remove_project(
-//         &self,
-//         workspace_id: Arc<String>,
-//         project_id: Arc<String>,
-//     ) -> joinerror::Result<()>;
-// }
-
-// #[async_trait]
-// pub trait Storage: SubstoreManager + Send + Sync {
-//     async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
-//     async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
-//     async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
-
-//     async fn put_batch(
-//         &self,
-//         scope: StorageScope,
-//         items: &[(&str, JsonValue)],
-//     ) -> joinerror::Result<()>;
-//     async fn get_batch(
-//         &self,
-//         scope: StorageScope,
-//         keys: &[&str],
-//     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
-//     async fn remove_batch(
-//         &self,
-//         scope: StorageScope,
-//         keys: &[&str],
-//     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
-
-//     async fn get_batch_by_prefix(
-//         &self,
-//         scope: StorageScope,
-//         prefix: &str,
-//     ) -> joinerror::Result<Vec<(String, JsonValue)>>;
-
-//     async fn remove_batch_by_prefix(
-//         &self,
-//         scope: StorageScope,
-//         prefix: &str,
-//     ) -> joinerror::Result<Vec<(String, JsonValue)>>;
-
-//     async fn capabilities(self: Arc<Self>) -> Arc<dyn StorageCapabilities>;
-// }
-
-// pub enum FlushMode {
-//     Checkpoint,
-//     Force,
-// }
-
-// #[async_trait]
-// pub trait StorageCapabilities: Send + Sync {
-//     async fn last_checkpoint(&self) -> Option<Instant>;
-//     async fn flush(&self, mode: FlushMode) -> joinerror::Result<()>;
-//     async fn optimize(&self) -> joinerror::Result<()>;
-// }
 
 #[derive(Debug, Clone)]
 pub struct AppStorageOptions {

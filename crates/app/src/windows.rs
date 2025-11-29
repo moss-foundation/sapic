@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use chrono::Utc;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::TauriResultExt};
+use moss_applib::{AppRuntime, TauriResultExt};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
@@ -210,11 +210,7 @@ impl<R: AppRuntime> WindowManager<R> {
         Ok(window)
     }
 
-    pub async fn close_main_window(
-        &self,
-        delegate: &AppDelegate<R>,
-        label: &str,
-    ) -> joinerror::Result<Option<MainWindow<R>>> {
+    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<Option<MainWindow<R>>> {
         let window = if let Some(window) = self.main_window(label).await {
             window
         } else {

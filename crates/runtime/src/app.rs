@@ -1,9 +1,9 @@
 pub mod kv_storage;
+pub mod notification_broadcast;
 pub mod settings_storage;
 
-use sapic_core::context::{AnyAsyncContext, ArcContext};
 use std::{any::Any, sync::Arc};
-use tauri::{AppHandle, Runtime as TauriRuntime};
+use tauri::AppHandle;
 
 /// A generic app handle that can be used to access the app's runtime context.
 /// This is useful for internal plugins that need to access the app's
@@ -21,31 +21,5 @@ impl GenericAppHandle {
 
     pub fn downcast<R: tauri::Runtime + 'static>(&self) -> Option<AppHandle<R>> {
         self.inner.clone().downcast_ref::<AppHandle<R>>().cloned()
-    }
-}
-
-pub trait AppRuntime: 'static {
-    type AsyncContext: AnyAsyncContext + Clone;
-    type EventLoop: TauriRuntime;
-}
-
-pub struct TauriAppRuntime<R: TauriRuntime>(std::marker::PhantomData<R>);
-
-impl<R: TauriRuntime> AppRuntime for TauriAppRuntime<R> {
-    type AsyncContext = ArcContext;
-    type EventLoop = R;
-}
-
-#[cfg(any(test, feature = "test"))]
-pub mod mock {
-    use tauri::test::MockRuntime;
-
-    use super::*;
-
-    pub struct MockAppRuntime;
-
-    impl AppRuntime for MockAppRuntime {
-        type AsyncContext = ArcContext;
-        type EventLoop = MockRuntime;
     }
 }

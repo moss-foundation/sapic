@@ -5,6 +5,9 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-base = { workspace = true }
+sapic-ipc = { workspace = true }
+
 moss_applib.workspace = true
 
 serde.workspace = true

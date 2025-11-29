@@ -1,5 +1,6 @@
 pub mod configuration;
 pub mod extension;
+pub mod notification;
 pub mod other;
 pub mod theme;
 pub mod workspace;

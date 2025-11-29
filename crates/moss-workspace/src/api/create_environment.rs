@@ -13,7 +13,7 @@ impl Workspace {
     pub async fn create_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
+        _app_delegate: AppDelegate<R>,
         input: CreateEnvironmentInput,
     ) -> joinerror::Result<CreateEnvironmentOutput> {
         input.validate().join_err_bare()?;

@@ -1,13 +1,34 @@
-pub mod errors;
-pub mod markers;
-pub mod subscription;
-pub mod task;
-
 pub use tauri::Wry;
 
+use joinerror::error::ErrorMarker;
+use sapic_core::context::{AnyAsyncContext, ArcContext};
 use tauri::Runtime as TauriRuntime;
 
-use sapic_core::context::{AnyAsyncContext, ArcContext};
+pub trait TauriResultExt<T> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T>;
+    fn join_err_with<E: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T>;
+    fn join_err_bare(self) -> joinerror::Result<T>;
+}
+
+impl<T> TauriResultExt<T> for Result<T, tauri::Error> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join::<E>(details))
+    }
+
+    fn join_err_with<E: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join_with::<E>(details))
+    }
+
+    fn join_err_bare(self) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()))
+    }
+}
 
 pub trait AppRuntime: 'static {
     type AsyncContext: AnyAsyncContext + Clone;

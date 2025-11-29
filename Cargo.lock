@@ -3617,6 +3617,7 @@ dependencies = [
  "moss_storage2",
  "moss_text",
  "moss_workspace",
+ "runtime",
  "system",
  "tauri",
  "tokio",
@@ -3768,6 +3769,8 @@ dependencies = [
 name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
+ "base",
+ "ipc",
  "joinerror",
  "moss_applib",
  "moss_bindingutils",
@@ -4062,7 +4065,6 @@ dependencies = [
  "core",
  "derive_more 2.0.1",
  "joinerror",
- "moss_app_delegate",
  "moss_applib",
  "moss_common",
  "moss_logging",

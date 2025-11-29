@@ -25,7 +25,6 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_storage2::KvStorage;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
 use sapic_core::context::ArcContext;
@@ -110,49 +109,6 @@ pub async fn run<R: TauriRuntime>() {
 
                 let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
                 let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
-
-                // Registration of global resources that will be accessible
-                // throughout the entire application via the `global` method
-                // of the app's internal handler.
-
-                // let storage =
-                //     AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)
-                //         .await
-                //         .expect("failed to create storage");
-                // <dyn KvStorage>::set_global(&delegate, storage);
-
-                // let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
-                // let github_auth_adapter =
-                //     Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
-                //         auth_api_client.clone(),
-                //         auth_api_client.base_url(),
-                //         8080,
-                //     ));
-                // let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
-                // let gitlab_auth_adapter =
-                //     Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
-                //         auth_api_client.clone(),
-                //         auth_api_client.base_url(),
-                //         8081,
-                //     ));
-
-                // <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
-                //     &delegate,
-                //     github_api_client,
-                // );
-                // <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                //     &delegate,
-                //     github_auth_adapter,
-                // );
-
-                // <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
-                //     &delegate,
-                //     gitlab_api_client,
-                // );
-                // <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                //     &delegate,
-                //     gitlab_auth_adapter,
-                // );
 
                 let kv_storage =
                     AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)

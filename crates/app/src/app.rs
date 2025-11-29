@@ -248,14 +248,10 @@ impl<R: AppRuntime> App<R> {
         self.windows.main_window(label).await
     }
 
-    pub async fn close_main_window(
-        &self,
-        delegate: &AppDelegate<R>,
-        label: &str,
-    ) -> joinerror::Result<()> {
+    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
         let closed_window = self
             .windows
-            .close_main_window(delegate, label)
+            .close_main_window(label)
             .await
             .join_err::<()>("failed to close main window")?;
 

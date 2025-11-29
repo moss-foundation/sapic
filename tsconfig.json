@@ -11,6 +11,9 @@
       "path": "crates/ipc"
     },
     {
+      "path": "crates/runtime"
+    },
+    {
       "path": "crates/moss-project"
     },
     {
