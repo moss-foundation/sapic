@@ -21,7 +21,6 @@ members = [
     "crates/window2",
     "crates/runtime",
     "crates/core",
-    "crates/errors",
 
     "crates/moss-applib",
     "crates/moss-app-delegate",
@@ -81,7 +80,6 @@ sapic-base = { path = "crates/base", package = "base" }
 sapic-platform = { path = "crates/platform", package = "platform" }
 sapic-ipc = { path = "crates/ipc", package = "ipc" }
 sapic-core = { path = "crates/core", package = "core" }
-sapic-errors = { path = "crates/errors", package = "errors" }
 
 sapic-window = { path = "crates/window", package = "window" }
 

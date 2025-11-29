@@ -1935,13 +1935,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "errors"
-version = "0.1.0"
-dependencies = [
- "joinerror",
-]
-
-[[package]]
 name = "etcetera"
 version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3126,7 +3119,6 @@ dependencies = [
  "anyhow",
  "base",
  "derive_more 2.0.1",
- "errors",
  "joinerror",
  "moss_applib",
  "moss_common",
@@ -4017,7 +4009,6 @@ dependencies = [
  "chrono",
  "core",
  "derive_more 2.0.1",
- "errors",
  "futures",
  "git2",
  "hcl-rs",
@@ -4110,7 +4101,6 @@ dependencies = [
  "core",
  "derive_more 2.0.1",
  "dotenvy",
- "errors",
  "futures",
  "image",
  "inventory",
@@ -5097,7 +5087,6 @@ dependencies = [
  "chrono",
  "core",
  "derive_more 2.0.1",
- "errors",
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
@@ -5827,7 +5816,6 @@ dependencies = [
  "base",
  "core",
  "derive_more 2.0.1",
- "errors",
  "inventory",
  "joinerror",
  "moss_app_delegate",
@@ -6923,7 +6911,6 @@ dependencies = [
  "base",
  "chrono",
  "core",
- "errors",
  "inventory",
  "joinerror",
  "moss_applib",
@@ -8985,7 +8972,6 @@ dependencies = [
  "chrono",
  "core",
  "derive_more 2.0.1",
- "errors",
  "futures",
  "indexmap 2.12.0",
  "inventory",

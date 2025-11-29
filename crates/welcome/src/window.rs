@@ -53,7 +53,7 @@ impl<R: AppRuntime> WelcomeWindow<R> {
             WELCOME_WINDOW_LABEL,
             tauri::WebviewUrl::App(WELCOME_WINDOW_ENTRY_POINT.into()),
         )
-        .title("Welcome")
+        .title("Welcome to Sapic")
         .center()
         .resizable(true)
         .visible(false)

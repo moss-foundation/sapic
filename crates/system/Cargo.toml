@@ -5,7 +5,6 @@ edition = "2024"
 
 [dependencies]
 sapic-core.workspace = true
-sapic-errors.workspace = true
 sapic-base.workspace = true
 
 moss_applib.workspace = true   # TODO: Remove this once we move errors to base crate

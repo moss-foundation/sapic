@@ -14,7 +14,6 @@ sapic-base.workspace = true
 sapic-system.workspace = true
 sapic-core.workspace = true
 sapic-ipc.workspace = true
-sapic-errors.workspace = true
 
 moss_app_delegate.workspace = true
 moss_common.workspace = true
