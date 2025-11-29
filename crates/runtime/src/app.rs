@@ -1,4 +1,5 @@
 pub mod kv_storage;
+pub mod language_storage;
 pub mod notification_broadcast;
 pub mod settings_storage;
 

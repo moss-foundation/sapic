@@ -19,12 +19,13 @@ pub struct WorkspaceFsEditBackend {
 }
 
 impl WorkspaceFsEditBackend {
-    pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Self {
+    pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Arc<Self> {
         Self {
             workspaces_dir,
             fs,
             edits: RwLock::new(JsonEdit::new()),
         }
+        .into()
     }
 }
 

@@ -28,8 +28,8 @@ pub struct WorkspaceServiceFs {
 }
 
 impl WorkspaceServiceFs {
-    pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Self {
-        Self { fs, workspaces_dir }
+    pub fn new(fs: Arc<dyn FileSystem>, workspaces_dir: PathBuf) -> Arc<Self> {
+        Self { fs, workspaces_dir }.into()
     }
 }
 

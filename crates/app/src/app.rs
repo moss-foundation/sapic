@@ -20,6 +20,7 @@ use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWin
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
+    language::language_service::LanguageService,
     ports::{
         github_api::{GitHubApiClient, GitHubAuthAdapter},
         gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
@@ -71,6 +72,7 @@ pub(crate) struct AppServices {
     pub(crate) workspace_service: Arc<WorkspaceService>,
     pub(crate) workspace_edit_service: Arc<WorkspaceEditService>,
     pub(crate) theme_service: Arc<ThemeService>,
+    pub(crate) language_service: Arc<LanguageService>,
     pub(crate) extension_api_service: Arc<ExtensionsApiService>,
 }
 
@@ -81,7 +83,6 @@ pub struct App<R: AppRuntime> {
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) keyring: Arc<dyn KeyringClient>,
     pub(crate) storage: Arc<dyn KvStorage>,
-    // pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
     pub(crate) server_api_client: Arc<dyn ServerApiClient>,
     pub(crate) github_api_client: Arc<dyn GitHubApiClient>,
     pub(crate) gitlab_api_client: Arc<dyn GitLabApiClient>,
