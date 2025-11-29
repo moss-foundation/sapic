@@ -2,10 +2,6 @@ use anyhow::Result;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
-use moss_applib::{
-    AppRuntime,
-    subscription::{Event, Subscription},
-};
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment};
 use moss_fs::{FileSystem, FsResultExt};
@@ -14,6 +10,7 @@ use sapic_base::{
     environment::types::primitives::EnvironmentId,
     workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
 };
+use sapic_core::subscription::{Event, Subscription};
 use sapic_system::user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
@@ -55,32 +52,32 @@ pub struct WorkspaceModifyParams {
     pub name: Option<String>,
 }
 
-pub trait AnyWorkspace<R: AppRuntime> {
+pub trait AnyWorkspace {
     type Project;
-    type Environment: AnyEnvironment<R>;
+    type Environment: AnyEnvironment;
 }
 
 // DEPRECATED
-pub struct Workspace<R: AppRuntime> {
+pub struct Workspace {
     pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
     pub(super) active_profile: Arc<Profile>,
-    pub(super) project_service: Arc<ProjectService<R>>,
-    pub(super) environment_service: Arc<EnvironmentService<R>>,
+    pub(super) project_service: Arc<ProjectService>,
+    pub(super) environment_service: Arc<EnvironmentService>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,
     pub(super) _on_did_add_project: Subscription<OnDidAddProject>,
 }
 
-impl<R: AppRuntime> AnyWorkspace<R> for Workspace<R> {
-    type Project = Project<R>;
-    type Environment = Environment<R>;
+impl AnyWorkspace for Workspace {
+    type Project = Project;
+    type Environment = Environment;
 }
 
-impl<R: AppRuntime> Workspace<R> {
+impl Workspace {
     pub(super) async fn on_did_add_project(
-        project_service: Arc<ProjectService<R>>,
-        environment_service: Arc<EnvironmentService<R>>,
+        project_service: Arc<ProjectService>,
+        environment_service: Arc<EnvironmentService>,
         on_did_add_project_event: &Event<OnDidAddProject>,
     ) -> Subscription<OnDidAddProject> {
         on_did_add_project_event
@@ -103,7 +100,7 @@ impl<R: AppRuntime> Workspace<R> {
     }
 
     pub(super) async fn on_did_delete_project(
-        environment_service: Arc<EnvironmentService<R>>,
+        environment_service: Arc<EnvironmentService>,
         on_did_delete_project_event: &Event<OnDidDeleteProject>,
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
@@ -119,7 +116,7 @@ impl<R: AppRuntime> Workspace<R> {
     }
 }
 
-impl<R: AppRuntime> Workspace<R> {
+impl Workspace {
     pub fn id(&self) -> WorkspaceId {
         self.id.clone()
     }
@@ -127,11 +124,11 @@ impl<R: AppRuntime> Workspace<R> {
         &self.abs_path
     }
 
-    pub async fn project(&self, id: &ProjectId) -> Option<Arc<Project<R>>> {
+    pub async fn project(&self, id: &ProjectId) -> Option<Arc<Project>> {
         self.project_service.project(id).await
     }
 
-    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
+    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment>> {
         self.environment_service.environment(id).await
     }
 

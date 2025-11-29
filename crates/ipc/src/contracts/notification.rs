@@ -1,7 +1,7 @@
 use serde::Serialize;
 use ts_rs::TS;
 
-use crate::models::primitives::Location;
+use sapic_base::notification::types::primitives::Location;
 
 /// @category Event
 #[derive(Serialize, Clone, TS)]

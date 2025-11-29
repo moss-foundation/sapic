@@ -2,12 +2,13 @@
 pub mod shared;
 
 use crate::shared::setup_test_workspace;
+use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, UpdateVariableParams, VariableOptions},
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -17,6 +18,7 @@ use moss_workspace::{
     storage::key_environment_order,
 };
 use sapic_base::environment::types::primitives::VariableId;
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::Value as JsonValue;
 // TODO: Test updating collection_id once it's implemented
 // TODO: Update test once we switch variable store to new database
@@ -44,7 +46,7 @@ async fn update_environment_success() {
     let new_environment_name = random_environment_name();
 
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -74,13 +76,13 @@ async fn update_environment_success() {
         .await
         .unwrap();
 
-    let env_description = environment.describe(&ctx).await.unwrap();
+    let env_description = environment.describe().await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
 
     let id = create_environment_output.id.clone();
     // Check db is updated
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check environment cache is updated with new order and expanded
     let stored_env_order_value = storage
         .get(
@@ -140,7 +142,7 @@ async fn update_environment_add_variables() {
     };
 
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -161,7 +163,7 @@ async fn update_environment_add_variables() {
     let environment = workspace.environment(&id).await.unwrap();
 
     // Check that the variables are correctly added
-    let env_description = environment.describe(&ctx).await.unwrap();
+    let env_description = environment.describe().await.unwrap();
 
     let variables = env_description.variables;
 
@@ -220,7 +222,7 @@ async fn update_environment_update_variables() {
 
     // Add a variable to be updated
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -242,7 +244,7 @@ async fn update_environment_update_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe(&ctx)
+        .describe()
         .await
         .unwrap();
 
@@ -267,7 +269,7 @@ async fn update_environment_update_variables() {
 
     // Update an existing variable
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -290,7 +292,7 @@ async fn update_environment_update_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe(&ctx)
+        .describe()
         .await
         .unwrap();
 
@@ -341,7 +343,7 @@ async fn update_environment_update_variables_nonexistent() {
         options: None,
     };
     let result = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -395,7 +397,7 @@ async fn update_environment_delete_variables() {
 
     // Add a variable to be deleted
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -417,7 +419,7 @@ async fn update_environment_delete_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe(&ctx)
+        .describe()
         .await
         .unwrap();
 
@@ -427,7 +429,7 @@ async fn update_environment_delete_variables() {
 
     // Delete the variable
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -449,7 +451,7 @@ async fn update_environment_delete_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe(&ctx)
+        .describe()
         .await
         .unwrap();
     let variables = env_description.variables;
@@ -483,7 +485,7 @@ async fn update_environment_delete_variables_nonexistent() {
     let environment_id = create_environment_output.id.clone();
 
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {

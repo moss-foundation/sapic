@@ -1,5 +1,6 @@
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{
@@ -8,11 +9,11 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_environment(
+impl Workspace {
+    pub async fn create_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
+        _app_delegate: AppDelegate<R>,
         input: CreateEnvironmentInput,
     ) -> joinerror::Result<CreateEnvironmentOutput> {
         input.validate().join_err_bare()?;
@@ -21,7 +22,6 @@ impl<R: AppRuntime> Workspace<R> {
             .environment_service
             .create_environment(
                 ctx,
-                app_delegate,
                 CreateEnvironmentItemParams {
                     project_id: input.project_id,
                     name: input.name.clone(),

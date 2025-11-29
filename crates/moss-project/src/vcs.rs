@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
 use joinerror::OptionExt;
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
-use moss_applib::{AppRuntime, errors::Internal};
+use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
     errors::{Conflicts, DirtyWorktree},
@@ -10,7 +10,7 @@ use moss_git::{
     repository::Repository,
     url::GitUrl,
 };
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{errors::Internal, user::types::primitives::AccountId};
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::ports::GitProviderKind;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};

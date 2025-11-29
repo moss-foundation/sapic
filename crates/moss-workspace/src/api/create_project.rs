@@ -1,6 +1,7 @@
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
 use moss_project::models::primitives::ProjectId;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{
@@ -8,8 +9,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn create_project(
+impl Workspace {
+    pub async fn create_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,

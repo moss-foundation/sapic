@@ -1,7 +1,7 @@
 use async_trait::async_trait;
-use moss_applib::{EventMarker, subscription::EventEmitter};
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::configuration::ConfigurationModel;
+use sapic_core::subscription::{EventEmitter, EventMarker};
 use sapic_system::configuration::{SettingsStore, configuration_registry::ConfigurationRegistry};
 use serde_json::Value as JsonValue;
 use std::sync::Arc;

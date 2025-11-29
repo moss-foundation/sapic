@@ -2,6 +2,7 @@
 
 mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_project::{
     dirs,
@@ -22,9 +23,10 @@ use moss_project::{
     },
     storage::{KEY_EXPANDED_ENTRIES, key_resource_order},
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::{Value as JsonValue, json};
 use std::path::{Path, PathBuf};
 
@@ -44,7 +46,7 @@ async fn rename_dir_entry_success() {
     let id = create_test_endpoint_dir_entry(&ctx, &mut project, &old_entry_name).await;
 
     let _ = project
-        .update_resource(
+        .update_resource::<MockAppRuntime>(
             &ctx,
             &app_delegate,
             UpdateResourceInput::Dir(UpdateDirResourceParams {
@@ -186,7 +188,7 @@ async fn update_dir_entry_order() {
     let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
     let _ = project
-        .update_resource(
+        .update_resource::<MockAppRuntime>(
             &ctx,
             &app_delegate,
             UpdateResourceInput::Dir(UpdateDirResourceParams {
@@ -200,7 +202,7 @@ async fn update_dir_entry_order() {
         .await
         .unwrap();
 
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated
@@ -226,12 +228,12 @@ async fn expand_and_collapse_dir_entry() {
 
     let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
 
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Expanding the entry
     let _ = project
-        .update_resource(
+        .update_resource::<MockAppRuntime>(
             &ctx,
             &app_delegate,
             UpdateResourceInput::Dir(UpdateDirResourceParams {
@@ -256,7 +258,7 @@ async fn expand_and_collapse_dir_entry() {
 
     // Collapsing the entry
     let _ = project
-        .update_resource(
+        .update_resource::<MockAppRuntime>(
             &ctx,
             &app_delegate,
             UpdateResourceInput::Dir(UpdateDirResourceParams {
@@ -367,7 +369,7 @@ async fn move_dir_entry_already_exists() {
 
     let dest = Path::new(RESOURCES_ROOT_DIR).join(&dest_name);
     let _ = project
-        .update_resource(
+        .update_resource::<MockAppRuntime>(
             &ctx,
             &app_delegate,
             UpdateResourceInput::Dir(UpdateDirResourceParams {
@@ -429,7 +431,11 @@ async fn update_item_entry_endpoint_headers() {
         body: None,
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     let desc = project
         .describe_resource(&ctx, &app_delegate, id.clone())
@@ -599,7 +605,11 @@ async fn update_item_entry_endpoint_path_params() {
         body: None,
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     let desc = project
         .describe_resource(&ctx, &app_delegate, id.clone())
@@ -768,7 +778,11 @@ async fn update_item_entry_endpoint_query_params() {
         body: None,
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     let desc = project
         .describe_resource(&ctx, &app_delegate, id.clone())
@@ -938,7 +952,11 @@ async fn test_item_entry_endpoint_remove_body() {
         }])),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     // Test remove body
     project
@@ -993,7 +1011,11 @@ async fn test_item_entry_endpoint_update_text() {
         body: Some(AddBodyParams::Text("Before".to_string())),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     // Test update body text
     project
@@ -1050,7 +1072,11 @@ async fn test_item_entry_endpoint_update_json() {
     });
 
     let new_json = json!( {"after": "true"} );
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     // Test update body json
     project
@@ -1105,7 +1131,11 @@ async fn test_item_entry_endpoint_update_xml() {
         body: Some(AddBodyParams::Xml("<before></before>".to_string())),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
     // Test update body xml
     project
         .update_resource(
@@ -1163,7 +1193,11 @@ async fn test_item_entry_endpoint_update_binary() {
         body: Some(AddBodyParams::Binary(PathBuf::from("/before"))),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     // Test update body binary
     project
@@ -1218,7 +1252,11 @@ async fn test_item_entry_endpoint_update_urlencoded() {
         body: Some(AddBodyParams::Urlencoded(vec![])),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     let before = AddUrlencodedParamParams {
         name: "before".to_string(),
@@ -1409,7 +1447,11 @@ async fn test_item_entry_endpoint_update_formdata() {
         body: Some(AddBodyParams::FormData(vec![])),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     let before = AddFormDataParamParams {
         name: "before".to_string(),
@@ -1600,7 +1642,11 @@ async fn test_item_entry_endpoint_update_change_body_type() {
         body: Some(AddBodyParams::FormData(vec![])),
     });
 
-    let id = project.create_resource(&ctx, input).await.unwrap().id;
+    let id = project
+        .create_resource::<MockAppRuntime>(&ctx, input)
+        .await
+        .unwrap()
+        .id;
 
     project
         .update_resource(

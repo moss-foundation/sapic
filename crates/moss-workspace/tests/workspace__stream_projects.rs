@@ -2,6 +2,7 @@
 pub mod shared;
 
 use crate::shared::setup_test_workspace;
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
@@ -29,7 +30,10 @@ async fn stream_projects_empty_workspace() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify no events were received
     let events = received_events.lock().unwrap();
@@ -79,7 +83,10 @@ async fn stream_projects_single_project() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -140,7 +147,10 @@ async fn stream_projects_multiple_projects() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -208,7 +218,10 @@ async fn stream_projects_with_icon() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify one event was received
     let events = received_events.lock().unwrap();
@@ -288,7 +301,10 @@ async fn stream_projects_mixed_configurations() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();
@@ -359,7 +375,10 @@ async fn stream_projects_order_verification() {
         Ok(())
     });
 
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
 
     // Verify correct number of events
     let events = received_events.lock().unwrap();

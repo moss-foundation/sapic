@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
@@ -22,11 +22,11 @@ pub fn key_workspace(id: &WorkspaceId) -> String {
 
 pub struct WorkspaceService {
     fs: Arc<dyn WorkspaceServiceFs>,
-    storage: Arc<dyn Storage>,
+    storage: Arc<dyn KvStorage>,
 }
 
 impl WorkspaceService {
-    pub fn new(fs: Arc<dyn WorkspaceServiceFs>, storage: Arc<dyn Storage>) -> Self {
+    pub fn new(fs: Arc<dyn WorkspaceServiceFs>, storage: Arc<dyn KvStorage>) -> Self {
         Self { fs, storage }
     }
 
@@ -95,7 +95,10 @@ impl WorkspaceService {
 impl WorkspaceCreateOp for WorkspaceService {
     async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
         let id = WorkspaceId::new();
-        let abs_path = self.fs.create_workspace(&id, &name).await?;
+        let abs_path = self
+            .fs
+            .create_workspace(&id, &name, self.storage.clone())
+            .await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })
     }

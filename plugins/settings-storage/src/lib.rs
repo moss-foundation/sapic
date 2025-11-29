@@ -2,9 +2,7 @@ pub mod operations;
 pub mod types;
 
 use joinerror::OptionExt;
-use moss_applib::GenericAppHandle;
-use sapic_ipc::TauriResult;
-use sapic_runtime::app::settings_storage::SettingsStorage;
+use sapic_runtime::app::{GenericAppHandle, settings_storage::SettingsStorage};
 use std::sync::{Arc, OnceLock};
 use tauri::{
     AppHandle, Runtime,
@@ -44,7 +42,7 @@ pub fn init<
 async fn get_value<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: GetValueInput,
-) -> TauriResult<GetValueOutput> {
+) -> joinerror::Result<GetValueOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("settings storage provider not found")?;
@@ -67,7 +65,7 @@ async fn get_value<'a, R: tauri::Runtime>(
 async fn update_value<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: UpdateValueInput,
-) -> TauriResult<UpdateValueOutput> {
+) -> joinerror::Result<UpdateValueOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("settings storage provider not found")?;
@@ -86,7 +84,7 @@ async fn update_value<'a, R: tauri::Runtime>(
 async fn remove_value<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: RemoveValueInput,
-) -> TauriResult<RemoveValueOutput> {
+) -> joinerror::Result<RemoveValueOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("settings storage provider not found")?;
@@ -109,7 +107,7 @@ async fn remove_value<'a, R: tauri::Runtime>(
 async fn batch_update_value<'a, R: tauri::Runtime>(
     #[allow(unused)] app_handle: AppHandle<R>,
     input: BatchUpdateValueInput,
-) -> TauriResult<BatchUpdateValueOutput> {
+) -> joinerror::Result<BatchUpdateValueOutput> {
     unimplemented!()
 }
 
@@ -118,7 +116,7 @@ async fn batch_update_value<'a, R: tauri::Runtime>(
 async fn batch_get_value<'a, R: tauri::Runtime>(
     app_handle: AppHandle<R>,
     input: BatchGetValueInput,
-) -> TauriResult<BatchGetValueOutput> {
+) -> joinerror::Result<BatchGetValueOutput> {
     let provider = PROVIDER_CALLBACK
         .get()
         .ok_or_join_err::<()>("settings storage provider not found")?;
@@ -143,6 +141,6 @@ async fn batch_get_value<'a, R: tauri::Runtime>(
 async fn batch_remove_value<'a, R: tauri::Runtime>(
     #[allow(unused)] app_handle: AppHandle<R>,
     input: BatchRemoveValueInput,
-) -> TauriResult<BatchRemoveValueOutput> {
+) -> joinerror::Result<BatchRemoveValueOutput> {
     unimplemented!()
 }

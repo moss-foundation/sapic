@@ -8,6 +8,8 @@ export * from "./bindings/environment/types";
 export * from "./bindings/environment/types.zod";
 export * from "./bindings/extension/types";
 export * from "./bindings/extension/types.zod";
+export * from "./bindings/notification/primitives";
+export * from "./bindings/notification/primitives.zod";
 export * from "./bindings/primitives";
 export * from "./bindings/primitives.zod";
 export * from "./bindings/theme/primitives";

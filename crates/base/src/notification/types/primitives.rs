@@ -19,7 +19,7 @@ use ts_rs::TS;
 /// * `Toast` is for ephemeral hints that disappear automatically.
 #[derive(Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "primitives.ts")]
+#[ts(export, export_to = "notification/primitives.ts")]
 pub enum Location {
     /// Application-wide surface for ambient status and progress.
     ///

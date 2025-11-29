@@ -32,6 +32,7 @@ sapic-system = { workspace = true }
 sapic-runtime = { workspace = true }
 sapic-window2 = { workspace = true }
 sapic-ipc = { workspace = true }
+sapic-base = { workspace = true }
 
 moss_app_delegate.workspace = true
 moss_activity_broadcaster.workspace = true

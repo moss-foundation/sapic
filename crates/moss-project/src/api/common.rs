@@ -1,11 +1,13 @@
 use hcl::ser::LabeledBlock;
 use indexmap::{IndexMap, indexmap};
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
 use moss_logging::session;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
+use sapic_core::context::AnyAsyncContext;
+use sapic_ipc::ValidationResultExt;
 use std::collections::HashMap;
 use validator::Validate;
 
@@ -38,8 +40,8 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub(super) async fn create_dir_resource(
+impl Project {
+    pub(super) async fn create_dir_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: CreateDirResourceParams,
@@ -64,7 +66,7 @@ impl<R: AppRuntime> Project<R> {
         Ok(CreateResourceOutput { id: id })
     }
 
-    pub(super) async fn create_item_resource(
+    pub(super) async fn create_item_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: CreateItemResourceParams,
@@ -96,7 +98,7 @@ impl<R: AppRuntime> Project<R> {
         }
     }
 
-    pub(super) async fn update_item_resource(
+    pub(super) async fn update_item_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -140,7 +142,7 @@ impl<R: AppRuntime> Project<R> {
         Ok(AfterUpdateItemResourceDescription { id: input.id, path })
     }
 
-    pub(super) async fn update_dir_resource(
+    pub(super) async fn update_dir_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateDirResourceParams,
@@ -183,11 +185,11 @@ impl<R: AppRuntime> Project<R> {
     }
 }
 
-impl<R: AppRuntime> Project<R> {
+impl Project {
     async fn create_endpoint_resource(
         &self,
         id: ResourceId,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         input: CreateItemResourceParams,
     ) -> joinerror::Result<CreateResourceOutput> {
         let mut header_map = IndexMap::new();
@@ -353,10 +355,9 @@ impl<R: AppRuntime> Project<R> {
             batch_input.push((key.as_str(), value.clone()));
         }
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let storage_scope = StorageScope::Project(self.id.inner());
 
-        if let Err(e) = storage.put_batch(storage_scope, &batch_input).await {
+        if let Err(e) = self.storage.put_batch(storage_scope, &batch_input).await {
             session::warn!(format!(
                 "failed to update database after creating endpoint resource: {}",
                 e

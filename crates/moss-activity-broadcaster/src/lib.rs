@@ -1,16 +1,16 @@
+// TODO: This should be moved to the runtime after the `AppDelegate` is extracted from the system layer of the application (right now, it's causing circular dependencies).
+
 pub mod handle;
-pub mod models;
 
 use handle::ActivityHandle;
-use models::events::ActivityEvent;
-use moss_applib::errors::TauriResultExt;
+use moss_applib::TauriResultExt;
+use sapic_base::notification::types::primitives::Location;
+use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
-
-use crate::models::primitives::Location;
 
 pub(crate) mod constants {
     use moss_bindingutils::const_export;

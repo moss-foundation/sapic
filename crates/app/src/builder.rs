@@ -2,7 +2,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_storage2::Storage;
+use moss_storage2::KvStorage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
@@ -36,6 +36,7 @@ pub struct AppBuilder<R: AppRuntime> {
     extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
     server_api_endpoint: String,
     http_client: HttpClient,
+    storage: Arc<dyn KvStorage>,
 }
 
 impl<R: AppRuntime> AppBuilder<R> {
@@ -45,6 +46,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
         server_api_endpoint: String,
         http_client: HttpClient,
+        storage: Arc<dyn KvStorage>,
     ) -> Self {
         Self {
             commands: Default::default(),
@@ -53,6 +55,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             extension_points,
             server_api_endpoint,
             http_client,
+            storage,
         }
     }
 
@@ -86,8 +89,6 @@ impl<R: AppRuntime> AppBuilder<R> {
                 .await
                 .expect("Failed to create extension service");
 
-        let storage = <dyn Storage>::global(&delegate);
-
         let workspace_edit_backend =
             WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());
         let workspace_edit_service = WorkspaceEditService::new(Arc::new(workspace_edit_backend));
@@ -96,7 +97,7 @@ impl<R: AppRuntime> AppBuilder<R> {
                 self.fs.clone(),
                 delegate.workspaces_dir(),
             )),
-            storage.clone(),
+            self.storage.clone(),
         );
 
         let services = AppServices {
@@ -115,10 +116,13 @@ impl<R: AppRuntime> AppBuilder<R> {
             extension_api_service: ExtensionsApiService::new(server_api_client.clone()).into(),
         };
 
+        let windows = WindowManager::new(self.storage.clone());
+
         App {
             tao_handle: delegate.handle(),
             fs: self.fs,
             keyring: self.keyring,
+            storage: self.storage,
             server_api_client,
             github_api_client,
             gitlab_api_client,
@@ -126,7 +130,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             gitlab_auth_adapter,
             extension_service,
             commands: self.commands,
-            windows: WindowManager::new(),
+            windows,
             services,
         }
     }

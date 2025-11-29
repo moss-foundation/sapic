@@ -12,8 +12,8 @@ use crate::{
     },
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn describe_project(
+impl Workspace {
+    pub async fn describe_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: &DescribeProjectInput,
@@ -27,7 +27,7 @@ impl<R: AppRuntime> Workspace<R> {
             })?;
 
         let details = project.details().await?;
-        let (vcs_summary, contributors) = if let Some(vcs) = project.vcs() {
+        let (vcs_summary, contributors) = if let Some(vcs) = project.vcs::<R>() {
             let summary = match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),
                 Err(e) => {

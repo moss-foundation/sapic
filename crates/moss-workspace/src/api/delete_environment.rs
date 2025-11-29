@@ -4,8 +4,8 @@ use crate::{
 };
 use moss_applib::AppRuntime;
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn delete_environment(
+impl Workspace {
+    pub async fn delete_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: DeleteEnvironmentInput,

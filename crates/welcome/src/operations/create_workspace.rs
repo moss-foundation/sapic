@@ -1,5 +1,8 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use sapic_ipc::contracts::welcome::workspace::{CreateWorkspaceInput, CreateWorkspaceOutput};
+use moss_applib::AppRuntime;
+use sapic_ipc::{
+    ValidationResultExt,
+    contracts::welcome::workspace::{CreateWorkspaceInput, CreateWorkspaceOutput},
+};
 use validator::Validate;
 
 use crate::WelcomeWindow;

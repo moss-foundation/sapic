@@ -24,14 +24,14 @@ use crate::shared::{
 async fn scan_entries_for_test(
     ctx: &AsyncContext,
     app_delegate: &AppDelegate<MockAppRuntime>,
-    project: &moss_project::Project<MockAppRuntime>,
+    project: &moss_project::Project,
     dir_name: &str,
 ) -> Vec<StreamResourcesEvent> {
     let entries = Arc::new(Mutex::new(Vec::new()));
     let entries_clone = entries.clone();
 
     project
-        .stream_resources(
+        .stream_resources::<MockAppRuntime>(
             &ctx,
             app_delegate,
             TauriChannel::new(move |body: InvokeResponseBody| {

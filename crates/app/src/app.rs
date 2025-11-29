@@ -7,11 +7,12 @@ pub mod operations;
 pub mod windows;
 
 use derive_more::Deref;
+use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_storage2::Storage;
+use moss_storage2::KvStorage;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
@@ -79,6 +80,7 @@ pub struct App<R: AppRuntime> {
     pub(crate) tao_handle: TauriAppHandle<R::EventLoop>,
     pub(crate) fs: Arc<dyn FileSystem>,
     pub(crate) keyring: Arc<dyn KeyringClient>,
+    pub(crate) storage: Arc<dyn KvStorage>,
     // pub(crate) auth_api_client: Arc<AccountAuthGatewayApiClient>,
     pub(crate) server_api_client: Arc<dyn ServerApiClient>,
     pub(crate) github_api_client: Arc<dyn GitHubApiClient>,
@@ -155,13 +157,8 @@ impl<R: AppRuntime> App<R> {
             .join(workspace_id.to_string())
             .into();
 
-        // HACK: We're forced to add the store here instead of in the window creation
-        // function because projects are currently loaded right away when an old workspace
-        // is created. In the new workspace, since we won't be storing the list of projects on
-        // the backend, this problem won't exist (and in the worst case, we can load the projects lazily).
-        let storage = <dyn Storage>::global(delegate);
         joinerror::ResultExt::join_err::<()>(
-            storage.add_workspace(workspace_id.inner()).await,
+            self.storage.add_workspace(workspace_id.inner()).await,
             "failed to add workspace to storage",
         )?;
 
@@ -172,6 +169,7 @@ impl<R: AppRuntime> App<R> {
         ));
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
+            self.storage.clone(),
             self.keyring.clone(),
             self.server_api_client.clone(),
             self.github_api_client.clone(),
@@ -215,9 +213,8 @@ impl<R: AppRuntime> App<R> {
         // is created. In the new workspace, since we won't be storing the list of projects on
         // the backend, this problem won't exist (and in the worst case, we can load the projects lazily).
 
-        let storage = <dyn Storage>::global(delegate);
         joinerror::ResultExt::join_err::<()>(
-            storage.add_workspace(workspace_id.inner()).await,
+            self.storage.add_workspace(workspace_id.inner()).await,
             "failed to add workspace to storage",
         )?;
 
@@ -229,6 +226,7 @@ impl<R: AppRuntime> App<R> {
 
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
+            self.storage.clone(),
             self.keyring.clone(),
             self.server_api_client.clone(),
             self.github_api_client.clone(),
@@ -242,7 +240,7 @@ impl<R: AppRuntime> App<R> {
         .await?;
 
         self.windows
-            .swap_main_window_workspace(delegate, label, workspace, old_window)
+            .swap_main_window_workspace(label, workspace, old_window)
             .await
     }
 
@@ -250,12 +248,23 @@ impl<R: AppRuntime> App<R> {
         self.windows.main_window(label).await
     }
 
-    pub async fn close_main_window(
-        &self,
-        delegate: &AppDelegate<R>,
-        label: &str,
-    ) -> joinerror::Result<()> {
-        self.windows.close_main_window(delegate, label).await
+    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
+        let closed_window = self
+            .windows
+            .close_main_window(label)
+            .await
+            .join_err::<()>("failed to close main window")?;
+
+        if let Some(closed_window) = closed_window {
+            joinerror::ResultExt::join_err::<()>(
+                self.storage
+                    .remove_workspace(closed_window.workspace().id().inner())
+                    .await,
+                "failed to remove workspace from storage",
+            )?;
+        }
+
+        Ok(())
     }
 
     pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {

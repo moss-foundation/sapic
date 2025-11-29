@@ -14,15 +14,14 @@ pub use workspace::*;
 
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{
-    AppRuntime,
-    errors::{FailedPrecondition, NotFound, Unavailable},
-};
+use moss_applib::AppRuntime;
 use moss_project::{Project, models::primitives::ProjectId};
 use primitives::Options;
+use sapic_base::errors::NotFound;
 use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
-use sapic_ipc::{TauriResult, constants::DEFAULT_OPERATION_TIMEOUT};
+use sapic_ipc::constants::DEFAULT_OPERATION_TIMEOUT;
 use sapic_main::MainWindow;
+use sapic_runtime::errors::{FailedPrecondition, Unavailable};
 use sapic_welcome::WelcomeWindow;
 use sapic_window2::AppWindowApi;
 use std::{sync::Arc, time::Duration};
@@ -44,7 +43,7 @@ pub(super) async fn with_app_timeout<'a, R, T, F, Fut>(
     window: TauriWindow<R::EventLoop>,
     options: Options,
     f: F,
-) -> TauriResult<T>
+) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>) -> Fut + Send + 'static,
@@ -95,7 +94,7 @@ pub(super) async fn with_welcome_window_timeout<'a, R, T, F, Fut>(
     _window: TauriWindow<R::EventLoop>,
     options: Options,
     f: F,
-) -> TauriResult<T>
+) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, WelcomeWindow<R>) -> Fut
@@ -146,7 +145,7 @@ pub(super) async fn with_main_window_timeout<'a, R, T, F, Fut>(
     window: TauriWindow<R::EventLoop>,
     options: Options,
     f: F,
-) -> TauriResult<T>
+) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
     F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, MainWindow<R>) -> Fut
@@ -199,10 +198,10 @@ pub(super) async fn with_project_timeout<R, T, F, Fut>(
     id: ProjectId,
     options: Options,
     f: F,
-) -> TauriResult<T>
+) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project<R>>) -> Fut + Send + 'static,
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<Project>) -> Fut + Send + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
 {
     let timeout = options
@@ -264,10 +263,10 @@ pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
     window: TauriWindow<R::EventLoop>,
     options: Options,
     f: F,
-) -> TauriResult<T>
+) -> joinerror::Result<T>
 where
     R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace<R>>) -> Fut
+    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace>) -> Fut
         + Send
         + 'static,
     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,

@@ -25,13 +25,14 @@ use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
 };
-use moss_storage2::{AppStorage, Storage};
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
 use sapic_core::context::ArcContext;
 use sapic_runtime::{
-    app::settings_storage::AppSettingsStorage,
-    globals::{GlobalConfigurationRegistry, GlobalSettingsStorage, GlobalThemeRegistry},
+    app::{kv_storage::AppStorage, settings_storage::AppSettingsStorage},
+    globals::{
+        GlobalConfigurationRegistry, GlobalKvStorage, GlobalSettingsStorage, GlobalThemeRegistry,
+    },
     user_settings::UserSettingsService,
 };
 use sapic_system::{
@@ -70,7 +71,7 @@ pub async fn run<R: TauriRuntime>() {
                 .inner()
                 .clone();
 
-            Ok(<dyn Storage>::global(&delegate))
+            Ok(GlobalKvStorage::get(&delegate))
         }))
         .plugin(settings_storage::init(|app| {
             let handle = app
@@ -109,74 +110,36 @@ pub async fn run<R: TauriRuntime>() {
                 let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
                 let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
 
-                // Registration of global resources that will be accessible
-                // throughout the entire application via the `global` method
-                // of the app's internal handler.
-                {
-                    let storage =
-                        AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)
-                            .await
-                            .expect("failed to create storage");
-                    <dyn Storage>::set_global(&delegate, storage);
+                let kv_storage =
+                    AppStorage::new(&delegate.globals_dir(), delegate.workspaces_dir(), None)
+                        .await
+                        .expect("failed to create storage");
 
-                    // let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
-                    // let github_auth_adapter =
-                    //     Arc::new(AppGitHubAuthAdapter::<TauriAppRuntime<R>>::new(
-                    //         auth_api_client.clone(),
-                    //         auth_api_client.base_url(),
-                    //         8080,
-                    //     ));
-                    // let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
-                    // let gitlab_auth_adapter =
-                    //     Arc::new(AppGitLabAuthAdapter::<TauriAppRuntime<R>>::new(
-                    //         auth_api_client.clone(),
-                    //         auth_api_client.base_url(),
-                    //         8081,
-                    //     ));
+                let theme_registry = AppThemeRegistry::new();
+                let languages_registry = AppLanguageRegistry::new();
+                let configuration_registry = AppConfigurationRegistry::new()
+                    .expect("failed to build configuration registry");
+                let resource_status_registry = AppResourceStatusRegistry::new()
+                    .expect("failed to build resource status registry");
+                let http_header_registry =
+                    AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
-                    // <dyn GitHubApiClient<TauriAppRuntime<R>>>::set_global(
-                    //     &delegate,
-                    //     github_api_client,
-                    // );
-                    // <dyn GitHubAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                    //     &delegate,
-                    //     github_auth_adapter,
-                    // );
+                let user_settings = UserSettingsService::new(&delegate, fs.clone()).await?;
+                let settings_storage = AppSettingsStorage::new(
+                    configuration_registry.clone(),
+                    Arc::new(user_settings),
+                );
 
-                    // <dyn GitLabApiClient<TauriAppRuntime<R>>>::set_global(
-                    //     &delegate,
-                    //     gitlab_api_client,
-                    // );
-                    // <dyn GitLabAuthAdapter<TauriAppRuntime<R>>>::set_global(
-                    //     &delegate,
-                    //     gitlab_auth_adapter,
-                    // );
+                GlobalThemeRegistry::set(&delegate, theme_registry);
+                GlobalConfigurationRegistry::set(&delegate, configuration_registry);
+                GlobalSettingsStorage::set(&delegate, Arc::new(settings_storage));
+                GlobalKvStorage::set(&delegate, kv_storage);
 
-                    let theme_registry = AppThemeRegistry::new();
-                    let languages_registry = AppLanguageRegistry::new();
-                    let configuration_registry = AppConfigurationRegistry::new()
-                        .expect("failed to build configuration registry");
-                    let resource_status_registry = AppResourceStatusRegistry::new()
-                        .expect("failed to build resource status registry");
-                    let http_header_registry =
-                        AppHttpHeaderRegistry::new().expect("failed to build http header registry");
+                <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
+                <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
+                <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 
-                    let user_settings = UserSettingsService::new(&delegate, fs.clone()).await?;
-                    let settings_storage = AppSettingsStorage::new(
-                        configuration_registry.clone(),
-                        Arc::new(user_settings),
-                    );
-
-                    GlobalThemeRegistry::set(&delegate, theme_registry);
-                    GlobalConfigurationRegistry::set(&delegate, configuration_registry);
-                    GlobalSettingsStorage::set(&delegate, Arc::new(settings_storage));
-
-                    <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
-                    <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
-                    <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
-
-                    tao_app_handle.manage(delegate.clone());
-                }
+                tao_app_handle.manage(delegate.clone());
 
                 let ctx_clone = ctx.clone();
                 let app = {
@@ -211,6 +174,7 @@ pub async fn run<R: TauriRuntime>() {
                         ],
                         server_api_endpoint,
                         http_client,
+                        GlobalKvStorage::get(&delegate),
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)

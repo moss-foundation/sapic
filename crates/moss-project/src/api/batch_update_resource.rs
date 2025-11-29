@@ -13,8 +13,8 @@ use crate::{
     project::Project,
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn batch_update_resource(
+impl Project {
+    pub async fn batch_update_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -35,7 +35,7 @@ impl<R: AppRuntime> Project<R> {
                         })?;
                 }
                 BatchUpdateResourceKind::Dir(input) => {
-                    let output = self.update_dir_resource(ctx, input).await?;
+                    let output = self.update_dir_resource::<R>(ctx, input).await?;
                     channel
                         .send(BatchUpdateResourceEvent::Dir(output))
                         .map_err(|e| {

@@ -8,13 +8,13 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn stream_projects(
+impl Workspace {
+    pub async fn stream_projects<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         channel: TauriChannel<StreamProjectsEvent>,
     ) -> joinerror::Result<StreamProjectsOutput> {
-        let stream = self.project_service.list_projects(ctx).await;
+        let stream = self.project_service.list_projects::<R>(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

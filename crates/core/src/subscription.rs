@@ -10,7 +10,7 @@ use std::{
 use tokio::sync::{Mutex, RwLock, mpsc};
 use tokio_util::sync::CancellationToken;
 
-use crate::EventMarker;
+pub trait EventMarker: 'static {}
 
 pub type ListenerFuture = BoxFuture<'static, ()>;
 type ListenerCallback<T> = Arc<dyn Fn(T) -> ListenerFuture + Send + Sync + 'static>;

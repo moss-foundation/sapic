@@ -6,8 +6,8 @@ use crate::{
     models::operations::{ActivateEnvironmentInput, ActivateEnvironmentOutput},
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn activate_environment(
+impl Workspace {
+    pub async fn activate_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: ActivateEnvironmentInput,

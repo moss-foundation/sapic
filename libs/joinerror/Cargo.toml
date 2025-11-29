@@ -6,6 +6,7 @@ license = "MIT"
 
 [dependencies]
 joinerror-macros = { path = "macros" }
+serde = { workspace = true }
 
 anyhow = { version = "1.0.99", optional = true, default-features = false }
 tokio = { version = "1.47.1", optional = true, default-features = false }

@@ -1,11 +1,12 @@
-use moss_applib::errors::TauriResultExt;
+use moss_applib::TauriResultExt;
+use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 
-use crate::{constants, models::events::ActivityEvent};
+use crate::constants;
 
 pub struct ActivityHandle<'a, R: TauriRuntime> {
     pub activity_id: &'a str,

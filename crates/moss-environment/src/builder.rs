@@ -1,12 +1,10 @@
 use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
 use moss_logging::session;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
@@ -42,14 +40,20 @@ pub struct EnvironmentLoadParams {
 pub struct EnvironmentBuilder {
     workspace_id: Arc<String>,
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     vars_to_store: HashMap<VariableId, (JsonValue, isize)>,
 }
 
 impl EnvironmentBuilder {
-    pub fn new(workspace_id: Arc<String>, fs: Arc<dyn FileSystem>) -> Self {
+    pub fn new(
+        workspace_id: Arc<String>,
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
+    ) -> Self {
         Self {
             workspace_id,
             fs,
+            storage,
             vars_to_store: HashMap::new(),
         }
     }
@@ -120,20 +124,16 @@ impl EnvironmentBuilder {
         Ok(abs_path)
     }
 
-    pub async fn create<'a, R: AppRuntime>(
+    pub async fn create<'a>(
         mut self,
-        _ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
         params: CreateEnvironmentParams<'a>,
-    ) -> joinerror::Result<Environment<R>> {
+    ) -> joinerror::Result<Environment> {
         debug_assert!(params.abs_path.is_absolute());
 
         let abs_path = self
             .initialize(params)
             .await
             .join_err::<()>("failed to initialize environment")?;
-
-        let storage = <dyn Storage>::global(&app_delegate);
 
         for (id, (local_value, order)) in self.vars_to_store.drain() {
             let local_value_key = key_variable_local_value(&id);
@@ -144,7 +144,8 @@ impl EnvironmentBuilder {
                 (order_key.as_str(), serde_json::to_value(order)?),
             ];
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Workspace(self.workspace_id.clone()),
                     &batch_input,
@@ -159,18 +160,14 @@ impl EnvironmentBuilder {
 
         Ok(Environment {
             fs: self.fs.clone(),
+            storage: self.storage,
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
             workspace_id: self.workspace_id,
-            app_delegate,
         })
     }
 
-    pub async fn load<R: AppRuntime>(
-        self,
-        app_delegate: AppDelegate<R>,
-        params: EnvironmentLoadParams,
-    ) -> joinerror::Result<Environment<R>> {
+    pub async fn load(self, params: EnvironmentLoadParams) -> joinerror::Result<Environment> {
         debug_assert!(params.abs_path.is_absolute());
 
         if !params.abs_path.exists() {
@@ -183,10 +180,10 @@ impl EnvironmentBuilder {
 
         Ok(Environment {
             fs: self.fs.clone(),
+            storage: self.storage,
             abs_path_rx,
             edit: EnvironmentEditing::new(self.fs.clone(), abs_path_tx),
             workspace_id: self.workspace_id,
-            app_delegate,
         })
     }
 }

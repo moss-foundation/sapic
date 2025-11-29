@@ -1,8 +1,9 @@
 #![cfg(feature = "integration-tests")]
 
 use crate::shared::setup_test_workspace;
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -14,6 +15,7 @@ use moss_workspace::{
     },
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use sapic_runtime::globals::GlobalKvStorage;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
 
@@ -46,7 +48,7 @@ pub async fn export_project_success() {
         .id;
 
     let archive_path = workspace
-        .export_project(
+        .export_project::<MockAppRuntime>(
             &ctx,
             &ExportProjectInput {
                 inner: ExportProjectParams { id, destination },
@@ -80,7 +82,10 @@ pub async fn export_project_success() {
 
     // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 2); // 1 created + 1 imported
 
     // Verify the directory was created
@@ -89,7 +94,7 @@ pub async fn export_project_success() {
     let id = import_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
 
     // Check order was stored
     let order_value = storage

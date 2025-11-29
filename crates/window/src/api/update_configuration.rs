@@ -6,8 +6,9 @@ use crate::{
     window::OldSapicWindow,
 };
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
 use moss_logging::session;
+use sapic_ipc::ValidationResultExt;
 use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
 use tauri::Emitter;
 use validator::Validate;
