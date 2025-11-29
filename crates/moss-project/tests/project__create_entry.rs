@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_project::{
     constants, dirs,
     errors::ErrorAlreadyExists,
@@ -18,9 +19,10 @@ use moss_project::{
     },
     storage::key_resource_order,
 };
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::{Value as JsonValue, json};
 use std::path::PathBuf;
 
@@ -40,7 +42,7 @@ async fn create_dir_entry_success() {
         order: 0,
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
 
     let output = result.unwrap();
 
@@ -77,14 +79,14 @@ async fn create_dir_entry_with_order() {
         order: order_value,
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     // Verify the directory was created
     let expected_dir = resources_dir.join(&entry_path).join(&entry_name);
     assert!(expected_dir.exists());
 
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let storage_scope = StorageScope::Project(project.id().inner());
 
     // Check order was updated
@@ -117,11 +119,13 @@ async fn create_dir_entry_already_exists() {
     });
 
     // Create the entry first time - should succeed
-    let first_result = project.create_resource(&ctx, input.clone()).await;
+    let first_result = project
+        .create_resource::<MockAppRuntime>(&ctx, input.clone())
+        .await;
     let _ = first_result.unwrap();
 
     // Try to create the same entry again - should fail
-    let second_result = project.create_resource(&ctx, input).await;
+    let second_result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     assert!(second_result.is_err());
 
     if let Err(error) = second_result {
@@ -150,7 +154,7 @@ async fn create_dir_entry_special_chars_in_name() {
             order: 0,
         });
 
-        let result = project.create_resource(&ctx, input).await;
+        let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
 
         // Entry creation should succeed - the filesystem layer handles sanitization
         if result.is_err() {
@@ -221,7 +225,7 @@ async fn create_item_entry_endpoint() {
         body: None,
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
 
     let id = result.unwrap().id;
 
@@ -300,7 +304,7 @@ String"#;
         body: Some(AddBodyParams::Text(text.to_string())),
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
@@ -338,7 +342,7 @@ async fn create_item_entry_body_json() {
         body: Some(AddBodyParams::Json(json.clone())),
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
@@ -372,7 +376,7 @@ async fn create_item_entry_body_xml() {
         body: Some(AddBodyParams::Xml(xml.to_string())),
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
@@ -406,7 +410,7 @@ async fn create_item_entry_body_binary() {
         body: Some(AddBodyParams::Binary(binary.clone())),
     });
 
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
@@ -462,7 +466,7 @@ async fn create_item_entry_body_urlencoded() {
         query_params: vec![],
         body: Some(AddBodyParams::Urlencoded(params)),
     });
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project
@@ -539,7 +543,7 @@ async fn create_item_entry_body_formdata() {
         query_params: vec![],
         body: Some(AddBodyParams::FormData(params.clone())),
     });
-    let result = project.create_resource(&ctx, input).await;
+    let result = project.create_resource::<MockAppRuntime>(&ctx, input).await;
     let id = result.unwrap().id;
 
     let body_desc = project

@@ -57,6 +57,13 @@ tracing.workspace = true
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
 moss_applib = { workspace = true, features = ["test"] }
+sapic-runtime.workspace = true
 
 [features]
-integration-tests = ["reqwest", "oauth2", "moss_app_delegate/integration-tests", "moss_storage2/integration-tests"]
+integration-tests = [
+  "reqwest",
+  "oauth2",
+  "moss_app_delegate/integration-tests",
+  "sapic-runtime/integration-tests",
+  "moss_storage2/integration-tests",
+]

@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::mock::MockAppRuntime;
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::models::{
     operations::{CreateEnvironmentInput, CreateProjectInput, UpdateEnvironmentGroupInput},
@@ -54,7 +55,7 @@ async fn update_environment_group_expand() {
     // We test with collapse it first and then expand
 
     workspace
-        .update_environment_group(
+        .update_environment_group::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
@@ -78,7 +79,7 @@ async fn update_environment_group_expand() {
 
     // Setting the group back to expanded
     workspace
-        .update_environment_group(
+        .update_environment_group::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
@@ -92,7 +93,7 @@ async fn update_environment_group_expand() {
         .unwrap();
 
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
     assert!(output.groups[0].expanded);
@@ -139,7 +140,7 @@ async fn update_environment_group_order() {
         .unwrap();
 
     workspace
-        .update_environment_group(
+        .update_environment_group::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentGroupInput {
                 inner: UpdateEnvironmentGroupParams {
@@ -155,7 +156,7 @@ async fn update_environment_group_order() {
     let channel = Channel::new(move |_| Ok(()));
 
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
 

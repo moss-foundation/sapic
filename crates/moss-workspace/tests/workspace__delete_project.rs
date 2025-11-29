@@ -2,8 +2,9 @@
 pub mod shared;
 
 use crate::shared::setup_test_workspace;
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
     models::{
@@ -12,6 +13,7 @@ use moss_workspace::{
     },
     storage::{KEY_EXPANDED_ITEMS, key_project},
 };
+use sapic_runtime::globals::GlobalKvStorage;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
 
@@ -39,17 +41,20 @@ async fn delete_project_success() {
 
     let id = create_project_output.id;
     let _ = workspace
-        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
+        .delete_project::<MockAppRuntime>(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     // Check updating projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 0);
 
     // Check updating database
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
 
     // Check that project-specific entries are removed
     let project_prefix = key_project(&id);
@@ -101,13 +106,13 @@ async fn delete_project_nonexistent_id() {
         .id;
 
     workspace
-        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
+        .delete_project::<MockAppRuntime>(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     // Delete the project again - should succeed but return None abs_path
     let delete_project_result = workspace
-        .delete_project(&ctx, &DeleteProjectInput { id: id.clone() })
+        .delete_project::<MockAppRuntime>(&ctx, &DeleteProjectInput { id: id.clone() })
         .await
         .unwrap();
 
@@ -146,7 +151,7 @@ async fn delete_project_fs_already_deleted() {
 
     // Even though filesystem is already deleted, deletion should succeed
     let _ = workspace
-        .delete_project(
+        .delete_project::<MockAppRuntime>(
             &ctx,
             &DeleteProjectInput {
                 id: create_project_output.id,
@@ -157,7 +162,10 @@ async fn delete_project_fs_already_deleted() {
 
     // Check projects are updated
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 0);
 
     // TODO: Check database after implementing self-healing mechanism?

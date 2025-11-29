@@ -6,8 +6,9 @@
 // Since it requires authentication and env variables
 
 use crate::shared::{setup_external_project, setup_test_workspace};
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_workspace::{
     models::{
         operations::ImportProjectInput,
@@ -17,6 +18,7 @@ use moss_workspace::{
 };
 use sapic_base::user::types::primitives::AccountId;
 use sapic_core::context::AnyAsyncContext;
+use sapic_runtime::globals::GlobalKvStorage;
 use std::{collections::HashSet, env, ops::Deref};
 use tauri::ipc::Channel;
 
@@ -59,7 +61,10 @@ async fn clone_project_success() {
 
     // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -68,7 +73,7 @@ async fn clone_project_success() {
     let id = clone_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -125,7 +130,10 @@ async fn import_external_project_success() {
 
     // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the internal directory was created
@@ -134,7 +142,7 @@ async fn import_external_project_success() {
     let id = import_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(

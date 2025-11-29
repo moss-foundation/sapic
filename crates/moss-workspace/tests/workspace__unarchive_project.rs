@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
@@ -36,18 +37,18 @@ pub async fn unarchive_project_success() {
 
     // First archive the project and unarchive it
     workspace
-        .archive_project(&ctx, ArchiveProjectInput { id: id.clone() })
+        .archive_project::<MockAppRuntime>(&ctx, ArchiveProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     workspace
-        .unarchive_project(&ctx, UnarchiveProjectInput { id: id.clone() })
+        .unarchive_project::<MockAppRuntime>(&ctx, UnarchiveProjectInput { id: id.clone() })
         .await
         .unwrap();
 
     // Check that the project is now unarchived
     // Check that project is flagged as archived during streaming
-    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
+    let (events, _stream_output) = test_stream_projects::<MockAppRuntime>(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(!events.get(&id).unwrap().archived);
@@ -78,16 +79,16 @@ pub async fn unarchive_project_already_unarchived() {
         .id;
 
     // Check that the project is already unarchived
-    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
+    let (events, _stream_output) = test_stream_projects::<MockAppRuntime>(&ctx, &workspace).await;
     assert!(!events.get(&id).unwrap().archived);
 
     let result = workspace
-        .unarchive_project(&ctx, UnarchiveProjectInput { id: id.clone() })
+        .unarchive_project::<MockAppRuntime>(&ctx, UnarchiveProjectInput { id: id.clone() })
         .await;
     assert!(result.is_ok());
 
     // Check that project is still unarchived
-    let (events, _stream_output) = test_stream_projects(&ctx, &workspace).await;
+    let (events, _stream_output) = test_stream_projects::<MockAppRuntime>(&ctx, &workspace).await;
 
     assert_eq!(events.len(), 1);
     assert!(!events.get(&id).unwrap().archived);
@@ -99,7 +100,7 @@ pub async fn unarchive_project_already_unarchived() {
 pub async fn unarchived_project_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let result = workspace
-        .unarchive_project(
+        .unarchive_project::<MockAppRuntime>(
             &ctx,
             UnarchiveProjectInput {
                 id: ProjectId::new(),

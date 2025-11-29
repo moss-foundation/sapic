@@ -3,13 +3,15 @@
 pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
+use moss_applib::mock::MockAppRuntime;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, types::CreateProjectParams},
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::Value as JsonValue;
 use std::{collections::HashSet, path::Path};
 use tauri::ipc::Channel;
@@ -38,7 +40,10 @@ async fn create_project_success() {
 
     // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -46,7 +51,7 @@ async fn create_project_success() {
 
     let id = create_project_output.id;
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -134,7 +139,7 @@ async fn create_project_special_chars() {
         let id = create_project_output.id;
 
         // Verify the db entries were created
-        let storage = <dyn KvStorage>::global(&app_delegate);
+        let storage = GlobalKvStorage::get(&app_delegate);
         // Check order was stored
         let order_value = storage
             .get(
@@ -163,7 +168,10 @@ async fn create_project_special_chars() {
 
     // Verify all projects are returned through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, project_name_list.len());
 
     cleanup().await;
@@ -193,7 +201,10 @@ async fn create_project_with_order() {
     let create_project_output = create_project_result.unwrap();
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -202,7 +213,7 @@ async fn create_project_with_order() {
     let id = create_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -259,7 +270,10 @@ async fn create_project_with_icon() {
     let id = create_project_output.id;
 
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     // Verify the directory was created
@@ -271,7 +285,7 @@ async fn create_project_with_icon() {
     assert!(project.icon_path().is_some());
 
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(
@@ -342,7 +356,7 @@ async fn create_multiple_projects_expanded_items() {
         .unwrap();
 
     // Check expanded_items contains both project ids
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
@@ -417,13 +431,16 @@ async fn create_project_external_success() {
 
     // Verify through stream_projects
     let channel = Channel::new(move |_| Ok(()));
-    let output = workspace.stream_projects(&ctx, channel).await.unwrap();
+    let output = workspace
+        .stream_projects::<MockAppRuntime>(&ctx, channel)
+        .await
+        .unwrap();
     assert_eq!(output.total_returned, 1);
 
     let id = create_project_output.id;
 
     // Verify the db entries were created
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     // Check order was stored
     let order_value = storage
         .get(

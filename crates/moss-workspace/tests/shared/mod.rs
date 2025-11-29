@@ -6,7 +6,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{AppStorage, AppStorageOptions, KvStorage};
+use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workspace::{
     Workspace,
@@ -22,6 +22,10 @@ use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_base::{user::types::primitives::ProfileId, workspace::types::primitives::WorkspaceId};
 use sapic_core::context::{AsyncContext, MutableContext};
 use sapic_platform::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
+use sapic_runtime::{
+    app::kv_storage::{AppStorage, AppStorageOptions},
+    globals::GlobalKvStorage,
+};
 use sapic_system::user::profile::Profile;
 use std::{
     collections::HashMap,
@@ -42,7 +46,7 @@ pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>
 pub async fn setup_test_workspace() -> (
     AsyncContext,
     AppDelegate<MockAppRuntime>,
-    Workspace<MockAppRuntime>,
+    Workspace,
     CleanupFn,
 ) {
     dotenvy::dotenv().ok();
@@ -87,7 +91,7 @@ pub async fn setup_test_workspace() -> (
 
     let app_delegate = {
         let delegate = AppDelegate::new(tao_app_handle.clone());
-        <dyn KvStorage>::set_global(&delegate, app_storage.clone());
+        GlobalKvStorage::set(&delegate, app_storage.clone());
         delegate
     };
 
@@ -99,8 +103,9 @@ pub async fn setup_test_workspace() -> (
     let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
 
     let ctx = ctx.freeze();
-    let workspace: Workspace<MockAppRuntime> = WorkspaceBuilder::new(
+    let workspace: Workspace = WorkspaceBuilder::new(
         fs.clone(),
+        app_storage.clone(),
         active_profile.into(),
         workspace_id.clone(),
         github_api_client.clone(),
@@ -133,7 +138,7 @@ pub async fn setup_test_workspace() -> (
     });
 
     // Add workspace storage
-    <dyn KvStorage>::global(&app_delegate)
+    app_storage
         .add_workspace(workspace.id().inner())
         .await
         .unwrap();
@@ -147,7 +152,7 @@ pub async fn setup_test_workspace() -> (
 pub async fn setup_external_project(
     ctx: &<MockAppRuntime as AppRuntime>::AsyncContext,
     app_delegate: &AppDelegate<MockAppRuntime>,
-    workspace: &Workspace<MockAppRuntime>,
+    workspace: &Workspace,
 ) -> (String, PathBuf) {
     let project_name = random_workspace_name();
     let external_path = Path::new(env!("CARGO_MANIFEST_DIR"))
@@ -178,7 +183,7 @@ pub async fn setup_external_project(
     // Delete the external project
     // The external folder should remain intact, possible to be imported again
     workspace
-        .delete_project(ctx, &DeleteProjectInput { id })
+        .delete_project::<MockAppRuntime>(ctx, &DeleteProjectInput { id })
         .await
         .unwrap();
 
@@ -205,7 +210,7 @@ pub fn generate_random_icon(output_path: &Path) {
 #[allow(unused)]
 pub async fn test_stream_projects<R: AppRuntime>(
     ctx: &R::AsyncContext,
-    workspace: &Workspace<R>,
+    workspace: &Workspace,
 ) -> (
     HashMap<ProjectId, StreamProjectsEvent>,
     StreamProjectsOutput,
@@ -223,7 +228,7 @@ pub async fn test_stream_projects<R: AppRuntime>(
     });
 
     let output = workspace
-        .stream_projects(ctx, channel.clone())
+        .stream_projects::<R>(ctx, channel.clone())
         .await
         .unwrap();
     (

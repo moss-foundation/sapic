@@ -1,7 +1,7 @@
 #![cfg(feature = "integration-tests")]
 
 use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
+use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     Workspace,
@@ -25,7 +25,7 @@ pub mod shared;
 async fn test_stream_environments<R: AppRuntime>(
     ctx: &R::AsyncContext,
     app_delegate: AppDelegate<R>,
-    workspace: &Workspace<R>,
+    workspace: &Workspace,
 ) -> HashMap<EnvironmentId, StreamEnvironmentsEvent> {
     let received_events = Arc::new(Mutex::new(Vec::new()));
     let received_events_clone = received_events.clone();
@@ -40,7 +40,7 @@ async fn test_stream_environments<R: AppRuntime>(
     });
 
     let _ = workspace
-        .stream_environments(ctx, app_delegate, channel.clone())
+        .stream_environments::<R>(ctx, app_delegate, channel.clone())
         .await;
     received_events
         .lock()
@@ -72,12 +72,13 @@ async fn activate_environment_global() {
 
     let id = create_environment_output.id;
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     // Newly created environments are not automatically activated
     assert!(!events_map.get(&id).unwrap().is_active);
     workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
@@ -86,7 +87,8 @@ async fn activate_environment_global() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -134,13 +136,14 @@ async fn activate_environment_collection() {
 
     let id = create_environment_output.id;
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     // Newly created environments are not automatically activated
     assert!(!events_map.get(&id).unwrap().is_active);
 
     workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
@@ -149,7 +152,8 @@ async fn activate_environment_collection() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -179,7 +183,7 @@ async fn activate_environment_currently_active() {
     let id = create_environment_output.id;
 
     workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
@@ -190,7 +194,7 @@ async fn activate_environment_currently_active() {
 
     // Try activating a currently active environment
     workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: id.clone(),
@@ -199,7 +203,8 @@ async fn activate_environment_currently_active() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&id).unwrap().is_active);
 
@@ -265,7 +270,7 @@ async fn activate_environment_groups_isolation() {
         .id;
 
     workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: global_env_id.clone(),
@@ -274,7 +279,8 @@ async fn activate_environment_groups_isolation() {
         .await
         .unwrap();
 
-    let events_map = test_stream_environments(&ctx, app_delegate.clone(), &workspace).await;
+    let events_map =
+        test_stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), &workspace).await;
 
     assert!(events_map.get(&global_env_id).unwrap().is_active);
     assert!(!events_map.get(&collection_env_id).unwrap().is_active);
@@ -285,7 +291,7 @@ async fn activate_environment_groups_isolation() {
 async fn activate_environment_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
     let result = workspace
-        .activate_environment(
+        .activate_environment::<MockAppRuntime>(
             &ctx,
             ActivateEnvironmentInput {
                 environment_id: EnvironmentId::new(),

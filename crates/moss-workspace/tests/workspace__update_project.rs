@@ -1,6 +1,7 @@
 #![cfg(feature = "integration-tests")]
 pub mod shared;
 
+use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::ChangePath;
 use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
@@ -35,7 +36,7 @@ async fn rename_project_success() {
 
     let new_project_name = random_project_name();
     let _ = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
@@ -85,7 +86,7 @@ async fn rename_project_empty_name() {
 
     let new_project_name = "".to_string();
     let rename_project_result = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
@@ -128,7 +129,7 @@ async fn rename_project_unchanged() {
 
     let new_project_name = old_project_name;
     let _ = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
@@ -155,7 +156,7 @@ async fn rename_project_nonexistent_id() {
     let nonexistent_id = ProjectId::new();
 
     let result = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
@@ -201,7 +202,7 @@ async fn update_project_new_icon() {
     generate_random_icon(&icon_path);
 
     let _ = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {
@@ -251,7 +252,7 @@ async fn update_project_remove_icon() {
         .id;
 
     let _ = workspace
-        .update_project(
+        .update_project::<MockAppRuntime>(
             &ctx,
             UpdateProjectInput {
                 inner: UpdateProjectParams {

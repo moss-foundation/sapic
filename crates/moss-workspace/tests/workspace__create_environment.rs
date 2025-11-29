@@ -1,10 +1,11 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::mock::MockAppRuntime;
 use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
 };
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::{random_environment_name, random_project_name};
 use moss_workspace::{
     models::{
@@ -13,6 +14,7 @@ use moss_workspace::{
     },
     storage::key_environment_order,
 };
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;
 
@@ -51,7 +53,7 @@ async fn create_environment_success() {
 
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
     assert_eq!(output.total_returned, 2); // Expected two because of 1 global + 1 created
@@ -59,7 +61,7 @@ async fn create_environment_success() {
     assert!(create_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let stored_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),
@@ -72,7 +74,7 @@ async fn create_environment_success() {
     assert_eq!(stored_env_order, 42);
 
     let env = workspace.environment(&id).await.unwrap();
-    let variables = env.describe(&ctx).await.unwrap().variables;
+    let variables = env.describe().await.unwrap().variables;
 
     assert_eq!(variables.len(), 1);
 
@@ -169,7 +171,7 @@ async fn create_collection_environment_success() {
 
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
     assert_eq!(output.total_returned, 2); // Expected two because of 1 global + 1 created
@@ -177,7 +179,7 @@ async fn create_collection_environment_success() {
     assert!(create_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let stored_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),
@@ -190,7 +192,7 @@ async fn create_collection_environment_success() {
     assert_eq!(stored_env_order, 42);
 
     let env = workspace.environment(&id).await.unwrap();
-    let variables = env.describe(&ctx).await.unwrap().variables;
+    let variables = env.describe().await.unwrap().variables;
 
     assert_eq!(variables.len(), 1);
 
@@ -317,7 +319,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
 
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
     assert_eq!(output.total_returned, 3); // 1 global + 1 workspace + 1 collection
@@ -326,7 +328,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     assert!(workspace_environment_output.abs_path.exists());
 
     // Check the newly created environment is stored in the db
-    let storage = <dyn KvStorage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     let stored_project_env_order_value = storage
         .get(
             StorageScope::Workspace(workspace.id().inner()),
