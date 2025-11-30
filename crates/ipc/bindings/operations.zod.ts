@@ -7,8 +7,8 @@ import {
   languageInfoSchema,
   themeIdSchema,
 } from "@repo/base";
+import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
-import { jsonValueSchema } from "../../moss-bindingutils/bindings/primitives";
 import { workspaceInfoSchema } from "./types.zod";
 
 export const cancelRequestInputSchema = z.object({
