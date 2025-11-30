@@ -1,4 +1,5 @@
 use moss_applib::TauriResultExt;
+use sapic_base::language::types::LocalizedString;
 use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
@@ -24,7 +25,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
         }
     }
 
-    pub fn emit_progress(&self, detail: Option<String>) -> joinerror::Result<()> {
+    pub fn emit_progress(&self, detail: Option<LocalizedString>) -> joinerror::Result<()> {
         self.app_handle
             .emit(
                 constants::CHANNEL,

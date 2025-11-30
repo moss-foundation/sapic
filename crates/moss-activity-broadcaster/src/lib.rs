@@ -4,7 +4,7 @@ pub mod handle;
 
 use handle::ActivityHandle;
 use moss_applib::TauriResultExt;
-use sapic_base::notification::types::primitives::Location;
+use sapic_base::{language::types::LocalizedString, notification::types::primitives::Location};
 use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
@@ -30,18 +30,18 @@ pub(crate) mod constants {
 pub enum ToLocation<'a> {
     Window {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
     Notification {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
     Toast {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
 }
 
@@ -62,7 +62,7 @@ impl<'a> ToLocation<'a> {
         }
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> LocalizedString {
         match self {
             ToLocation::Window { title, .. } => title.clone(),
             ToLocation::Notification { title, .. } => title.clone(),
@@ -70,7 +70,7 @@ impl<'a> ToLocation<'a> {
         }
     }
 
-    fn detail(&self) -> Option<String> {
+    fn detail(&self) -> Option<LocalizedString> {
         match self {
             ToLocation::Window { detail, .. } => detail.clone(),
             ToLocation::Notification { detail, .. } => detail.clone(),

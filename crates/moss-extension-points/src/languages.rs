@@ -1,12 +1,12 @@
 use async_trait::async_trait;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_language::{
-    contribution::LanguageContributionDecl,
-    registry::{GlobalLanguageRegistry, LanguageRegistryItem},
+use sapic_base::{
+    extension::{contribution::ContributionKey, types::LoadedExtensionInfo},
+    language::contribution::LanguageContributionDecl,
 };
-use sapic_base::extension::{contribution::ContributionKey, types::LoadedExtensionInfo};
-use sapic_runtime::extension_point::ExtensionPoint;
+use sapic_runtime::{extension_point::ExtensionPoint, globals::GlobalLanguagePackRegistry};
+use sapic_system::language::language_registry::LanguageRegistryItem;
 use serde_json::Value as JsonValue;
 
 const LANGUAGES_KEY: ContributionKey = ContributionKey::new("languages");
@@ -47,7 +47,7 @@ impl<R: AppRuntime> ExtensionPoint<R> for LanguageExtensionPoint {
             .collect();
 
         app_delegate
-            .global::<GlobalLanguageRegistry>()
+            .global::<GlobalLanguagePackRegistry>()
             .register(items)
             .await;
 

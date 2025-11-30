@@ -17,10 +17,6 @@ use moss_extension_points::{
 };
 use moss_fs::RealFileSystem;
 use moss_keyring::KeyringClientImpl;
-use moss_language::{
-    RegisterTranslationContribution,
-    registry::{AppLanguageRegistry, LanguageRegistry},
-};
 use moss_project::registries::{
     http_headers::{AppHttpHeaderRegistry, HttpHeaderRegistry},
     resource_statuses::{AppResourceStatusRegistry, ResourceStatusRegistry},
@@ -31,12 +27,17 @@ use sapic_core::context::ArcContext;
 use sapic_runtime::{
     app::{kv_storage::AppStorage, settings_storage::AppSettingsStorage},
     globals::{
-        GlobalConfigurationRegistry, GlobalKvStorage, GlobalSettingsStorage, GlobalThemeRegistry,
+        GlobalConfigurationRegistry, GlobalKvStorage, GlobalLanguagePackRegistry,
+        GlobalSettingsStorage, GlobalThemeRegistry,
     },
     user_settings::UserSettingsService,
 };
 use sapic_system::{
     configuration::configuration_registry::AppConfigurationRegistry,
+    language::{
+        language_registry::AppLanguagePackRegistry,
+        language_service::RegisterTranslationContribution,
+    },
     theme::theme_registry::AppThemeRegistry,
 };
 use serde_json::Value;
@@ -116,7 +117,7 @@ pub async fn run<R: TauriRuntime>() {
                         .expect("failed to create storage");
 
                 let theme_registry = AppThemeRegistry::new();
-                let languages_registry = AppLanguageRegistry::new();
+                let language_registry = AppLanguagePackRegistry::new();
                 let configuration_registry = AppConfigurationRegistry::new()
                     .expect("failed to build configuration registry");
                 let resource_status_registry = AppResourceStatusRegistry::new()
@@ -130,12 +131,12 @@ pub async fn run<R: TauriRuntime>() {
                     Arc::new(user_settings),
                 );
 
-                GlobalThemeRegistry::set(&delegate, theme_registry);
+                GlobalLanguagePackRegistry::set(&delegate, language_registry.clone());
+                GlobalThemeRegistry::set(&delegate, theme_registry.clone());
                 GlobalConfigurationRegistry::set(&delegate, configuration_registry);
                 GlobalSettingsStorage::set(&delegate, Arc::new(settings_storage));
-                GlobalKvStorage::set(&delegate, kv_storage);
+                GlobalKvStorage::set(&delegate, kv_storage.clone());
 
-                <dyn LanguageRegistry>::set_global(&delegate, languages_registry);
                 <dyn ResourceStatusRegistry>::set_global(&delegate, resource_status_registry);
                 <dyn HttpHeaderRegistry>::set_global(&delegate, http_header_registry);
 
@@ -174,7 +175,9 @@ pub async fn run<R: TauriRuntime>() {
                         ],
                         server_api_endpoint,
                         http_client,
-                        GlobalKvStorage::get(&delegate),
+                        kv_storage,
+                        theme_registry,
+                        language_registry,
                     )
                     .with_command(shortcut_println_command)
                     .with_command(shortcut_alert_command)

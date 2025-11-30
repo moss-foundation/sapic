@@ -49,43 +49,6 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
     .await
 }
 
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn list_languages<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> joinerror::Result<ListLanguagesOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, _, window| async move { window.inner().list_languages(&ctx).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: GetTranslationNamespaceInput,
-    options: Options,
-) -> joinerror::Result<GetTranslationNamespaceOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, _, window| async move { window.inner().get_translation_namespace(&ctx, &input).await },
-    )
-    .await
-}
-
 #[allow(dead_code)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]

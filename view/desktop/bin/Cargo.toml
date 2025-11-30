@@ -46,7 +46,6 @@ moss_workspace.workspace = true
 moss_environment.workspace = true
 moss_keyring.workspace = true
 moss_extension_points.workspace = true
-moss_language.workspace = true
 moss_storage2.workspace = true
 
 shared-storage.workspace = true

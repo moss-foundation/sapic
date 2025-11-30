@@ -23,7 +23,6 @@ sapic-base = { workspace = true }
 sapic-window = { workspace = true }
 
 moss_applib = { workspace = true }
-moss_language = { workspace = true }
 moss_app_delegate = { workspace = true }
 moss_fs = { workspace = true }
 moss_keyring = { workspace = true }

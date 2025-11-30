@@ -164,7 +164,6 @@ dependencies = [
  "moss_common",
  "moss_fs",
  "moss_keyring",
- "moss_language",
  "moss_storage2",
  "moss_text",
  "moss_workspace",
@@ -492,6 +491,7 @@ dependencies = [
  "nanoid",
  "serde",
  "serde_json",
+ "tracing",
  "ts-rs",
 ]
 
@@ -1645,7 +1645,6 @@ dependencies = [
  "moss_extension_points",
  "moss_fs",
  "moss_keyring",
- "moss_language",
  "moss_project",
  "moss_storage2",
  "moss_text",
@@ -3122,6 +3121,7 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_common",
+ "moss_text",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -3766,8 +3766,10 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_bindingutils",
+ "moss_text",
  "serde",
  "tauri",
+ "tracing",
  "ts-rs",
 ]
 
@@ -3881,7 +3883,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_fs",
- "moss_language",
  "moss_logging",
  "moss_project",
  "runtime",
@@ -3965,25 +3966,6 @@ dependencies = [
  "tracing",
  "whoami",
  "zeroize",
-]
-
-[[package]]
-name = "moss_language"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "derive_more 2.0.1",
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_fs",
- "runtime",
- "rustc-hash",
- "serde",
- "serde_json",
- "tokio",
- "ts-rs",
 ]
 
 [[package]]
@@ -8989,7 +8971,6 @@ dependencies = [
  "moss_fs",
  "moss_id_macro",
  "moss_keyring",
- "moss_language",
  "moss_logging",
  "moss_storage2",
  "moss_testutils",

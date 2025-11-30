@@ -14,7 +14,6 @@ moss_applib.workspace = true
 moss_logging.workspace = true
 moss_fs.workspace = true
 moss_project.workspace = true
-moss_language.workspace = true
 
 joinerror.workspace = true
 serde_json.workspace = true

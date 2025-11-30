@@ -19,7 +19,10 @@ use moss_project::{
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
-use sapic_base::{user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId};
+use sapic_base::{
+    language::i18n::NO_TRANSLATE_KEY, localize, user::types::primitives::AccountId,
+    workspace::types::primitives::WorkspaceId,
+};
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{
     ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
@@ -220,10 +223,11 @@ impl ProjectService {
                         // Continue creating a collection without vcs
                         app_delegate.emit_oneshot(ToLocation::Toast {
                             activity_id: "create_collection_invalid_repository",
-                            title: "Invalid Repository".to_string(),
-                            detail: Some(
-                                "The provided repository is invalid, skipping the vcs".to_string(),
-                            ),
+                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+                            detail: Some(localize!(
+                                NO_TRANSLATE_KEY,
+                                "The provided repository is invalid, skipping the vcs"
+                            )),
                         })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
@@ -245,10 +249,11 @@ impl ProjectService {
                         // Continue creating a collection without vcs
                         app_delegate.emit_oneshot(ToLocation::Toast {
                             activity_id: "create_collection_invalid_repository",
-                            title: "Invalid Repository".to_string(),
-                            detail: Some(
-                                "The provided repository is invalid, skipping the vcs".to_string(),
-                            ),
+                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+                            detail: Some(localize!(
+                                NO_TRANSLATE_KEY,
+                                "The provided repository is invalid, skipping the vcs"
+                            )),
                         })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
@@ -307,11 +312,11 @@ impl ProjectService {
                 session::warn!(format!("failed to init vcs: {}", e.to_string()));
                 app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "create_collection_init_vcs_failure",
-                    title: "Failed to initialized collection vcs".to_string(),
-                    detail: Some(
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to initialized collection vcs"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
                         "Failed to initialize collection vcs, creating a local only collection"
-                            .to_string(),
-                    ),
+                    )),
                 })?;
             }
         }
@@ -422,10 +427,11 @@ impl ProjectService {
             Err(e) => {
                 app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "clone_collection_invalid_repository",
-                    title: "Invalid repository url".to_string(),
-                    detail: Some(
-                        "Cannot clone remote collection since the url is invalid".to_string(),
-                    ),
+                    title: localize!(NO_TRANSLATE_KEY, "Invalid repository url"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        "Cannot clone remote collection since the url is invalid"
+                    )),
                 })?;
 
                 let _ = rb
@@ -1047,8 +1053,11 @@ impl ProjectService {
                 ));
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "get_file_statuses_error",
-                    title: format!("Failed to get file statuses for project `{}`", id),
-                    detail: Some(e.to_string()),
+                    title: localize!(
+                        NO_TRANSLATE_KEY,
+                        format!("Failed to get file statuses for project `{}`", id)
+                    ),
+                    detail: Some(localize!(NO_TRANSLATE_KEY, e.to_string())),
                 });
                 continue;
             }
@@ -1088,7 +1097,7 @@ async fn restore_projects<R: AppRuntime>(
 
     let activity_handle = app_delegate.emit_continual(ToLocation::Window {
         activity_id: "restore_projects",
-        title: "Restoring projects".to_string(),
+        title: localize!(NO_TRANSLATE_KEY, "Restoring projects"),
         detail: None,
     })?;
 
@@ -1097,9 +1106,9 @@ async fn restore_projects<R: AppRuntime>(
             continue;
         }
 
-        activity_handle.emit_progress(Some(format!(
-            "Restoring project`{}`",
-            entry.file_name().to_string_lossy()
+        activity_handle.emit_progress(Some(localize!(
+            NO_TRANSLATE_KEY,
+            format!("Restoring project`{}`", entry.file_name().to_string_lossy())
         )))?;
 
         let id_str = entry.file_name().to_string_lossy().to_string();
@@ -1119,8 +1128,11 @@ async fn restore_projects<R: AppRuntime>(
                 Err(e) => {
                     let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                         activity_id: "restore_projects_failed_to_reload",
-                        title: "Failed to reload project".to_string(),
-                        detail: Some(format!("Failed to reload project `{}`: {}", id_str, e)),
+                        title: localize!(NO_TRANSLATE_KEY, "Failed to reload project"),
+                        detail: Some(localize!(
+                            NO_TRANSLATE_KEY,
+                            format!("Failed to reload project `{}`: {}", id_str, e)
+                        )),
                     });
 
                     session::error!(format!(
@@ -1144,10 +1156,13 @@ async fn restore_projects<R: AppRuntime>(
             Err(e) => {
                 app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_get_details",
-                    title: "Failed to get collection details".to_string(),
-                    detail: Some(format!(
-                        "Failed to get collection details: {}, it will be skipped.",
-                        e.to_string()
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to get collection details"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        format!(
+                            "Failed to get collection details: {}, it will be skipped.",
+                            e.to_string()
+                        )
                     )),
                 })?;
                 continue;
@@ -1159,10 +1174,11 @@ async fn restore_projects<R: AppRuntime>(
                 projects.push((id, project));
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_nonexistent_account",
-                    title: "A project is associated with a nonexistent account".to_string(),
-                    detail: Some(format!(
-                        "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
-                        id_str, account_id.as_str()
+                    title: localize!(NO_TRANSLATE_KEY, "A project is associated with a nonexistent account"),
+                    detail: Some(localize!(NO_TRANSLATE_KEY, format!(
+                            "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
+                            id_str, account_id.as_str()
+                        )
                     ))
                 });
             });
@@ -1181,11 +1197,14 @@ async fn restore_projects<R: AppRuntime>(
             if let Err(e) = project.load_vcs(client).await {
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_load_vcs",
-                    title: "Failed to load project vcs".to_string(),
-                    detail: Some(format!(
-                        "Failed to load vcs for project `{}`: {}",
-                        id_str,
-                        e.to_string()
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to load project vcs"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        format!(
+                            "Failed to load vcs for project `{}`: {}",
+                            id_str,
+                            e.to_string()
+                        )
                     )),
                 });
             };

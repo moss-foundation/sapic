@@ -53,7 +53,6 @@ PROJECT_MODELS_DIR := crates/moss-project
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
 GIT_MODELS_DIR := crates/moss-git
-LANGUAGE_MODELS_DIR := crates/moss-language
 SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
 SETTINGS_STORAGE_MODELS_DIR := plugins/settings-storage
 
@@ -147,7 +146,6 @@ $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,ipc,IPC_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
-$(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,base,BASE_DIR))
 $(eval $(call gen_bindings,runtime,RUNTIME_MODELS_DIR))
 $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
@@ -162,12 +160,12 @@ gen-workspace-bindings:
 gen-bindingutils-bindings:
 gen-ipc-bindings:
 gen-git-bindings:
-gen-language-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
 gen-base-bindings:
 gen-runtime-bindings:
 gen-activity-broadcaster-bindings:
+
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
@@ -179,7 +177,6 @@ gen-bindings: \
 	gen-bindingutils-bindings \
 	gen-ipc-bindings \
 	gen-git-bindings \
-	gen-language-bindings \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \
 	gen-base-bindings \

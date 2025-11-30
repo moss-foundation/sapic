@@ -9,14 +9,14 @@ use std::{
     sync::Arc,
 };
 
-pub struct ThemeLoader {
+pub struct ColorThemeLoader {
     fs: Arc<dyn FileSystem>,
     policy_path: PathBuf,
 }
 
-impl ThemeLoader {
+impl ColorThemeLoader {
     pub fn new(fs: Arc<dyn FileSystem>, policy_path: PathBuf) -> Arc<Self> {
-        Arc::new(Self { fs, policy_path })
+        Self { fs, policy_path }.into()
     }
 
     fn validate(&self, theme: &ThemeFile, policy_content: String) -> joinerror::Result<()> {
@@ -50,7 +50,7 @@ impl ThemeLoader {
 }
 
 #[async_trait]
-impl ThemeLoaderPort for ThemeLoader {
+impl ThemeLoaderPort for ColorThemeLoader {
     async fn load(&self, path: &Path) -> joinerror::Result<ThemeFile> {
         let rdr = self.fs.open_file(path).await?;
         let file: ThemeFile = serde_json::from_reader(rdr)?;

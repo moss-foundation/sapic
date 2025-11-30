@@ -1,0 +1,1 @@
+export { useLocalizedString } from "./useLocalizedString";

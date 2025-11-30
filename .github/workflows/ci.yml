@@ -213,7 +213,6 @@ jobs:
           - moss_logging
           - moss_edit
           - moss_extension_points
-          - moss_language
           - moss_storage2
           - shared-storage
     steps:
@@ -333,7 +332,6 @@ jobs:
           - moss_logging
           - moss_edit
           - moss_extension_points
-          - moss_language
           - moss_storage2
     steps:
       - name: Harden the runner (Audit all outbound calls)

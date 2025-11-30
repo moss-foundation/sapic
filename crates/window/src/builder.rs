@@ -3,7 +3,6 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_language::registry::LanguageRegistry;
 use moss_storage2::KvStorage;
 use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
 // use moss_theme::registry::ThemeRegistry;
@@ -21,8 +20,6 @@ use tauri::Manager;
 
 use crate::{
     dirs,
-
-    language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
@@ -108,10 +105,6 @@ impl OldSapicWindowBuilder {
         // .await
         // .expect("Failed to create theme service");
 
-        let language_service =
-            LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
-                .await
-                .expect("Failed to create language service");
         let session_service = SessionService::new();
 
         let log_service = LogService::new::<R>(
@@ -179,7 +172,6 @@ impl OldSapicWindowBuilder {
             session_service,
             log_service,
             workspace_service,
-            language_service,
             // theme_service,
             profile_service,
             // configuration_service,

@@ -1,8 +1,6 @@
-use crate::models::primitives::{LanguageCode, LanguageDirection};
 use serde::Deserialize;
 
-pub struct RegisterTranslationContribution(pub &'static str);
-inventory::collect!(RegisterTranslationContribution);
+use crate::language::types::primitives::{LanguageCode, LanguageDirection};
 
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

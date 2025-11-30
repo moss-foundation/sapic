@@ -1,32 +1,58 @@
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::AppRuntime;
-use moss_fs::FileSystem;
-use moss_language::{
-    defaults::TranslationDefaults,
-    loader::LanguageLoader,
-    models::{primitives::LanguageCode, types::LanguageInfo},
-    registry::LanguageRegistry,
-};
+use rustc_hash::FxHashMap;
+use sapic_base::language::types::{LanguageInfo, primitives::LanguageCode};
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, sync::Arc};
 
+use crate::language::{LanguagePackLoader, LanguagePackRegistry};
+
+type Namespace = String;
+
+pub struct RegisterTranslationContribution(pub &'static str);
+inventory::collect!(RegisterTranslationContribution);
+
 const DEFAULT_LANGUAGE_CODE: &str = "en";
+
+pub struct TranslationDefaults(FxHashMap<Namespace, Arc<JsonValue>>);
+
+impl TranslationDefaults {
+    pub fn new() -> joinerror::Result<Self> {
+        let mut aggregated = FxHashMap::default();
+        for contrib in inventory::iter::<RegisterTranslationContribution>() {
+            let decl: FxHashMap<String, Arc<JsonValue>> = serde_json::from_str(contrib.0)
+                .join_err_with::<()>(|| {
+                    format!(
+                        "failed to parse included translation defaults: {}",
+                        contrib.0
+                    )
+                })?;
+
+            aggregated.extend(decl);
+        }
+
+        Ok(Self(aggregated.into()))
+    }
+
+    pub fn namespace(&self, ns: &str) -> Option<Arc<JsonValue>> {
+        self.0.get(ns).cloned()
+    }
+}
 
 pub struct LanguageService {
     defaults: TranslationDefaults,
-    loader: LanguageLoader,
-    registry: Arc<dyn LanguageRegistry>,
+    loader: Arc<dyn LanguagePackLoader>,
+    registry: Arc<dyn LanguagePackRegistry>,
 }
 
 impl LanguageService {
-    pub async fn new<R: AppRuntime>(
-        fs: Arc<dyn FileSystem>,
-        registry: Arc<dyn LanguageRegistry>,
+    pub fn new(
+        registry: Arc<dyn LanguagePackRegistry>,
+        loader: Arc<dyn LanguagePackLoader>,
     ) -> joinerror::Result<Self> {
         Ok(Self {
             defaults: TranslationDefaults::new()?,
             registry,
-            loader: LanguageLoader::new(fs),
+            loader,
         })
     }
 
@@ -47,7 +73,6 @@ impl LanguageService {
             .collect()
     }
 
-    // TODO: Should we maintain a separate map based on language code?
     pub async fn get_namespace(
         &self,
         code: &LanguageCode,
