@@ -121,6 +121,9 @@ importers:
       '@repo/base':
         specifier: workspace:*
         version: link:../base
+      '@repo/moss-bindingutils':
+        specifier: workspace:*
+        version: link:../moss-bindingutils
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/config-typescript
