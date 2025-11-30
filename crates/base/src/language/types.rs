@@ -1,5 +1,7 @@
 pub mod primitives;
 
+use std::ops::Deref;
+
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -36,6 +38,26 @@ pub struct LocalizedString {
     /// The unique key identifying the localized string.
     pub key: String,
 
-    /// The original text or fallback string associated with the key.
-    pub origin: String,
+    /// The fallback string associated with the key, used when the key is not found.
+    pub fallback: String,
+}
+
+impl std::fmt::Display for LocalizedString {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fallback)
+    }
+}
+
+impl Deref for LocalizedString {
+    type Target = str;
+
+    fn deref(&self) -> &Self::Target {
+        &self.fallback
+    }
+}
+
+impl AsRef<str> for LocalizedString {
+    fn as_ref(&self) -> &str {
+        &self.fallback
+    }
 }

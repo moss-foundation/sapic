@@ -9,12 +9,14 @@ sapic-base = { workspace = true }
 sapic-ipc = { workspace = true }
 
 moss_applib.workspace = true
+moss_text = { workspace = true }
 
 serde.workspace = true
 tauri.workspace = true
 ts-rs.workspace = true
 moss_bindingutils.workspace = true
 joinerror.workspace = true
+tracing.workspace = true
 
 [features]
 integration-tests = []

@@ -1,5 +1,7 @@
 export * from "./bindings/events";
 export * from "./bindings/events.zod";
+export * from "./bindings/language/types";
+export * from "./bindings/language/types.zod";
 export * from "./bindings/main/operations";
 export * from "./bindings/main/operations.zod";
 export * from "./bindings/main/types";

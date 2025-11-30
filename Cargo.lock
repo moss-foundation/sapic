@@ -491,6 +491,7 @@ dependencies = [
  "nanoid",
  "serde",
  "serde_json",
+ "tracing",
  "ts-rs",
 ]
 
@@ -3120,6 +3121,7 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_common",
+ "moss_text",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -3764,8 +3766,10 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_bindingutils",
+ "moss_text",
  "serde",
  "tauri",
+ "tracing",
  "ts-rs",
 ]
 

@@ -9,7 +9,8 @@
     },
     "devDependencies": {
       "@repo/typescript-config": "workspace:*",
-      "@repo/base": "workspace:*"
+      "@repo/base": "workspace:*",
+      "@repo/moss-bindingutils": "workspace:*"
     },
     "dependencies": {
       "typescript": "5.9.2",
