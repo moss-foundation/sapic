@@ -18,7 +18,6 @@ serde = { workspace = true, features = ["derive"] }
 tokio-util.workspace = true
 joinerror.workspace = true
 validator.workspace = true
-moss_logging.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]

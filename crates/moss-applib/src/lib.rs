@@ -1,32 +1,32 @@
-pub mod errors;
-pub mod markers;
-pub mod subscription;
-pub mod task;
-
-pub use markers::*;
 pub use tauri::Wry;
 
-use std::{any::Any, sync::Arc};
-use tauri::{AppHandle, Runtime as TauriRuntime};
-
+use joinerror::error::ErrorMarker;
 use sapic_core::context::{AnyAsyncContext, ArcContext};
+use tauri::Runtime as TauriRuntime;
 
-/// A generic app handle that can be used to access the app's runtime context.
-/// This is useful for internal plugins that need to access the app's
-/// runtime context without knowing the exact runtime type.
-pub struct GenericAppHandle {
-    inner: Arc<dyn Any + Send + Sync>,
+pub trait TauriResultExt<T> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T>;
+    fn join_err_with<E: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T>;
+    fn join_err_bare(self) -> joinerror::Result<T>;
 }
 
-impl GenericAppHandle {
-    pub fn new<R: tauri::Runtime + 'static>(handle: AppHandle<R>) -> Self {
-        Self {
-            inner: Arc::new(handle),
-        }
+impl<T> TauriResultExt<T> for Result<T, tauri::Error> {
+    fn join_err<E: ErrorMarker>(self, details: impl Into<String>) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join::<E>(details))
     }
 
-    pub fn downcast<R: tauri::Runtime + 'static>(&self) -> Option<AppHandle<R>> {
-        self.inner.clone().downcast_ref::<AppHandle<R>>().cloned()
+    fn join_err_with<E: ErrorMarker>(
+        self,
+        details: impl FnOnce() -> String,
+    ) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()).join_with::<E>(details))
+    }
+
+    fn join_err_bare(self) -> joinerror::Result<T> {
+        self.map_err(|e| joinerror::Error::new::<()>(e.to_string()))
     }
 }
 

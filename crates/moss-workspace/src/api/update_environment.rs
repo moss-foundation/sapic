@@ -1,4 +1,5 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{
@@ -6,8 +7,8 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn update_environment(
+impl Workspace {
+    pub async fn update_environment<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateEnvironmentInput,

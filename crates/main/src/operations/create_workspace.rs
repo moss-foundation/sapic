@@ -1,7 +1,10 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use sapic_ipc::contracts::main::{
-    OpenInTarget,
-    workspace::{CreateWorkspaceInput, CreateWorkspaceOutput},
+use moss_applib::AppRuntime;
+use sapic_ipc::{
+    ValidationResultExt,
+    contracts::main::{
+        OpenInTarget,
+        workspace::{CreateWorkspaceInput, CreateWorkspaceOutput},
+    },
 };
 use validator::Validate;
 

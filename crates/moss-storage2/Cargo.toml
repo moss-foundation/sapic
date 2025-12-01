@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+sapic-core.workspace = true
+
 moss_applib.workspace = true
 moss_logging.workspace = true
-moss_app_delegate.workspace = true
 moss_common.workspace = true
 
 joinerror = { workspace = true, features = ["sqlx-sqlite", "sqlx-migrate"] }

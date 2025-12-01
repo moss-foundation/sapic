@@ -2,9 +2,8 @@ pub mod defaults;
 pub mod error;
 pub mod ext;
 
-pub use joinerror_macros::errors;
-
 pub use error::{Error, ErrorMarker};
+pub use joinerror_macros::errors;
 
 pub type Result<T> = std::result::Result<T, Error>;
 

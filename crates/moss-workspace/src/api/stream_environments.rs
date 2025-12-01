@@ -10,17 +10,14 @@ use crate::{
     models::{events::StreamEnvironmentsEvent, operations::StreamEnvironmentsOutput},
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn stream_environments(
+impl Workspace {
+    pub async fn stream_environments<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
+        _app_delegate: AppDelegate<R>,
         channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> joinerror::Result<StreamEnvironmentsOutput> {
-        let stream = self
-            .environment_service
-            .list_environments(ctx, app_delegate)
-            .await;
+        let stream = self.environment_service.list_environments(ctx).await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

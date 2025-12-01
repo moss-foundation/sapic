@@ -1,5 +1,5 @@
 import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
-import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLanguagesOutput } from "@repo/window";
+import { GetTranslationNamespaceInput, GetTranslationNamespaceOutput, ListLanguagesOutput } from "@repo/ipc";
 
 export const languagesService = {
   listLanguages: async () => {

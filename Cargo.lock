@@ -164,7 +164,6 @@ dependencies = [
  "moss_common",
  "moss_fs",
  "moss_keyring",
- "moss_language",
  "moss_storage2",
  "moss_text",
  "moss_workspace",
@@ -492,6 +491,7 @@ dependencies = [
  "nanoid",
  "serde",
  "serde_json",
+ "tracing",
  "ts-rs",
 ]
 
@@ -1122,9 +1122,13 @@ dependencies = [
 name = "core"
 version = "0.1.0"
 dependencies = [
+ "futures",
  "joinerror",
+ "rustc-hash",
  "serde",
  "tokio",
+ "tokio-util",
+ "tracing",
 ]
 
 [[package]]
@@ -1621,6 +1625,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "app",
+ "base",
  "cocoa",
  "core",
  "dotenvy",
@@ -1640,7 +1645,6 @@ dependencies = [
  "moss_extension_points",
  "moss_fs",
  "moss_keyring",
- "moss_language",
  "moss_project",
  "moss_storage2",
  "moss_text",
@@ -3118,6 +3122,7 @@ dependencies = [
  "joinerror",
  "moss_applib",
  "moss_common",
+ "moss_text",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
@@ -3265,6 +3270,7 @@ dependencies = [
  "git2",
  "joinerror-macros",
  "reqwest",
+ "serde",
  "serde_json",
  "sqlx",
  "tauri",
@@ -3604,6 +3610,7 @@ dependencies = [
  "moss_storage2",
  "moss_text",
  "moss_workspace",
+ "runtime",
  "system",
  "tauri",
  "tokio",
@@ -3755,11 +3762,15 @@ dependencies = [
 name = "moss_activity_broadcaster"
 version = "0.1.0"
 dependencies = [
+ "base",
+ "ipc",
  "joinerror",
  "moss_applib",
  "moss_bindingutils",
+ "moss_text",
  "serde",
  "tauri",
+ "tracing",
  "ts-rs",
 ]
 
@@ -3785,7 +3796,6 @@ dependencies = [
  "derive_more 2.0.1",
  "futures",
  "joinerror",
- "moss_logging",
  "rustc-hash",
  "serde",
  "tauri",
@@ -3837,12 +3847,12 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "base",
+ "core",
  "derive_more 2.0.1",
  "hcl-rs",
  "indexmap 2.12.0",
  "joinerror",
  "json-patch 4.1.0",
- "moss_app_delegate",
  "moss_applib",
  "moss_bindingutils",
  "moss_common",
@@ -3874,7 +3884,6 @@ dependencies = [
  "moss_app_delegate",
  "moss_applib",
  "moss_fs",
- "moss_language",
  "moss_logging",
  "moss_project",
  "runtime",
@@ -3961,24 +3970,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "moss_language"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "derive_more 2.0.1",
- "inventory",
- "joinerror",
- "moss_app_delegate",
- "moss_applib",
- "moss_fs",
- "rustc-hash",
- "serde",
- "serde_json",
- "tokio",
- "ts-rs",
-]
-
-[[package]]
 name = "moss_logging"
 version = "0.1.0"
 dependencies = [
@@ -4007,6 +3998,7 @@ dependencies = [
  "image",
  "indexmap 2.12.0",
  "inventory",
+ "ipc",
  "joinerror",
  "json-patch 4.1.0",
  "moss_app_delegate",
@@ -4027,6 +4019,7 @@ dependencies = [
  "nanoid",
  "oauth2",
  "reqwest",
+ "runtime",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -4043,9 +4036,9 @@ name = "moss_storage2"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "joinerror",
- "moss_app_delegate",
  "moss_applib",
  "moss_common",
  "moss_logging",
@@ -4094,6 +4087,7 @@ dependencies = [
  "futures",
  "image",
  "inventory",
+ "ipc",
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
@@ -4117,6 +4111,7 @@ dependencies = [
  "platform",
  "rand 0.9.2",
  "reqwest",
+ "runtime",
  "rustc-hash",
  "serde",
  "serde_json",
@@ -5128,6 +5123,7 @@ dependencies = [
  "moss_environment",
  "moss_fs",
  "moss_git",
+ "moss_storage2",
  "moss_text",
  "oauth2",
  "regorus",
@@ -5844,17 +5840,20 @@ version = "0.1.0"
 dependencies = [
  "async-trait",
  "base",
+ "core",
  "derive_more 2.0.1",
  "inventory",
  "joinerror",
  "moss_app_delegate",
  "moss_applib",
  "moss_fs",
+ "moss_storage2",
  "platform",
  "rustc-hash",
  "serde",
  "serde_json",
  "system",
+ "tauri",
  "tokio",
  "tracing",
 ]
@@ -6416,12 +6415,14 @@ name = "shared-storage"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "derive_more 2.0.1",
  "ipc",
  "joinerror",
  "moss_applib",
  "moss_logging",
  "moss_storage2",
+ "runtime",
  "serde",
  "serde_json",
  "tauri",
@@ -9026,6 +9027,7 @@ dependencies = [
  "futures",
  "indexmap 2.12.0",
  "inventory",
+ "ipc",
  "joinerror",
  "json-patch 4.1.0",
  "moss_activity_broadcaster",
@@ -9039,7 +9041,6 @@ dependencies = [
  "moss_fs",
  "moss_id_macro",
  "moss_keyring",
- "moss_language",
  "moss_logging",
  "moss_storage2",
  "moss_testutils",

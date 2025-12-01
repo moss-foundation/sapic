@@ -8,6 +8,7 @@ license = "MIT"
 sapic-base.workspace = true
 sapic-system.workspace = true
 sapic-core.workspace = true
+sapic-ipc.workspace = true
 
 moss_app_delegate.workspace = true
 moss_applib.workspace = true
@@ -50,6 +51,7 @@ rustc-hash = { workspace = true }
 tracing.workspace = true
 
 [dev-dependencies]
+sapic-runtime = { workspace = true }
 sapic-platform = { workspace = true }
 tauri = { workspace = true, features = ["test"] }
 moss_testutils.workspace = true
@@ -61,5 +63,6 @@ integration-tests = [
   "moss_project/integration-tests",
   "oauth2",
   "moss_keyring/test",
+  "sapic-runtime/integration-tests",
   "moss_storage2/integration-tests",
 ]

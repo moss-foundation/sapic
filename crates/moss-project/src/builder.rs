@@ -1,11 +1,10 @@
 use joinerror::{Error, ResultExt};
-use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, subscription::EventEmitter};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
+use moss_storage2::KvStorage;
 use sapic_base::user::types::primitives::AccountId;
-use sapic_core::context::AnyAsyncContext;
+use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::ports::GitProviderKind;
 use std::{
     cell::LazyCell,
@@ -115,19 +114,24 @@ pub struct ProjectImportExternalParams {
 
 pub struct ProjectBuilder {
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     project_id: ProjectId,
 }
 
 impl ProjectBuilder {
-    pub async fn new(fs: Arc<dyn FileSystem>, project_id: ProjectId) -> Self {
-        Self { fs, project_id }
+    pub async fn new(
+        fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
+        project_id: ProjectId,
+    ) -> Self {
+        Self {
+            fs,
+            storage,
+            project_id,
+        }
     }
 
-    pub async fn load<R: AppRuntime>(
-        self,
-        params: ProjectLoadParams,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<Project<R>> {
+    pub async fn load(self, params: ProjectLoadParams) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         // Check if the project has an external path
@@ -163,8 +167,8 @@ impl ProjectBuilder {
             OnceCell::new()
         } else {
             Arc::new(Worktree::new(
+                self.storage.clone(),
                 self.project_id.clone(),
-                app_delegate.clone(),
                 abs_path.clone(),
                 self.fs.clone(),
             ))
@@ -176,11 +180,11 @@ impl ProjectBuilder {
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
+            storage: self.storage,
             internal_abs_path: params.internal_abs_path,
             external_abs_path: config.external_path.map(|p| p.into()),
             edit,
             set_icon_service,
-            app_delegate,
             vcs: OnceCell::new(),
             worktree: worktree_service,
             on_did_change: EventEmitter::new(),
@@ -188,12 +192,7 @@ impl ProjectBuilder {
         })
     }
 
-    pub async fn create<R: AppRuntime>(
-        self,
-        _ctx: &R::AsyncContext,
-        params: ProjectCreateParams,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<Project<R>> {
+    pub async fn create(self, params: ProjectCreateParams) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -202,9 +201,9 @@ impl ProjectBuilder {
             .unwrap_or(params.internal_abs_path.clone())
             .into();
 
-        let worktree_service_inner: Arc<Worktree<R>> = Worktree::new(
+        let worktree_service_inner: Arc<Worktree> = Worktree::new(
+            self.storage.clone(),
             self.project_id.clone(),
-            app_delegate.clone(),
             abs_path.clone(),
             self.fs.clone(),
         )
@@ -297,11 +296,11 @@ impl ProjectBuilder {
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
+            storage: self.storage,
             internal_abs_path: params.internal_abs_path,
             external_abs_path: params.external_abs_path,
             edit,
             set_icon_service,
-            app_delegate,
             vcs: OnceCell::new(),
             worktree: worktree_service_inner.into(),
             on_did_change: EventEmitter::new(),
@@ -310,13 +309,12 @@ impl ProjectBuilder {
     }
 
     // TODO: Handle non-collection repo
-    pub async fn clone<R: AppRuntime>(
+    pub async fn clone(
         self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         git_client: GitClient,
         params: ProjectCloneParams,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<Project<R>> {
+    ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path.clone();
@@ -330,9 +328,9 @@ impl ProjectBuilder {
             )
             .await?;
 
-        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
+        let worktree_inner: Arc<Worktree> = Worktree::new(
+            self.storage.clone(),
             self.project_id.clone(),
-            app_delegate.clone(),
             abs_path.clone(),
             self.fs.clone(),
         )
@@ -361,11 +359,11 @@ impl ProjectBuilder {
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
+            storage: self.storage,
             internal_abs_path: abs_path,
             external_abs_path: None,
             edit,
             set_icon_service,
-            app_delegate,
             vcs: OnceCell::new_with(Some(Vcs::new(params.repository, repository, git_client))),
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
@@ -373,21 +371,19 @@ impl ProjectBuilder {
         })
     }
 
-    pub async fn import_archive<R: AppRuntime>(
+    pub async fn import_archive(
         self,
-        _ctx: &R::AsyncContext,
         params: ProjectImportArchiveParams,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<Project<R>> {
+    ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path;
         let archive_path = params.archive_path;
         self.do_import(abs_path.clone(), archive_path).await?;
 
-        let worktree_inner: Arc<Worktree<R>> = Worktree::new(
+        let worktree_inner: Arc<Worktree> = Worktree::new(
+            self.storage.clone(),
             self.project_id.clone(),
-            app_delegate.clone(),
             abs_path.clone(),
             self.fs.clone(),
         )
@@ -417,11 +413,11 @@ impl ProjectBuilder {
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
+            storage: self.storage,
             internal_abs_path: abs_path,
             external_abs_path: None,
             edit,
             set_icon_service,
-            app_delegate,
             vcs: OnceCell::new(),
             worktree: worktree_inner.into(),
             on_did_change: EventEmitter::new(),
@@ -429,11 +425,10 @@ impl ProjectBuilder {
         })
     }
 
-    pub async fn import_external<R: AppRuntime>(
+    pub async fn import_external(
         self,
         params: ProjectImportExternalParams,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<Project<R>> {
+    ) -> joinerror::Result<Project> {
         self.fs
             .create_file_with(
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
@@ -450,12 +445,9 @@ impl ProjectBuilder {
             )
             .await?;
 
-        self.load(
-            ProjectLoadParams {
-                internal_abs_path: params.internal_abs_path,
-            },
-            app_delegate,
-        )
+        self.load(ProjectLoadParams {
+            internal_abs_path: params.internal_abs_path,
+        })
         .await
     }
 }

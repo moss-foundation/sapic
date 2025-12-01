@@ -385,7 +385,7 @@ export const LogsView = () => {
                 eventInfo = (
                   <div className="flex items-center gap-2">
                     <span className="rounded bg-blue-100 px-2 py-0.5 text-blue-800">Start</span>
-                    <span className="font-medium">{activityEvent.start.title}</span>
+                    <span className="font-medium">{activityEvent.start.title.fallback}</span>
                     <span className="text-sm text-gray-500">ID: {activityEvent.start.activityId}</span>
                   </div>
                 );
@@ -393,7 +393,7 @@ export const LogsView = () => {
                 eventInfo = (
                   <div className="flex items-center gap-2">
                     <span className="rounded bg-green-100 px-2 py-0.5 text-green-800">Progress</span>
-                    <span className="text-gray-700">{activityEvent.progress.detail}</span>
+                    <span className="text-gray-700">{activityEvent.progress.detail?.fallback}</span>
                     <span className="text-sm text-gray-500">ID: {activityEvent.progress.activityId}</span>
                   </div>
                 );
@@ -408,8 +408,8 @@ export const LogsView = () => {
                 eventInfo = (
                   <div className="flex items-center gap-2">
                     <span className="rounded bg-amber-100 px-2 py-0.5 text-amber-800">Oneshot</span>
-                    <span className="font-medium">{activityEvent.oneshot.title}</span>
-                    <span>{activityEvent.oneshot.detail}</span>
+                    <span className="font-medium">{activityEvent.oneshot.title.fallback}</span>
+                    <span>{activityEvent.oneshot.detail?.fallback}</span>
                   </div>
                 );
               } else {

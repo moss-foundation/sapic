@@ -6,8 +6,8 @@ use crate::{
     project::Project,
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn update_resource(
+impl Project {
+    pub async fn update_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -19,7 +19,7 @@ impl<R: AppRuntime> Project<R> {
                 Ok(UpdateResourceOutput::Item(output))
             }
             UpdateResourceInput::Dir(input) => {
-                let output = self.update_dir_resource(ctx, input).await?;
+                let output = self.update_dir_resource::<R>(ctx, input).await?;
                 Ok(UpdateResourceOutput::Dir(output))
             }
         }

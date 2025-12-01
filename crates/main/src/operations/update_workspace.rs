@@ -1,5 +1,9 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
-use sapic_ipc::contracts::main::workspace::{UpdateWorkspaceInput, UpdateWorkspaceOutput};
+use moss_applib::AppRuntime;
+
+use sapic_ipc::{
+    ValidationResultExt,
+    contracts::main::workspace::{UpdateWorkspaceInput, UpdateWorkspaceOutput},
+};
 use sapic_system::workspace::WorkspaceEditParams;
 use validator::Validate;
 

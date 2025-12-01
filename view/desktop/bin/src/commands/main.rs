@@ -1,12 +1,9 @@
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::errors::Unavailable;
-use sapic_ipc::{
-    TauriResult,
-    contracts::{
-        main::{OpenInTarget, workspace::*},
-        other::CancelRequestInput,
-    },
+use sapic_ipc::contracts::{
+    main::{OpenInTarget, workspace::*},
+    other::CancelRequestInput,
 };
+use sapic_runtime::errors::Unavailable;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
@@ -19,7 +16,7 @@ pub async fn main__cancel_request<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: CancelRequestInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     let window = app
         .main_window(window.label())
         .await
@@ -37,7 +34,7 @@ pub async fn main__update_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: UpdateWorkspaceInput,
     options: Options,
-) -> TauriResult<UpdateWorkspaceOutput> {
+) -> joinerror::Result<UpdateWorkspaceOutput> {
     super::with_main_window_timeout(
         ctx.inner(),
         app,
@@ -57,7 +54,7 @@ pub async fn main__create_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: CreateWorkspaceInput,
     options: Options,
-) -> TauriResult<CreateWorkspaceOutput> {
+) -> joinerror::Result<CreateWorkspaceOutput> {
     super::with_main_window_timeout(
         ctx.inner(),
         app,
@@ -99,7 +96,7 @@ pub async fn main__open_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: OpenWorkspaceInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     super::with_main_window_timeout(
         ctx.inner(),
         app,
@@ -138,7 +135,7 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     super::with_main_window_timeout(
         ctx.inner(),
         app,
@@ -149,7 +146,7 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
                 .await
                 .join_err::<()>("failed to ensure welcome window")?;
 
-            app.close_main_window(&app_delegate, window.label())
+            app.close_main_window(window.label())
                 .await
                 .join_err::<()>("failed to close main window")?;
 

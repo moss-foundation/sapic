@@ -1,11 +1,8 @@
 use joinerror::Error;
-use moss_applib::errors::NotFound;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
-use sapic_ipc::{
-    TauriResult,
-    contracts::{configuration::*, extension::*, theme::*, workspace::*},
-};
+use sapic_base::errors::NotFound;
+use sapic_ipc::contracts::{configuration::*, extension::*, language::*, theme::*, workspace::*};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;
@@ -20,7 +17,7 @@ pub async fn execute_command<'a, R: tauri::Runtime>(
     cmd: ReadOnlyStr,
     args: HashMap<String, JsonValue>,
     options: Options,
-) -> TauriResult<JsonValue> {
+) -> joinerror::Result<JsonValue> {
     let command_cb = app.command(&cmd).ok_or_else(|| {
         Error::new::<NotFound>(format!("command with id {} is not found", quote!(cmd)))
     })?;
@@ -35,7 +32,7 @@ pub async fn list_configuration_schemas<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListConfigurationSchemasOutput> {
+) -> joinerror::Result<ListConfigurationSchemasOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -55,7 +52,7 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListExtensionsOutput> {
+) -> joinerror::Result<ListExtensionsOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -74,7 +71,7 @@ pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: GetColorThemeInput,
     options: Options,
-) -> TauriResult<GetColorThemeOutput> {
+) -> joinerror::Result<GetColorThemeOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -92,7 +89,7 @@ pub async fn list_color_themes<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListColorThemesOutput> {
+) -> joinerror::Result<ListColorThemesOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -110,7 +107,7 @@ pub async fn list_workspaces<'a, R: tauri::Runtime>(
     app: App<'a, R>,
     window: TauriWindow<R>,
     options: Options,
-) -> TauriResult<ListWorkspacesOutput> {
+) -> joinerror::Result<ListWorkspacesOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
@@ -129,19 +126,56 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: DeleteWorkspaceInput,
     options: Options,
-) -> TauriResult<DeleteWorkspaceOutput> {
+) -> joinerror::Result<DeleteWorkspaceOutput> {
     super::with_app_timeout(
         ctx.inner(),
         app,
         window,
         options,
         |ctx, app, app_delegate| async move {
-            let output = app.delete_workspace(&ctx, &app_delegate, &input).await?;
+            let output = app.delete_workspace(&ctx, &input).await?;
 
             app.ensure_welcome(&app_delegate).await?;
 
             Ok(output)
         },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn list_languages<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> joinerror::Result<ListLanguagesOutput> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.list_languages(&ctx).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: GetTranslationNamespaceInput,
+    options: Options,
+) -> joinerror::Result<GetTranslationNamespaceOutput> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.get_translation_namespace(&ctx, &input).await },
     )
     .await
 }

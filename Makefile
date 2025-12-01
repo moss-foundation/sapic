@@ -44,16 +44,15 @@ SCRIPTS_DIR := scripts
 
 # ---- Crate Directories ----
 BASE_DIR := crates/base
+IPC_MODELS_DIR := crates/ipc
+RUNTIME_MODELS_DIR := crates/runtime
 BINDINGUTILS_DIR := crates/moss-bindingutils
+ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 WINDOW_MODELS_DIR := crates/window
 PROJECT_MODELS_DIR := crates/moss-project
 ENVIRONMENT_MODELS_DIR := crates/moss-environment
 WORKSPACE_MODELS_DIR := crates/moss-workspace
-ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
-IPC_MODELS_DIR := crates/ipc
 GIT_MODELS_DIR := crates/moss-git
-LANGUAGE_MODELS_DIR := crates/moss-language
-
 SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
 SETTINGS_STORAGE_MODELS_DIR := plugins/settings-storage
 URL_PARSER_MODELS_DIR := plugins/url-parser
@@ -145,12 +144,12 @@ $(eval $(call gen_bindings,window,WINDOW_MODELS_DIR))
 $(eval $(call gen_bindings,project,PROJECT_MODELS_DIR))
 $(eval $(call gen_bindings,environment,ENVIRONMENT_MODELS_DIR))
 $(eval $(call gen_bindings,workspace,WORKSPACE_MODELS_DIR))
-$(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,ipc,IPC_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
-$(eval $(call gen_bindings,language,LANGUAGE_MODELS_DIR))
 $(eval $(call gen_bindings,base,BASE_DIR))
+$(eval $(call gen_bindings,runtime,RUNTIME_MODELS_DIR))
+$(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 $(eval $(call gen_bindings,settings-storage,SETTINGS_STORAGE_MODELS_DIR))
@@ -160,32 +159,31 @@ gen-window-bindings:
 gen-project-bindings:
 gen-environment-bindings:
 gen-workspace-bindings:
-gen-activity-broadcaster-bindings:
 gen-bindingutils-bindings:
 gen-ipc-bindings:
 gen-git-bindings:
-gen-language-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
 gen-url-parser-bindings:
 gen-base-bindings:
+gen-runtime-bindings:
+gen-activity-broadcaster-bindings:
 
 ## Generate all TypeScript bindings
 .PHONY: gen-bindings
 gen-bindings: \
 	gen-window-bindings \
 	gen-project-bindings \
+	gen-activity-broadcaster-bindings \
 	gen-environment-bindings \
 	gen-workspace-bindings \
-	gen-activity-broadcaster-bindings \
 	gen-bindingutils-bindings \
 	gen-ipc-bindings \
 	gen-git-bindings \
-	gen-language-bindings \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \
-	gen-url-parser-bindings \
-	gen-base-bindings
+	gen-base-bindings \
+	gen-runtime-bindings
 
 
 # ======================================================

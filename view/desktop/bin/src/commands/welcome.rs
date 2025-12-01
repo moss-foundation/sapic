@@ -1,9 +1,6 @@
 use joinerror::{OptionExt, ResultExt};
-use moss_applib::errors::Unavailable;
-use sapic_ipc::{
-    TauriResult,
-    contracts::{other::*, welcome::workspace::*},
-};
+use sapic_ipc::contracts::{other::*, welcome::workspace::*};
+use sapic_runtime::errors::Unavailable;
 use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
@@ -16,7 +13,7 @@ pub async fn welcome__cancel_request<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: CancelRequestInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     let window = app
         .welcome_window()
         .await
@@ -34,7 +31,7 @@ pub async fn welcome__open_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: OpenWorkspaceInput,
     options: Options,
-) -> TauriResult<()> {
+) -> joinerror::Result<()> {
     super::with_welcome_window_timeout(
         ctx.inner(),
         app,
@@ -64,7 +61,7 @@ pub async fn welcome__create_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: CreateWorkspaceInput,
     options: Options,
-) -> TauriResult<CreateWorkspaceOutput> {
+) -> joinerror::Result<CreateWorkspaceOutput> {
     super::with_welcome_window_timeout(
         ctx.inner(),
         app,
@@ -92,7 +89,7 @@ pub async fn welcome__update_workspace<'a, R: tauri::Runtime>(
     window: TauriWindow<R>,
     input: UpdateWorkspaceInput,
     options: Options,
-) -> TauriResult<UpdateWorkspaceOutput> {
+) -> joinerror::Result<UpdateWorkspaceOutput> {
     super::with_welcome_window_timeout(
         ctx.inner(),
         app,

@@ -14,10 +14,14 @@ use moss_project::{
     },
     project::Project,
 };
-use moss_storage2::{AppStorage, AppStorageOptions, Storage, SubstoreManager};
+use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use sapic_core::context::{AsyncContext, MutableContext};
+use sapic_runtime::{
+    app::kv_storage::{AppStorage, AppStorageOptions},
+    globals::GlobalKvStorage,
+};
 use std::{
     path::{Path, PathBuf},
     pin::Pin,
@@ -48,7 +52,7 @@ pub async fn create_test_project() -> (
     AsyncContext,
     AppDelegate<MockAppRuntime>,
     Arc<Path>,
-    Project<MockAppRuntime>,
+    Project,
     CleanupFn,
 ) {
     let mock_app = tauri::test::mock_app();
@@ -84,23 +88,20 @@ pub async fn create_test_project() -> (
 
     let app_delegate = {
         let delegate = AppDelegate::new(mock_app.handle().clone());
-        <dyn Storage>::set_global(&delegate, app_storage.clone());
+        GlobalKvStorage::set(&delegate, app_storage.clone());
         delegate
     };
 
-    let project = ProjectBuilder::new(fs, project_id.clone())
+    let storage = GlobalKvStorage::get(&app_delegate);
+    let project = ProjectBuilder::new(fs, storage, project_id.clone())
         .await
-        .create(
-            &ctx,
-            ProjectCreateParams {
-                name: Some(random_project_name()),
-                external_abs_path: None,
-                internal_abs_path: project_path.clone().into(),
-                git_params: None,
-                icon_path: None,
-            },
-            app_delegate.clone(),
-        )
+        .create(ProjectCreateParams {
+            name: Some(random_project_name()),
+            external_abs_path: None,
+            internal_abs_path: project_path.clone().into(),
+            git_params: None,
+            icon_path: None,
+        })
         .await
         .unwrap();
 
@@ -137,11 +138,11 @@ pub async fn create_test_project() -> (
 #[allow(dead_code)]
 pub async fn create_test_endpoint_dir_entry(
     ctx: &AsyncContext,
-    project: &mut Project<MockAppRuntime>,
+    project: &mut Project,
     name: &str,
 ) -> ResourceId {
     project
-        .create_resource(
+        .create_resource::<MockAppRuntime>(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Endpoint,
@@ -158,11 +159,11 @@ pub async fn create_test_endpoint_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_dir_entry(
     ctx: &AsyncContext,
-    project: &mut Project<MockAppRuntime>,
+    project: &mut Project,
     name: &str,
 ) -> ResourceId {
     project
-        .create_resource(
+        .create_resource::<MockAppRuntime>(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Component,
@@ -179,11 +180,11 @@ pub async fn create_test_component_dir_entry(
 #[allow(dead_code)]
 pub async fn create_test_component_item_entry(
     ctx: &AsyncContext,
-    project: &mut Project<MockAppRuntime>,
+    project: &mut Project,
     name: &str,
 ) -> ResourceId {
     project
-        .create_resource(
+        .create_resource::<MockAppRuntime>(
             &ctx,
             CreateResourceInput::Item(CreateItemResourceParams {
                 class: ResourceClass::Component,
@@ -205,11 +206,11 @@ pub async fn create_test_component_item_entry(
 #[allow(dead_code)]
 pub async fn create_test_schema_dir_entry(
     ctx: &AsyncContext,
-    project: &mut Project<MockAppRuntime>,
+    project: &mut Project,
     name: &str,
 ) -> ResourceId {
     project
-        .create_resource(
+        .create_resource::<MockAppRuntime>(
             &ctx,
             CreateResourceInput::Dir(CreateDirResourceParams {
                 class: ResourceClass::Schema,

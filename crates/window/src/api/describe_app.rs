@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::FailedPrecondition};
+use moss_applib::AppRuntime;
 use sapic_base::{user::types::ProfileInfo, workspace::types::WorkspaceInfo};
 use sapic_runtime::{app::settings_storage::SettingScope, globals::GlobalSettingsStorage};
 use serde_json::Value as JsonValue;
@@ -31,7 +31,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
             .profile_service
             .active_profile()
             .await
-            .ok_or_join_err::<FailedPrecondition>("no active profile to describe the app")?;
+            .ok_or_join_err::<()>("no active profile to describe the app")?;
         let profile_details = self
             .profile_service
             .profile_details(&active_profile.id())

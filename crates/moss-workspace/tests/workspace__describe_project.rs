@@ -1,5 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::mock::MockAppRuntime;
 use moss_git::models::types::BranchInfo;
 use moss_workspace::models::{
     operations::{DeleteProjectInput, DescribeProjectInput, ImportProjectInput},
@@ -47,7 +48,7 @@ async fn describe_project_with_repository() {
         .unwrap();
 
     let description = workspace
-        .describe_project(
+        .describe_project::<MockAppRuntime>(
             &ctx,
             &DescribeProjectInput {
                 id: import_project_output.id.clone(),
@@ -79,7 +80,7 @@ async fn describe_project_with_repository() {
     assert_eq!(github_info.owner.unwrap(), "brutusyhy");
 
     workspace
-        .delete_project(
+        .delete_project::<MockAppRuntime>(
             &ctx,
             &DeleteProjectInput {
                 id: import_project_output.id,

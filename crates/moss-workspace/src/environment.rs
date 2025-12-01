@@ -1,8 +1,6 @@
 use derive_more::Deref;
 use futures::Stream;
 use joinerror::OptionExt;
-use moss_app_delegate::AppDelegate;
-use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_environment::{
     AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
@@ -15,11 +13,12 @@ use moss_environment::{
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
 use moss_project::models::primitives::ProjectId;
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::{
     environment::types::primitives::EnvironmentId, workspace::types::primitives::WorkspaceId,
 };
+use sapic_core::context::AnyAsyncContext;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
@@ -54,16 +53,13 @@ pub struct CreateEnvironmentItemParams {
 }
 
 #[derive(Clone, Deref)]
-struct EnvironmentItem<R>
-where
-    R: AppRuntime,
-{
+struct EnvironmentItem {
     pub id: EnvironmentId,
     pub project_id: Option<Arc<String>>,
     pub order: Option<isize>,
 
     #[deref]
-    pub handle: Arc<Environment<R>>,
+    pub handle: Arc<Environment>,
 }
 
 pub struct EnvironmentItemDescription {
@@ -77,39 +73,30 @@ pub struct EnvironmentItemDescription {
     pub total_variables: usize,
 }
 
-type EnvironmentMap<R> = HashMap<EnvironmentId, EnvironmentItem<R>>;
+type EnvironmentMap = HashMap<EnvironmentId, EnvironmentItem>;
 
-struct ServiceState<R>
-where
-    R: AppRuntime,
-{
-    environments: EnvironmentMap<R>,
+struct ServiceState {
+    environments: EnvironmentMap,
     active_environments: HashMap<Arc<String>, EnvironmentId>,
     groups: FxHashSet<Arc<String>>,
     expanded_groups: HashSet<Arc<String>>,
     sources: FxHashMap<Arc<String>, PathBuf>,
 }
 
-pub struct EnvironmentService<R>
-where
-    R: AppRuntime,
-{
+pub struct EnvironmentService {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    state: Arc<RwLock<ServiceState<R>>>,
-    storage: Arc<dyn Storage>,
+    state: Arc<RwLock<ServiceState>>,
+    storage: Arc<dyn KvStorage>,
     workspace_id: WorkspaceId,
 }
 
-impl<R> EnvironmentService<R>
-where
-    R: AppRuntime,
-{
+impl EnvironmentService {
     /// `abs_path` is the absolute path to the workspace directory
     pub async fn new(
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn Storage>,
+        storage: Arc<dyn KvStorage>,
         workspace_id: WorkspaceId,
         sources: FxHashMap<Arc<String>, PathBuf>,
     ) -> joinerror::Result<Self> {
@@ -148,7 +135,7 @@ where
 
     pub async fn update_environment_group(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         params: UpdateEnvironmentGroupParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -196,14 +183,14 @@ where
         Ok(())
     }
 
-    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment<R>>> {
+    pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment>> {
         let state = self.state.read().await;
         state.environments.get(id).map(|item| item.handle.clone())
     }
 
     pub async fn list_environment_groups(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
         let expanded_groups_result = self
             .storage
@@ -265,18 +252,15 @@ where
 
     pub async fn list_environments(
         &self,
-        ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
+        _ctx: &dyn AnyAsyncContext,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
-        let ctx = ctx.clone();
         let state_clone = self.state.clone();
         let storage = self.storage.clone();
         let sources_clone = state_clone.read().await.sources.clone();
 
         Box::pin(async_stream::stream! {
             let storage_clone = storage.clone();
-            let app_delegate_clone = app_delegate.clone();
-            let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem<R>, DescribeEnvironment)>();
+            let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem, DescribeEnvironment)>();
             let scanner = EnvironmentSourceScanner {
                 fs: self.fs.clone(),
                 sources: sources_clone,
@@ -285,10 +269,9 @@ where
                 tx,
             };
 
-            let ctx_clone = ctx.clone();
             let scan_task = {
                 tokio::spawn(async move {
-                    if let Err(e) = scanner.scan(&ctx_clone, app_delegate_clone).await {
+                    if let Err(e) = scanner.scan().await {
                         session::error!(format!("environment scan failed: {}", e));
                     }
                 })
@@ -353,7 +336,7 @@ where
 
     pub async fn update_environment(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: UpdateEnvironmentParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -397,8 +380,7 @@ where
 
     pub async fn create_environment(
         &self,
-        ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
+        _ctx: &dyn AnyAsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let abs_path = if let Some(collection_id) = params.project_id.clone() {
@@ -418,22 +400,22 @@ where
         };
 
         // FIXME: Switch to new db when refactoring moss-environment
-        let environment = EnvironmentBuilder::new(self.workspace_id.inner(), self.fs.clone())
-            .create::<R>(
-                ctx,
-                app_delegate,
-                moss_environment::builder::CreateEnvironmentParams {
-                    name: params.name.clone(),
-                    abs_path: &abs_path,
-                    color: params.color,
-                    variables: params.variables,
-                },
-            )
-            .await?;
+        let environment = EnvironmentBuilder::new(
+            self.workspace_id.inner(),
+            self.fs.clone(),
+            self.storage.clone(),
+        )
+        .create(moss_environment::builder::CreateEnvironmentParams {
+            name: params.name.clone(),
+            abs_path: &abs_path,
+            color: params.color,
+            variables: params.variables,
+        })
+        .await?;
 
         let abs_path = environment.abs_path().await;
         let project_id_inner = params.project_id.as_ref().map(|id| id.inner());
-        let desc = environment.describe(ctx).await?;
+        let desc = environment.describe().await?;
 
         let mut state = self.state.write().await;
         state.environments.insert(
@@ -517,7 +499,7 @@ where
 
     pub async fn delete_environment(
         &self,
-        ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -540,7 +522,7 @@ where
                 false
             };
 
-        let desc = environment.describe(ctx).await?;
+        let desc = environment.describe().await?;
         self.fs
             .remove_file(
                 &desc.abs_path,
@@ -612,7 +594,7 @@ where
 
     pub async fn activate_environment(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         params: ActivateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -653,21 +635,21 @@ where
     }
 }
 
-struct ScanSourceJob<R: AppRuntime> {
+struct ScanSourceJob {
     source_id: Arc<String>,
     abs_path: PathBuf,
-    tx: mpsc::UnboundedSender<(Option<Arc<String>>, Environment<R>)>,
+    tx: mpsc::UnboundedSender<(Option<Arc<String>>, Environment)>,
 }
 
-struct EnvironmentSourceScanner<R: AppRuntime> {
+struct EnvironmentSourceScanner {
     fs: Arc<dyn FileSystem>,
     sources: FxHashMap<Arc<String>, PathBuf>,
-    storage: Arc<dyn Storage>,
+    storage: Arc<dyn KvStorage>,
     workspace_id: WorkspaceId,
-    tx: mpsc::UnboundedSender<(EnvironmentItem<R>, DescribeEnvironment)>,
+    tx: mpsc::UnboundedSender<(EnvironmentItem, DescribeEnvironment)>,
 }
 
-impl<R: AppRuntime> EnvironmentSourceScanner<R> {
+impl EnvironmentSourceScanner {
     /// Scans environments from all registered providers in parallel.
     ///
     /// This function implements a multi-stage scanning process:
@@ -675,11 +657,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     /// 2. Spawns parallel scanning tasks for each registered environment provider
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
-    async fn scan(
-        &self,
-        ctx: &R::AsyncContext,
-        app_delegate: AppDelegate<R>,
-    ) -> joinerror::Result<()> {
+    async fn scan(&self) -> joinerror::Result<()> {
         let data = self
             .storage
             .get_batch_by_prefix(
@@ -698,7 +676,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
             .collect::<HashMap<_, _>>();
 
         let (provider_tx, mut provider_rx) =
-            mpsc::unbounded_channel::<(Option<Arc<String>>, Environment<R>)>();
+            mpsc::unbounded_channel::<(Option<Arc<String>>, Environment)>();
 
         let mut scan_tasks = Vec::new();
 
@@ -708,23 +686,22 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
             let source_id_clone = source_id.clone();
             let source_clone = source.clone();
             let fs_clone = self.fs.clone();
-            let app_delegate_clone = app_delegate.clone();
+            let storage_clone = self.storage.clone();
             let workspace_id_clone = workspace_id.clone();
 
             let task = tokio::spawn(async move {
-                let app_delegate_clone = app_delegate_clone.clone();
                 let scan_task = tokio::spawn({
                     let source_id_for_scan = source_id_clone.clone();
                     let source_for_scan = source_clone.clone();
                     let fs_for_scan = fs_clone.clone();
-                    let app_delegate_for_scan = app_delegate_clone.clone();
+                    let storage_for_scan = storage_clone.clone();
                     let workspace_id_for_scan = workspace_id_clone.clone();
 
                     async move {
-                        if let Err(e) = scan_source::<R>(
+                        if let Err(e) = scan_source(
                             workspace_id_for_scan,
-                            app_delegate_for_scan,
                             fs_for_scan,
+                            storage_for_scan,
                             ScanSourceJob {
                                 source_id: source_id_for_scan.clone(),
                                 abs_path: source_for_scan,
@@ -752,7 +729,7 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
         drop(provider_tx);
 
         while let Some((collection_id, environment)) = provider_rx.recv().await {
-            let desc = match environment.describe(ctx).await {
+            let desc = match environment.describe().await {
                 Ok(desc) => desc,
                 Err(e) => {
                     session::error!(format!("failed to describe environment: {}", e));
@@ -790,11 +767,11 @@ impl<R: AppRuntime> EnvironmentSourceScanner<R> {
     }
 }
 
-async fn scan_source<R: AppRuntime>(
+async fn scan_source(
     workspace_id: WorkspaceId,
-    app_delegate: AppDelegate<R>,
     fs: Arc<dyn FileSystem>,
-    job: ScanSourceJob<R>,
+    storage: Arc<dyn KvStorage>,
+    job: ScanSourceJob,
 ) -> joinerror::Result<()> {
     session::trace!(
         "scanning environment provider: {}",
@@ -821,14 +798,12 @@ async fn scan_source<R: AppRuntime>(
             continue;
         }
 
-        let maybe_environment = EnvironmentBuilder::new(workspace_id.inner(), fs.clone())
-            .load::<R>(
-                app_delegate.clone(),
-                EnvironmentLoadParams {
+        let maybe_environment =
+            EnvironmentBuilder::new(workspace_id.inner(), fs.clone(), storage.clone())
+                .load(EnvironmentLoadParams {
                     abs_path: entry.path(),
-                },
-            )
-            .await;
+                })
+                .await;
         let environment = continue_if_err!(maybe_environment, |err| {
             session::error!(format!(
                 "failed to load environment `{}`: {}",

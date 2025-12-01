@@ -38,7 +38,7 @@ pub mod dirs {
 
 pub trait AnyWorkspace<R: AppRuntime> {
     type Project;
-    type Environment: AnyEnvironment<R>;
+    type Environment: AnyEnvironment;
 }
 
 pub mod errors {

@@ -5,8 +5,8 @@ use std::sync::Arc;
 use tauri::AppHandle;
 
 use crate::{
-    language::LanguageService, logging::LogService, models::primitives::SessionId,
-    profile::ProfileService, session::SessionService, workspace::OldWorkspaceService,
+    logging::LogService, models::primitives::SessionId, profile::ProfileService,
+    session::SessionService, workspace::OldWorkspaceService,
 };
 
 #[derive(Deref)]
@@ -15,8 +15,8 @@ pub struct OldSapicWindow<R: AppRuntime> {
     pub(super) app_handle: AppHandle<R::EventLoop>,
     pub(super) session_service: SessionService,
     pub(super) log_service: LogService,
-    pub(super) workspace_service: OldWorkspaceService<R>,
-    pub(super) language_service: LanguageService,
+    pub(super) workspace_service: OldWorkspaceService,
+    // pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
     pub(super) profile_service: ProfileService,
     // pub(super) configuration_service: ConfigurationServiceOld,
@@ -36,7 +36,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         self.app_handle.clone()
     }
 
-    pub async fn workspace(&self) -> Option<Arc<Workspace<R>>> {
+    pub async fn workspace(&self) -> Option<Arc<Workspace>> {
         self.workspace_service.workspace().await
     }
 

@@ -2,7 +2,7 @@ use derive_more::{Deref, DerefMut};
 use futures::Stream;
 use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
-use moss_applib::{AppRuntime, subscription::EventEmitter};
+use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
 use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
 use moss_git::url::GitUrl;
@@ -17,10 +17,13 @@ use moss_project::{
     models::primitives::ProjectId,
     vcs::VcsSummary,
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
-use sapic_base::{user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId};
-use sapic_core::context::AnyAsyncContext;
+use sapic_base::{
+    language::i18n::NO_TRANSLATE_KEY, localize, user::types::primitives::AccountId,
+    workspace::types::primitives::WorkspaceId,
+};
+use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{
     ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::{account::Account, profile::Profile},
@@ -64,13 +67,13 @@ pub(crate) struct ProjectItemImportFromDiskParams {
 }
 
 #[derive(Deref, DerefMut)]
-struct ProjectItem<R: AppRuntime> {
+struct ProjectItem {
     pub id: ProjectId,
     pub order: Option<isize>,
 
     #[deref]
     #[deref_mut]
-    pub handle: Arc<ProjectHandle<R>>,
+    pub handle: Arc<ProjectHandle>,
 }
 
 pub(crate) struct ProjectItemDescription {
@@ -88,29 +91,31 @@ pub(crate) struct ProjectItemDescription {
 }
 
 #[derive(Default)]
-struct ServiceState<R: AppRuntime> {
-    projects: HashMap<ProjectId, ProjectItem<R>>,
+struct ServiceState {
+    projects: HashMap<ProjectId, ProjectItem>,
     expanded_items: HashSet<ProjectId>,
 }
 
-pub struct ProjectService<R: AppRuntime> {
+pub struct ProjectService {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     workspace_id: WorkspaceId,
-    state: Arc<RwLock<ServiceState<R>>>,
-    app_delegate: AppDelegate<R>,
+    state: Arc<RwLock<ServiceState>>,
+
     global_github_api: Arc<dyn GitHubApiClient>,
     global_gitlab_api: Arc<dyn GitLabApiClient>,
     on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
     on_did_add_project_emitter: EventEmitter<OnDidAddProject>,
 }
 
-impl<R: AppRuntime> ProjectService<R> {
-    pub(crate) async fn new(
+impl ProjectService {
+    pub(crate) async fn new<R: AppRuntime>(
         ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         abs_path: &Path,
         fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
         workspace_id: WorkspaceId,
         environment_sources: &mut FxHashMap<Arc<String>, PathBuf>,
         active_profile: &Arc<Profile>,
@@ -120,8 +125,6 @@ impl<R: AppRuntime> ProjectService<R> {
         on_project_did_add_emitter: EventEmitter<OnDidAddProject>,
     ) -> joinerror::Result<Self> {
         let abs_path = abs_path.join(dirs::PROJECTS_DIR);
-
-        let storage = <dyn Storage>::global(app_delegate);
 
         let expanded_items = if let Ok(Some(expanded_items)) = storage
             .get(
@@ -145,6 +148,7 @@ impl<R: AppRuntime> ProjectService<R> {
             app_delegate,
             &abs_path,
             &fs,
+            storage.clone(),
             workspace_id.clone(),
             active_profile,
             global_github_api.clone(),
@@ -166,12 +170,12 @@ impl<R: AppRuntime> ProjectService<R> {
         Ok(Self {
             abs_path,
             fs,
+            storage,
             workspace_id,
             state: Arc::new(RwLock::new(ServiceState {
                 projects,
                 expanded_items,
             })),
-            app_delegate: app_delegate.clone(),
             global_github_api,
             global_gitlab_api,
             on_did_delete_project_emitter: on_project_did_delete_emitter,
@@ -179,12 +183,12 @@ impl<R: AppRuntime> ProjectService<R> {
         })
     }
 
-    pub async fn project(&self, id: &ProjectId) -> Option<Arc<ProjectHandle<R>>> {
+    pub async fn project(&self, id: &ProjectId) -> Option<Arc<ProjectHandle>> {
         let state_lock = self.state.read().await;
         state_lock.projects.get(id).map(|item| item.handle.clone())
     }
 
-    pub(crate) async fn create_project(
+    pub(crate) async fn create_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -217,12 +221,13 @@ impl<R: AppRuntime> ProjectService<R> {
                     Ok(repository) => Some(repository),
                     Err(e) => {
                         // Continue creating a collection without vcs
-                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                        app_delegate.emit_oneshot(ToLocation::Toast {
                             activity_id: "create_collection_invalid_repository",
-                            title: "Invalid Repository".to_string(),
-                            detail: Some(
-                                "The provided repository is invalid, skipping the vcs".to_string(),
-                            ),
+                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+                            detail: Some(localize!(
+                                NO_TRANSLATE_KEY,
+                                "The provided repository is invalid, skipping the vcs"
+                            )),
                         })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
@@ -242,12 +247,13 @@ impl<R: AppRuntime> ProjectService<R> {
                     Ok(repository) => Some(repository),
                     Err(e) => {
                         // Continue creating a collection without vcs
-                        self.app_delegate.emit_oneshot(ToLocation::Toast {
+                        app_delegate.emit_oneshot(ToLocation::Toast {
                             activity_id: "create_collection_invalid_repository",
-                            title: "Invalid Repository".to_string(),
-                            detail: Some(
-                                "The provided repository is invalid, skipping the vcs".to_string(),
-                            ),
+                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+                            detail: Some(localize!(
+                                NO_TRANSLATE_KEY,
+                                "The provided repository is invalid, skipping the vcs"
+                            )),
                         })?;
                         session::error!(format!(
                             "failed to parse repository url: {}",
@@ -265,20 +271,16 @@ impl<R: AppRuntime> ProjectService<R> {
         };
 
         let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
         let project = match builder
-            .create(
-                ctx,
-                ProjectCreateParams {
-                    name: Some(params.name.to_owned()),
-                    internal_abs_path: abs_path.clone(),
-                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    git_params: git_params.clone(),
-                    icon_path: params.icon_path.to_owned(),
-                },
-                self.app_delegate.clone(),
-            )
+            .create(ProjectCreateParams {
+                name: Some(params.name.to_owned()),
+                internal_abs_path: abs_path.clone(),
+                external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                git_params: git_params.clone(),
+                icon_path: params.icon_path.to_owned(),
+            })
             .await
             .join_err::<()>("failed to build collection")
         {
@@ -308,13 +310,13 @@ impl<R: AppRuntime> ProjectService<R> {
                 .await
             {
                 session::warn!(format!("failed to init vcs: {}", e.to_string()));
-                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "create_collection_init_vcs_failure",
-                    title: "Failed to initialized collection vcs".to_string(),
-                    detail: Some(
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to initialized collection vcs"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
                         "Failed to initialize collection vcs, creating a local only collection"
-                            .to_string(),
-                    ),
+                    )),
                 })?;
             }
         }
@@ -334,7 +336,8 @@ impl<R: AppRuntime> ProjectService<R> {
             );
         }
 
-        if let Err(e) = <dyn Storage>::global(app_delegate)
+        if let Err(e) = self
+            .storage
             .add_project(self.workspace_id.inner(), id.inner())
             .await
         {
@@ -361,9 +364,6 @@ impl<R: AppRuntime> ProjectService<R> {
 
         {
             let state_lock = self.state.read().await;
-
-            let storage = <dyn Storage>::global(app_delegate);
-
             let order_key = key_project_order(id);
             let batch_input = vec![
                 (order_key.as_str(), JsonValue::Number(params.order.into())),
@@ -373,7 +373,8 @@ impl<R: AppRuntime> ProjectService<R> {
                 ),
             ];
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
@@ -393,7 +394,7 @@ impl<R: AppRuntime> ProjectService<R> {
     // TODO: Setting the cloned collection's name and icon is not yet implemented
     // Since they are currently committed to the repository
     // Updating them here would be a committable change
-    pub(crate) async fn clone_project(
+    pub(crate) async fn clone_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
@@ -419,17 +420,18 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
         let repository = match GitUrl::parse(&params.repository) {
             Ok(repository) => repository,
             Err(e) => {
-                self.app_delegate.emit_oneshot(ToLocation::Toast {
+                app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "clone_collection_invalid_repository",
-                    title: "Invalid repository url".to_string(),
-                    detail: Some(
-                        "Cannot clone remote collection since the url is invalid".to_string(),
-                    ),
+                    title: localize!(NO_TRANSLATE_KEY, "Invalid repository url"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        "Cannot clone remote collection since the url is invalid"
+                    )),
                 })?;
 
                 let _ = rb
@@ -461,7 +463,6 @@ impl<R: AppRuntime> ProjectService<R> {
                     repository,
                     branch: params.branch.clone(),
                 },
-                self.app_delegate.clone(),
             )
             .await
             .join_err::<()>("failed to clone collection")
@@ -477,7 +478,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
         let desc = collection.details().await?;
         let vcs = collection
-            .vcs()
+            .vcs::<R>()
             .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
             .summary(ctx)
             .await?;
@@ -496,7 +497,6 @@ impl<R: AppRuntime> ProjectService<R> {
                     handle: Arc::new(collection),
                 },
             );
-            let storage = <dyn Storage>::global(app_delegate);
             let order_key = key_project_order(id);
 
             let batch_input = vec![
@@ -507,7 +507,8 @@ impl<R: AppRuntime> ProjectService<R> {
                 ),
             ];
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
@@ -521,7 +522,8 @@ impl<R: AppRuntime> ProjectService<R> {
             }
         }
 
-        if let Err(e) = <dyn Storage>::global(app_delegate)
+        if let Err(e) = self
+            .storage
             .add_project(self.workspace_id.inner(), id.inner())
             .await
         {
@@ -547,7 +549,7 @@ impl<R: AppRuntime> ProjectService<R> {
         })
     }
 
-    pub(crate) async fn delete_project(
+    pub(crate) async fn delete_project<R: AppRuntime>(
         &self,
         _ctx: &R::AsyncContext,
         id: &ProjectId,
@@ -560,10 +562,9 @@ impl<R: AppRuntime> ProjectService<R> {
         let item = state_lock.projects.remove(&id);
         let item_existed = item.is_some();
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
-
         // Dropping the database first to prevent lock when deleting the folder
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .remove_project(self.workspace_id.inner(), id.inner())
             .await
         {
@@ -590,7 +591,8 @@ impl<R: AppRuntime> ProjectService<R> {
 
         state_lock.expanded_items.remove(&id);
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .remove_batch_by_prefix(
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &key_project(id),
@@ -603,7 +605,8 @@ impl<R: AppRuntime> ProjectService<R> {
             ));
         }
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put(
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_EXPANDED_ITEMS,
@@ -630,7 +633,7 @@ impl<R: AppRuntime> ProjectService<R> {
         }
     }
 
-    pub(crate) async fn update_project(
+    pub(crate) async fn update_project<R: AppRuntime>(
         &self,
         _ctx: &R::AsyncContext,
         id: &ProjectId,
@@ -644,7 +647,6 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
-        let storage = <dyn Storage>::global(&self.app_delegate);
         let project_order_key = key_project_order(id);
         let mut batch_input = vec![];
 
@@ -681,7 +683,8 @@ impl<R: AppRuntime> ProjectService<R> {
             return Ok(());
         }
 
-        if let Err(e) = storage
+        if let Err(e) = self
+            .storage
             .put_batch(
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &batch_input,
@@ -697,7 +700,7 @@ impl<R: AppRuntime> ProjectService<R> {
         Ok(())
     }
 
-    pub(crate) async fn list_projects(
+    pub(crate) async fn list_projects<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = ProjectItemDescription> + Send + '_>> {
@@ -711,7 +714,7 @@ impl<R: AppRuntime> ProjectService<R> {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
 
-                let vcs = if let Some(vcs) = item.vcs() {
+                let vcs = if let Some(vcs) = item.vcs::<R>() {
                     match vcs.summary(&ctx_clone).await {
                         Ok(summary) => Some(summary),
                         Err(e) => {
@@ -741,7 +744,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn archive_project(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -757,7 +760,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn unarchive_project(
         &self,
-        _ctx: &R::AsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -773,8 +776,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
     pub(crate) async fn import_archived_project(
         &self,
-        ctx: &R::AsyncContext,
-        app_delegate: &AppDelegate<R>,
+        _ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
         params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
@@ -796,19 +798,15 @@ impl<R: AppRuntime> ProjectService<R> {
                 format!("failed to create directory `{}`", abs_path.display())
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
         let collection = match builder
-            .import_archive(
-                ctx,
-                ProjectImportArchiveParams {
-                    internal_abs_path: abs_path.clone(),
-                    archive_path: params.archive_path.into(),
-                },
-                self.app_delegate.clone(),
-            )
+            .import_archive(ProjectImportArchiveParams {
+                internal_abs_path: abs_path.clone(),
+                archive_path: params.archive_path.into(),
+            })
             .await
-            .join_err::<()>("failed to import collection from archive file")
+            .join_err::<()>("failed to import project from archive file")
         {
             Ok(collection) => collection,
             Err(e) => {
@@ -849,7 +847,6 @@ impl<R: AppRuntime> ProjectService<R> {
                 },
             );
 
-            let storage = <dyn Storage>::global(&self.app_delegate);
             let order_key = key_project_order(id);
             let batch_input = vec![
                 (order_key.as_str(), serde_json::to_value(params.order)?),
@@ -859,7 +856,8 @@ impl<R: AppRuntime> ProjectService<R> {
                 ),
             ];
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
@@ -873,7 +871,8 @@ impl<R: AppRuntime> ProjectService<R> {
             }
         }
 
-        if let Err(e) = <dyn Storage>::global(app_delegate)
+        if let Err(e) = self
+            .storage
             .add_project(self.workspace_id.inner(), id.inner())
             .await
         {
@@ -899,9 +898,9 @@ impl<R: AppRuntime> ProjectService<R> {
         })
     }
 
-    pub(crate) async fn import_external_project(
+    pub(crate) async fn import_external_project<R: AppRuntime>(
         &self,
-        ctx: &R::AsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
         params: ProjectItemImportFromDiskParams,
     ) -> joinerror::Result<ProjectItemDescription> {
@@ -926,15 +925,12 @@ impl<R: AppRuntime> ProjectService<R> {
                 )
             })?;
 
-        let builder = ProjectBuilder::new(self.fs.clone(), id.clone()).await;
+        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
         let project = match builder
-            .import_external(
-                ProjectImportExternalParams {
-                    internal_abs_path: internal_abs_path.clone(),
-                    external_abs_path: params.external_path.clone().into(),
-                },
-                self.app_delegate.clone(),
-            )
+            .import_external(ProjectImportExternalParams {
+                internal_abs_path: internal_abs_path.clone(),
+                external_abs_path: params.external_path.clone().into(),
+            })
             .await
             .join_err::<()>("failed to import external project")
         {
@@ -949,7 +945,7 @@ impl<R: AppRuntime> ProjectService<R> {
 
         let icon_path = project.icon_path();
         let name = project.details().await?.name;
-        let vcs_summary = if let Some(vcs) = project.vcs() {
+        let vcs_summary = if let Some(vcs) = project.vcs::<R>() {
             match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),
                 Err(e) => {
@@ -977,7 +973,6 @@ impl<R: AppRuntime> ProjectService<R> {
         {
             let state_lock = self.state.read().await;
 
-            let storage = <dyn Storage>::global(&self.app_delegate);
             let order_key = key_project_order(id);
             let batch_input = vec![
                 (order_key.as_str(), serde_json::to_value(params.order)?),
@@ -987,7 +982,8 @@ impl<R: AppRuntime> ProjectService<R> {
                 ),
             ];
 
-            if let Err(e) = storage
+            if let Err(e) = self
+                .storage
                 .put_batch(
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
@@ -1034,12 +1030,15 @@ impl<R: AppRuntime> ProjectService<R> {
     }
 
     /// List file statuses for all collections that have a repository handle
-    pub(crate) async fn list_changes(&self) -> joinerror::Result<Vec<EntryChange>> {
+    pub(crate) async fn list_changes<R: AppRuntime>(
+        &self,
+        app_delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<Vec<EntryChange>> {
         let mut changes: Vec<EntryChange> = Vec::new();
 
         let state_lock = self.state.read().await;
         for (id, item) in state_lock.projects.iter() {
-            let vcs = if let Some(vcs) = item.vcs() {
+            let vcs = if let Some(vcs) = item.vcs::<R>() {
                 vcs
             } else {
                 continue;
@@ -1048,14 +1047,17 @@ impl<R: AppRuntime> ProjectService<R> {
             let statuses_result = vcs.statuses().await;
             if let Err(e) = statuses_result {
                 session::warn!(format!(
-                    "failed to get file statuses for collection `{}`: {}",
+                    "failed to get file statuses for project `{}`: {}",
                     id,
                     e.to_string()
                 ));
-                let _ = self.app_delegate.emit_oneshot(ToLocation::Toast {
+                let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "get_file_statuses_error",
-                    title: format!("Failed to get file statuses for collection `{}`", id),
-                    detail: Some(e.to_string()),
+                    title: localize!(
+                        NO_TRANSLATE_KEY,
+                        format!("Failed to get file statuses for project `{}`", id)
+                    ),
+                    detail: Some(localize!(NO_TRANSLATE_KEY, e.to_string())),
                 });
                 continue;
             }
@@ -1077,11 +1079,12 @@ async fn restore_projects<R: AppRuntime>(
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     workspace_id: WorkspaceId,
     active_profile: &Arc<Profile>,
     global_github_api: Arc<dyn GitHubApiClient>,
     global_gitlab_api: Arc<dyn GitLabApiClient>,
-) -> joinerror::Result<HashMap<ProjectId, ProjectItem<R>>> {
+) -> joinerror::Result<HashMap<ProjectId, ProjectItem>> {
     if !abs_path.exists() {
         return Ok(HashMap::new());
     }
@@ -1094,7 +1097,7 @@ async fn restore_projects<R: AppRuntime>(
 
     let activity_handle = app_delegate.emit_continual(ToLocation::Window {
         activity_id: "restore_projects",
-        title: "Restoring projects".to_string(),
+        title: localize!(NO_TRANSLATE_KEY, "Restoring projects"),
         detail: None,
     })?;
 
@@ -1103,9 +1106,9 @@ async fn restore_projects<R: AppRuntime>(
             continue;
         }
 
-        activity_handle.emit_progress(Some(format!(
-            "Restoring project`{}`",
-            entry.file_name().to_string_lossy()
+        activity_handle.emit_progress(Some(localize!(
+            NO_TRANSLATE_KEY,
+            format!("Restoring project`{}`", entry.file_name().to_string_lossy())
         )))?;
 
         let id_str = entry.file_name().to_string_lossy().to_string();
@@ -1113,23 +1116,23 @@ async fn restore_projects<R: AppRuntime>(
 
         let project = {
             let project_abs_path: Arc<Path> = entry.path().to_owned().into();
-            let builder = ProjectBuilder::new(fs.clone(), id.clone()).await;
+            let builder = ProjectBuilder::new(fs.clone(), storage.clone(), id.clone()).await;
 
             let project_result = builder
-                .load(
-                    ProjectLoadParams {
-                        internal_abs_path: project_abs_path,
-                    },
-                    app_delegate.clone(),
-                )
+                .load(ProjectLoadParams {
+                    internal_abs_path: project_abs_path,
+                })
                 .await;
             match project_result {
                 Ok(project) => project,
                 Err(e) => {
                     let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                         activity_id: "restore_projects_failed_to_reload",
-                        title: "Failed to reload project".to_string(),
-                        detail: Some(format!("Failed to reload project `{}`: {}", id_str, e)),
+                        title: localize!(NO_TRANSLATE_KEY, "Failed to reload project"),
+                        detail: Some(localize!(
+                            NO_TRANSLATE_KEY,
+                            format!("Failed to reload project `{}`: {}", id_str, e)
+                        )),
                     });
 
                     session::error!(format!(
@@ -1153,10 +1156,13 @@ async fn restore_projects<R: AppRuntime>(
             Err(e) => {
                 app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_get_details",
-                    title: "Failed to get collection details".to_string(),
-                    detail: Some(format!(
-                        "Failed to get collection details: {}, it will be skipped.",
-                        e.to_string()
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to get collection details"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        format!(
+                            "Failed to get collection details: {}, it will be skipped.",
+                            e.to_string()
+                        )
                     )),
                 })?;
                 continue;
@@ -1168,10 +1174,11 @@ async fn restore_projects<R: AppRuntime>(
                 projects.push((id, project));
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_nonexistent_account",
-                    title: "A project is associated with a nonexistent account".to_string(),
-                    detail: Some(format!(
-                        "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
-                        id_str, account_id.as_str()
+                    title: localize!(NO_TRANSLATE_KEY, "A project is associated with a nonexistent account"),
+                    detail: Some(localize!(NO_TRANSLATE_KEY, format!(
+                            "The project {} is associated with a nonexistent account `{}`. It's vcs will not be loaded.",
+                            id_str, account_id.as_str()
+                        )
                     ))
                 });
             });
@@ -1190,11 +1197,14 @@ async fn restore_projects<R: AppRuntime>(
             if let Err(e) = project.load_vcs(client).await {
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_load_vcs",
-                    title: "Failed to load project vcs".to_string(),
-                    detail: Some(format!(
-                        "Failed to load vcs for project `{}`: {}",
-                        id_str,
-                        e.to_string()
+                    title: localize!(NO_TRANSLATE_KEY, "Failed to load project vcs"),
+                    detail: Some(localize!(
+                        NO_TRANSLATE_KEY,
+                        format!(
+                            "Failed to load vcs for project `{}`: {}",
+                            id_str,
+                            e.to_string()
+                        )
                     )),
                 });
             };
@@ -1202,8 +1212,6 @@ async fn restore_projects<R: AppRuntime>(
 
         projects.push((id, project));
     }
-
-    let storage = <dyn Storage>::global(app_delegate);
 
     let metadata = storage
         .get_batch_by_prefix(

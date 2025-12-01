@@ -23,11 +23,9 @@ const KNOWN_PACKAGES = [
   "moss-environment",
   "moss-workspace",
   "moss-project",
-  "moss-activity-broadcaster",
   "moss-bindingutils",
   "ipc",
   "moss-git",
-  "moss-language",
 ];
 
 interface Config {

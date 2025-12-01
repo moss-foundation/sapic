@@ -5,14 +5,14 @@
   "entryPoints": [
     "crates/base",
     "crates/window",
-    "crates/moss-activity-broadcaster",
+    "crates/runtime",
+    "crates/ipc",
     "crates/moss-project",
     "crates/moss-environment",
     "crates/moss-workspace",
     "crates/moss-bindingutils",
-    "crates/ipc",
     "crates/moss-git",
-    "crates/moss-language",
+    "crates/moss-activity-broadcaster",
 
     "plugins/shared_storage",
     "plugins/settings-storage"

@@ -6,7 +6,7 @@ use arc_swap::ArcSwap;
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
-use moss_applib::{AppRuntime, errors::TauriResultExt};
+use moss_applib::{AppRuntime, TauriResultExt};
 use sapic_core::context::Canceller;
 use sapic_window2::{
     AppWindowApi, WindowHandle,

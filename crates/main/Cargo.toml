@@ -13,6 +13,7 @@ sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
 sapic-ipc = { workspace = true }
+sapic-runtime = { workspace = true }
 
 sapic-window = { workspace = true }
 

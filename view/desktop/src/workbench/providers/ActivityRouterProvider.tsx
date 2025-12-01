@@ -2,7 +2,9 @@ import React, { createContext, useCallback, useEffect, useMemo, useReducer, useR
 import { toast } from "sonner";
 
 import { createNotificationContent } from "@/lib/ui";
-import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL, ActivityEvent } from "@repo/moss-activity-broadcaster";
+import { ActivityEvent } from "@repo/ipc";
+import { LocalizedString } from "@repo/base";
+import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
 
 export const MAX_HISTORY_SIZE = 1000; // Limit number of historical events
@@ -10,11 +12,15 @@ export const ONESHOT_CLEANUP_DELAY = 1000;
 export const PROGRESS_CLEANUP_DELAY = 1000;
 export const DEFAULT_DISPLAY_DURATION = 10;
 
-const createActivityNotification = (title: string, detail?: string, persistent: boolean = false) => {
+const createActivityNotification = (
+  title: LocalizedString,
+  detail: LocalizedString | undefined,
+  persistent: boolean = false
+) => {
   const toastId = toast(
     createNotificationContent({
-      title,
-      description: detail,
+      title: title.fallback,
+      description: detail?.fallback,
       icon: "Info",
       buttonText: "Details",
       onButtonClick: () => {
@@ -58,7 +64,7 @@ export interface ActivityEventsContextType {
     hasActiveEvents: boolean;
     latestEvent: ActivityEvent | null;
     displayQueue: ActivityEvent[];
-    getStartTitleForActivity: (activityId: string) => string | null;
+    getStartTitleForActivity: (activityId: string) => LocalizedString | null;
   };
 
   clearEvents: () => void;
@@ -94,7 +100,7 @@ interface ActivityState {
     activeProgressEvents: Map<string, ActivityEvent[]>;
     oneshotEvents: ActivityEvent[];
     activeActivities: Set<string>;
-    startTitles: Map<string, string>;
+    startTitles: Map<string, LocalizedString>;
     mostRecentEvent: {
       event: ActivityEvent;
       timestamp: number;
@@ -326,7 +332,7 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   }, []);
 
   const getStartTitleForActivity = useCallback(
-    (activityId: string): string | null => {
+    (activityId: string): LocalizedString | null => {
       // Try from the map first (most efficient)
       const title = state.windowEvents.startTitles.get(activityId);
       if (title) return title;
@@ -385,20 +391,12 @@ export const ActivityRouterProvider: React.FC<{ children: React.ReactNode }> = (
   }, [state.windowEvents.mostRecentEvent, safeSetTimeout]);
 
   const latestWindowEvent = useMemo(() => {
-    if (
-      state.windowEvents.mostRecentEvent &&
-      Date.now() - state.windowEvents.mostRecentEvent.timestamp < displayDurationRef.current
-    ) {
+    if (state.windowEvents.mostRecentEvent) {
       return state.windowEvents.mostRecentEvent.event;
     }
 
-    // Show first queue item to prevent flickering
-    if (state.windowEvents.displayQueue.length > 0 && !processingQueueRef.current) {
-      return state.windowEvents.displayQueue[0];
-    }
-
     return null;
-  }, [state.windowEvents.mostRecentEvent, state.windowEvents.displayQueue]);
+  }, [state.windowEvents.mostRecentEvent]);
 
   // Activity Router - Process incoming events and route by location
   useEffect(() => {

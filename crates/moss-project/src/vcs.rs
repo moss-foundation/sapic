@@ -2,7 +2,7 @@ use async_trait::async_trait;
 use git2::{RemoteCallbacks, Signature};
 use joinerror::OptionExt;
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
-use moss_applib::{AppRuntime, errors::Internal};
+use moss_applib::AppRuntime;
 use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::{
     errors::{Conflicts, DirtyWorktree},
@@ -10,7 +10,7 @@ use moss_git::{
     repository::Repository,
     url::GitUrl,
 };
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{errors::Internal, localize, user::types::primitives::AccountId};
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::ports::GitProviderKind;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
@@ -220,22 +220,28 @@ impl<R: AppRuntime> ProjectVcs<R> for Vcs {
             // Prompt the user to stash before pulling
             let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                 activity_id: "pull_dirty_worktree",
-                title: "Failed to pull due to dirty worktree".to_string(),
-                detail: Some(
-                    "Please stash your changes before pulling to avoid loss of local changes"
-                        .to_string(),
+                title: localize!(
+                    "vcs.pull_failed_dirty_worktree.title",
+                    "Failed to pull due to dirty worktree"
                 ),
+                detail: Some(localize!(
+                    "vcs.error",
+                    "Please stash your changes before pulling to avoid loss of local changes"
+                )),
             });
         } else if e.is::<Conflicts>() {
             // Right now our app cannot handle conflict resolution
             // Thus we have to reject merge/pull that result in conflicts
             let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                 activity_id: "pull_conflicts",
-                title: "Failed to pull due to dirty worktree".to_string(),
-                detail: Some(
-                    "Please manually pull and resolve conflicts, as the functionality is WIP"
-                        .to_string(),
+                title: localize!(
+                    "vcs.pull_failed_dirty_worktree.title",
+                    "Failed to pull due to dirty worktree"
                 ),
+                detail: Some(localize!(
+                    "vcs.pull_failed_conflicts.detail",
+                    "Please manually pull and resolve conflicts, as the functionality is WIP"
+                )),
             });
         }
         Err(e)

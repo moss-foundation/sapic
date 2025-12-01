@@ -5,13 +5,16 @@ use crate::{
     workspace::Workspace,
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn delete_project(
+impl Workspace {
+    pub async fn delete_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: &DeleteProjectInput,
     ) -> joinerror::Result<DeleteProjectOutput> {
-        let abs_path = self.project_service.delete_project(ctx, &input.id).await?;
+        let abs_path = self
+            .project_service
+            .delete_project::<R>(ctx, &input.id)
+            .await?;
 
         Ok(DeleteProjectOutput {
             id: input.id.to_owned(),

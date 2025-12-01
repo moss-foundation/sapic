@@ -1,5 +1,5 @@
 import { AppService } from "@/lib/services";
-import { ListLanguagesOutput } from "@repo/window";
+import { ListLanguagesOutput } from "@repo/ipc";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_LIST_LANGUAGES_QUERY_KEY = "listLanguages";

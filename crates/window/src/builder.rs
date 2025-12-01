@@ -3,7 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
-use moss_language::registry::LanguageRegistry;
+use moss_storage2::KvStorage;
 use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
 // use moss_theme::registry::ThemeRegistry;
 use sapic_base::workspace::types::primitives::WorkspaceId;
@@ -20,8 +20,6 @@ use tauri::Manager;
 
 use crate::{
     dirs,
-
-    language::LanguageService,
     logging::LogService,
     profile::ProfileService,
     session::SessionService,
@@ -33,6 +31,7 @@ use crate::{
 pub struct OldSapicWindowBuilder {
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
+    storage: Arc<dyn KvStorage>,
     keyring: Arc<dyn KeyringClient>,
     server_api_client: Arc<dyn ServerApiClient>,
     github_api_client: Arc<dyn GitHubApiClient>,
@@ -45,6 +44,7 @@ pub struct OldSapicWindowBuilder {
 impl OldSapicWindowBuilder {
     pub fn new(
         fs: Arc<dyn FileSystem>,
+        storage: Arc<dyn KvStorage>,
         keyring: Arc<dyn KeyringClient>,
         server_api_client: Arc<dyn ServerApiClient>,
         github_api_client: Arc<dyn GitHubApiClient>,
@@ -57,6 +57,7 @@ impl OldSapicWindowBuilder {
         Self {
             workspace_id,
             fs,
+            storage,
             keyring,
             server_api_client,
             github_api_client,
@@ -104,10 +105,6 @@ impl OldSapicWindowBuilder {
         // .await
         // .expect("Failed to create theme service");
 
-        let language_service =
-            LanguageService::new::<R>(self.fs.clone(), <dyn LanguageRegistry>::global(&delegate))
-                .await
-                .expect("Failed to create language service");
         let session_service = SessionService::new();
 
         let log_service = LogService::new::<R>(
@@ -136,6 +133,7 @@ impl OldSapicWindowBuilder {
 
         let workspace = WorkspaceBuilder::new(
             self.fs.clone(),
+            self.storage.clone(),
             profile_service.active_profile().await.unwrap(),
             self.workspace_id.clone(),
             self.github_api_client.clone(),
@@ -154,7 +152,7 @@ impl OldSapicWindowBuilder {
         .await
         .join_err::<()>("failed to load the workspace")?;
 
-        let workspace_service = OldWorkspaceService::<R>::new(workspace, self.workspace_service)
+        let workspace_service = OldWorkspaceService::new(workspace, self.workspace_service)
             .await
             .expect("Failed to create workspace service");
 
@@ -174,7 +172,6 @@ impl OldSapicWindowBuilder {
             session_service,
             log_service,
             workspace_service,
-            language_service,
             // theme_service,
             profile_service,
             // configuration_service,

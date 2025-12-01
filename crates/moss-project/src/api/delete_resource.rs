@@ -1,4 +1,5 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{
@@ -6,8 +7,8 @@ use crate::{
     project::Project,
 };
 
-impl<R: AppRuntime> Project<R> {
-    pub async fn delete_resource(
+impl Project {
+    pub async fn delete_resource<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: DeleteResourceInput,

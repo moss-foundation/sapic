@@ -1,16 +1,18 @@
+// TODO: This should be moved to the runtime after the `AppDelegate` is extracted from the system layer of the application (right now, it's causing circular dependencies).
+
 pub mod handle;
-pub mod models;
 
 use handle::ActivityHandle;
-use models::events::ActivityEvent;
-use moss_applib::errors::TauriResultExt;
+use moss_applib::TauriResultExt;
+use sapic_base::{
+    language::types::LocalizedString, notification::types::primitives::NotificationLocation,
+};
+use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
-
-use crate::models::primitives::Location;
 
 pub(crate) mod constants {
     use moss_bindingutils::const_export;
@@ -30,27 +32,27 @@ pub(crate) mod constants {
 pub enum ToLocation<'a> {
     Window {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
     Notification {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
     Toast {
         activity_id: &'a str,
-        title: String,
-        detail: Option<String>,
+        title: LocalizedString,
+        detail: Option<LocalizedString>,
     },
 }
 
 impl<'a> ToLocation<'a> {
-    fn location(&self) -> Location {
+    fn location(&self) -> NotificationLocation {
         match self {
-            ToLocation::Window { .. } => Location::Window,
-            ToLocation::Notification { .. } => Location::Notification,
-            ToLocation::Toast { .. } => Location::Toast,
+            ToLocation::Window { .. } => NotificationLocation::Window,
+            ToLocation::Notification { .. } => NotificationLocation::Notification,
+            ToLocation::Toast { .. } => NotificationLocation::Toast,
         }
     }
 
@@ -62,7 +64,7 @@ impl<'a> ToLocation<'a> {
         }
     }
 
-    fn title(&self) -> String {
+    fn title(&self) -> LocalizedString {
         match self {
             ToLocation::Window { title, .. } => title.clone(),
             ToLocation::Notification { title, .. } => title.clone(),
@@ -70,7 +72,7 @@ impl<'a> ToLocation<'a> {
         }
     }
 
-    fn detail(&self) -> Option<String> {
+    fn detail(&self) -> Option<LocalizedString> {
         match self {
             ToLocation::Window { detail, .. } => detail.clone(),
             ToLocation::Notification { detail, .. } => detail.clone(),

@@ -5,8 +5,8 @@ use crate::{
     models::operations::{ArchiveProjectInput, ArchiveProjectOutput},
 };
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn archive_project(
+impl Workspace {
+    pub async fn archive_project<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: ArchiveProjectInput,

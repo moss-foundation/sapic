@@ -1,11 +1,13 @@
-use moss_applib::errors::TauriResultExt;
+use moss_applib::TauriResultExt;
+use sapic_base::language::types::LocalizedString;
+use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
     atomic::{AtomicUsize, Ordering},
 };
 use tauri::{AppHandle, Emitter, Runtime as TauriRuntime};
 
-use crate::{constants, models::events::ActivityEvent};
+use crate::constants;
 
 pub struct ActivityHandle<'a, R: TauriRuntime> {
     pub activity_id: &'a str,
@@ -23,7 +25,7 @@ impl<'a, R: TauriRuntime> ActivityHandle<'a, R> {
         }
     }
 
-    pub fn emit_progress(&self, detail: Option<String>) -> joinerror::Result<()> {
+    pub fn emit_progress(&self, detail: Option<LocalizedString>) -> joinerror::Result<()> {
         self.app_handle
             .emit(
                 constants::CHANNEL,

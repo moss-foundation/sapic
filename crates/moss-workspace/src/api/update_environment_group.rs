@@ -1,10 +1,11 @@
-use moss_applib::{AppRuntime, errors::ValidationResultExt};
+use moss_applib::AppRuntime;
+use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::{Workspace, models::operations::UpdateEnvironmentGroupInput};
 
-impl<R: AppRuntime> Workspace<R> {
-    pub async fn update_environment_group(
+impl Workspace {
+    pub async fn update_environment_group<R: AppRuntime>(
         &self,
         ctx: &R::AsyncContext,
         input: UpdateEnvironmentGroupInput,

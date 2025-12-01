@@ -1,12 +1,13 @@
 // TODO: Update the tests after changing the variable store to the new database
 #![cfg(feature = "integration-tests")]
 
+use moss_applib::mock::MockAppRuntime;
 use moss_environment::{
     AnyEnvironment,
     models::types::{AddVariableParams, VariableOptions},
     storage::key_variable,
 };
-use moss_storage2::{Storage, models::primitives::StorageScope};
+use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::random_environment_name;
 use moss_workspace::{
     models::{
@@ -16,6 +17,7 @@ use moss_workspace::{
     storage::key_environment_order,
 };
 use sapic_base::environment::types::primitives::EnvironmentId;
+use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::Value as JsonValue;
 use tauri::ipc::Channel;
 
@@ -56,7 +58,7 @@ async fn delete_environment_success() {
 
     // Add a variable
     let _ = workspace
-        .update_environment(
+        .update_environment::<MockAppRuntime>(
             &ctx,
             UpdateEnvironmentInput {
                 inner: UpdateEnvironmentParams {
@@ -78,7 +80,7 @@ async fn delete_environment_success() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe(&ctx)
+        .describe()
         .await
         .unwrap();
 
@@ -88,7 +90,7 @@ async fn delete_environment_success() {
 
     // Delete the environment
     let _ = workspace
-        .delete_environment(
+        .delete_environment::<MockAppRuntime>(
             &ctx,
             DeleteEnvironmentInput {
                 id: environment_id.clone(),
@@ -99,7 +101,7 @@ async fn delete_environment_success() {
 
     let channel = Channel::new(move |_| Ok(()));
     let output = workspace
-        .stream_environments(&ctx, app_delegate.clone(), channel)
+        .stream_environments::<MockAppRuntime>(&ctx, app_delegate.clone(), channel)
         .await
         .unwrap();
     assert_eq!(output.total_returned, 1); // Only the globals environment should exist
@@ -108,7 +110,7 @@ async fn delete_environment_success() {
     assert!(!create_environment_output.abs_path.exists());
 
     // Check the environment is removed from the database
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
 
     let env_order_result = storage
         .get(
@@ -120,7 +122,7 @@ async fn delete_environment_success() {
     assert!(env_order_result.is_none());
 
     // Check variables associated with the environment are removed from the database
-    let storage = <dyn Storage>::global(&app_delegate);
+    let storage = GlobalKvStorage::get(&app_delegate);
     assert!(
         storage
             .get_batch_by_prefix(
@@ -140,7 +142,7 @@ async fn delete_environment_nonexistent() {
     let (ctx, _, workspace, cleanup) = setup_test_workspace().await;
 
     let result = workspace
-        .delete_environment(
+        .delete_environment::<MockAppRuntime>(
             &ctx,
             DeleteEnvironmentInput {
                 id: EnvironmentId::new(),
