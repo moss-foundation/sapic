@@ -1,4 +1,3 @@
-use sapic_ipc::TauriResult;
 use tauri::{
     AppHandle, Runtime,
     plugin::{Builder, TauriPlugin},
@@ -24,7 +23,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 async fn parse_url<'a, R: Runtime>(
     #[allow(unused)] app_handle: AppHandle<R>,
     input: ParseUrlInput,
-) -> TauriResult<ParseUrlOutput> {
+) -> joinerror::Result<ParseUrlOutput> {
     let parsed_url = UrlParser::parse_url(&input.url)?;
 
     Ok(ParseUrlOutput(parsed_url))
