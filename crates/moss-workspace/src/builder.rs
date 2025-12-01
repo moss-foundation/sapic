@@ -3,10 +3,12 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::KvStorage;
 use rustc_hash::FxHashMap;
-use sapic_base::workspace::{manifest::ManifestFile, types::primitives::WorkspaceId};
+use sapic_base::{
+    project::types::primitives::ProjectId,
+    workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
+};
 use sapic_core::{
     context::AnyAsyncContext,
     subscription::{EventEmitter, EventMarker},

@@ -3,7 +3,7 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use moss_storage2::KvStorage;
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{project::types::primitives::ProjectId, user::types::primitives::AccountId};
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::ports::GitProviderKind;
 use std::{
@@ -21,7 +21,6 @@ use crate::{
     errors::ErrorIo,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    models::primitives::ProjectId,
     set_icon::SetIconService,
     vcs::Vcs,
     worktree::Worktree,

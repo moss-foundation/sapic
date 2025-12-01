@@ -8,7 +8,7 @@ use moss_project::{
     dirs,
     models::{
         operations::{CreateResourceInput, UpdateResourceInput},
-        primitives::{ResourceClass, ResourceId, ResourceProtocol},
+        primitives::{ResourceClass, ResourceProtocol},
         types::{
             BodyInfo, CreateItemResourceParams, UpdateBodyParams, UpdateDirResourceParams,
             UpdateItemResourceParams,
@@ -26,6 +26,7 @@ use moss_project::{
 use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
+use sapic_base::resource::types::primitives::ResourceId;
 use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::{Value as JsonValue, json};
 use std::path::{Path, PathBuf};

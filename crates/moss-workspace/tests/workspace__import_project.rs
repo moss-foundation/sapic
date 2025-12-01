@@ -7,7 +7,6 @@
 
 use crate::shared::{setup_external_project, setup_test_workspace};
 use moss_applib::mock::MockAppRuntime;
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::models::primitives::StorageScope;
 use moss_workspace::{
     models::{
@@ -16,7 +15,7 @@ use moss_workspace::{
     },
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{project::types::primitives::ProjectId, user::types::primitives::AccountId};
 use sapic_core::context::AnyAsyncContext;
 use sapic_runtime::globals::GlobalKvStorage;
 use std::{collections::HashSet, env, ops::Deref};

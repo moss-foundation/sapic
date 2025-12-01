@@ -9,7 +9,7 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
 use moss_text::sanitized::sanitize;
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{project::types::primitives::ProjectId, user::types::primitives::AccountId};
 use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
@@ -31,7 +31,6 @@ use crate::{
     edit::ProjectEdit,
     git::GitClient,
     manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    models::primitives::ProjectId,
     set_icon::SetIconService,
     vcs::{ProjectVcs, Vcs},
     worktree::Worktree,

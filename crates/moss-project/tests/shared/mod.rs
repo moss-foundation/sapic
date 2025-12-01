@@ -9,7 +9,7 @@ use moss_project::{
     builder::ProjectCreateParams,
     models::{
         operations::CreateResourceInput,
-        primitives::{ProjectId, ResourceClass, ResourceId},
+        primitives::ResourceClass,
         types::{CreateDirResourceParams, CreateItemResourceParams},
     },
     project::Project,
@@ -17,6 +17,7 @@ use moss_project::{
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
+use sapic_base::{project::types::primitives::ProjectId, resource::types::primitives::ResourceId};
 use sapic_core::context::{AsyncContext, MutableContext};
 use sapic_runtime::{
     app::kv_storage::{AppStorage, AppStorageOptions},

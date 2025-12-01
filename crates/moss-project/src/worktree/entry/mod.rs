@@ -2,11 +2,12 @@ pub mod edit;
 pub mod model;
 
 use derive_more::{Deref, DerefMut};
+use sapic_base::resource::types::primitives::ResourceId;
 use std::{path::Path, sync::Arc};
 use tokio::sync::watch;
 
 use crate::{
-    models::primitives::{ResourceClass, ResourceId, ResourceKind, ResourceProtocol},
+    models::primitives::{ResourceClass, ResourceKind, ResourceProtocol},
     worktree::entry::{edit::EntryEditing, model::BodyKind},
 };
 

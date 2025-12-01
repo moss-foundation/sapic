@@ -5,9 +5,10 @@ use jsonptr::PointerBuf;
 use moss_edit::json::EditOptions;
 use moss_environment::{AnyEnvironment, Environment};
 use moss_fs::{FileSystem, FsResultExt};
-use moss_project::{Project, models::primitives::ProjectId};
+use moss_project::Project;
 use sapic_base::{
     environment::types::primitives::EnvironmentId,
+    project::types::primitives::ProjectId,
     workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
 };
 use sapic_core::subscription::{Event, Subscription};

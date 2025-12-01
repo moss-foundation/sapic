@@ -1,6 +1,6 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_project::models::primitives::ProjectId;
+use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 

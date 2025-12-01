@@ -1,8 +1,9 @@
 use std::path::PathBuf;
 
 use moss_git::models::types::BranchInfo;
-use moss_project::models::primitives::ProjectId;
-use sapic_base::environment::types::primitives::EnvironmentId;
+use sapic_base::{
+    environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
+};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 

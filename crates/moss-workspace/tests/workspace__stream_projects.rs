@@ -3,11 +3,11 @@ pub mod shared;
 
 use crate::shared::setup_test_workspace;
 use moss_applib::mock::MockAppRuntime;
-use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     events::StreamProjectsEvent, operations::CreateProjectInput, types::CreateProjectParams,
 };
+use sapic_base::project::types::primitives::ProjectId;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
