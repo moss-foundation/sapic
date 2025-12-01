@@ -4,7 +4,9 @@ pub mod handle;
 
 use handle::ActivityHandle;
 use moss_applib::TauriResultExt;
-use sapic_base::{language::types::LocalizedString, notification::types::primitives::Location};
+use sapic_base::{
+    language::types::LocalizedString, notification::types::primitives::NotificationLocation,
+};
 use sapic_ipc::contracts::notification::ActivityEvent;
 use std::sync::{
     Arc,
@@ -46,11 +48,11 @@ pub enum ToLocation<'a> {
 }
 
 impl<'a> ToLocation<'a> {
-    fn location(&self) -> Location {
+    fn location(&self) -> NotificationLocation {
         match self {
-            ToLocation::Window { .. } => Location::Window,
-            ToLocation::Notification { .. } => Location::Notification,
-            ToLocation::Toast { .. } => Location::Toast,
+            ToLocation::Window { .. } => NotificationLocation::Window,
+            ToLocation::Notification { .. } => NotificationLocation::Notification,
+            ToLocation::Toast { .. } => NotificationLocation::Toast,
         }
     }
 

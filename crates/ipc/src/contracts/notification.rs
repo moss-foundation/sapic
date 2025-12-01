@@ -1,7 +1,9 @@
 use serde::Serialize;
 use ts_rs::TS;
 
-use sapic_base::{language::types::LocalizedString, notification::types::primitives::Location};
+use sapic_base::{
+    language::types::LocalizedString, notification::types::primitives::NotificationLocation,
+};
 
 /// @category Event
 #[derive(Serialize, Clone, TS)]
@@ -18,8 +20,8 @@ pub enum ActivityEvent<'a> {
         title: LocalizedString,
         #[ts(optional, type = "LocalizedString")]
         detail: Option<LocalizedString>,
-        #[ts(type = "Location")]
-        location: Location,
+        #[ts(type = "NotificationLocation")]
+        location: NotificationLocation,
     },
     /// This event is used when the activity is a long-running event
     /// and we want to track its progress, like indexing, scanning, etc.
@@ -31,8 +33,8 @@ pub enum ActivityEvent<'a> {
         title: LocalizedString,
         #[ts(optional, type = "LocalizedString")]
         detail: Option<LocalizedString>,
-        #[ts(type = "Location")]
-        location: Location,
+        #[ts(type = "NotificationLocation")]
+        location: NotificationLocation,
     },
     /// This event is used to update the progress of a long-running activity,
     /// like updating the progress of an indexer, scanner, etc.

@@ -20,7 +20,7 @@ use ts_rs::TS;
 #[derive(Serialize, Clone, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "notification/primitives.ts")]
-pub enum Location {
+pub enum NotificationLocation {
     /// Application-wide surface for ambient status and progress.
     ///
     /// Typical use: long-running background tasks, indexing spinners,

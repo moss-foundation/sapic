@@ -2,7 +2,8 @@ import React, { createContext, useCallback, useEffect, useMemo, useReducer, useR
 import { toast } from "sonner";
 
 import { createNotificationContent } from "@/lib/ui";
-import { ActivityEvent, LocalizedString } from "@repo/ipc";
+import { ActivityEvent } from "@repo/ipc";
+import { LocalizedString } from "@repo/base";
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL } from "@repo/moss-activity-broadcaster";
 import { listen } from "@tauri-apps/api/event";
 

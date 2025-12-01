@@ -18,4 +18,4 @@
  * * `Notification` is used for items that may require user attention or actions.
  * * `Toast` is for ephemeral hints that disappear automatically.
  */
-export type Location = "window" | "notification" | "toast";
+export type NotificationLocation = "window" | "notification" | "toast";
