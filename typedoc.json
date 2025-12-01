@@ -12,7 +12,6 @@
     "crates/moss-workspace",
     "crates/moss-bindingutils",
     "crates/moss-git",
-    "crates/moss-language",
     "crates/moss-activity-broadcaster",
 
     "plugins/shared_storage",

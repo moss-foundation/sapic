@@ -16,6 +16,7 @@ derive_more = { workspace = true, features = ["deref", "display"] }
 joinerror.workspace = true
 chrono = { workspace = true, features = ["serde"] }
 nanoid.workspace = true
+tracing.workspace = true
 
 [features]
 integration-tests = []

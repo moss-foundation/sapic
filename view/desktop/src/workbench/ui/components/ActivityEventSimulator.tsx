@@ -3,7 +3,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { useActivityRouter } from "@/hooks/app";
 import { DEFAULT_DISPLAY_DURATION, ONESHOT_CLEANUP_DELAY } from "@/workbench/providers/ActivityRouterProvider";
 import { ActivityEvent } from "@repo/ipc";
+import { LocalizedString, NotificationLocation } from "@repo/base";
 import { CHANNEL as ACTIVITY_BROADCASTER_CHANNEL } from "@repo/moss-activity-broadcaster";
+
+// Helper to create LocalizedString from a plain string (for testing/simulation)
+const createLocalizedString = (text: string): LocalizedString => ({
+  key: "__NO_TRANSLATE__",
+  fallback: text,
+});
 
 interface ActivityEventSimulatorProps {
   className?: string;
@@ -130,7 +137,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
 
       if ("start" in event) {
         eventType = "start";
-        eventTitle = event.start.title;
+        eventTitle = event.start.title.fallback;
         activityId = event.start.activityId;
       } else if ("progress" in event) {
         eventType = "progress";
@@ -141,7 +148,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
         activityId = event.finish.activityId;
       } else if ("oneshot" in event) {
         eventType = "oneshot";
-        eventTitle = event.oneshot.title;
+        eventTitle = event.oneshot.title.fallback;
         activityId = event.oneshot.activityId;
       }
 
@@ -196,9 +203,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
               oneshot: {
                 id: 9000 + i,
                 activityId: `oneshot-${i}`,
-                title: oneshotType.title,
-                detail: oneshotType.detail,
-                location: "window",
+                title: createLocalizedString(oneshotType.title),
+                detail: createLocalizedString(oneshotType.detail),
+                location: "window" as NotificationLocation,
               },
             } as ActivityEvent,
             // Give more space between oneshot events to ensure display visibility
@@ -235,8 +242,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
               start: {
                 id: baseId,
                 activityId: activityId,
-                title: activityType.title,
-                location: "window",
+                title: createLocalizedString(activityType.title),
+                location: "window" as NotificationLocation,
               },
             } as ActivityEvent,
             100
@@ -268,7 +275,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
               progress: {
                 id: baseId + i,
                 activityId: activityId,
-                detail: detail,
+                detail: createLocalizedString(detail),
               },
             } as ActivityEvent,
             100 // Fast emit
@@ -294,9 +301,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                 oneshot: {
                   id: oneshotId,
                   activityId: `oneshot-${i}`,
-                  title: oneshotType.title,
-                  detail: oneshotType.detail,
-                  location: "window",
+                  title: createLocalizedString(oneshotType.title),
+                  detail: createLocalizedString(oneshotType.detail),
+                  location: "window" as NotificationLocation,
                 },
               } as ActivityEvent,
               10 // Nearly immediate emit
@@ -363,9 +370,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
             oneshot: {
               id: 50000 + i,
               activityId: `notification-${i}`,
-              title: notificationType.title,
-              detail: notificationType.detail,
-              location: "notification",
+              title: createLocalizedString(notificationType.title),
+              detail: createLocalizedString(notificationType.detail),
+              location: "notification" as NotificationLocation,
             },
           } as ActivityEvent;
 
@@ -399,9 +406,9 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
             oneshot: {
               id: 60000 + i,
               activityId: `toast-${i}`,
-              title: toastType.title,
-              detail: toastType.detail,
-              location: "toast",
+              title: createLocalizedString(toastType.title),
+              detail: createLocalizedString(toastType.detail),
+              location: "toast" as NotificationLocation,
             },
           } as ActivityEvent;
 
@@ -463,8 +470,8 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                       start: {
                         id: baseId,
                         activityId: `test/simulation-${sequenceId}`,
-                        title: activityType.title,
-                        location: "window",
+                        title: createLocalizedString(activityType.title),
+                        location: "window" as NotificationLocation,
                       },
                     } as ActivityEvent,
                     10
@@ -498,7 +505,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
                       progress: {
                         id: baseId + i,
                         activityId: `test/simulation-${sequenceId}`,
-                        detail: detail,
+                        detail: createLocalizedString(detail),
                       },
                     } as ActivityEvent,
                     priorityTestMode

@@ -1,7 +1,9 @@
 use serde::Serialize;
 use ts_rs::TS;
 
-use sapic_base::notification::types::primitives::Location;
+use sapic_base::{
+    language::types::LocalizedString, notification::types::primitives::NotificationLocation,
+};
 
 /// @category Event
 #[derive(Serialize, Clone, TS)]
@@ -14,10 +16,12 @@ pub enum ActivityEvent<'a> {
     Oneshot {
         id: usize,
         activity_id: &'a str,
-        title: String,
-        #[ts(optional)]
-        detail: Option<String>,
-        location: Location,
+        #[ts(type = "LocalizedString")]
+        title: LocalizedString,
+        #[ts(optional, type = "LocalizedString")]
+        detail: Option<LocalizedString>,
+        #[ts(type = "NotificationLocation")]
+        location: NotificationLocation,
     },
     /// This event is used when the activity is a long-running event
     /// and we want to track its progress, like indexing, scanning, etc.
@@ -25,10 +29,12 @@ pub enum ActivityEvent<'a> {
     Start {
         id: usize,
         activity_id: &'a str,
-        title: String,
-        #[ts(optional)]
-        detail: Option<String>,
-        location: Location,
+        #[ts(type = "LocalizedString")]
+        title: LocalizedString,
+        #[ts(optional, type = "LocalizedString")]
+        detail: Option<LocalizedString>,
+        #[ts(type = "NotificationLocation")]
+        location: NotificationLocation,
     },
     /// This event is used to update the progress of a long-running activity,
     /// like updating the progress of an indexer, scanner, etc.
@@ -36,8 +42,8 @@ pub enum ActivityEvent<'a> {
     Progress {
         id: usize,
         activity_id: &'a str,
-        #[ts(optional)]
-        detail: Option<String>,
+        #[ts(optional, type = "LocalizedString")]
+        detail: Option<LocalizedString>,
     },
     /// This event is used to notify the frontend that the long-running activity
     /// is finished and the activity indicator should be hidden.

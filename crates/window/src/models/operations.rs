@@ -1,12 +1,10 @@
 use derive_more::Deref;
-use moss_language::models::types::LanguageInfo;
 use moss_logging::models::primitives::LogEntryId;
 use sapic_base::{
     user::types::{ProfileInfo, primitives::AccountId},
     workspace::types::WorkspaceInfo,
 };
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use ts_rs::TS;
 use validator::Validate;
 
@@ -67,31 +65,31 @@ pub struct UpdateProfileOutput {
     pub updated_accounts: Vec<AccountId>,
 }
 
-// ########################################################
-// ###                    Language                      ###
-// ########################################################
+// // ########################################################
+// // ###                    Language                      ###
+// // ########################################################
 
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationNamespaceInput {
-    pub language: String,
-    pub namespace: String,
-}
+// /// @category Operation
+// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct GetTranslationNamespaceInput {
+//     pub language: String,
+//     pub namespace: String,
+// }
 
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct GetTranslationNamespaceOutput {
-    #[ts(type = "JsonValue")]
-    pub contents: JsonValue,
-}
+// /// @category Operation
+// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct GetTranslationNamespaceOutput {
+//     #[ts(type = "JsonValue")]
+//     pub contents: JsonValue,
+// }
 
-/// @category Operation
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageInfo>);
+// /// @category Operation
+// #[derive(Debug, Clone, Serialize, Deserialize, TS)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct ListLanguagesOutput(#[ts(type = "LanguageInfo[]")] pub Vec<LanguageInfo>);
 
 // Describe App
 

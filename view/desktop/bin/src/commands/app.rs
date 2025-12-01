@@ -2,7 +2,7 @@ use joinerror::Error;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
 use sapic_base::errors::NotFound;
-use sapic_ipc::contracts::{configuration::*, extension::*, theme::*, workspace::*};
+use sapic_ipc::contracts::{configuration::*, extension::*, language::*, theme::*, workspace::*};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;
@@ -139,6 +139,43 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
 
             Ok(output)
         },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn list_languages<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> joinerror::Result<ListLanguagesOutput> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.list_languages(&ctx).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: GetTranslationNamespaceInput,
+    options: Options,
+) -> joinerror::Result<GetTranslationNamespaceOutput> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.get_translation_namespace(&ctx, &input).await },
     )
     .await
 }

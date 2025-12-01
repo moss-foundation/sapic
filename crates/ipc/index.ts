@@ -4,8 +4,6 @@ export * from "./bindings/main/operations";
 export * from "./bindings/main/operations.zod";
 export * from "./bindings/main/types";
 export * from "./bindings/main/types.zod";
-export * from "./bindings/notification/primitives";
-export * from "./bindings/notification/primitives.zod";
 export * from "./bindings/operations";
 export * from "./bindings/operations.zod";
 export * from "./bindings/types";
