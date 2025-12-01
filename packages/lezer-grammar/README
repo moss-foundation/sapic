@@ -1,0 +1,5 @@
+1. Install lezer-generator:
+pnpm install -g @lezer/generator
+
+2. In /src, run:
+lezer-generator urlVariables.grammar -o urlVariables.js

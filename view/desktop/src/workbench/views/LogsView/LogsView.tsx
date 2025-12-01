@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
@@ -7,11 +7,15 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
+import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting, syntaxTree } from "@codemirror/language";
+import { tags } from "@lezer/highlight";
 import { AccountKind, ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
+import { parser } from "@repo/lezer-grammar";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+import CodeMirror from "@uiw/react-codemirror";
 
 import { ParsedUrl } from "../EndpointView/utils";
 
@@ -521,17 +525,37 @@ const UrlParserTest = () => {
     }
   }
 
+  const language = LRLanguage.define({ parser: parser });
+  const languageSupport = new LanguageSupport(language);
+  const onChange = useCallback((value, viewUpdate) => {
+    setUrl(value);
+    if (viewUpdate) {
+      console.log(syntaxTree(viewUpdate.state).toString());
+    }
+  }, []);
+
+  const highlightStyle = HighlightStyle.define([
+    // {{ and }} and / and :
+    { tag: tags.punctuation, color: "#9e9e9e" },
+
+    // The variable names (env, test1)
+    { tag: tags.variableName, color: "#9c27b0", fontWeight: "bold" },
+
+    // The normal URL text
+    { tag: tags.content, color: "#424242" },
+
+    // (Optional) If you kept the parent tag mapping
+    { tag: tags.keyword, color: "#9c27b0" },
+  ]);
   return (
     <div className={"overflow-x-auto rounded-md"}>
-      <input
-        type="text"
-        placeholder="https://url.to.be.parsed"
+      <CodeMirror
         value={url}
-        onChange={(e) => {
-          setUrl(e.target.value);
-        }}
-        className="w-full rounded-md border border-gray-300 bg-white p-2"
+        height="200px"
+        onChange={onChange}
+        extensions={[languageSupport, syntaxHighlighting(highlightStyle)]}
       />
+
       <textarea value={JSON.stringify(parsedUrl, null, 2)} readOnly className="h-50 mt-4 w-full bg-white" />
       <button
         className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
