@@ -14,9 +14,11 @@ pub enum ActivityEvent<'a> {
     Oneshot {
         id: usize,
         activity_id: &'a str,
+        #[ts(type = "LocalizedString")]
         title: LocalizedString,
-        #[ts(optional)]
+        #[ts(optional, type = "LocalizedString")]
         detail: Option<LocalizedString>,
+        #[ts(type = "Location")]
         location: Location,
     },
     /// This event is used when the activity is a long-running event
@@ -25,9 +27,11 @@ pub enum ActivityEvent<'a> {
     Start {
         id: usize,
         activity_id: &'a str,
+        #[ts(type = "LocalizedString")]
         title: LocalizedString,
-        #[ts(optional)]
+        #[ts(optional, type = "LocalizedString")]
         detail: Option<LocalizedString>,
+        #[ts(type = "Location")]
         location: Location,
     },
     /// This event is used to update the progress of a long-running activity,
@@ -36,7 +40,7 @@ pub enum ActivityEvent<'a> {
     Progress {
         id: usize,
         activity_id: &'a str,
-        #[ts(optional)]
+        #[ts(optional, type = "LocalizedString")]
         detail: Option<LocalizedString>,
     },
     /// This event is used to notify the frontend that the long-running activity
