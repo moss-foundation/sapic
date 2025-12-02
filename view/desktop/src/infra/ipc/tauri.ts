@@ -22,6 +22,7 @@ export type TauriIpcCommand =
   | "list_languages"
   | "list_color_themes"
   | "list_extensions"
+  | "download_extension"
   | "delete_workspace"
   | "update_workspace"
   | "update_profile"

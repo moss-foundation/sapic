@@ -3,6 +3,7 @@ pub mod types;
 use async_trait::async_trait;
 use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
+use std::path::Path;
 use types::*;
 
 #[async_trait]
@@ -11,6 +12,13 @@ pub trait ExtensionApiOperations: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<ExtensionInfo>>;
+
+    async fn download_extension(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        extension_id: &str,
+        version: &str,
+    ) -> joinerror::Result<(Vec<u8>, String)>;
 }
 
 // pub trait AuthRevokeApiReq:

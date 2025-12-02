@@ -64,6 +64,28 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn download_extension<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+    input: DownloadExtensionInput,
+) -> joinerror::Result<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move {
+            app.download_extension(&ctx, &input.extension_id, &input.version)
+                .await
+        },
+    )
+    .await
+}
+
+#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx,app), fields(window = window.label()))]
 pub async fn describe_color_theme<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,

@@ -21,6 +21,11 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
+export type DownloadExtensionInput = { extension_id: string; version: string };
+
+/**
+ * @category Operation
+ */
 export type GetColorThemeInput = { id: ThemeId };
 
 /**

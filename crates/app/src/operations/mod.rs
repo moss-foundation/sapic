@@ -1,4 +1,5 @@
 pub mod delete_workspace;
+pub mod download_extension;
 pub mod get_color_theme;
 pub mod get_translation_namespace;
 pub mod list_color_themes;

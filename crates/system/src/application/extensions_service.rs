@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{path::Path, sync::Arc};
 
 use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
@@ -19,5 +19,16 @@ impl ExtensionsApiService {
         ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<ExtensionInfo>> {
         self.client.list_extensions(ctx).await
+    }
+
+    pub async fn download_extension(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        extension_id: &str,
+        version: &str,
+    ) -> joinerror::Result<(Vec<u8>, String)> {
+        self.client
+            .download_extension(ctx, extension_id, version)
+            .await
     }
 }

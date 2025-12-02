@@ -45,6 +45,8 @@ inventory.workspace = true
 reqwest = { workspace = true, features = ["json"] }
 validator = { workspace = true }
 chrono = { workspace = true }
+tar.workspace = true
+flate2.workspace = true
 
 [dev-dependencies]
 
