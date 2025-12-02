@@ -133,10 +133,10 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, app_delegate| async move {
-            let output = app.delete_workspace(&ctx, &input).await?;
-
+            // We need to open welcome window first, otherwise the app will close
+            // This is in line with `commands::main__close_workspace`
             app.ensure_welcome(&app_delegate).await?;
-
+            let output = app.delete_workspace(&ctx, &input).await?;
             Ok(output)
         },
     )

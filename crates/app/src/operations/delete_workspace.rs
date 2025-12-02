@@ -16,7 +16,6 @@ impl<R: AppRuntime> App<R> {
         input: &DeleteWorkspaceInput,
     ) -> joinerror::Result<DeleteWorkspaceOutput> {
         input.validate().join_err_bare()?;
-
         let maybe_window = self.windows.main_window_by_workspace_id(&input.id).await;
         if let Some(window) = maybe_window {
             self.windows.close_main_window(window.label()).await?;

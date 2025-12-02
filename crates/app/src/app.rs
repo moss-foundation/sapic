@@ -114,14 +114,12 @@ impl<R: AppRuntime> App<R> {
             if let Err(err) = welcome_window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
-
             return Ok(());
         } else {
             let workspace_ops = WelcomeWindowWorkspaceOps::new(
                 self.services.workspace_service.clone(),
                 self.services.workspace_edit_service.clone(),
             );
-
             let welcome_window = self
                 .windows
                 .create_welcome_window(delegate, workspace_ops)
