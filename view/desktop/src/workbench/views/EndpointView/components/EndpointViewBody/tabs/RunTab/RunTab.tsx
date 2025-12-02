@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { cn } from "@/utils/cn";
+import { UrlEditor } from "@/workbench/ui/components/UrlEditor/UrlEditor";
 import { useEndpointView } from "@/workbench/views/EndpointView/hooks/useEndpointView";
 
 import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
@@ -63,6 +64,7 @@ export const RunTab = () => {
           }
         }}
       />
+      <UrlEditor value={endpointData.url.raw} onChange={(url) => console.log("url", url)} />
 
       <Resizable separator={false} key={isResizableVertical ? "vertical" : "horizontal"} vertical={isResizableVertical}>
         <ResizablePanel

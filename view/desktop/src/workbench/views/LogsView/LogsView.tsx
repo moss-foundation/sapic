@@ -530,6 +530,7 @@ const UrlParserTest = () => {
   const onChange = useCallback((value, viewUpdate) => {
     setUrl(value);
     if (viewUpdate) {
+      console.log("viewUpdate", viewUpdate);
       console.log(syntaxTree(viewUpdate.state).toString());
     }
   }, []);
@@ -547,6 +548,7 @@ const UrlParserTest = () => {
     // (Optional) If you kept the parent tag mapping
     { tag: tags.keyword, color: "#9c27b0" },
   ]);
+
   return (
     <div className={"overflow-x-auto rounded-md"}>
       <CodeMirror
