@@ -13,10 +13,7 @@ use flate2::bufread::GzDecoder;
 use moss_fs::FileSystem;
 use rustc_hash::FxHashMap;
 use sapic_core::context::AnyAsyncContext;
-use sapic_system::{
-    application::extensions_service::ExtensionsApiService,
-    ports::server_api::ExtensionApiOperations,
-};
+use sapic_system::application::extensions_service::ExtensionsApiService;
 use std::sync::Arc;
 use tar::Archive;
 

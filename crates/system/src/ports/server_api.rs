@@ -3,7 +3,6 @@ pub mod types;
 use async_trait::async_trait;
 use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
-use std::path::Path;
 use types::*;
 
 #[async_trait]

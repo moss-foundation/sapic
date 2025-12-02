@@ -1,4 +1,4 @@
-use std::{path::Path, sync::Arc};
+use std::sync::Arc;
 
 use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
