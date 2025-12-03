@@ -3,6 +3,7 @@ pub mod types;
 use async_trait::async_trait;
 use sapic_base::extension::types::ExtensionInfo;
 use sapic_core::context::AnyAsyncContext;
+use std::path::{Path, PathBuf};
 use types::*;
 
 #[async_trait]
@@ -12,12 +13,14 @@ pub trait ExtensionApiOperations: Send + Sync {
         ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<ExtensionInfo>>;
 
+    // Returns path to the archive file and the extension folder name
     async fn download_extension(
         &self,
         ctx: &dyn AnyAsyncContext,
         extension_id: &str,
         version: &str,
-    ) -> joinerror::Result<(Vec<u8>, String)>;
+        archive_folder: &Path,
+    ) -> joinerror::Result<(PathBuf, String)>;
 }
 
 // pub trait AuthRevokeApiReq:

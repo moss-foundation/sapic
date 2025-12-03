@@ -16,6 +16,23 @@ pub struct ExtensionInfoResponse {
     pub latest_version: String,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExtensionVersionInfoResponse {
+    pub id: String,
+    pub external_id: String,
+    pub name: String,
+    pub authors: Vec<String>,
+    pub description: String,
+    pub repository: String,
+    pub downloads: u64,
+    pub created_at: String,
+    pub updated_at: String,
+    pub version: String,
+    pub min_app_version: String,
+    pub published_at: String,
+}
+
 impl From<ExtensionInfoResponse> for ExtensionInfo {
     fn from(response: ExtensionInfoResponse) -> Self {
         ExtensionInfo {
