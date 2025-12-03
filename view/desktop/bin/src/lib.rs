@@ -211,8 +211,6 @@ pub async fn run<R: TauriRuntime>() {
                         server_api_client,
                         github_api_client,
                         gitlab_api_client,
-                        github_auth_adapter,
-                        gitlab_auth_adapter,
                         kv_storage,
                         theme_registry,
                         language_registry,

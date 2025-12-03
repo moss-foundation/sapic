@@ -9,9 +9,7 @@ use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_system::{
     ports::{
-        github_api::{GitHubApiClient, GitHubAuthAdapter},
-        gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
-        server_api::ServerApiClient,
+        github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
     },
     user::User,
     workspace::workspace_service::WorkspaceService,
@@ -38,8 +36,6 @@ pub struct OldSapicWindowBuilder {
     server_api_client: Arc<dyn ServerApiClient>,
     github_api_client: Arc<dyn GitHubApiClient>,
     gitlab_api_client: Arc<dyn GitLabApiClient>,
-    github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
-    gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
     workspace_service: Arc<WorkspaceService>,
 }
 
@@ -52,8 +48,6 @@ impl OldSapicWindowBuilder {
         server_api_client: Arc<dyn ServerApiClient>,
         github_api_client: Arc<dyn GitHubApiClient>,
         gitlab_api_client: Arc<dyn GitLabApiClient>,
-        github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
-        gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
         workspace_id: WorkspaceId,
         workspace_service: Arc<WorkspaceService>,
     ) -> Self {
@@ -66,8 +60,6 @@ impl OldSapicWindowBuilder {
             server_api_client,
             github_api_client,
             gitlab_api_client,
-            github_auth_adapter,
-            gitlab_auth_adapter,
             workspace_service,
         }
     }
@@ -119,14 +111,9 @@ impl OldSapicWindowBuilder {
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
-            self.user.clone(),
             &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.server_api_client.clone(),
-            self.github_api_client.clone(),
-            self.gitlab_api_client.clone(),
-            self.github_auth_adapter.clone(),
-            self.gitlab_auth_adapter.clone(),
             self.keyring.clone(),
         )
         .await
