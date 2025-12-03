@@ -20,7 +20,7 @@ export type AddUserAccountInput = {
   /**
    * If a PAT is not provided, we will use OAuth
    */
-  pat: string | null;
+  pat?: string;
 };
 
 /**
@@ -93,4 +93,4 @@ export type RemoveUserAccountInput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateUserAccountInput = { id: string; pat: string | null };
+export type UpdateUserAccountInput = { id: string; pat?: string };

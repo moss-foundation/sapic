@@ -26,6 +26,7 @@ pub struct ListUserAccountsOutput {
 /// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct AddUserAccountInput {
     pub host: String,
@@ -38,6 +39,7 @@ pub struct AddUserAccountInput {
 /// @category Operation
 #[derive(Debug, Validate, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateUserAccountInput {
     pub id: AccountId,

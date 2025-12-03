@@ -40,12 +40,12 @@ export const removeUserAccountInputSchema = z.object({
 
 export const updateUserAccountInputSchema = z.object({
   id: z.string(),
-  pat: z.string().nullable(),
+  pat: z.string().optional(),
 });
 export const addUserAccountInputSchema = z.object({
   host: z.string(),
   kind: accountKindSchema,
-  pat: z.string().nullable(),
+  pat: z.string().optional(),
 });
 
 export const getColorThemeInputSchema = z.object({
