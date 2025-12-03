@@ -22,6 +22,7 @@ pub struct ExtensionService<R: AppRuntime> {
     points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>>,
     fs: Arc<dyn FileSystem>,
     user_extensions_path: PathBuf,
+    extension_unpacker: Arc<dyn ExtensionUnpacker>,
 }
 
 impl<R: AppRuntime> ExtensionService<R> {
@@ -29,13 +30,14 @@ impl<R: AppRuntime> ExtensionService<R> {
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
         points: Vec<Box<dyn ExtensionPoint<R>>>,
+        extension_unpacker: Arc<dyn ExtensionUnpacker>,
     ) -> joinerror::Result<Self> {
         let points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>> =
             points.into_iter().map(|p| (p.key().as_str(), p)).collect();
 
         let user_extensions_path = app_delegate.user_dir().join("extensions");
         let download_path = user_extensions_path.join("download");
-        tokio::fs::create_dir_all(&download_path).await?;
+        fs.create_dir_all(&download_path).await?;
 
         let scanner = ExtensionScanner::new(
             fs.clone(),
@@ -102,6 +104,7 @@ impl<R: AppRuntime> ExtensionService<R> {
             points,
             scanner,
             user_extensions_path,
+            extension_unpacker,
         })
     }
 
@@ -122,12 +125,12 @@ impl<R: AppRuntime> ExtensionService<R> {
             .await?;
 
         let extension_folder_name = format!("{}@{}", info.id, info.version);
-        ExtensionUnpacker::unpack(
-            &archive_path,
-            &self.user_extensions_path.join(extension_folder_name),
-            self.fs.clone(),
-        )
-        .await?;
+        self.extension_unpacker
+            .unpack(
+                &archive_path,
+                &self.user_extensions_path.join(extension_folder_name),
+            )
+            .await?;
 
         Ok(info.name)
     }

@@ -5,6 +5,7 @@ use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
+    extension::unpacker::ExtensionUnpackerImpl,
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
     gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
     language::loader::LanguagePackLoader,
@@ -92,10 +93,16 @@ impl<R: AppRuntime> AppBuilder<R> {
             8081,
         ));
 
-        let extension_service =
-            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
-                .await
-                .expect("Failed to create extension service");
+        let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
+
+        let extension_service = ExtensionService::<R>::new(
+            &delegate,
+            self.fs.clone(),
+            self.extension_points,
+            Arc::new(extension_unpacker),
+        )
+        .await
+        .expect("Failed to create extension service");
 
         let workspace_edit_backend =
             WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());

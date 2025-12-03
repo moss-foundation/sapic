@@ -1,17 +1,28 @@
+use async_trait::async_trait;
 use flate2::bufread::GzDecoder;
 use joinerror::OptionExt;
 use moss_fs::{FileSystem, RemoveOptions};
 use std::{fs::File, io::BufReader, path::Path, sync::Arc};
 use tar::Archive;
 
-pub struct ExtensionUnpacker;
+#[async_trait]
+pub trait ExtensionUnpacker: Send + Sync {
+    async fn unpack(&self, archive_path: &Path, destination_path: &Path) -> joinerror::Result<()>;
+}
 
-impl ExtensionUnpacker {
-    pub async fn unpack(
-        archive_path: &Path,
-        destination_path: &Path,
-        fs: Arc<dyn FileSystem>,
-    ) -> joinerror::Result<()> {
+pub struct ExtensionUnpackerImpl {
+    fs: Arc<dyn FileSystem>,
+}
+
+impl ExtensionUnpackerImpl {
+    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
+        Self { fs }
+    }
+}
+
+#[async_trait]
+impl ExtensionUnpacker for ExtensionUnpackerImpl {
+    async fn unpack(&self, archive_path: &Path, destination_path: &Path) -> joinerror::Result<()> {
         if destination_path.exists() {
             return Err(joinerror::Error::new::<()>(format!(
                 "An extension already exists at {}",
@@ -34,14 +45,15 @@ impl ExtensionUnpacker {
             archive.unpack(destination_path)?;
             drop(archive);
 
-            fs.remove_file(
-                &archive_path,
-                RemoveOptions {
-                    recursive: false,
-                    ignore_if_not_exists: false,
-                },
-            )
-            .await?;
+            self.fs
+                .remove_file(
+                    &archive_path,
+                    RemoveOptions {
+                        recursive: false,
+                        ignore_if_not_exists: false,
+                    },
+                )
+                .await?;
         } else {
             // We only use .tar.gz for extension archive file for now
             unimplemented!()
