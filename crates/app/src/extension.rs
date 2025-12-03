@@ -35,10 +35,7 @@ impl<R: AppRuntime> ExtensionService<R> {
                     app_delegate.resource_dir().join("extensions"),
                     ExtensionsKind::BuiltIn,
                 ),
-                (
-                    app_delegate.user_dir().join("extensions"),
-                    ExtensionsKind::User,
-                ),
+                (app_delegate.user_extensions_dir(), ExtensionsKind::User),
             ],
         );
 

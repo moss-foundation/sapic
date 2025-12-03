@@ -61,6 +61,18 @@ impl<R: AppRuntime> AppDelegate<R> {
 
     #[cfg(debug_assertions)]
     #[cfg(not(feature = "integration-tests"))]
+    pub fn user_extensions_dir(&self) -> PathBuf {
+        self.user_dir().join("extensions")
+    }
+
+    #[cfg(debug_assertions)]
+    #[cfg(feature = "integration-tests")]
+    pub fn user_extensions_dir(&self) -> PathBuf {
+        self.user_dir().join("extensions")
+    }
+
+    #[cfg(debug_assertions)]
+    #[cfg(not(feature = "integration-tests"))]
     pub fn tmp_dir(&self) -> PathBuf {
         self.user_dir().join("tmp")
     }
@@ -179,6 +191,11 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(feature = "integration-tests")]
     pub fn user_dir(&self) -> PathBuf {
         self.tao_handle.state::<test::UserDir>().inner().0.clone()
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn user_extensions_dir(&self) -> PathBuf {
+        self.user_dir().join("extensions")
     }
 
     #[cfg(feature = "integration-tests")]
