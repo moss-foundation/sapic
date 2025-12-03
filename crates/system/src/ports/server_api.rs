@@ -1,7 +1,7 @@
 pub mod types;
 
 use async_trait::async_trait;
-use sapic_base::extension::types::ExtensionInfo;
+use sapic_base::extension::types::{ExtensionInfo, ExtensionVersionInfo};
 use sapic_core::context::AnyAsyncContext;
 use std::path::{Path, PathBuf};
 use types::*;
@@ -20,7 +20,7 @@ pub trait ExtensionApiOperations: Send + Sync {
         extension_id: &str,
         version: &str,
         archive_folder: &Path,
-    ) -> joinerror::Result<(PathBuf, String)>;
+    ) -> joinerror::Result<(PathBuf, ExtensionVersionInfo)>;
 }
 
 // pub trait AuthRevokeApiReq:

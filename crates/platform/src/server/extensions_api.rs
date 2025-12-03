@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
-use sapic_base::extension::types::ExtensionInfo;
+use sapic_base::extension::types::{ExtensionInfo, ExtensionVersionInfo};
 use sapic_core::context::{self, AnyAsyncContext, ContextResultExt};
 use sapic_system::ports::server_api::ExtensionApiOperations;
 use std::path::{Path, PathBuf};
@@ -54,8 +54,8 @@ impl ExtensionApiOperations for HttpServerApiClient {
         extension_id: &str,
         version: &str,
         archive_folder: &Path,
-    ) -> joinerror::Result<(PathBuf, String)> {
-        let (path, extension_folder_name) = context::abortable(ctx, async {
+    ) -> joinerror::Result<(PathBuf, ExtensionVersionInfo)> {
+        let (path, info) = context::abortable(ctx, async {
             // Fetch info about the particular extension version
             let extension_response = self
                 .client
@@ -73,8 +73,6 @@ impl ExtensionApiOperations for HttpServerApiClient {
             }
 
             let info: ExtensionVersionInfoResponse = extension_response.json().await?;
-
-            let extension_folder_name = format!("{}@{}", info.id, info.version);
 
             // Download the file
             let file_resp = self
@@ -110,11 +108,11 @@ impl ExtensionApiOperations for HttpServerApiClient {
             let path = archive_folder.join(&archive_name);
             tokio::fs::write(&path, bytes).await?;
 
-            Ok((path, extension_folder_name))
+            Ok((path, info.into()))
         })
         .await
         .join_err_bare()?;
-        Ok((path, extension_folder_name))
+        Ok((path, info))
     }
 }
 

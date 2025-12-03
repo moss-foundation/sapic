@@ -3,7 +3,7 @@ use std::{
     sync::Arc,
 };
 
-use sapic_base::extension::types::ExtensionInfo;
+use sapic_base::extension::types::{ExtensionInfo, ExtensionVersionInfo};
 use sapic_core::context::AnyAsyncContext;
 
 use crate::ports::server_api::ExtensionApiOperations;
@@ -30,7 +30,7 @@ impl ExtensionsApiService {
         extension_id: &str,
         version: &str,
         archive_folder: &Path,
-    ) -> joinerror::Result<(PathBuf, String)> {
+    ) -> joinerror::Result<(PathBuf, ExtensionVersionInfo)> {
         self.client
             .download_extension(ctx, extension_id, version, archive_folder)
             .await

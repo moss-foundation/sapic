@@ -3,9 +3,12 @@ use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
 use sapic_base::errors::NotFound;
 use sapic_ipc::contracts::{configuration::*, extension::*, language::*, theme::*, workspace::*};
+use sapic_window::{
+    constants::ON_DID_ADD_EXTENSION_CHANNEL, models::events::OnDidAddExtensionForFrontend,
+};
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
-use tauri::Window as TauriWindow;
+use std::{collections::HashMap, io::ErrorKind};
+use tauri::{Emitter, Window as TauriWindow};
 
 use crate::commands::primitives::*;
 
@@ -78,8 +81,21 @@ pub async fn download_extension<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, _| async move {
-            app.download_extension(&ctx, &input.extension_id, &input.version)
-                .await
+            let id = app
+                .download_extension(&ctx, &input.extension_id, &input.version)
+                .await?;
+            // Is this the right place to emit event?
+            app.emit(
+                ON_DID_ADD_EXTENSION_CHANNEL,
+                OnDidAddExtensionForFrontend { id },
+            )
+            .map_err(|e| {
+                std::io::Error::new(
+                    ErrorKind::Other,
+                    format!("Unable to emit a tauri event: {}", e),
+                )
+            })?;
+            Ok(())
         },
     )
     .await

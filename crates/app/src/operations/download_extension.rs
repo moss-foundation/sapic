@@ -9,8 +9,9 @@ impl<R: AppRuntime> App<R> {
         ctx: &dyn AnyAsyncContext,
         extension_id: &str,
         version: &str,
-    ) -> joinerror::Result<()> {
-        self.extension_service
+    ) -> joinerror::Result<String> {
+        let id = self
+            .extension_service
             .download_extension(
                 ctx,
                 extension_id,
@@ -19,6 +20,6 @@ impl<R: AppRuntime> App<R> {
             )
             .await?;
 
-        Ok(())
+        Ok(id)
     }
 }

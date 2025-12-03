@@ -105,15 +105,14 @@ impl<R: AppRuntime> ExtensionService<R> {
         })
     }
 
-    // TODO: Trigger rescan after downloading extension?
     pub async fn download_extension(
         &self,
         ctx: &dyn AnyAsyncContext,
         extension_id: &str,
         version: &str,
         api: Arc<ExtensionsApiService>,
-    ) -> joinerror::Result<()> {
-        let (archive_path, extension_folder_name) = api
+    ) -> joinerror::Result<String> {
+        let (archive_path, info) = api
             .download_extension(
                 ctx,
                 extension_id,
@@ -122,6 +121,7 @@ impl<R: AppRuntime> ExtensionService<R> {
             )
             .await?;
 
+        let extension_folder_name = format!("{}@{}", info.id, info.version);
         ExtensionUnpacker::unpack(
             &archive_path,
             &self.user_extensions_path.join(extension_folder_name),
@@ -129,6 +129,6 @@ impl<R: AppRuntime> ExtensionService<R> {
         )
         .await?;
 
-        Ok(())
+        Ok(info.name)
     }
 }
