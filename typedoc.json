@@ -5,7 +5,6 @@
   "entryPoints": [
     "crates/base",
     "crates/window",
-    "crates/runtime",
     "crates/ipc",
     "crates/moss-project",
     "crates/moss-environment",
