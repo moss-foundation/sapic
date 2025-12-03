@@ -28,6 +28,6 @@ PathParam {
   VarStart { "{{" }
   VarEnd { "}}" }
   PathMarker { ":" }
-  Identifier { $[a-zA-Z0-9_]+ }
+  Identifier { $[a-zA-Z0-9_\u0080-\uFFFF]+ }
   Slash {"/"}
 }
