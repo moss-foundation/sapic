@@ -31,8 +31,6 @@ impl WorkspaceService {
     }
 
     pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
-        // Drop workspace database so that deletion succeeds
-        self.storage.remove_workspace(id.inner()).await?;
         // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
         let deleted_path = self.fs.delete_workspace(id).await?;
 
