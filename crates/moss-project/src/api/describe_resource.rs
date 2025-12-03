@@ -1,10 +1,8 @@
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
+use sapic_base::resource::types::primitives::ResourceId;
 
-use crate::{
-    Project,
-    models::{operations::DescribeResourceOutput, primitives::ResourceId},
-};
+use crate::{Project, models::operations::DescribeResourceOutput};
 
 impl Project {
     pub async fn describe_resource<R: AppRuntime>(

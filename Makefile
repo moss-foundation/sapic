@@ -45,7 +45,6 @@ SCRIPTS_DIR := scripts
 # ---- Crate Directories ----
 BASE_DIR := crates/base
 IPC_MODELS_DIR := crates/ipc
-RUNTIME_MODELS_DIR := crates/runtime
 BINDINGUTILS_DIR := crates/moss-bindingutils
 ACTIVITY_BROADCASTER_MODELS_DIR := crates/moss-activity-broadcaster
 WINDOW_MODELS_DIR := crates/window
@@ -147,7 +146,6 @@ $(eval $(call gen_bindings,bindingutils,BINDINGUTILS_DIR))
 $(eval $(call gen_bindings,ipc,IPC_MODELS_DIR))
 $(eval $(call gen_bindings,git,GIT_MODELS_DIR))
 $(eval $(call gen_bindings,base,BASE_DIR))
-$(eval $(call gen_bindings,runtime,RUNTIME_MODELS_DIR))
 $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR))
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
@@ -163,7 +161,6 @@ gen-git-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
 gen-base-bindings:
-gen-runtime-bindings:
 gen-activity-broadcaster-bindings:
 
 ## Generate all TypeScript bindings
@@ -180,7 +177,6 @@ gen-bindings: \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \
 	gen-base-bindings \
-	gen-runtime-bindings
 
 
 # ======================================================

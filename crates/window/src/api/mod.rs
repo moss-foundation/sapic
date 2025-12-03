@@ -1,4 +1,3 @@
-pub mod create_profile;
 pub mod describe_app;
 pub mod list_logs;
 pub mod update_configuration;

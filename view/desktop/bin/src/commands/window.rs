@@ -49,31 +49,6 @@ pub async fn update_configuration<'a, R: tauri::Runtime>(
     .await
 }
 
-#[allow(dead_code)]
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_profile<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: CreateProfileInput,
-    options: Options,
-) -> joinerror::Result<CreateProfileOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, app_delegate, window| async move {
-            window
-                .inner()
-                .create_profile(&ctx, &app_delegate, input)
-                .await
-        },
-    )
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn update_profile<'a, R: tauri::Runtime>(

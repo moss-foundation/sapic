@@ -12,11 +12,11 @@ use moss_environment::{
 };
 use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
 use moss_logging::session;
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::{
-    environment::types::primitives::EnvironmentId, workspace::types::primitives::WorkspaceId,
+    environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
+    workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
 use std::{

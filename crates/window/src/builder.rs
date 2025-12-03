@@ -9,10 +9,9 @@ use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_system::{
     ports::{
-        github_api::{GitHubApiClient, GitHubAuthAdapter},
-        gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
-        server_api::ServerApiClient,
+        github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
     },
+    user::User,
     workspace::workspace_service::WorkspaceService,
 };
 use std::{path::PathBuf, sync::Arc};
@@ -29,6 +28,7 @@ use crate::{
 };
 
 pub struct OldSapicWindowBuilder {
+    user: Arc<dyn User>,
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
@@ -36,25 +36,23 @@ pub struct OldSapicWindowBuilder {
     server_api_client: Arc<dyn ServerApiClient>,
     github_api_client: Arc<dyn GitHubApiClient>,
     gitlab_api_client: Arc<dyn GitLabApiClient>,
-    github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
-    gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
     workspace_service: Arc<WorkspaceService>,
 }
 
 impl OldSapicWindowBuilder {
     pub fn new(
+        user: Arc<dyn User>,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,
         keyring: Arc<dyn KeyringClient>,
         server_api_client: Arc<dyn ServerApiClient>,
         github_api_client: Arc<dyn GitHubApiClient>,
         gitlab_api_client: Arc<dyn GitLabApiClient>,
-        github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
-        gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
         workspace_id: WorkspaceId,
         workspace_service: Arc<WorkspaceService>,
     ) -> Self {
         Self {
+            user,
             workspace_id,
             fs,
             storage,
@@ -62,8 +60,6 @@ impl OldSapicWindowBuilder {
             server_api_client,
             github_api_client,
             gitlab_api_client,
-            github_auth_adapter,
-            gitlab_auth_adapter,
             workspace_service,
         }
     }
@@ -118,10 +114,6 @@ impl OldSapicWindowBuilder {
             &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.server_api_client.clone(),
-            self.github_api_client.clone(),
-            self.gitlab_api_client.clone(),
-            self.github_auth_adapter.clone(),
-            self.gitlab_auth_adapter.clone(),
             self.keyring.clone(),
         )
         .await
@@ -169,6 +161,7 @@ impl OldSapicWindowBuilder {
 
         Ok(OldSapicWindow {
             app_handle: tao_handle.clone(),
+            user: self.user,
             session_service,
             log_service,
             workspace_service,

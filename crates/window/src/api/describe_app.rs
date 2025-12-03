@@ -56,7 +56,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
             profile: Some(ProfileInfo {
                 id: active_profile.id().clone(),
                 name: profile_details.name,
-                accounts: profile_details.accounts,
+                accounts: self.user.accounts().await,
             }),
             configuration: Configuration {
                 keys: configuration.keys().map(|key| key.clone()).collect(),

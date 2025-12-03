@@ -4,9 +4,9 @@ use moss_git::{
     models::{primitives::FileStatus, types::BranchInfo},
     url::GIT_URL_REGEX,
 };
-use moss_project::models::primitives::ProjectId;
 use sapic_base::{
     environment::types::primitives::{EnvironmentId, VariableId},
+    project::types::primitives::ProjectId,
     user::types::primitives::AccountId,
 };
 use serde::{Deserialize, Serialize};

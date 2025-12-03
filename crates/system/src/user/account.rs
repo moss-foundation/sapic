@@ -86,6 +86,10 @@ impl Account {
         self.host.clone()
     }
 
+    pub fn kind(&self) -> AccountKind {
+        self.kind.clone()
+    }
+
     pub fn info(&self) -> AccountInfo {
         AccountInfo {
             id: self.id.clone(),

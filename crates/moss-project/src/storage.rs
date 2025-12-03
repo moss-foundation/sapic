@@ -1,5 +1,7 @@
+use sapic_base::resource::types::primitives::ResourceId;
+
 use crate::models::primitives::{
-    FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceId, UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
 };
 
 pub const KEY_EXPANDED_ENTRIES: &'static str = "expandedEntries";

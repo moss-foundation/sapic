@@ -1,8 +1,10 @@
+use async_trait::async_trait;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use sapic_base::configuration::ConfigurationModel;
+use sapic_system::configuration::SettingsStore;
 use serde_json::{Map, Value as JsonValue};
 use std::{
     path::{Path, PathBuf},
@@ -10,14 +12,14 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-pub struct ConfigurationBackend {
+pub struct FsSettingsStorage {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     model: RwLock<ConfigurationModel>,
     edits: RwLock<JsonEdit>,
 }
 
-impl ConfigurationBackend {
+impl FsSettingsStorage {
     pub async fn new(fs: Arc<dyn FileSystem>, abs_path: PathBuf) -> joinerror::Result<Self> {
         let parsed = Self::load_internal(fs.as_ref(), &abs_path).await?;
 
@@ -32,15 +34,48 @@ impl ConfigurationBackend {
         })
     }
 
-    pub async fn values(&self) -> Map<String, JsonValue> {
+    async fn reload(&self) -> joinerror::Result<()> {
+        let parsed = Self::load_internal(self.fs.as_ref(), &self.abs_path).await?;
+        *self.model.write().await = ConfigurationModel {
+            keys: parsed.keys().map(|key| key.clone()).collect(),
+            contents: parsed,
+        };
+
+        Ok(())
+    }
+
+    async fn load_internal(
+        fs: &dyn FileSystem,
+        source: &Path,
+    ) -> joinerror::Result<Map<String, JsonValue>> {
+        if !source.exists() {
+            return Ok(Map::new());
+        }
+
+        let rdr = fs.open_file(&source).await.join_err_with::<()>(|| {
+            format!("failed to open profile settings file: {}", source.display())
+        })?;
+
+        Ok(serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!(
+                "failed to parse profile settings file: {}",
+                source.display()
+            )
+        })?)
+    }
+}
+
+#[async_trait]
+impl SettingsStore for FsSettingsStorage {
+    async fn values(&self) -> Map<String, JsonValue> {
         self.model.read().await.contents.clone()
     }
 
-    pub async fn get_value(&self, key: &str) -> Option<JsonValue> {
+    async fn get_value(&self, key: &str) -> Option<JsonValue> {
         self.model.read().await.contents.get(key).cloned()
     }
 
-    pub async fn update_value(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
+    async fn update_value(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
         if !self.abs_path.exists() {
             let parent = self.abs_path.parent().unwrap();
             self.fs.create_dir_all(parent).await?;
@@ -92,33 +127,7 @@ impl ConfigurationBackend {
         self.reload().await
     }
 
-    async fn reload(&self) -> joinerror::Result<()> {
-        let parsed = Self::load_internal(self.fs.as_ref(), &self.abs_path).await?;
-        *self.model.write().await = ConfigurationModel {
-            keys: parsed.keys().map(|key| key.clone()).collect(),
-            contents: parsed,
-        };
-
-        Ok(())
-    }
-
-    async fn load_internal(
-        fs: &dyn FileSystem,
-        source: &Path,
-    ) -> joinerror::Result<Map<String, JsonValue>> {
-        if !source.exists() {
-            return Ok(Map::new());
-        }
-
-        let rdr = fs.open_file(&source).await.join_err_with::<()>(|| {
-            format!("failed to open profile settings file: {}", source.display())
-        })?;
-
-        Ok(serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!(
-                "failed to parse profile settings file: {}",
-                source.display()
-            )
-        })?)
+    async fn remove_value(&self, _key: &str) -> joinerror::Result<Option<JsonValue>> {
+        unimplemented!()
     }
 }

@@ -33,6 +33,15 @@ impl From<SessionKind> for AccountAuthMethodKindForFrontend {
     }
 }
 
+impl From<AccountAuthMethodKindForFrontend> for SessionKind {
+    fn from(value: AccountAuthMethodKindForFrontend) -> Self {
+        match value {
+            AccountAuthMethodKindForFrontend::OAuth => SessionKind::OAuth,
+            AccountAuthMethodKindForFrontend::PAT => SessionKind::PAT,
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq, Clone, TS)]
 #[serde(rename = "AccountAuthMethodKind")]
 #[serde(rename_all = "UPPERCASE")]

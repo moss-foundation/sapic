@@ -2,6 +2,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_logging::session;
 use moss_storage2::models::primitives::StorageScope;
+use sapic_base::resource::types::primitives::ResourceId;
 use sapic_core::context::{AnyAsyncContext, Reason};
 use serde_json::Value as JsonValue;
 use std::{
@@ -17,7 +18,7 @@ use crate::{
     models::{
         events::StreamResourcesEvent,
         operations::{StreamResourcesInput, StreamResourcesOutput},
-        primitives::{FrontendResourcePath, ResourceId},
+        primitives::FrontendResourcePath,
     },
     project::OnDidChangeEvent,
     storage::{KEY_EXPANDED_ENTRIES, KEY_RESOURCE_PREFIX},
