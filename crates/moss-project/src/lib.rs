@@ -4,7 +4,6 @@ mod config;
 pub mod contribution;
 mod edit;
 pub mod git;
-mod manifest;
 pub mod models;
 pub mod project;
 pub mod registries;

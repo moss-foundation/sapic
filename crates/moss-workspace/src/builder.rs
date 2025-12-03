@@ -7,7 +7,7 @@ use moss_storage2::KvStorage;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     project::types::primitives::ProjectId,
-    workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
+    workspace::{manifest::WorkspaceManifest, types::primitives::WorkspaceId},
 };
 use sapic_core::{
     context::AnyAsyncContext,
@@ -102,7 +102,7 @@ impl WorkspaceBuilder {
 
         fs.create_file_with(
             &params.abs_path.join(MANIFEST_FILE_NAME),
-            serde_json::to_string(&ManifestFile { name: params.name })?.as_bytes(),
+            serde_json::to_string(&WorkspaceManifest { name: params.name })?.as_bytes(),
             CreateOptions::default(),
         )
         .await

@@ -1,5 +1,4 @@
-mod extension;
-mod profile;
+mod services;
 
 pub mod builder;
 pub mod command;
@@ -17,6 +16,7 @@ use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_runtime::user::User;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -40,7 +40,9 @@ use std::{
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
 
-use crate::{command::CommandCallback, extension::ExtensionService, windows::WindowManager};
+use crate::{
+    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
+};
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
@@ -88,6 +90,8 @@ pub struct App<R: AppRuntime> {
     pub(crate) gitlab_api_client: Arc<dyn GitLabApiClient>,
     pub(crate) github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
     pub(crate) gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
+
+    pub(crate) user: Arc<User>,
     pub(crate) commands: AppCommands<R::EventLoop>,
     pub(crate) services: AppServices,
     pub(crate) windows: WindowManager<R>,

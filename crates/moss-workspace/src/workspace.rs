@@ -9,7 +9,7 @@ use moss_project::Project;
 use sapic_base::{
     environment::types::primitives::EnvironmentId,
     project::types::primitives::ProjectId,
-    workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
+    workspace::{manifest::WorkspaceManifest, types::primitives::WorkspaceId},
 };
 use sapic_core::subscription::{Event, Subscription};
 use sapic_system::user::profile::Profile;
@@ -38,9 +38,10 @@ impl WorkspaceSummary {
             format!("failed to open manifest file: {}", manifest_path.display())
         })?;
 
-        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
-            format!("failed to parse manifest file: {}", manifest_path.display())
-        })?;
+        let manifest: WorkspaceManifest =
+            serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                format!("failed to parse manifest file: {}", manifest_path.display())
+            })?;
 
         Ok(WorkspaceSummary {
             name: manifest.name,

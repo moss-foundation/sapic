@@ -24,13 +24,18 @@ use moss_project::registries::{
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_app::{builder::AppBuilder, command::CommandDecl};
 use sapic_core::context::ArcContext;
+use sapic_platform::{
+    github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
+    gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
+    server::HttpServerApiClient,
+};
 use sapic_runtime::{
     app::{kv_storage::AppStorage, settings_storage::AppSettingsStorage},
     globals::{
         GlobalConfigurationRegistry, GlobalKvStorage, GlobalLanguagePackRegistry,
         GlobalSettingsStorage, GlobalThemeRegistry,
     },
-    user_settings::UserSettingsService,
+    user::User,
 };
 use sapic_system::{
     configuration::configuration_registry::AppConfigurationRegistry,
@@ -38,6 +43,7 @@ use sapic_system::{
         language_registry::AppLanguagePackRegistry,
         language_service::RegisterTranslationContribution,
     },
+    ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
     theme::theme_registry::AppThemeRegistry,
 };
 use serde_json::Value;
@@ -125,11 +131,38 @@ pub async fn run<R: TauriRuntime>() {
                 let http_header_registry =
                     AppHttpHeaderRegistry::new().expect("failed to build http header registry");
 
-                let user_settings = UserSettingsService::new(&delegate, fs.clone()).await?;
-                let settings_storage = AppSettingsStorage::new(
-                    configuration_registry.clone(),
-                    Arc::new(user_settings),
+                let server_api_client: Arc<HttpServerApiClient> =
+                    HttpServerApiClient::new(server_api_endpoint, http_client.clone()).into();
+
+                let github_api_client = Arc::new(AppGitHubApiClient::new(http_client.clone()));
+                let gitlab_api_client = Arc::new(AppGitLabApiClient::new(http_client.clone()));
+
+                let auth_gateway_url: Arc<String> = server_api_client.base_url().to_string().into();
+
+                let github_auth_adapter: Arc<dyn GitHubAuthAdapter> =
+                    Arc::new(AppGitHubAuthAdapter::new(
+                        server_api_client.clone(),
+                        auth_gateway_url.clone(),
+                        8080,
+                    ));
+                let gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter> = Arc::new(
+                    AppGitLabAuthAdapter::new(server_api_client.clone(), auth_gateway_url, 8081),
                 );
+
+                let user = User::new(
+                    delegate.user_dir(),
+                    fs.clone(),
+                    server_api_client.clone(),
+                    github_api_client.clone(),
+                    gitlab_api_client.clone(),
+                    github_auth_adapter.clone(),
+                    gitlab_auth_adapter.clone(),
+                    keyring.clone(),
+                )
+                .await?;
+
+                let settings_storage =
+                    AppSettingsStorage::new(configuration_registry.clone(), user.settings());
 
                 GlobalLanguagePackRegistry::set(&delegate, language_registry.clone());
                 GlobalThemeRegistry::set(&delegate, theme_registry.clone());
@@ -164,6 +197,7 @@ pub async fn run<R: TauriRuntime>() {
                         ArcContext::new_with_timeout(ctx_clone, Duration::from_secs(30));
 
                     let app = AppBuilder::<TauriAppRuntime<R>>::new(
+                        user,
                         fs,
                         keyring,
                         vec![
@@ -173,8 +207,11 @@ pub async fn run<R: TauriRuntime>() {
                             ResourceStatusesExtensionPoint::new(),
                             HttpHeadersExtensionPoint::new(),
                         ],
-                        server_api_endpoint,
-                        http_client,
+                        server_api_client,
+                        github_api_client,
+                        gitlab_api_client,
+                        github_auth_adapter,
+                        gitlab_auth_adapter,
                         kv_storage,
                         theme_registry,
                         language_registry,

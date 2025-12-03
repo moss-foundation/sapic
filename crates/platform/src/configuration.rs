@@ -10,14 +10,14 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-pub struct ConfigurationBackend {
+pub struct ConfigurationModelBackend {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     model: RwLock<ConfigurationModel>,
     edits: RwLock<JsonEdit>,
 }
 
-impl ConfigurationBackend {
+impl ConfigurationModelBackend {
     pub async fn new(fs: Arc<dyn FileSystem>, abs_path: PathBuf) -> joinerror::Result<Self> {
         let parsed = Self::load_internal(fs.as_ref(), &abs_path).await?;
 
