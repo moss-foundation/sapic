@@ -35,7 +35,7 @@ use sapic_runtime::{
         GlobalConfigurationRegistry, GlobalKvStorage, GlobalLanguagePackRegistry,
         GlobalSettingsStorage, GlobalThemeRegistry,
     },
-    user::User,
+    user::AppUser,
 };
 use sapic_system::{
     configuration::configuration_registry::AppConfigurationRegistry,
@@ -45,6 +45,7 @@ use sapic_system::{
     },
     ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
     theme::theme_registry::AppThemeRegistry,
+    user::User,
 };
 use serde_json::Value;
 use std::{sync::Arc, time::Duration};
@@ -149,7 +150,7 @@ pub async fn run<R: TauriRuntime>() {
                     AppGitLabAuthAdapter::new(server_api_client.clone(), auth_gateway_url, 8081),
                 );
 
-                let user = User::new(
+                let user = AppUser::new(
                     delegate.user_dir(),
                     fs.clone(),
                     server_api_client.clone(),

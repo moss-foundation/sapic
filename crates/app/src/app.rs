@@ -16,7 +16,6 @@ use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
-use sapic_runtime::user::User;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -27,6 +26,7 @@ use sapic_system::{
         server_api::ServerApiClient,
     },
     theme::theme_service::ThemeService,
+    user::User,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
@@ -91,7 +91,7 @@ pub struct App<R: AppRuntime> {
     pub(crate) github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
     pub(crate) gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
 
-    pub(crate) user: Arc<User>,
+    pub(crate) user: Arc<dyn User>,
     pub(crate) commands: AppCommands<R::EventLoop>,
     pub(crate) services: AppServices,
     pub(crate) windows: WindowManager<R>,
@@ -173,6 +173,7 @@ impl<R: AppRuntime> App<R> {
             self.services.workspace_edit_service.clone(),
         ));
         let old_window = OldSapicWindowBuilder::new(
+            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),
@@ -230,6 +231,7 @@ impl<R: AppRuntime> App<R> {
         ));
 
         let old_window = OldSapicWindowBuilder::new(
+            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),

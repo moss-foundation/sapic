@@ -9,6 +9,8 @@ use crate::user::types::{
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AccountsManifestItemMetadata {
     pub session_kind: SessionKind,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub expires_at: Option<DateTime<Utc>>,
 }
 

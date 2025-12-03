@@ -13,6 +13,7 @@ use sapic_system::{
         gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
         server_api::ServerApiClient,
     },
+    user::User,
     workspace::workspace_service::WorkspaceService,
 };
 use std::{path::PathBuf, sync::Arc};
@@ -29,6 +30,7 @@ use crate::{
 };
 
 pub struct OldSapicWindowBuilder {
+    user: Arc<dyn User>,
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
@@ -43,6 +45,7 @@ pub struct OldSapicWindowBuilder {
 
 impl OldSapicWindowBuilder {
     pub fn new(
+        user: Arc<dyn User>,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,
         keyring: Arc<dyn KeyringClient>,
@@ -55,6 +58,7 @@ impl OldSapicWindowBuilder {
         workspace_service: Arc<WorkspaceService>,
     ) -> Self {
         Self {
+            user,
             workspace_id,
             fs,
             storage,
@@ -115,6 +119,7 @@ impl OldSapicWindowBuilder {
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
+            self.user.clone(),
             &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.server_api_client.clone(),
@@ -169,6 +174,7 @@ impl OldSapicWindowBuilder {
 
         Ok(OldSapicWindow {
             app_handle: tao_handle.clone(),
+            user: self.user,
             session_service,
             log_service,
             workspace_service,

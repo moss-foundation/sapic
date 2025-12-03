@@ -10,7 +10,7 @@ use sapic_platform::{
         workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
     },
 };
-use sapic_runtime::{extension_point::ExtensionPoint, user::User};
+use sapic_runtime::extension_point::ExtensionPoint;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     language::{LanguagePackRegistry, language_service::LanguageService},
@@ -20,6 +20,7 @@ use sapic_system::{
         server_api::ServerApiClient,
     },
     theme::{ThemeRegistry, theme_service::ThemeService},
+    user::User,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
@@ -32,7 +33,7 @@ use crate::{
 };
 
 pub struct AppBuilder<R: AppRuntime> {
-    user: Arc<User>,
+    user: Arc<dyn User>,
     commands: AppCommands<R::EventLoop>,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
@@ -49,7 +50,7 @@ pub struct AppBuilder<R: AppRuntime> {
 
 impl<R: AppRuntime> AppBuilder<R> {
     pub fn new(
-        user: Arc<User>,
+        user: Arc<dyn User>,
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         extension_points: Vec<Box<dyn ExtensionPoint<R>>>,

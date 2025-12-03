@@ -26,6 +26,7 @@ use sapic_system::{
         },
     },
     user::{
+        User,
         account::{
             Account,
             github_session::{GitHubInitialToken, GitHubPAT},
@@ -66,6 +67,7 @@ struct ServiceCache {
 }
 
 pub(crate) struct ProfileService {
+    user: Arc<dyn User>,
     fs: Arc<dyn FileSystem>,
     server_api_client: Arc<dyn ServerApiClient>,
     github_api_client: Arc<dyn GitHubApiClient>,
@@ -79,6 +81,7 @@ pub(crate) struct ProfileService {
 
 impl ProfileService {
     pub async fn new(
+        user: Arc<dyn User>,
         dir_abs: &Path,
         fs: Arc<dyn FileSystem>,
         server_api_client: Arc<dyn ServerApiClient>,
@@ -103,6 +106,7 @@ impl ProfileService {
         };
 
         Ok(Self {
+            user,
             fs,
             server_api_client,
             github_api_client,

@@ -1,6 +1,7 @@
 use derive_more::Deref;
 use moss_applib::AppRuntime;
 use moss_workspace::Workspace;
+use sapic_system::user::User;
 use std::sync::Arc;
 use tauri::AppHandle;
 
@@ -18,6 +19,7 @@ pub struct OldSapicWindow<R: AppRuntime> {
     pub(super) workspace_service: OldWorkspaceService,
     // pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
+    pub(super) user: Arc<dyn User>,
     pub(super) profile_service: ProfileService,
     // pub(super) configuration_service: ConfigurationServiceOld,
     // #[allow(unused)]

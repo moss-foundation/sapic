@@ -1,7 +1,7 @@
 use joinerror::ResultExt;
 use moss_applib::AppRuntime;
 use sapic_ipc::contracts::user::AddUserAccountInput;
-use sapic_runtime::user::AddAccountParams;
+use sapic_system::user::AddAccountParams;
 
 use crate::App;
 

@@ -22,27 +22,20 @@ use sapic_system::{
             auth_gitlab_account_api::{GitLabRevokeApiReq, GitLabTokenRefreshApiReq},
         },
     },
-    user::account::{
-        Account,
-        github_session::{GitHubInitialToken, GitHubPAT},
-        gitlab_session::{GitLabInitialToken, GitLabPAT},
-        session::AccountSession,
+    user::{
+        AddAccountParams, UpdateAccountParams,
+        account::{
+            Account,
+            github_session::{GitHubInitialToken, GitHubPAT},
+            gitlab_session::{GitLabInitialToken, GitLabPAT},
+            session::AccountSession,
+        },
     },
 };
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
 
 const ACCOUNTS_FILE: &str = "accounts.json";
-
-pub struct AddAccountParams {
-    pub host: String,
-    pub kind: AccountKind,
-    pub pat: Option<String>,
-}
-
-pub struct UpdateAccountParams {
-    pub pat: Option<String>,
-}
 
 pub struct UserAccountsService {
     // Path to the user directory: .sapic/user/
@@ -141,7 +134,7 @@ impl UserAccountsService {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: AddAccountParams,
-    ) -> joinerror::Result<()> {
+    ) -> joinerror::Result<AccountId> {
         let account_id = AccountId::new();
         let (session, _, username, expires_at) = match params.kind {
             AccountKind::GitHub => {
@@ -275,7 +268,7 @@ impl UserAccountsService {
                 )
             })?;
 
-        Ok(())
+        Ok(account_id)
     }
 
     pub async fn update_account(
@@ -343,15 +336,7 @@ async fn load_or_init_accounts(
 ) -> joinerror::Result<HashMap<AccountId, Account>> {
     let accounts_path = abs_path.join(ACCOUNTS_FILE);
     if !accounts_path.exists() {
-        fs.create_file_with(
-            &accounts_path,
-            b"{}",
-            CreateOptions {
-                overwrite: true,
-                ignore_if_exists: false,
-            },
-        )
-        .await?;
+        return Ok(HashMap::new());
     }
 
     let rdr = fs.open_file(&accounts_path).await?;
