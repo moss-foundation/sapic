@@ -14,14 +14,13 @@ use moss_project::{
         ProjectImportArchiveParams, ProjectImportExternalParams, ProjectLoadParams,
     },
     git::GitClient,
-    models::primitives::ProjectId,
     vcs::VcsSummary,
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
-    language::i18n::NO_TRANSLATE_KEY, localize, user::types::primitives::AccountId,
-    workspace::types::primitives::WorkspaceId,
+    language::i18n::NO_TRANSLATE_KEY, localize, project::types::primitives::ProjectId,
+    user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{

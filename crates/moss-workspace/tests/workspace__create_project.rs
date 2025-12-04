@@ -4,13 +4,13 @@ pub mod shared;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 use moss_applib::mock::MockAppRuntime;
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::{fs_specific::FILENAME_SPECIAL_CHARS, random_name::random_project_name};
 use moss_workspace::{
     models::{operations::CreateProjectInput, types::CreateProjectParams},
     storage::{KEY_EXPANDED_ITEMS, key_project_order},
 };
+use sapic_base::project::types::primitives::ProjectId;
 use sapic_runtime::globals::GlobalKvStorage;
 use serde_json::Value as JsonValue;
 use std::{collections::HashSet, path::Path};

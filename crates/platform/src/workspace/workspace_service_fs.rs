@@ -7,7 +7,7 @@ use moss_storage2::KvStorage;
 use sapic_base::{
     environment::PredefinedEnvironment,
     errors::AlreadyExists,
-    workspace::{manifest::ManifestFile, types::primitives::WorkspaceId},
+    workspace::{manifest::WorkspaceManifest, types::primitives::WorkspaceId},
 };
 use sapic_system::workspace::{LookedUpWorkspace, WorkspaceServiceFs as WorkspaceServiceFsPort};
 use std::{cell::LazyCell, path::PathBuf, sync::Arc};
@@ -54,8 +54,8 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
                         format!("failed to open manifest file: {}", abs_path.display())
                     })?;
 
-                    let file: ManifestFile =
-                        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+                    let file: WorkspaceManifest = serde_json::from_reader(rdr)
+                        .join_err_with::<()>(|| {
                             format!("failed to parse manifest file: {}", abs_path.display())
                         })?;
 
@@ -121,7 +121,7 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
             .create_file_with_content_with_rollback(
                 &mut rb,
                 &abs_path.join(MANIFEST_FILE_NAME),
-                serde_json::to_string(&ManifestFile {
+                serde_json::to_string(&WorkspaceManifest {
                     name: name.to_string(),
                 })?
                 .as_bytes(),

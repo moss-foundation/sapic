@@ -1,6 +1,7 @@
 pub mod configuration;
 pub mod extension;
 pub mod language;
+pub mod project;
 pub mod server;
 pub mod theme;
 pub mod workspace;

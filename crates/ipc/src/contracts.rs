@@ -4,6 +4,7 @@ pub mod language;
 pub mod notification;
 pub mod other;
 pub mod theme;
+pub mod user;
 pub mod workspace;
 
 pub mod main;

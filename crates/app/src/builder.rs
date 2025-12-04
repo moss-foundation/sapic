@@ -5,7 +5,6 @@ use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use reqwest::Client as HttpClient;
 use sapic_platform::{
-    extension::unpacker::ExtensionUnpackerImpl,
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
     gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
     language::loader::LanguagePackLoader,
@@ -33,12 +32,14 @@ use crate::{
 };
 
 pub struct AppBuilder<R: AppRuntime> {
+    user: Arc<dyn User>,
     commands: AppCommands<R::EventLoop>,
     fs: Arc<dyn FileSystem>,
     keyring: Arc<dyn KeyringClient>,
     extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
-    server_api_endpoint: String,
-    http_client: HttpClient,
+    server_api_client: Arc<dyn ServerApiClient>,
+    github_api_client: Arc<dyn GitHubApiClient>,
+    gitlab_api_client: Arc<dyn GitLabApiClient>,
     storage: Arc<dyn KvStorage>,
     theme_registry: Arc<dyn ThemeRegistry>,
     language_registry: Arc<dyn LanguagePackRegistry>,
@@ -46,22 +47,26 @@ pub struct AppBuilder<R: AppRuntime> {
 
 impl<R: AppRuntime> AppBuilder<R> {
     pub fn new(
+        user: Arc<dyn User>,
         fs: Arc<dyn FileSystem>,
         keyring: Arc<dyn KeyringClient>,
         extension_points: Vec<Box<dyn ExtensionPoint<R>>>,
-        server_api_endpoint: String,
-        http_client: HttpClient,
+        server_api_client: Arc<dyn ServerApiClient>,
+        github_api_client: Arc<dyn GitHubApiClient>,
+        gitlab_api_client: Arc<dyn GitLabApiClient>,
         storage: Arc<dyn KvStorage>,
         theme_registry: Arc<dyn ThemeRegistry>,
         language_registry: Arc<dyn LanguagePackRegistry>,
     ) -> Self {
         Self {
+            user,
             commands: Default::default(),
             fs,
             keyring,
             extension_points,
-            server_api_endpoint,
-            http_client,
+            server_api_client,
+            github_api_client,
+            gitlab_api_client,
             storage,
             theme_registry,
             language_registry,
@@ -74,27 +79,6 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
-        let server_api_client: Arc<HttpServerApiClient> =
-            HttpServerApiClient::new(self.server_api_endpoint, self.http_client.clone()).into();
-
-        let github_api_client = Arc::new(AppGitHubApiClient::new(self.http_client.clone()));
-        let gitlab_api_client = Arc::new(AppGitLabApiClient::new(self.http_client.clone()));
-
-        let auth_gateway_url: Arc<String> = server_api_client.base_url().to_string().into();
-
-        let github_auth_adapter: Arc<dyn GitHubAuthAdapter> = Arc::new(AppGitHubAuthAdapter::new(
-            server_api_client.clone(),
-            auth_gateway_url.clone(),
-            8080,
-        ));
-        let gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter> = Arc::new(AppGitLabAuthAdapter::new(
-            server_api_client.clone(),
-            auth_gateway_url,
-            8081,
-        ));
-
-        let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
-
         let extension_service = ExtensionService::<R>::new(
             &delegate,
             self.fs.clone(),
@@ -131,7 +115,8 @@ impl<R: AppRuntime> AppBuilder<R> {
         .expect("Failed to create language service")
         .into();
 
-        let extension_api_service = ExtensionsApiService::new(server_api_client.clone()).into();
+        let extension_api_service =
+            ExtensionsApiService::new(self.server_api_client.clone()).into();
 
         let services = AppServices {
             workspace_service,
@@ -148,12 +133,11 @@ impl<R: AppRuntime> AppBuilder<R> {
             fs: self.fs,
             keyring: self.keyring,
             storage: self.storage,
-            server_api_client,
-            github_api_client,
-            gitlab_api_client,
-            github_auth_adapter,
-            gitlab_auth_adapter,
+            server_api_client: self.server_api_client,
+            github_api_client: self.github_api_client,
+            gitlab_api_client: self.gitlab_api_client,
             extension_service,
+            user: self.user,
             commands: self.commands,
             windows,
             services,

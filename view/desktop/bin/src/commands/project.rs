@@ -1,9 +1,6 @@
 use moss_applib::TauriAppRuntime;
-use moss_project::models::{
-    events::*,
-    operations::*,
-    primitives::{ProjectId, ResourceId},
-};
+use moss_project::models::{events::*, operations::*};
+use sapic_base::{project::types::primitives::ProjectId, resource::types::primitives::ResourceId};
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;

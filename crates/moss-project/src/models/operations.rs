@@ -1,10 +1,11 @@
+use sapic_base::resource::types::primitives::ResourceId;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
 use crate::models::{
-    primitives::{ResourceClass, ResourceId, ResourceKind, ResourceProtocol},
+    primitives::{ResourceClass, ResourceKind, ResourceProtocol},
     types::{
         AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription, BodyInfo,
         CreateDirResourceParams, CreateItemResourceParams, HeaderInfo, PathParamInfo,
