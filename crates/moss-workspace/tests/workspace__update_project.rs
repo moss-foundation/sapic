@@ -3,12 +3,12 @@ pub mod shared;
 
 use moss_applib::mock::MockAppRuntime;
 use moss_bindingutils::primitives::ChangePath;
-use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{CreateProjectInput, UpdateProjectInput},
     types::{CreateProjectParams, UpdateProjectParams},
 };
+use sapic_base::project::types::primitives::ProjectId;
 
 use crate::shared::{generate_random_icon, setup_test_workspace};
 

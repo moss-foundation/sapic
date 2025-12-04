@@ -1,16 +1,10 @@
 use serde::{Deserialize, Serialize};
 
-pub(crate) const MANIFEST_FILE_NAME: &str = "Sapic.json";
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(super) struct ManifestFile {
-    pub name: String,
-    pub vcs: Option<ManifestVcs>,
-}
+pub const MANIFEST_FILE_NAME: &str = "Sapic.json";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub(super) enum ManifestVcs {
+pub enum ManifestVcs {
     GitHub { repository: String },
     GitLab { repository: String },
 }
@@ -22,4 +16,10 @@ impl ManifestVcs {
             ManifestVcs::GitLab { repository, .. } => repository,
         }
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ProjectManifest {
+    pub name: String,
+    pub vcs: Option<ManifestVcs>,
 }

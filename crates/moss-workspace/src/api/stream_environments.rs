@@ -2,7 +2,7 @@ use futures::StreamExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_logging::session;
-use moss_project::models::primitives::ProjectId;
+use sapic_base::project::types::primitives::ProjectId;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{

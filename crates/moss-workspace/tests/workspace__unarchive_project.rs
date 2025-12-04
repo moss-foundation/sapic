@@ -1,12 +1,12 @@
 #![cfg(feature = "integration-tests")]
 
 use moss_applib::mock::MockAppRuntime;
-use moss_project::models::primitives::ProjectId;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::models::{
     operations::{ArchiveProjectInput, CreateProjectInput, UnarchiveProjectInput},
     types::CreateProjectParams,
 };
+use sapic_base::project::types::primitives::ProjectId;
 
 use crate::shared::{setup_test_workspace, test_stream_projects};
 

@@ -5,7 +5,6 @@ use image::{ImageBuffer, Rgb};
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::{random_string, random_workspace_name};
 use moss_workspace::{
@@ -19,7 +18,10 @@ use moss_workspace::{
 };
 use rand::Rng;
 use reqwest::ClientBuilder as HttpClientBuilder;
-use sapic_base::{user::types::primitives::ProfileId, workspace::types::primitives::WorkspaceId};
+use sapic_base::{
+    project::types::primitives::ProjectId, user::types::primitives::ProfileId,
+    workspace::types::primitives::WorkspaceId,
+};
 use sapic_core::context::{AsyncContext, MutableContext};
 use sapic_platform::{github::AppGitHubApiClient, gitlab::AppGitLabApiClient};
 use sapic_runtime::{

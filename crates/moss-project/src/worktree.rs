@@ -17,7 +17,11 @@ use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_text::sanitized::{desanitize, sanitize};
-use sapic_base::{language::i18n::NO_TRANSLATE_KEY, localize};
+
+use sapic_base::{
+    language::i18n::NO_TRANSLATE_KEY, localize, project::types::primitives::ProjectId,
+    resource::types::primitives::ResourceId,
+};
 use sapic_core::context::AnyAsyncContext;
 use serde_json::{Value as JsonValue, json};
 use std::{
@@ -39,8 +43,8 @@ use crate::{
     models::{
         operations::DescribeResourceOutput,
         primitives::{
-            FormDataParamId, HeaderId, PathParamId, ProjectId, QueryParamId, ResourceId,
-            ResourceKind, ResourceProtocol, UrlencodedParamId,
+            FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceKind, ResourceProtocol,
+            UrlencodedParamId,
         },
         types::{
             BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,

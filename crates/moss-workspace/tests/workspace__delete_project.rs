@@ -3,7 +3,6 @@ pub mod shared;
 
 use crate::shared::setup_test_workspace;
 use moss_applib::mock::MockAppRuntime;
-use moss_project::models::primitives::ProjectId;
 use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::random_name::random_project_name;
 use moss_workspace::{
@@ -13,6 +12,7 @@ use moss_workspace::{
     },
     storage::{KEY_EXPANDED_ITEMS, key_project},
 };
+use sapic_base::project::types::primitives::ProjectId;
 use sapic_runtime::globals::GlobalKvStorage;
 use std::collections::HashSet;
 use tauri::ipc::Channel;
