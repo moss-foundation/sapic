@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
+use nanoid::nanoid;
 use sapic_base::extension::types::{ExtensionInfo, ExtensionVersionInfo};
 use sapic_core::context::{self, AnyAsyncContext, ContextResultExt};
 use sapic_system::ports::server_api::ExtensionApiOperations;
@@ -90,14 +91,9 @@ impl ExtensionApiOperations for HttpServerApiClient {
                 return Err(joinerror::Error::new::<()>(error_text));
             }
 
-            // Find the archive file name indicated by the response
-            let content_disposition = file_resp
-                .headers()
-                .get(CONTENT_DISPOSITION)
-                .and_then(|v| v.to_str().ok())
-                .ok_or_join_err::<()>("failed to get extension name")?;
-
-            let archive_name = parse_archive_name_from_content_disposition(content_disposition)?;
+            // We will always get a .tar.gz file from the extension registry
+            // Generate a random archive file name
+            let archive_name = format!("{}.tar.gz", nanoid!(10));
 
             // Write the archive file to the provided folder
             let bytes = file_resp
@@ -114,16 +110,4 @@ impl ExtensionApiOperations for HttpServerApiClient {
         .join_err_bare()?;
         Ok((path, info))
     }
-}
-
-fn parse_archive_name_from_content_disposition(
-    content_disposition: &str,
-) -> joinerror::Result<String> {
-    // Content Disposition format:
-    // `attachment; filename="xxx.tar.gz"`
-    let parts = content_disposition.split("\"").collect::<Vec<_>>();
-    let file_name = parts
-        .get(1)
-        .ok_or_join_err::<()>("failed to get filename")?;
-    Ok(file_name.to_string())
 }

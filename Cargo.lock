@@ -5095,6 +5095,7 @@ dependencies = [
  "moss_git",
  "moss_storage2",
  "moss_text",
+ "nanoid",
  "oauth2",
  "regorus",
  "reqwest",

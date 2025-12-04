@@ -36,6 +36,7 @@ webbrowser = { workspace = true }
 jsonptr = { workspace = true }
 tar.workspace = true
 flate2.workspace = true
+nanoid.workspace = true
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]
