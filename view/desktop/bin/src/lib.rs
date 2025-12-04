@@ -138,6 +138,8 @@ pub async fn run<R: TauriRuntime>() {
                     delegate.globals_dir(),
                     delegate.workspaces_dir(),
                     delegate.user_extensions_dir(),
+                    // For storing user account info
+                    delegate.user_dir().join("user"),
                 ];
 
                 for folder in required_folders {
