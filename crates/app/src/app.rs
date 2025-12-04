@@ -1,5 +1,4 @@
-mod extension;
-mod profile;
+mod services;
 
 pub mod builder;
 pub mod command;
@@ -22,11 +21,10 @@ use sapic_system::{
     configuration::configuration_registry::RegisterConfigurationContribution,
     language::language_service::LanguageService,
     ports::{
-        github_api::{GitHubApiClient, GitHubAuthAdapter},
-        gitlab_api::{GitLabApiClient, GitLabAuthAdapter},
-        server_api::ServerApiClient,
+        github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
     },
     theme::theme_service::ThemeService,
+    user::User,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
@@ -40,7 +38,9 @@ use std::{
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
 
-use crate::{command::CommandCallback, extension::ExtensionService, windows::WindowManager};
+use crate::{
+    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
+};
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
@@ -86,8 +86,8 @@ pub struct App<R: AppRuntime> {
     pub(crate) server_api_client: Arc<dyn ServerApiClient>,
     pub(crate) github_api_client: Arc<dyn GitHubApiClient>,
     pub(crate) gitlab_api_client: Arc<dyn GitLabApiClient>,
-    pub(crate) github_auth_adapter: Arc<dyn GitHubAuthAdapter>,
-    pub(crate) gitlab_auth_adapter: Arc<dyn GitLabAuthAdapter>,
+
+    pub(crate) user: Arc<dyn User>,
     pub(crate) commands: AppCommands<R::EventLoop>,
     pub(crate) services: AppServices,
     pub(crate) windows: WindowManager<R>,
@@ -114,14 +114,12 @@ impl<R: AppRuntime> App<R> {
             if let Err(err) = welcome_window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
-
             return Ok(());
         } else {
             let workspace_ops = WelcomeWindowWorkspaceOps::new(
                 self.services.workspace_service.clone(),
                 self.services.workspace_edit_service.clone(),
             );
-
             let welcome_window = self
                 .windows
                 .create_welcome_window(delegate, workspace_ops)
@@ -169,14 +167,13 @@ impl<R: AppRuntime> App<R> {
             self.services.workspace_edit_service.clone(),
         ));
         let old_window = OldSapicWindowBuilder::new(
+            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),
             self.server_api_client.clone(),
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
-            self.github_auth_adapter.clone(),
-            self.gitlab_auth_adapter.clone(),
             workspace_id.clone(),
             self.services.workspace_service.clone(),
         )
@@ -226,14 +223,13 @@ impl<R: AppRuntime> App<R> {
         ));
 
         let old_window = OldSapicWindowBuilder::new(
+            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),
             self.server_api_client.clone(),
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
-            self.github_auth_adapter.clone(),
-            self.gitlab_auth_adapter.clone(),
             workspace_id.clone(),
             self.services.workspace_service.clone(),
         )

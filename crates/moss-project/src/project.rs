@@ -9,7 +9,13 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
 use moss_text::sanitized::sanitize;
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{
+    project::{
+        manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
+        types::primitives::ProjectId,
+    },
+    user::types::primitives::AccountId,
+};
 use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
@@ -30,8 +36,6 @@ use crate::{
     dirs,
     edit::ProjectEdit,
     git::GitClient,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    models::primitives::ProjectId,
     set_icon::SetIconService,
     vcs::{ProjectVcs, Vcs},
     worktree::Worktree,
@@ -261,7 +265,7 @@ impl Project {
                 .join_err_with::<()>(|| {
                     format!("failed to open manifest file: {}", manifest_path.display())
                 })?;
-            let manifest: ManifestFile =
+            let manifest: ProjectManifest =
                 serde_json::from_reader(rdr).join_err_with::<()>(|| {
                     format!("failed to parse manifest file: {}", manifest_path.display())
                 })?;
@@ -291,7 +295,7 @@ impl Project {
             .join_err_with::<()>(|| {
                 format!("failed to open manifest file: {}", manifest_path.display())
             })?;
-        let manifest: ManifestFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let manifest: ProjectManifest = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse manifest file: {}", manifest_path.display())
         })?;
 

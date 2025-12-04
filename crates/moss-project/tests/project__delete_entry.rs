@@ -2,11 +2,8 @@
 pub mod shared;
 
 use moss_applib::mock::MockAppRuntime;
-use moss_project::{
-    dirs,
-    errors::ErrorNotFound,
-    models::{operations::DeleteResourceInput, primitives::ResourceId},
-};
+use moss_project::{dirs, errors::ErrorNotFound, models::operations::DeleteResourceInput};
+use sapic_base::resource::types::primitives::ResourceId;
 use std::path::PathBuf;
 
 use crate::shared::{

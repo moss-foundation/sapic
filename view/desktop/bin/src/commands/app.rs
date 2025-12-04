@@ -2,7 +2,9 @@ use joinerror::Error;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
 use sapic_base::errors::NotFound;
-use sapic_ipc::contracts::{configuration::*, extension::*, language::*, theme::*, workspace::*};
+use sapic_ipc::contracts::{
+    configuration::*, extension::*, language::*, theme::*, user::*, workspace::*,
+};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use tauri::Window as TauriWindow;
@@ -133,10 +135,10 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, app_delegate| async move {
-            let output = app.delete_workspace(&ctx, &input).await?;
-
+            // We need to open welcome window first, otherwise the app will close
+            // This is in line with `commands::main__close_workspace`
             app.ensure_welcome(&app_delegate).await?;
-
+            let output = app.delete_workspace(&ctx, &input).await?;
             Ok(output)
         },
     )
@@ -176,6 +178,81 @@ pub async fn get_translation_namespace<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, _| async move { app.get_translation_namespace(&ctx, &input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn list_user_accounts<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> joinerror::Result<ListUserAccountsOutput> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.list_user_accounts(&ctx).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn add_user_account<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: AddUserAccountInput,
+    options: Options,
+) -> joinerror::Result<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.add_user_account(&ctx, &input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn update_user_account<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: UpdateUserAccountInput,
+    options: Options,
+) -> joinerror::Result<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.update_user_account(&ctx, &input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn remove_user_account<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: RemoveUserAccountInput,
+    options: Options,
+) -> joinerror::Result<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move { app.remove_user_account(&ctx, &input).await },
     )
     .await
 }

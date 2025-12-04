@@ -3,7 +3,13 @@ use moss_fs::{CreateOptions, FileSystem, FsResultExt};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use moss_storage2::KvStorage;
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{
+    project::{
+        manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
+        types::primitives::ProjectId,
+    },
+    user::types::primitives::AccountId,
+};
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::ports::GitProviderKind;
 use std::{
@@ -20,8 +26,6 @@ use crate::{
     edit::ProjectEdit,
     errors::ErrorIo,
     git::GitClient,
-    manifest::{MANIFEST_FILE_NAME, ManifestFile, ManifestVcs},
-    models::primitives::ProjectId,
     set_icon::SetIconService,
     vcs::Vcs,
     worktree::Worktree,
@@ -248,7 +252,7 @@ impl ProjectBuilder {
         self.fs
             .create_file_with(
                 &abs_path.join(MANIFEST_FILE_NAME),
-                serde_json::to_string(&ManifestFile {
+                serde_json::to_string(&ProjectManifest {
                     name: params
                         .name
                         .unwrap_or(defaults::DEFAULT_PROJECT_NAME.to_string()),

@@ -1,8 +1,9 @@
+use sapic_base::resource::types::primitives::ResourceId;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::models::{
-    primitives::{FrontendResourcePath, ResourceClass, ResourceId, ResourceKind, ResourceProtocol},
+    primitives::{FrontendResourcePath, ResourceClass, ResourceKind, ResourceProtocol},
     types::{AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription},
 };
 
