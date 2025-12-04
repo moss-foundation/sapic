@@ -228,7 +228,15 @@ mod tests {
 
     #[test]
     fn it_works() {
-        let input = "{{test0}}://api-{{env}}.sapic.dev/path/:test1/api/users?limit=10&sort=prefix-{{test2}}#";
+        let input = "{{test0}}://api-{{env}}.sapic.dev/path/:test1/api/users?limit=10&sort=prefix-{{test2}}#fragment";
+
+        let result = UrlParser::parse_url(input).unwrap();
+        dbg!(&result);
+    }
+
+    #[test]
+    fn non_ascii() {
+        let input = "https://二.{{三}}/:四/query?key=五";
 
         let result = UrlParser::parse_url(input).unwrap();
         dbg!(&result);

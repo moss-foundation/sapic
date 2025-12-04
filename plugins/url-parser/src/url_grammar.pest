@@ -1,5 +1,6 @@
 // A simplified version of RFC-3986
-unreserved = {ASCII_ALPHANUMERIC | "-" | "." | "_" | "~" }
+// Support unicode characters in non-scheme parts
+unreserved = {LETTER | NUMBER | MARK | SYMBOL | SEPARATOR | "-" | "." | "_" | "~" }
 sub_delims = { "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" }
 
 // Technically, the specification allows colon to be used in path part
@@ -8,7 +9,7 @@ sub_delims = { "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" }
 p_char = {unreserved | sub_delims | "%" | "@"}
 
 
-ident = @{ (ASCII_ALPHANUMERIC | "_" )+ }
+ident = @{ (LETTER | NUMBER | "_" )+ }
 var = { "{{" ~ ident ~ "}}" }
 path_var = { ":" ~ ident }
 
@@ -22,6 +23,7 @@ url = {
     EOI
 }
 
+// I think it makes sense to only allow ascii characters in scheme
 scheme_part = { (var | scheme_literal)+ ~ "://" }
 scheme_literal = @{
     ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
