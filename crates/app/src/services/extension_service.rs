@@ -22,6 +22,7 @@ pub struct ExtensionService<R: AppRuntime> {
     points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>>,
     fs: Arc<dyn FileSystem>,
     user_extensions_path: PathBuf,
+    download_path: PathBuf,
     extension_unpacker: Arc<dyn ExtensionUnpacker>,
 }
 
@@ -30,14 +31,12 @@ impl<R: AppRuntime> ExtensionService<R> {
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
         points: Vec<Box<dyn ExtensionPoint<R>>>,
+        user_extensions_path: PathBuf,
+        download_path: PathBuf,
         extension_unpacker: Arc<dyn ExtensionUnpacker>,
     ) -> joinerror::Result<Self> {
         let points: FxHashMap<&'static str, Box<dyn ExtensionPoint<R>>> =
             points.into_iter().map(|p| (p.key().as_str(), p)).collect();
-
-        let user_extensions_path = app_delegate.user_dir().join("extensions");
-        let download_path = user_extensions_path.join("download");
-        fs.create_dir_all(&download_path).await?;
 
         let scanner = ExtensionScanner::new(
             fs.clone(),
@@ -104,6 +103,7 @@ impl<R: AppRuntime> ExtensionService<R> {
             points,
             scanner,
             user_extensions_path,
+            download_path,
             extension_unpacker,
         })
     }
@@ -116,12 +116,7 @@ impl<R: AppRuntime> ExtensionService<R> {
         api: Arc<ExtensionsApiService>,
     ) -> joinerror::Result<String> {
         let (archive_path, info) = api
-            .download_extension(
-                ctx,
-                extension_id,
-                version,
-                &self.user_extensions_path.join("download"),
-            )
+            .download_extension(ctx, extension_id, version, &self.download_path)
             .await?;
 
         let extension_folder_name = format!("{}@{}", info.id, info.version);

@@ -44,16 +44,6 @@ impl ExtensionUnpacker for ExtensionUnpackerImpl {
             let mut archive = Archive::new(gz_decoder);
             archive.unpack(destination_path)?;
             drop(archive);
-
-            self.fs
-                .remove_file(
-                    &archive_path,
-                    RemoveOptions {
-                        recursive: false,
-                        ignore_if_not_exists: false,
-                    },
-                )
-                .await?;
         } else {
             // We only use .tar.gz for extension archive file for now
             unimplemented!()
