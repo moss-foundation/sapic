@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use joinerror::{OptionExt, ResultExt};
+use joinerror::ResultExt;
 use nanoid::nanoid;
 use sapic_base::extension::types::{ExtensionInfo, ExtensionVersionInfo};
 use sapic_core::context::{self, AnyAsyncContext, ContextResultExt};
@@ -11,7 +11,6 @@ use crate::server::types::ExtensionVersionInfoResponse;
 use super::{HttpServerApiClient, types::ListExtensionsResponse};
 
 const EXTENSIONS_REGISTRY_BASE_SEGMENT: &str = "extension-registry";
-const CONTENT_DISPOSITION: &str = "Content-Disposition";
 
 #[async_trait]
 impl ExtensionApiOperations for HttpServerApiClient {
