@@ -65,8 +65,8 @@ impl<R: AppRuntime> AppDelegate<R> {
         self.user_dir().join("extensions")
     }
 
-    #[cfg(debug_assertions)]
-    #[cfg(feature = "integration-tests")]
+    #[cfg(not(debug_assertions))]
+    #[cfg(not(feature = "integration-tests"))]
     pub fn user_extensions_dir(&self) -> PathBuf {
         self.user_dir().join("extensions")
     }
