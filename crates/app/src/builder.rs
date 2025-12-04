@@ -3,12 +3,9 @@ use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
-use reqwest::Client as HttpClient;
 use sapic_platform::{
-    github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
-    gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
+    extension::unpacker::ExtensionUnpackerImpl,
     language::loader::LanguagePackLoader,
-    server::HttpServerApiClient,
     theme::loader::ColorThemeLoader,
     workspace::{
         workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
@@ -18,8 +15,11 @@ use sapic_runtime::extension_point::ExtensionPoint;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     language::{LanguagePackRegistry, language_service::LanguageService},
-    ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
+    ports::{
+        github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
+    },
     theme::{ThemeRegistry, theme_service::ThemeService},
+    user::User,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
@@ -27,8 +27,8 @@ use sapic_system::{
 use std::sync::Arc;
 
 use crate::{
-    App, AppCommands, AppServices, command::CommandDecl, extension::ExtensionService,
-    windows::WindowManager,
+    App, AppCommands, AppServices, command::CommandDecl,
+    services::extension_service::ExtensionService, windows::WindowManager,
 };
 
 pub struct AppBuilder<R: AppRuntime> {
@@ -79,6 +79,7 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
+        let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
         let extension_service = ExtensionService::<R>::new(
             &delegate,
             self.fs.clone(),

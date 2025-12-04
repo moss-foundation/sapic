@@ -2,10 +2,22 @@ use joinerror::Error;
 use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
 use sapic_base::errors::NotFound;
-use sapic_ipc::contracts::{configuration::*, extension::*, language::*, theme::*, workspace::*};
+use sapic_ipc::contracts::{
+    configuration::*,
+    extension::*,
+    language::*,
+    theme::*,
+    user::{
+        AddUserAccountInput, ListUserAccountsOutput, RemoveUserAccountInput, UpdateUserAccountInput,
+    },
+    workspace::*,
+};
+use sapic_window::{
+    constants::ON_DID_ADD_EXTENSION_CHANNEL, models::events::OnDidAddExtensionForFrontend,
+};
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
-use tauri::Window as TauriWindow;
+use std::{collections::HashMap, io::ErrorKind};
+use tauri::{Emitter, Window as TauriWindow};
 
 use crate::commands::primitives::*;
 
