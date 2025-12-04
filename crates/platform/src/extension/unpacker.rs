@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use flate2::bufread::GzDecoder;
 use joinerror::OptionExt;
-use moss_fs::{FileSystem, RemoveOptions};
+use moss_fs::FileSystem;
 use std::{fs::File, io::BufReader, path::Path, sync::Arc};
 use tar::Archive;
 
@@ -11,12 +11,12 @@ pub trait ExtensionUnpacker: Send + Sync {
 }
 
 pub struct ExtensionUnpackerImpl {
-    fs: Arc<dyn FileSystem>,
+    _fs: Arc<dyn FileSystem>,
 }
 
 impl ExtensionUnpackerImpl {
     pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
+        Self { _fs: fs }
     }
 }
 
