@@ -25,6 +25,11 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
+export const downloadExtensionInputSchema = z.object({
+  extension_id: z.string(),
+  version: z.string(),
+});
+
 export const getColorThemeOutputSchema = z.object({
   cssContent: z.string(),
 });

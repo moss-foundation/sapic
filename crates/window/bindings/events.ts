@@ -5,6 +5,11 @@ import type { LogLevel } from "./primitives";
 /**
  * @category Event
  */
+export type OnDidAddExtension = { id: string };
+
+/**
+ * @category Event
+ */
 export type OnDidAppendLogEntry = {
   id: string;
   /**

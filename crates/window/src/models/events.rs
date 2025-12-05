@@ -23,3 +23,11 @@ pub struct OnDidAppendLogEntryForFrontend {
     #[serde(flatten)]
     pub inner: LogEntryInfo,
 }
+
+/// @category Event
+#[derive(Debug, Serialize, Clone, TS)]
+#[serde(rename = "OnDidAddExtension")]
+#[ts(export, export_to = "events.ts")]
+pub struct OnDidAddExtensionForFrontend {
+    pub id: String,
+}
