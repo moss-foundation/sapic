@@ -132,6 +132,25 @@ impl<R: AppRuntime> App<R> {
         }
     }
 
+    // FIXME: Not sure if onboarding should use the same approach as welcome
+    // Since it's likely only be executed once
+    // But I'll keep the same approach for now
+    pub async fn ensure_onboarding(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
+        let maybe_onboarding_window = self.windows.onboarding_window().await;
+        if let Some(onboarding_window) = maybe_onboarding_window {
+            if let Err(err) = onboarding_window.set_focus() {
+                tracing::warn!("Failed to set focus to onboarding window: {}", err);
+            }
+            return Ok(());
+        } else {
+            let onboarding_window = self.windows.create_onboarding_window(delegate).await?;
+            if let Err(err) = onboarding_window.set_focus() {
+                tracing::warn!("Failed to set focus to onboarding window: {}", err);
+            }
+            return Ok(());
+        }
+    }
+
     pub async fn ensure_main_for_workspace(
         &self,
         ctx: &R::AsyncContext,

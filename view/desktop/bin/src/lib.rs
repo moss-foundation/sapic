@@ -360,12 +360,11 @@ pub async fn run<R: TauriRuntime>() {
                             .clone();
 
                         if is_onboarding_clone.load(Ordering::SeqCst) {
-                            println!("Is onboarding");
-                            // TODO: Onboarding flow
+                            app.ensure_onboarding(&app_delegate).await.unwrap();
                         } else {
+                            app.ensure_welcome(&app_delegate).await.unwrap();
                             println!("Not onboarding");
                         }
-                        app.ensure_welcome(&app_delegate).await.unwrap();
                     });
                 }
 

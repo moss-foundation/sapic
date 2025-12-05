@@ -12,6 +12,7 @@ members = [
     #
     "crates/app",
     "crates/window",
+    "crates/onboarding",
     "crates/welcome",
     "crates/main",
     "crates/system",
@@ -71,6 +72,7 @@ static_json = { path = "libs/static-json" }
 #
 sapic-app = { path = "crates/app", package = "app" }
 sapic-system = { path = "crates/system", package = "system" }
+sapic-onboarding = { path = "crates/onboarding", package = "onboarding" }
 sapic-welcome = { path = "crates/welcome", package = "welcome" }
 sapic-runtime = { path = "crates/runtime", package = "runtime" }
 sapic-main = { path = "crates/main", package = "main" }
