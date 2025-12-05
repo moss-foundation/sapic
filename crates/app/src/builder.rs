@@ -4,6 +4,7 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use sapic_platform::{
+    extension::unpacker::ExtensionUnpackerImpl,
     language::loader::LanguagePackLoader,
     theme::loader::ColorThemeLoader,
     workspace::{
@@ -78,10 +79,17 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
-        let extension_service =
-            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
-                .await
-                .expect("Failed to create extension service");
+        let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
+        let extension_service = ExtensionService::<R>::new(
+            &delegate,
+            self.fs.clone(),
+            self.extension_points,
+            delegate.user_dir().join("extensions"),
+            delegate.tmp_dir(),
+            Arc::new(extension_unpacker),
+        )
+        .await
+        .expect("Failed to create extension service");
 
         let workspace_edit_backend =
             WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());

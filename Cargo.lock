@@ -2019,6 +2019,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "filetime"
+version = "0.2.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bc0505cd1b6fa6580283f6bdf70a73fcf4aba1184038c90902b92b3dd0df63ed"
+dependencies = [
+ "cfg-if",
+ "libc",
+ "libredox",
+ "windows-sys 0.60.2",
+]
+
+[[package]]
 name = "find-msvc-tools"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5070,6 +5082,7 @@ dependencies = [
  "chrono",
  "core",
  "derive_more 2.0.1",
+ "flate2",
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",
@@ -5082,12 +5095,14 @@ dependencies = [
  "moss_git",
  "moss_storage2",
  "moss_text",
+ "nanoid",
  "oauth2",
  "regorus",
  "reqwest",
  "serde",
  "serde_json",
  "system",
+ "tar",
  "tokio",
  "tracing",
  "ts-rs",
@@ -7015,6 +7030,16 @@ name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55937e1799185b12863d447f42597ed69d9928686b8d88a1df17376a097d8369"
+
+[[package]]
+name = "tar"
+version = "0.4.44"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d863878d212c87a19c1a610eb53bb01fe12951c0501cf5a0d65f724914a667a"
+dependencies = [
+ "filetime",
+ "libc",
+]
 
 [[package]]
 name = "target-lexicon"

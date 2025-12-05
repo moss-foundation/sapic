@@ -3,6 +3,10 @@
 import { jsonValueSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
 import { logLevelSchema } from "./primitives.zod";
+
+export const onDidAddExtensionSchema = z.object({
+  id: z.string(),
+});
 export const onDidAppendLogEntrySchema = z.object({
   id: z.string(),
   timestamp: z.string(),

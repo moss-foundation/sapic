@@ -241,6 +241,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_color_themes,
             commands::list_languages,
             commands::list_extensions,
+            commands::download_extension,
             commands::get_translation_namespace,
             commands::list_workspaces,
             commands::delete_workspace,
