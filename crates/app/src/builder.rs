@@ -84,7 +84,7 @@ impl<R: AppRuntime> AppBuilder<R> {
             &delegate,
             self.fs.clone(),
             self.extension_points,
-            delegate.user_dir().join("extensions"),
+            delegate.user_extensions_dir(),
             delegate.tmp_dir(),
             Arc::new(extension_unpacker),
         )

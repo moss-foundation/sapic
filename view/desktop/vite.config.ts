@@ -17,6 +17,7 @@ export default defineConfig({
       "@/assets": resolve(__dirname, "src/assets"),
       "@/workbench": resolve(__dirname, "src/workbench"),
       "@/welcome": resolve(__dirname, "src/welcome"),
+      "@/onboarding": resolve(__dirname, "src/onboarding"),
     },
   },
   build: {
@@ -24,6 +25,7 @@ export default defineConfig({
       input: {
         welcome: resolve(__dirname, "welcome.html"),
         workspace: resolve(__dirname, "workspace.html"),
+        onboarding: resolve(__dirname, "onboarding.html"),
       },
     },
     // don't minify for debug builds

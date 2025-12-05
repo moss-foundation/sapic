@@ -14,6 +14,7 @@ sapic-core = { workspace = true }
 sapic-runtime = { workspace = true }
 sapic-platform = { workspace = true }
 sapic-system = { workspace = true }
+sapic-onboarding = { workspace = true }
 sapic-welcome = { workspace = true }
 sapic-main = { workspace = true }
 sapic-window2 = { workspace = true, features = ["external"] }
