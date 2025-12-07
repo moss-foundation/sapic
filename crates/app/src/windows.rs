@@ -140,7 +140,7 @@ impl<R: AppRuntime> WindowManager<R> {
         if let Some(window) = window {
             // If a window was found for this label, it must be a onboarding window, if not,
             // then it's a bug in the code.
-            debug_assert!(window.as_welcome().is_some());
+            debug_assert!(window.as_onboarding().is_some());
 
             window.as_onboarding().cloned()
         } else {
