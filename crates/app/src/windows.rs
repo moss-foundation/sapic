@@ -14,12 +14,9 @@ use sapic_welcome::{
 use sapic_window::OldSapicWindow;
 use sapic_window2::AppWindowApi;
 use serde_json::Value as JsonValue;
-use std::{
-    fmt::Debug,
-    sync::{
-        Arc,
-        atomic::{AtomicUsize, Ordering},
-    },
+use std::sync::{
+    Arc,
+    atomic::{AtomicUsize, Ordering},
 };
 use tokio::sync::RwLock;
 

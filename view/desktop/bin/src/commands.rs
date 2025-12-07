@@ -1,5 +1,6 @@
 mod app;
 mod main;
+mod onboarding;
 mod project;
 mod welcome;
 mod window;
@@ -21,6 +22,7 @@ use sapic_base::{errors::NotFound, project::types::primitives::ProjectId};
 use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::constants::DEFAULT_OPERATION_TIMEOUT;
 use sapic_main::MainWindow;
+use sapic_onboarding::OnboardingWindow;
 use sapic_runtime::errors::{FailedPrecondition, Unavailable};
 use sapic_welcome::WelcomeWindow;
 use sapic_window2::AppWindowApi;
@@ -122,6 +124,57 @@ where
         .welcome_window()
         .await
         .ok_or_join_err_with::<Unavailable>(|| format!("welcome window is unavailable"))?;
+
+    if let Some(request_id) = &request_id {
+        window
+            .track_cancellation(request_id, ctx.get_canceller())
+            .await;
+    }
+
+    let delegate = app.handle().state::<AppDelegate<R>>().inner().clone();
+    let result = f(ctx, app.inner().clone(), delegate, window.clone()).await;
+
+    if let Some(request_id) = &request_id {
+        window.release_cancellation(request_id).await;
+    }
+
+    result.map_err(|e| e.into())
+}
+
+pub(super) async fn with_onboarding_window_timeout<'a, R, T, F, Fut>(
+    ctx: &R::AsyncContext,
+    app: State<'_, Arc<sapic_app::App<R>>>,
+    _window: TauriWindow<R::EventLoop>,
+    options: Options,
+    f: F,
+) -> joinerror::Result<T>
+where
+    R: AppRuntime<AsyncContext = ArcContext>,
+    F: FnOnce(R::AsyncContext, Arc<sapic_app::App<R>>, AppDelegate<R>, OnboardingWindow<R>) -> Fut
+        + Send
+        + 'static,
+    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
+{
+    let timeout = options
+        .as_ref()
+        .and_then(|opts| opts.timeout.map(Duration::from_secs))
+        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
+
+    let request_id = options.and_then(|opts| opts.request_id);
+    let mut builder = ContextBuilder::new()
+        .with_parent(ctx.clone())
+        .with_timeout(timeout);
+
+    if let Some(ref request_id) = request_id {
+        builder = builder.with_value("request_id", request_id.clone());
+    }
+
+    let ctx = builder.freeze();
+
+    let window = app
+        .onboarding_window()
+        .await
+        .ok_or_join_err_with::<Unavailable>(|| format!("onboarding window is unavailable"))?;
 
     if let Some(request_id) = &request_id {
         window
