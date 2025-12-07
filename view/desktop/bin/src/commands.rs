@@ -8,6 +8,7 @@ mod workspace;
 
 pub use app::*;
 pub use main::*;
+pub use onboarding::*;
 pub use project::*;
 pub use welcome::*;
 pub use window::*;

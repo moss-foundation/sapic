@@ -274,6 +274,10 @@ pub async fn run<R: TauriRuntime>() {
             commands::main__open_workspace,
             commands::main__close_workspace,
             //
+            // Onboarding
+            //
+            commands::onboarding__complete_onboarding,
+            //
             // Welcome
             //
             commands::welcome__cancel_request,

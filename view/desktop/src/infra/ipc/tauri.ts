@@ -40,6 +40,10 @@ export type TauriIpcCommand =
   | "main__open_workspace"
   | "main__create_workspace"
   //
+  // Onboarding
+  //
+  | "onboarding__complete_onboarding"
+  //
   // Welcome
   //
   | "welcome__cancel_request"
