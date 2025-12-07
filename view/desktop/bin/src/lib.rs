@@ -131,21 +131,6 @@ pub async fn run<R: TauriRuntime>() {
                     tokio::fs::create_dir_all(&delegate.user_dir()).await?;
                 }
 
-                // Ensure all the required folders exist
-                let required_folders = vec![
-                    delegate.tmp_dir(),
-                    delegate.logs_dir(),
-                    delegate.globals_dir(),
-                    delegate.workspaces_dir(),
-                    delegate.user_extensions_dir(),
-                    // For storing user account info
-                    delegate.user_dir().join("user"),
-                ];
-
-                for folder in required_folders {
-                    tokio::fs::create_dir_all(&folder).await?;
-                }
-
                 let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
 
                 let kv_storage =
