@@ -22,7 +22,6 @@ pub struct OnboardingWindow<R: AppRuntime> {
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
-    // TODO: What workspace operations should it support?
 }
 
 impl<R: AppRuntime> Clone for OnboardingWindow<R> {
