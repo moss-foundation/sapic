@@ -13,23 +13,32 @@ sapic-base = { workspace = true }
 sapic-system = { workspace = true }
 sapic-window2 = { workspace = true }
 sapic-ipc = { workspace = true }
-sapic-window = { workspace = true }
+sapic-runtime = { workspace = true, optional = true }
+sapic-platform = { workspace = true, optional = true }
 
 moss_app_delegate = { workspace = true }
 moss_applib = { workspace = true }
 moss_fs = { workspace = true }
-moss_storage2 = { workspace = true }
 moss_workspace = { workspace = true }
-
+moss_testutils = { workspace = true, optional = true }
 joinerror = { workspace = true }
-serde_json = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
 tokio = { workspace = true }
-rustc-hash = { workspace = true }
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
 async-trait = { workspace = true }
 validator = { workspace = true }
+reqwest = { workspace = true, optional = true }
+dotenvy = { workspace = true, optional = true }
 
 [features]
-integration-tests = []
+integration-tests = [
+  "moss_app_delegate/integration-tests",
+  "moss_applib/test",
+  "moss_testutils",
+  "sapic-runtime/integration-tests",
+  "sapic-platform",
+  "sapic-system/integration-tests",
+  "reqwest",
+  "dotenvy",
+  "tauri/test",
+]

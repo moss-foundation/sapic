@@ -2,6 +2,7 @@ pub mod types;
 pub mod workspace_edit_service;
 pub mod workspace_service;
 
+use crate::workspace::types::WorkspaceItem;
 use async_trait::async_trait;
 use moss_storage2::KvStorage;
 use sapic_base::workspace::types::primitives::WorkspaceId;
@@ -50,4 +51,10 @@ pub struct CreatedWorkspace {
 #[async_trait]
 pub trait WorkspaceCreateOp: Send + Sync {
     async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace>;
+}
+
+#[cfg(feature = "integration-tests")]
+#[async_trait]
+pub trait WorkspaceListOp: Send + Sync {
+    async fn list(&self) -> joinerror::Result<Vec<WorkspaceItem>>;
 }

@@ -7,7 +7,7 @@ use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::workspace::{
-    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceListOp, WorkspaceServiceFs, types::WorkspaceItem,
 };
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
@@ -101,5 +101,13 @@ impl WorkspaceCreateOp for WorkspaceService {
             .await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })
+    }
+}
+
+#[cfg(feature = "integration-tests")]
+#[async_trait]
+impl WorkspaceListOp for WorkspaceService {
+    async fn list(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+        self.workspaces().await
     }
 }
