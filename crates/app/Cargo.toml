@@ -31,6 +31,7 @@ moss_text = { workspace = true }
 moss_workspace = { workspace = true }
 moss_common = { workspace = true }
 moss_storage2 = { workspace = true }
+moss_testutils = { workspace = true, optional = true }
 
 tauri = { workspace = true }
 tokio = { workspace = true }
@@ -50,4 +51,10 @@ chrono = { workspace = true }
 [dev-dependencies]
 
 [features]
-integration-tests = []
+integration-tests = [
+  "moss_testutils",
+  "moss_applib/test",
+  "moss_app_delegate/integration-tests",
+  "sapic-runtime/integration-tests",
+  "tauri/test",
+]

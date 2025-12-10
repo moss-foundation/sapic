@@ -88,6 +88,9 @@
       <sourceFolder url="file://$MODULE_DIR$/crates/core/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/onboarding/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/welcome/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/app/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/platform/tests" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/crates/system/tests" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-edit/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/crates/moss-workspacelib/src" isTestSource="false" />

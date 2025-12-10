@@ -304,3 +304,21 @@ impl<R: AppRuntime> App<R> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
 }
+
+// For testing delete/list workspace in integration tests
+#[cfg(feature = "integration-tests")]
+pub mod tests {
+    use sapic_system::workspace::WorkspaceCreateOp;
+
+    use super::*;
+    impl<R: AppRuntime> App<R> {
+        pub async fn create_workspace(&self, name: &str) -> joinerror::Result<WorkspaceId> {
+            let result = self
+                .services
+                .workspace_service
+                .create(name.to_string())
+                .await?;
+            Ok(result.id)
+        }
+    }
+}

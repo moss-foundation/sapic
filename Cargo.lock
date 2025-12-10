@@ -165,6 +165,7 @@ dependencies = [
  "moss_fs",
  "moss_keyring",
  "moss_storage2",
+ "moss_testutils",
  "moss_text",
  "moss_workspace",
  "onboarding",
