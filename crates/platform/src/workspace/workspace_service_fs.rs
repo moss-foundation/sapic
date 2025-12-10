@@ -157,159 +157,22 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
 #[cfg(test)]
 mod tests {
     use moss_fs::RealFileSystem;
-    use moss_storage2::{
-        FlushMode, KvStorage, KvStorageCapabilities, SubstoreManager,
-        models::primitives::StorageScope,
-    };
+    use moss_storage2::KvStorage;
     use moss_testutils::random_name::random_string;
     use sapic_base::workspace::types::primitives::WorkspaceId;
-    use serde_json::Value as JsonValue;
-    use std::{path::PathBuf, sync::Arc, time::Instant};
+
+    use std::{path::PathBuf, sync::Arc};
+
+    use crate::workspace::tests::MockStorage;
 
     use super::*;
 
-    // WorkspaceServiceFs also handles environment storage, which we don't need to test here
-    // FIXME: Maybe environment and storage logic should be stripped from this
-    struct MockStorage {}
-
-    impl MockStorage {
-        fn new() -> Arc<Self> {
-            Arc::new(Self {})
-        }
-    }
-
-    struct MockCapabilities {}
-
-    impl MockCapabilities {
-        fn new() -> Arc<Self> {
-            Arc::new(Self {})
-        }
-    }
-
-    #[async_trait]
-    impl KvStorageCapabilities for MockCapabilities {
-        async fn last_checkpoint(&self) -> Option<Instant> {
-            None
-        }
-
-        async fn flush(&self, _mode: FlushMode) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn optimize(&self) -> joinerror::Result<()> {
-            Ok(())
-        }
-    }
-
-    #[async_trait]
-    impl SubstoreManager for MockStorage {
-        async fn add_workspace(&self, _workspace_id: Arc<String>) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn remove_workspace(&self, _workspace_id: Arc<String>) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn add_project(
-            &self,
-            _workspace_id: Arc<String>,
-            _project_id: Arc<String>,
-        ) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn remove_project(
-            &self,
-            _workspace_id: Arc<String>,
-            _project_id: Arc<String>,
-        ) -> joinerror::Result<()> {
-            Ok(())
-        }
-    }
-
-    #[async_trait]
-    impl KvStorage for MockStorage {
-        async fn put(
-            &self,
-            _scope: StorageScope,
-            _key: &str,
-            _value: JsonValue,
-        ) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn get(
-            &self,
-            _scope: StorageScope,
-            _key: &str,
-        ) -> joinerror::Result<Option<JsonValue>> {
-            Ok(None)
-        }
-
-        async fn remove(
-            &self,
-            _scope: StorageScope,
-            _key: &str,
-        ) -> joinerror::Result<Option<JsonValue>> {
-            Ok(None)
-        }
-
-        async fn put_batch(
-            &self,
-            _scope: StorageScope,
-            _items: &[(&str, JsonValue)],
-        ) -> joinerror::Result<()> {
-            Ok(())
-        }
-
-        async fn get_batch(
-            &self,
-            _scope: StorageScope,
-            _keys: &[&str],
-        ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
-            Ok(vec![])
-        }
-
-        async fn remove_batch(
-            &self,
-            _scope: StorageScope,
-            _keys: &[&str],
-        ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
-            Ok(vec![])
-        }
-
-        async fn get_batch_by_prefix(
-            &self,
-            _scope: StorageScope,
-            _prefix: &str,
-        ) -> joinerror::Result<Vec<(String, JsonValue)>> {
-            Ok(vec![])
-        }
-
-        async fn remove_batch_by_prefix(
-            &self,
-            _scope: StorageScope,
-            _prefix: &str,
-        ) -> joinerror::Result<Vec<(String, JsonValue)>> {
-            Ok(vec![])
-        }
-
-        async fn capabilities(self: Arc<Self>) -> Arc<dyn KvStorageCapabilities> {
-            MockCapabilities::new()
-        }
-    }
-
-    fn test_path() -> PathBuf {
-        PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
-            .join("tests")
-            .join("data")
-            .join(random_string(10))
-    }
-
     async fn setup_test_workspace_service_fs()
     -> (Arc<WorkspaceServiceFs>, Arc<dyn KvStorage>, PathBuf) {
-        let test_path = test_path();
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
         let tmp_path = test_path.join("tmp");
         let workspaces_dir = tmp_path.join("workspaces");
 
@@ -317,10 +180,10 @@ mod tests {
         tokio::fs::create_dir_all(&workspaces_dir).await.unwrap();
 
         let fs = Arc::new(RealFileSystem::new(&tmp_path));
-        let service_fs = WorkspaceServiceFs::new(fs, workspaces_dir);
+        let workspace_fs = WorkspaceServiceFs::new(fs, workspaces_dir);
         let storage = MockStorage::new();
 
-        (service_fs, storage, test_path)
+        (workspace_fs, storage, test_path)
     }
 
     #[tokio::test]
