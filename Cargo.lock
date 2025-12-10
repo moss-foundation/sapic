@@ -5094,6 +5094,7 @@ dependencies = [
  "moss_fs",
  "moss_git",
  "moss_storage2",
+ "moss_testutils",
  "moss_text",
  "nanoid",
  "oauth2",

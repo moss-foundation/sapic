@@ -6,8 +6,10 @@ use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
+#[cfg(feature = "integration-tests")]
+use crate::workspace::WorkspaceListOp;
 use crate::workspace::{
-    CreatedWorkspace, WorkspaceCreateOp, WorkspaceListOp, WorkspaceServiceFs, types::WorkspaceItem,
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
 };
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
