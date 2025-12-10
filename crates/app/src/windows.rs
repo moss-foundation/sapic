@@ -7,6 +7,7 @@ use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::Canceller;
 use sapic_main::{MainWindow, workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_onboarding::{ONBOARDING_WINDOW_LABEL, OnboardingWindow};
 use sapic_welcome::{
     WELCOME_WINDOW_LABEL, WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps,
 };
@@ -29,6 +30,7 @@ pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {
 pub(crate) type WindowLabel = String;
 
 pub(crate) enum AppWindow<R: AppRuntime> {
+    Onboarding(OnboardingWindow<R>),
     Welcome(WelcomeWindow<R>),
     Main(MainWindow<R>),
 }
@@ -37,6 +39,7 @@ pub(crate) enum AppWindow<R: AppRuntime> {
 impl<R: AppRuntime> AppWindowApi for AppWindow<R> {
     async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
         match self {
+            AppWindow::Onboarding(window) => window.track_cancellation(request_id, canceller).await,
             AppWindow::Welcome(window) => window.track_cancellation(request_id, canceller).await,
             AppWindow::Main(window) => window.track_cancellation(request_id, canceller).await,
         }
@@ -44,6 +47,7 @@ impl<R: AppRuntime> AppWindowApi for AppWindow<R> {
 
     async fn release_cancellation(&self, request_id: &str) -> () {
         match self {
+            AppWindow::Onboarding(window) => window.release_cancellation(request_id).await,
             AppWindow::Welcome(window) => window.release_cancellation(request_id).await,
             AppWindow::Main(window) => window.release_cancellation(request_id).await,
         }
@@ -53,6 +57,7 @@ impl<R: AppRuntime> AppWindowApi for AppWindow<R> {
 impl<R: AppRuntime> Clone for AppWindow<R> {
     fn clone(&self) -> Self {
         match self {
+            AppWindow::Onboarding(window) => AppWindow::Onboarding(window.clone()),
             AppWindow::Welcome(window) => AppWindow::Welcome(window.clone()),
             AppWindow::Main(window) => AppWindow::Main(window.clone()),
         }
@@ -60,6 +65,12 @@ impl<R: AppRuntime> Clone for AppWindow<R> {
 }
 
 impl<R: AppRuntime> AppWindow<R> {
+    fn as_onboarding(&self) -> Option<&OnboardingWindow<R>> {
+        match self {
+            AppWindow::Onboarding(window) => Some(window),
+            _ => None,
+        }
+    }
     fn as_welcome(&self) -> Option<&WelcomeWindow<R>> {
         match self {
             AppWindow::Welcome(window) => Some(window),
@@ -114,6 +125,57 @@ impl<R: AppRuntime> WindowManager<R> {
         }
 
         None
+    }
+
+    pub async fn onboarding_window(&self) -> Option<OnboardingWindow<R>> {
+        let window = self
+            .windows
+            .read()
+            .await
+            .get(ONBOARDING_WINDOW_LABEL)
+            .cloned();
+        if let Some(window) = window {
+            // If a window was found for this label, it must be a onboarding window, if not,
+            // then it's a bug in the code.
+            debug_assert!(window.as_onboarding().is_some());
+
+            window.as_onboarding().cloned()
+        } else {
+            None
+        }
+    }
+
+    pub async fn create_onboarding_window(
+        &self,
+        delegate: &AppDelegate<R>,
+    ) -> joinerror::Result<OnboardingWindow<R>> {
+        if let Some(window) = self.onboarding_window().await {
+            return Ok(window);
+        }
+
+        let window = OnboardingWindow::new(delegate).await?;
+        self.windows.write().await.insert(
+            ONBOARDING_WINDOW_LABEL.to_string(),
+            AppWindow::Onboarding(window.clone()),
+        );
+
+        Ok(window)
+    }
+
+    pub async fn close_onboarding_window(&self) -> joinerror::Result<()> {
+        let window = if let Some(window) = self.onboarding_window().await {
+            window
+        } else {
+            return Ok(());
+        };
+
+        window
+            .close()
+            .join_err::<()>("failed to close onboarding window")?;
+
+        self.windows.write().await.remove(ONBOARDING_WINDOW_LABEL);
+
+        Ok(())
     }
 
     pub async fn welcome_window(&self) -> Option<WelcomeWindow<R>> {

@@ -167,6 +167,7 @@ dependencies = [
  "moss_storage2",
  "moss_text",
  "moss_workspace",
+ "onboarding",
  "platform",
  "reqwest",
  "runtime",
@@ -1650,6 +1651,7 @@ dependencies = [
  "moss_text",
  "moss_workspace",
  "objc",
+ "onboarding",
  "platform",
  "rand 0.9.2",
  "reqwest",
@@ -4677,6 +4679,21 @@ dependencies = [
  "hashbrown 0.15.5",
  "indexmap 2.12.0",
  "memchr",
+]
+
+[[package]]
+name = "onboarding"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "core",
+ "derive_more 2.0.1",
+ "joinerror",
+ "moss_app_delegate",
+ "moss_applib",
+ "tauri",
+ "tokio",
+ "window2",
 ]
 
 [[package]]
