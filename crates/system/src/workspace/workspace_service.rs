@@ -34,8 +34,7 @@ impl WorkspaceService {
 
     pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
         // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
-        let deleted_path = self.fs.delete_workspace(id).await?;
-
+        // Remove storage entry first since files might not have been properly deleted yet
         if let Err(e) = self
             .storage
             .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
@@ -47,6 +46,8 @@ impl WorkspaceService {
                 e.to_string()
             );
         }
+
+        let deleted_path = self.fs.delete_workspace(id).await?;
 
         Ok(deleted_path)
     }

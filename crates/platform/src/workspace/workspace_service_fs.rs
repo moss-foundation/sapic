@@ -76,6 +76,9 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
         Ok(workspaces)
     }
 
+    // FIXME: This is still not correctly deleting all the files when a workspace is open
+    // The database files and the folders will not be removed
+    // It doesn't crash the app but still something we need to solve
     async fn create_workspace(
         &self,
         id: &WorkspaceId,
