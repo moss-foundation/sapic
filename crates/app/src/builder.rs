@@ -79,12 +79,26 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
+        // Ensure all the required folders exist
+        let required_folders = vec![
+            delegate.tmp_dir(),
+            delegate.logs_dir(),
+            delegate.globals_dir(),
+            delegate.workspaces_dir(),
+            delegate.user_extensions_dir(),
+            // For storing user account info
+            delegate.user_dir().join("user"),
+        ];
+
+        for folder in required_folders {
+            let _ = tokio::fs::create_dir_all(&folder).await;
+        }
         let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
         let extension_service = ExtensionService::<R>::new(
             &delegate,
             self.fs.clone(),
             self.extension_points,
-            delegate.user_dir().join("extensions"),
+            delegate.user_extensions_dir(),
             delegate.tmp_dir(),
             Arc::new(extension_unpacker),
         )

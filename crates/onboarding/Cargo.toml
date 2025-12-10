@@ -1,0 +1,21 @@
+[package]
+name = "onboarding"
+version = "0.1.0"
+edition = "2024"
+description = "Onboarding window controller for the application"
+
+[lib]
+path = "src/window.rs"
+
+[dependencies]
+sapic-core = { workspace = true }
+sapic-window2 = { workspace = true }
+
+moss_app_delegate = { workspace = true }
+moss_applib = { workspace = true }
+
+joinerror = { workspace = true }
+tokio = { workspace = true }
+derive_more = { workspace = true, features = ["deref"] }
+tauri = { workspace = true }
+async-trait = { workspace = true }
