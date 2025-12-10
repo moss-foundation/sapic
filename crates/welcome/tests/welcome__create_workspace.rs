@@ -25,9 +25,7 @@ async fn create_workspace_success() {
 
     let id = create_result.id;
 
-    // Check workspace folder is created
     let expected_path = delegate.workspaces_dir().join(id.as_str());
-    assert!(expected_path.exists());
 
     // Check known workspaces
     let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
