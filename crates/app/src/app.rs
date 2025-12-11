@@ -71,18 +71,11 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 
 // We have to make this public so that it can be accessed in integration-tests
 pub struct AppServices {
-    pub(crate) workspace_service: Arc<WorkspaceService>,
-    pub(crate) workspace_edit_service: Arc<WorkspaceEditService>,
-    pub(crate) theme_service: Arc<ThemeService>,
-    pub(crate) language_service: Arc<LanguageService>,
-    pub(crate) extension_api_service: Arc<ExtensionsApiService>,
-}
-
-#[cfg(feature = "integration-tests")]
-impl AppServices {
-    pub fn workspace_service(&self) -> Arc<WorkspaceService> {
-        self.workspace_service.clone()
-    }
+    pub workspace_service: Arc<WorkspaceService>,
+    pub workspace_edit_service: Arc<WorkspaceEditService>,
+    pub theme_service: Arc<ThemeService>,
+    pub language_service: Arc<LanguageService>,
+    pub extension_api_service: Arc<ExtensionsApiService>,
 }
 
 #[derive(Deref)]

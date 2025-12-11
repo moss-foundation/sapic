@@ -16,7 +16,7 @@ async fn test_delete_workspace_success() {
 
     let result = app
         .services()
-        .workspace_service()
+        .workspace_service
         .create(name.clone())
         .await
         .unwrap();
