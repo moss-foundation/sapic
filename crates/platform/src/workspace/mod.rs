@@ -17,6 +17,8 @@ pub(crate) mod tests {
 
     pub(crate) struct MockStorage {}
 
+    // HACK: Temporary solution until we remove environment logic from workspace fs:
+    // crates/platform/src/workspace/workspace_service_fs.rs: 88
     impl MockStorage {
         pub(crate) fn new() -> Arc<Self> {
             Arc::new(Self {})
