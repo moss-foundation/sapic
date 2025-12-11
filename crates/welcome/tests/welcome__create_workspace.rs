@@ -9,7 +9,7 @@ mod shared;
 
 #[tokio::test]
 async fn create_workspace_success() {
-    let (welcome_window, delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, delegate, services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = random_workspace_name();
 
@@ -28,7 +28,7 @@ async fn create_workspace_success() {
     let expected_path = delegate.workspaces_dir().join(id.as_str());
 
     // Check known workspaces
-    let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
 
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].name.as_str(), workspace_name);
@@ -41,7 +41,7 @@ async fn create_workspace_success() {
 
 #[tokio::test]
 async fn create_workspace_empty_name() {
-    let (welcome_window, _delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, _delegate, services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = "";
     let create_result = welcome_window
@@ -56,7 +56,7 @@ async fn create_workspace_empty_name() {
     assert!(create_result.is_err());
 
     // Check no workspace was created
-    let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
     assert_eq!(list_workspaces.len(), 0);
 
     cleanup().await;
@@ -64,7 +64,7 @@ async fn create_workspace_empty_name() {
 
 #[tokio::test]
 async fn create_workspace_same_name() {
-    let (welcome_window, _delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, _delegate, services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = random_workspace_name();
 
@@ -94,7 +94,7 @@ async fn create_workspace_same_name() {
 
     assert_ne!(first_id, second_id);
 
-    let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
     assert_eq!(list_workspaces.len(), 2);
 
     cleanup().await;

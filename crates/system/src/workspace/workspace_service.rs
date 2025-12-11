@@ -6,8 +6,6 @@ use sapic_base::workspace::types::primitives::WorkspaceId;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 
-#[cfg(feature = "integration-tests")]
-use crate::workspace::WorkspaceListOp;
 use crate::workspace::{
     CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
 };
@@ -104,13 +102,5 @@ impl WorkspaceCreateOp for WorkspaceService {
             .await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })
-    }
-}
-
-#[cfg(feature = "integration-tests")]
-#[async_trait]
-impl WorkspaceListOp for WorkspaceService {
-    async fn list(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
-        self.workspaces().await
     }
 }

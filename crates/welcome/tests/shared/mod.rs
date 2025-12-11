@@ -16,6 +16,10 @@ use welcome::{WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
+pub struct WelcomeWindowServices {
+    pub workspace_service: Arc<WorkspaceService>,
+}
+
 pub fn random_test_dir_path() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join("tests")
@@ -25,6 +29,7 @@ pub fn random_test_dir_path() -> PathBuf {
 pub async fn set_up_test_welcome_window() -> (
     WelcomeWindow<MockAppRuntime>,
     AppDelegate<MockAppRuntime>,
+    WelcomeWindowServices,
     ArcContext,
     CleanupFn,
 ) {
@@ -68,14 +73,12 @@ pub async fn set_up_test_welcome_window() -> (
 
     let welcome_window = WelcomeWindow::new(
         &delegate,
-        WelcomeWindowWorkspaceOps::new(
-            workspace_service.clone(),
-            workspace_edit_service,
-            workspace_service,
-        ),
+        WelcomeWindowWorkspaceOps::new(workspace_service.clone(), workspace_edit_service),
     )
     .await
     .unwrap();
+
+    let services = WelcomeWindowServices { workspace_service };
 
     let storage_clone = storage.clone();
     let cleanup_fn = Box::new({
@@ -91,5 +94,5 @@ pub async fn set_up_test_welcome_window() -> (
         }
     });
 
-    (welcome_window, delegate, ctx, cleanup_fn)
+    (welcome_window, delegate, services, ctx, cleanup_fn)
 }

@@ -7,9 +7,6 @@ use moss_storage2::KvStorage;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use std::{path::PathBuf, sync::Arc};
 
-#[cfg(feature = "integration-tests")]
-use crate::workspace::types::WorkspaceItem;
-
 pub struct LookedUpWorkspace {
     pub id: WorkspaceId,
     pub name: String,
@@ -53,10 +50,4 @@ pub struct CreatedWorkspace {
 #[async_trait]
 pub trait WorkspaceCreateOp: Send + Sync {
     async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace>;
-}
-
-#[cfg(feature = "integration-tests")]
-#[async_trait]
-pub trait WorkspaceListOp: Send + Sync {
-    async fn list(&self) -> joinerror::Result<Vec<WorkspaceItem>>;
 }

@@ -9,7 +9,7 @@ pub mod shared;
 
 #[tokio::test]
 async fn rename_workspace_success() {
-    let (welcome_window, _delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, _delegate, services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = random_workspace_name();
     let new_workspace_name = random_workspace_name();
@@ -37,7 +37,7 @@ async fn rename_workspace_success() {
         .unwrap();
 
     // Verify the workspace was renamed
-    let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].name, new_workspace_name);
@@ -47,7 +47,7 @@ async fn rename_workspace_success() {
 
 #[tokio::test]
 async fn rename_workspace_empty_name() {
-    let (welcome_window, _delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, _delegate, _services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = random_workspace_name();
     let new_workspace_name = "".to_string();
@@ -80,7 +80,7 @@ async fn rename_workspace_empty_name() {
 
 #[tokio::test]
 async fn rename_workspace_same_name() {
-    let (welcome_window, _delegate, ctx, cleanup) = set_up_test_welcome_window().await;
+    let (welcome_window, _delegate, services, ctx, cleanup) = set_up_test_welcome_window().await;
 
     let workspace_name = random_workspace_name();
     let new_workspace_name = workspace_name.clone();
@@ -108,7 +108,7 @@ async fn rename_workspace_same_name() {
         .unwrap();
 
     // Verify the workspace has the same name
-    let list_workspaces = welcome_window.list_workspaces(&ctx).await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].name, new_workspace_name);

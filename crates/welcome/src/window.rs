@@ -14,9 +14,6 @@ use sapic_window2::{
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-#[cfg(feature = "integration-tests")]
-use sapic_system::workspace::types::WorkspaceItem;
-
 use crate::workspace_ops::WelcomeWindowWorkspaceOps;
 
 pub const WELCOME_WINDOW_LABEL: &str = "welcome";
@@ -101,15 +98,5 @@ impl<R: AppRuntime> AppWindowApi for WelcomeWindow<R> {
         let mut write = self.tracked_cancellations.write().await;
 
         write.remove(request_id);
-    }
-}
-
-#[cfg(feature = "integration-tests")]
-impl<R: AppRuntime> WelcomeWindow<R> {
-    pub async fn list_workspaces(
-        &self,
-        _ctx: &R::AsyncContext,
-    ) -> joinerror::Result<Vec<WorkspaceItem>> {
-        self.workspace_ops.list_workspaces().await
     }
 }
