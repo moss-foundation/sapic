@@ -1,6 +1,5 @@
 #![cfg(feature = "integration-tests")]
 
-use moss_applib::AppRuntime;
 use moss_testutils::random_name::random_workspace_name;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_ipc::contracts::workspace::DeleteWorkspaceInput;

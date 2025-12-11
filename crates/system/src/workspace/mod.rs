@@ -2,11 +2,13 @@ pub mod types;
 pub mod workspace_edit_service;
 pub mod workspace_service;
 
-use crate::workspace::types::WorkspaceItem;
 use async_trait::async_trait;
 use moss_storage2::KvStorage;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use std::{path::PathBuf, sync::Arc};
+
+#[cfg(feature = "integration-tests")]
+use crate::workspace::types::WorkspaceItem;
 
 pub struct LookedUpWorkspace {
     pub id: WorkspaceId,

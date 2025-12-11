@@ -1,11 +1,11 @@
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_system::workspace::{
-    CreatedWorkspace, WorkspaceCreateOp, WorkspaceEditOp, WorkspaceEditParams, types::WorkspaceItem,
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceEditOp, WorkspaceEditParams,
 };
 use std::sync::Arc;
 
 #[cfg(feature = "integration-tests")]
-use sapic_system::workspace::WorkspaceListOp;
+use sapic_system::workspace::{WorkspaceListOp, types::WorkspaceItem};
 
 #[derive(Clone)]
 pub struct WelcomeWindowWorkspaceOps {

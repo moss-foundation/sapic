@@ -5,9 +5,7 @@ use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, TauriResultExt};
-use moss_workspace::Workspace;
 use sapic_core::context::Canceller;
-use sapic_system::workspace::types::WorkspaceItem;
 use sapic_window2::{
     AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
@@ -15,6 +13,9 @@ use sapic_window2::{
 };
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
+
+#[cfg(feature = "integration-tests")]
+use sapic_system::workspace::types::WorkspaceItem;
 
 use crate::workspace_ops::WelcomeWindowWorkspaceOps;
 
