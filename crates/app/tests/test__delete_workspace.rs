@@ -46,3 +46,22 @@ async fn test_delete_workspace_non_existent() {
 
     cleanup().await;
 }
+
+// FIXME: This test doesn't work until we address the issue with database file lock
+// The functionality works on the frontend, just that not all files are properly cleaned up
+// #[tokio::test]
+// async fn test_delete_workspace_opened_in_main_window() {
+//     let (app, delegate, ctx, cleanup) = setup_test_app().await;
+//
+//     let name = random_workspace_name();
+//     let id = app.create_workspace(&name).await.unwrap();
+//
+//     app.ensure_main_for_workspace(&ctx, &delegate, id.clone())
+//         .await
+//         .unwrap();
+//
+//     // Try deleting a workspace when there's a main window associated with it
+//
+//     app.delete_workspace(&ctx, &DeleteWorkspaceInput { id }).await.unwrap();
+//
+// }
