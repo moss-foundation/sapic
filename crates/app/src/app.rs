@@ -69,12 +69,20 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-pub(crate) struct AppServices {
+// We have to make this public so that it can be accessed in integration-tests
+pub struct AppServices {
     pub(crate) workspace_service: Arc<WorkspaceService>,
     pub(crate) workspace_edit_service: Arc<WorkspaceEditService>,
     pub(crate) theme_service: Arc<ThemeService>,
     pub(crate) language_service: Arc<LanguageService>,
     pub(crate) extension_api_service: Arc<ExtensionsApiService>,
+}
+
+#[cfg(feature = "integration-tests")]
+impl AppServices {
+    pub fn workspace_service(&self) -> Arc<WorkspaceService> {
+        self.workspace_service.clone()
+    }
 }
 
 #[derive(Deref)]
@@ -303,22 +311,9 @@ impl<R: AppRuntime> App<R> {
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
     }
-}
 
-// For testing delete/list workspace in integration tests
-#[cfg(feature = "integration-tests")]
-pub mod tests {
-    use sapic_system::workspace::WorkspaceCreateOp;
-
-    use super::*;
-    impl<R: AppRuntime> App<R> {
-        pub async fn create_workspace(&self, name: &str) -> joinerror::Result<WorkspaceId> {
-            let result = self
-                .services
-                .workspace_service
-                .create(name.to_string())
-                .await?;
-            Ok(result.id)
-        }
+    #[cfg(feature = "integration-tests")]
+    pub fn services(&self) -> &AppServices {
+        &self.services
     }
 }
