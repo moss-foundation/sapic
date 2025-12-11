@@ -54,6 +54,8 @@ export const NewWorkspaceModal = ({
       const createWorkspaceOutput = await createWelcomeWorkspace({ name: name.trim() });
       await openWelcomeWorkspace({ id: createWorkspaceOutput.id });
     } else {
+      // FIXME: This might not be correct, as `createWorkspace` will already open a new workspace main window
+      // Therefore no longer needing to call `openWorkspace` again
       const createWorkspaceOutput = await createWorkspace({
         name: name.trim(),
         openOnCreation: effectiveOpenInNewWindow ? OpenInTargetEnum.NEW_WINDOW : OpenInTargetEnum.CURRENT_WINDOW,

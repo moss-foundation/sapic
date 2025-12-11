@@ -12,6 +12,7 @@ members = [
     #
     "crates/app",
     "crates/window",
+    "crates/onboarding",
     "crates/welcome",
     "crates/main",
     "crates/system",
@@ -72,6 +73,7 @@ static_json = { path = "libs/static-json" }
 #
 sapic-app = { path = "crates/app", package = "app" }
 sapic-system = { path = "crates/system", package = "system" }
+sapic-onboarding = { path = "crates/onboarding", package = "onboarding" }
 sapic-welcome = { path = "crates/welcome", package = "welcome" }
 sapic-runtime = { path = "crates/runtime", package = "runtime" }
 sapic-main = { path = "crates/main", package = "main" }
@@ -178,6 +180,8 @@ inventory = "0.3.21"
 arc-swap = "1.7.1"
 pest = "2.8.3"
 pest_derive = "2.8.3"
+tar = {version = "0.4.44", default-features = false}
+flate2 = {version = "1.1.5", default-features = false}
 
 
 [profile.release]

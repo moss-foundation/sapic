@@ -48,7 +48,13 @@ use sapic_system::{
     user::User,
 };
 use serde_json::Value;
-use std::{sync::Arc, time::Duration};
+use std::{
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+    time::Duration,
+};
 #[cfg(not(debug_assertions))]
 use tauri::path::BaseDirectory;
 use tauri::{Emitter, Manager, RunEvent, Runtime as TauriRuntime, WindowEvent};
@@ -100,8 +106,11 @@ pub async fn run<R: TauriRuntime>() {
         builder = builder.plugin(mac_window::init());
     }
 
+    let is_onboarding = Arc::new(AtomicBool::new(false));
+    let is_onboarding_clone = is_onboarding.clone();
+
     builder
-        .setup(|tao| {
+        .setup(move |tao| {
             futures::executor::block_on(async {
                 let ctx = ArcContext::background();
 
@@ -117,6 +126,12 @@ pub async fn run<R: TauriRuntime>() {
                 let tao_app_handle = tao.app_handle();
 
                 let delegate = AppDelegate::<TauriAppRuntime<R>>::new(tao_app_handle.clone());
+                // Check if user_dir exists, if not, toggle the onboarding flag
+                if !delegate.user_dir().exists() {
+                    is_onboarding.store(true, Ordering::SeqCst);
+                    tokio::fs::create_dir_all(&delegate.user_dir()).await?;
+                }
+
                 let fs = Arc::new(RealFileSystem::new(&delegate.tmp_dir()));
 
                 let kv_storage =
@@ -242,6 +257,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::list_color_themes,
             commands::list_languages,
             commands::list_extensions,
+            commands::download_extension,
             commands::get_translation_namespace,
             commands::list_workspaces,
             commands::delete_workspace,
@@ -258,6 +274,10 @@ pub async fn run<R: TauriRuntime>() {
             commands::main__create_workspace,
             commands::main__open_workspace,
             commands::main__close_workspace,
+            //
+            // Onboarding
+            //
+            commands::onboarding__complete_onboarding,
             //
             // Welcome
             //
@@ -318,21 +338,29 @@ pub async fn run<R: TauriRuntime>() {
         })
         .build(tauri::generate_context!())
         .expect("failed to run")
-        .run(|app_handle, event| match event {
-            RunEvent::Ready => {
-                futures::executor::block_on(async {
-                    let app = app_handle.state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>();
-                    let app_delegate = app_handle
-                        .state::<AppDelegate<TauriAppRuntime<R>>>()
-                        .inner()
-                        .clone();
+        .run(move |app_handle, event| {
+            let is_onboarding_clone = is_onboarding_clone.clone();
+            match event {
+                RunEvent::Ready => {
+                    futures::executor::block_on(async move {
+                        let app = app_handle.state::<Arc<sapic_app::App<TauriAppRuntime<R>>>>();
+                        let app_delegate = app_handle
+                            .state::<AppDelegate<TauriAppRuntime<R>>>()
+                            .inner()
+                            .clone();
 
-                    app.ensure_welcome(&app_delegate).await.unwrap();
-                });
+                        if is_onboarding_clone.load(Ordering::SeqCst) {
+                            app.ensure_onboarding(&app_delegate).await.unwrap();
+                        } else {
+                            app.ensure_welcome(&app_delegate).await.unwrap();
+                            println!("Not onboarding");
+                        }
+                    });
+                }
+
+                RunEvent::Exit => {}
+
+                _ => {}
             }
-
-            RunEvent::Exit => {}
-
-            _ => {}
         });
 }

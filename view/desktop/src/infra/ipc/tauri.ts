@@ -26,6 +26,7 @@ export type TauriIpcCommand =
   | "list_languages"
   | "list_color_themes"
   | "list_extensions"
+  | "download_extension"
   | "delete_workspace"
   | "update_workspace"
   | "update_profile" // DEPRECATED
@@ -38,6 +39,10 @@ export type TauriIpcCommand =
   | "main__close_workspace"
   | "main__open_workspace"
   | "main__create_workspace"
+  //
+  // Onboarding
+  //
+  | "onboarding__complete_onboarding"
   //
   // Welcome
   //

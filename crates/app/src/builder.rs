@@ -4,6 +4,7 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use sapic_platform::{
+    extension::unpacker::ExtensionUnpackerImpl,
     language::loader::LanguagePackLoader,
     theme::loader::ColorThemeLoader,
     workspace::{
@@ -78,10 +79,31 @@ impl<R: AppRuntime> AppBuilder<R> {
     }
 
     pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
-        let extension_service =
-            ExtensionService::<R>::new(&delegate, self.fs.clone(), self.extension_points)
-                .await
-                .expect("Failed to create extension service");
+        // Ensure all the required folders exist
+        let required_folders = vec![
+            delegate.tmp_dir(),
+            delegate.logs_dir(),
+            delegate.globals_dir(),
+            delegate.workspaces_dir(),
+            delegate.user_extensions_dir(),
+            // For storing user account info
+            delegate.user_dir().join("user"),
+        ];
+
+        for folder in required_folders {
+            let _ = tokio::fs::create_dir_all(&folder).await;
+        }
+        let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
+        let extension_service = ExtensionService::<R>::new(
+            &delegate,
+            self.fs.clone(),
+            self.extension_points,
+            delegate.user_extensions_dir(),
+            delegate.tmp_dir(),
+            Arc::new(extension_unpacker),
+        )
+        .await
+        .expect("Failed to create extension service");
 
         let workspace_edit_backend =
             WorkspaceFsEditBackend::new(self.fs.clone(), delegate.workspaces_dir());

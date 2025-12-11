@@ -477,6 +477,7 @@ const ExtensionRegistryTest = () => {
             <th className={"p-1"}>Created At</th>
             <th className={"p-1"}>Updated At</th>
             <th className={"p-1"}>Latest Version</th>
+            <th className={"p-1"}>Download Latest Version</th>
           </tr>
         </thead>
         <tbody>
@@ -493,6 +494,24 @@ const ExtensionRegistryTest = () => {
                 <td className={"p-1"}>{info.createdAt}</td>
                 <td className={"p-1"}>{info.updatedAt}</td>
                 <td className={"p-1"}>{info.latestVersion}</td>
+                <td className={"p-1"}>
+                  <button
+                    className="cursor-pointer rounded bg-blue-500 p-2 text-white"
+                    onClick={async () => {
+                      const result = await invokeTauriIpc("download_extension", {
+                        input: {
+                          extensionId: info.id,
+                          version: info.latestVersion,
+                        },
+                      });
+                      if (result.status === "error") {
+                        throw new Error(String(result.status));
+                      }
+                    }}
+                  >
+                    Download
+                  </button>
+                </td>
               </tr>
             );
           })}

@@ -16,6 +16,7 @@ use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_onboarding::OnboardingWindow;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -68,12 +69,13 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
     }
 }
 
-pub(crate) struct AppServices {
-    pub(crate) workspace_service: Arc<WorkspaceService>,
-    pub(crate) workspace_edit_service: Arc<WorkspaceEditService>,
-    pub(crate) theme_service: Arc<ThemeService>,
-    pub(crate) language_service: Arc<LanguageService>,
-    pub(crate) extension_api_service: Arc<ExtensionsApiService>,
+// We have to make this public so that it can be accessed in integration-tests
+pub struct AppServices {
+    pub workspace_service: Arc<WorkspaceService>,
+    pub workspace_edit_service: Arc<WorkspaceEditService>,
+    pub theme_service: Arc<ThemeService>,
+    pub language_service: Arc<LanguageService>,
+    pub extension_api_service: Arc<ExtensionsApiService>,
 }
 
 #[derive(Deref)]
@@ -128,6 +130,25 @@ impl<R: AppRuntime> App<R> {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
             }
 
+            return Ok(());
+        }
+    }
+
+    // FIXME: Not sure if onboarding should use the same approach as welcome
+    // Since it's likely only be executed once
+    // But I'll keep the same approach for now
+    pub async fn ensure_onboarding(&self, delegate: &AppDelegate<R>) -> joinerror::Result<()> {
+        let maybe_onboarding_window = self.windows.onboarding_window().await;
+        if let Some(onboarding_window) = maybe_onboarding_window {
+            if let Err(err) = onboarding_window.set_focus() {
+                tracing::warn!("Failed to set focus to onboarding window: {}", err);
+            }
+            return Ok(());
+        } else {
+            let onboarding_window = self.windows.create_onboarding_window(delegate).await?;
+            if let Err(err) = onboarding_window.set_focus() {
+                tracing::warn!("Failed to set focus to onboarding window: {}", err);
+            }
             return Ok(());
         }
     }
@@ -272,7 +293,20 @@ impl<R: AppRuntime> App<R> {
         self.windows.close_welcome_window().await
     }
 
+    pub async fn onboarding_window(&self) -> Option<OnboardingWindow<R>> {
+        self.windows.onboarding_window().await
+    }
+
+    pub async fn close_onboarding_window(&self) -> joinerror::Result<()> {
+        self.windows.close_onboarding_window().await
+    }
+
     pub fn command(&self, id: &ReadOnlyStr) -> Option<CommandCallback<R::EventLoop>> {
         self.commands.get(id).map(|cmd| Arc::clone(cmd))
+    }
+
+    #[cfg(feature = "integration-tests")]
+    pub fn services(&self) -> &AppServices {
+        &self.services
     }
 }
