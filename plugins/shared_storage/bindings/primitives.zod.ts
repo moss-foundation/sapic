@@ -12,6 +12,6 @@ export const storageScopeSchema = z.union([
 export const optionalJsonValueSchema = z.union([
   z.literal("none"),
   z.object({
-    "some": jsonValueSchema,
+    "value": jsonValueSchema,
   }),
 ]);

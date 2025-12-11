@@ -33,13 +33,14 @@ impl From<StorageScopeForFrontend> for StorageScope {
 #[ts(export, export_to = "primitives.ts")]
 pub enum OptionalJsonValue {
     None,
-    Some(#[ts(type = "JsonValue")] JsonValue),
+    // Using `Some` would make the frontend code look weird
+    Value(#[ts(type = "JsonValue")] JsonValue),
 }
 
 impl From<Option<JsonValue>> for OptionalJsonValue {
     fn from(value: Option<JsonValue>) -> Self {
         match value {
-            Some(json_value) => OptionalJsonValue::Some(json_value),
+            Some(json_value) => OptionalJsonValue::Value(json_value),
             None => OptionalJsonValue::None,
         }
     }
