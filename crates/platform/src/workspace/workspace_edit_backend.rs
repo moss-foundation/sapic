@@ -47,6 +47,11 @@ impl WorkspaceEditBackend for WorkspaceFsEditBackend {
             ));
         }
 
+        // No need to update the file if there's no patch
+        if patches.is_empty() {
+            return Ok(());
+        }
+
         let abs_path = self
             .workspaces_dir
             .join(id.to_string())
@@ -80,5 +85,87 @@ impl WorkspaceEditBackend for WorkspaceFsEditBackend {
             .join_err_with::<()>(|| format!("failed to write file: {}", abs_path.display()))?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::workspace::{tests::MockStorage, workspace_service_fs::WorkspaceServiceFs};
+    use moss_fs::RealFileSystem;
+    use moss_storage2::KvStorage;
+    use moss_testutils::random_name::random_string;
+    use sapic_system::workspace::WorkspaceServiceFs as WorkspaceServicePort;
+
+    use super::*;
+
+    // We need WorkspaceServiceFs and Storage to create a workspace for testing
+    async fn setup_workspace_edit_test() -> (
+        Arc<WorkspaceServiceFs>,
+        Arc<dyn KvStorage>,
+        Arc<WorkspaceFsEditBackend>,
+        PathBuf,
+    ) {
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+        let tmp_path = test_path.join("tmp");
+        let workspaces_dir = tmp_path.join("workspaces");
+
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+        tokio::fs::create_dir_all(&workspaces_dir).await.unwrap();
+
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let workspace_fs = WorkspaceServiceFs::new(fs.clone(), workspaces_dir.clone());
+        let storage = MockStorage::new();
+        let edit = WorkspaceFsEditBackend::new(fs.clone(), workspaces_dir);
+        (workspace_fs, storage, edit, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_edit_rename() {
+        let (workspace_fs, storage, edit, test_path) = setup_workspace_edit_test().await;
+        let id = WorkspaceId::new();
+        let old_name = random_string(10);
+        let new_name = random_string(10);
+
+        workspace_fs
+            .create_workspace(&id, &old_name, storage.clone())
+            .await
+            .unwrap();
+
+        edit.edit(
+            &id,
+            WorkspaceEditParams {
+                name: Some(new_name.clone()),
+            },
+        )
+        .await
+        .unwrap();
+
+        let workspaces = workspace_fs.lookup_workspaces().await.unwrap();
+        assert_eq!(workspaces[0].name, new_name);
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_edit_nonexistent() {
+        let (_workspace_fs, _storage, edit, test_path) = setup_workspace_edit_test().await;
+        let id = WorkspaceId::new();
+
+        let new_name = random_string(10);
+        let result = edit
+            .edit(
+                &id,
+                WorkspaceEditParams {
+                    name: Some(new_name.clone()),
+                },
+            )
+            .await;
+
+        assert!(result.is_err());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
     }
 }

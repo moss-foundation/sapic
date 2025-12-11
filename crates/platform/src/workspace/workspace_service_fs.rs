@@ -76,6 +76,9 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
         Ok(workspaces)
     }
 
+    // FIXME: This is still not correctly deleting all the files when a workspace is open
+    // The database files and the folders will not be removed
+    // It doesn't crash the app but still something we need to solve
     async fn create_workspace(
         &self,
         id: &WorkspaceId,
@@ -151,5 +154,173 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
             .join_err_with::<()>(|| format!("failed to delete workspace `{}`", id.as_str()))?;
 
         Ok(Some(abs_path))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::RealFileSystem;
+    use moss_storage2::KvStorage;
+    use moss_testutils::random_name::random_string;
+    use sapic_base::workspace::types::primitives::WorkspaceId;
+
+    use std::{path::PathBuf, sync::Arc};
+
+    use crate::workspace::tests::MockStorage;
+
+    use super::*;
+
+    async fn setup_test_workspace_service_fs()
+    -> (Arc<WorkspaceServiceFs>, Arc<dyn KvStorage>, PathBuf) {
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+        let tmp_path = test_path.join("tmp");
+        let workspaces_dir = tmp_path.join("workspaces");
+
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+        tokio::fs::create_dir_all(&workspaces_dir).await.unwrap();
+
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let workspace_fs = WorkspaceServiceFs::new(fs, workspaces_dir);
+        let storage = MockStorage::new();
+
+        (workspace_fs, storage, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_create_workspace_normal() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+
+        let workspace_path = service_fs
+            .create_workspace(&id, &random_string(10), storage.clone())
+            .await
+            .unwrap();
+
+        assert!(workspace_path.exists());
+        for dir in WORKSPACE_DIRS {
+            assert!(workspace_path.join(dir).exists());
+        }
+        assert!(workspace_path.join(MANIFEST_FILE_NAME).exists());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    // This should work since workspace name has nothing to do with filesystem
+    #[tokio::test]
+    async fn test_create_workspace_empty_name() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+
+        let workspace_path = service_fs
+            .create_workspace(&id, "", storage.clone())
+            .await
+            .unwrap();
+
+        assert!(workspace_path.exists());
+        for dir in WORKSPACE_DIRS {
+            assert!(workspace_path.join(dir).exists());
+        }
+        assert!(workspace_path.join(MANIFEST_FILE_NAME).exists());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_create_workspace_already_exists() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+
+        service_fs
+            .create_workspace(&id, &random_string(10), storage.clone())
+            .await
+            .unwrap();
+
+        let result = service_fs
+            .create_workspace(&id, &random_string(10), storage.clone())
+            .await;
+
+        assert!(result.is_err());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_delete_workspace_success() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+
+        let workspace_path = service_fs
+            .create_workspace(&id, &random_string(10), storage.clone())
+            .await
+            .unwrap();
+
+        service_fs.delete_workspace(&id).await.unwrap();
+
+        assert!(!workspace_path.exists());
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    // Deleting a nonexistent workspace should be handled gracefully
+    #[tokio::test]
+    async fn test_delete_workspace_nonexistent() {
+        let (service_fs, _storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+
+        let result = service_fs.delete_workspace(&id).await.unwrap();
+
+        // No path will be returned if we delete a non-existent workspace
+        assert!(result.is_none());
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn lookup_workspaces_empty() {
+        let (service_fs, _storage, test_path) = setup_test_workspace_service_fs().await;
+
+        let workspaces = service_fs.lookup_workspaces().await.unwrap();
+        assert!(workspaces.is_empty());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn lookup_workspaces_normal() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+        let name = random_string(10);
+        let workspace_path = service_fs
+            .create_workspace(&id, &name, storage.clone())
+            .await
+            .unwrap();
+
+        let workspaces = service_fs.lookup_workspaces().await.unwrap();
+
+        assert_eq!(workspaces.len(), 1);
+        assert_eq!(workspaces[0].id, id);
+        assert_eq!(workspaces[0].name, name);
+        assert_eq!(workspaces[0].abs_path, workspace_path);
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn lookup_workspaces_after_deletion() {
+        let (service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
+        let id = WorkspaceId::new();
+        let name = random_string(10);
+        service_fs
+            .create_workspace(&id, &name, storage.clone())
+            .await
+            .unwrap();
+
+        service_fs.delete_workspace(&id).await.unwrap();
+
+        let workspaces = service_fs.lookup_workspaces().await.unwrap();
+        assert!(workspaces.is_empty());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
     }
 }

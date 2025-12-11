@@ -38,6 +38,9 @@ tar.workspace = true
 flate2.workspace = true
 nanoid.workspace = true
 
+[dev-dependencies]
+moss_testutils = { workspace = true }
+
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]
 libssh2-sys = { version = "0.3.1", features = ["openssl-on-win32", "vendored-openssl"] }

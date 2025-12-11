@@ -6,14 +6,13 @@ use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, TauriResultExt};
 use sapic_core::context::Canceller;
-use std::{collections::HashMap, sync::Arc};
-use tokio::sync::RwLock;
-
 use sapic_window2::{
     AppWindowApi, WindowHandle,
     constants::{MIN_WINDOW_HEIGHT, MIN_WINDOW_WIDTH},
     defaults::{DEFAULT_WINDOW_POSITION_X, DEFAULT_WINDOW_POSITION_Y},
 };
+use std::{collections::HashMap, sync::Arc};
+use tokio::sync::RwLock;
 
 use crate::workspace_ops::WelcomeWindowWorkspaceOps;
 

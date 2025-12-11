@@ -96,6 +96,12 @@ impl<R: AppRuntime> MainWindow<R> {
         .min_inner_size(MIN_WINDOW_WIDTH, MIN_WINDOW_HEIGHT)
         .zoom_hotkeys_enabled(true);
 
+        #[cfg(target_os = "windows")]
+        let win_builder = win_builder
+            .transparent(false)
+            .shadow(true)
+            .decorations(false);
+
         #[cfg(target_os = "macos")]
         let win_builder = win_builder
             .hidden_title(true)
@@ -105,6 +111,11 @@ impl<R: AppRuntime> MainWindow<R> {
         let webview_window = win_builder
             .build()
             .join_err::<()>("failed to build main window")?;
+
+        // Sometimes tauri will ignore builder.decorations(false)
+        // Manually set it to make sure that the title bar is hidden on Windows
+        #[cfg(target_os = "windows")]
+        webview_window.set_decorations(false)?;
 
         Ok(Self {
             handle: WindowHandle::new(webview_window),
