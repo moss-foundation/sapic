@@ -258,7 +258,7 @@ impl<R: AppRuntime> App<R> {
         .await?;
 
         self.windows
-            .swap_main_window_workspace(label, workspace, old_window)
+            .swap_main_window_workspace(ctx, label, workspace, old_window)
             .await
     }
 
@@ -266,10 +266,14 @@ impl<R: AppRuntime> App<R> {
         self.windows.main_window(label).await
     }
 
-    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<()> {
+    pub async fn close_main_window(
+        &self,
+        ctx: &R::AsyncContext,
+        label: &str,
+    ) -> joinerror::Result<()> {
         let closed_window = self
             .windows
-            .close_main_window(label)
+            .close_main_window(ctx, label)
             .await
             .join_err::<()>("failed to close main window")?;
 

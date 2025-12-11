@@ -127,6 +127,7 @@ impl ProjectService {
 
         let expanded_items = if let Ok(Some(expanded_items)) = storage
             .get(
+                ctx,
                 StorageScope::Workspace(workspace_id.inner()),
                 KEY_EXPANDED_ITEMS,
             )
@@ -375,6 +376,7 @@ impl ProjectService {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
                 )
@@ -509,6 +511,7 @@ impl ProjectService {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
                 )
@@ -550,7 +553,7 @@ impl ProjectService {
 
     pub(crate) async fn delete_project<R: AppRuntime>(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>> {
         let id_str = id.to_string();
@@ -593,6 +596,7 @@ impl ProjectService {
         if let Err(e) = self
             .storage
             .remove_batch_by_prefix(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &key_project(id),
             )
@@ -607,6 +611,7 @@ impl ProjectService {
         if let Err(e) = self
             .storage
             .put(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_EXPANDED_ITEMS,
                 serde_json::to_value(&state_lock.expanded_items)?,
@@ -634,7 +639,7 @@ impl ProjectService {
 
     pub(crate) async fn update_project<R: AppRuntime>(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         id: &ProjectId,
         params: UpdateProjectParams,
     ) -> joinerror::Result<()> {
@@ -685,6 +690,7 @@ impl ProjectService {
         if let Err(e) = self
             .storage
             .put_batch(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &batch_input,
             )
@@ -775,7 +781,7 @@ impl ProjectService {
 
     pub(crate) async fn import_archived_project(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
         params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
@@ -858,6 +864,7 @@ impl ProjectService {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
                 )
@@ -984,6 +991,7 @@ impl ProjectService {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
                 )
@@ -1074,7 +1082,7 @@ impl ProjectService {
     }
 }
 async fn restore_projects<R: AppRuntime>(
-    _ctx: &dyn AnyAsyncContext,
+    ctx: &dyn AnyAsyncContext,
     app_delegate: &AppDelegate<R>,
     abs_path: &Path,
     fs: &Arc<dyn FileSystem>,
@@ -1214,6 +1222,7 @@ async fn restore_projects<R: AppRuntime>(
 
     let metadata = storage
         .get_batch_by_prefix(
+            ctx,
             StorageScope::Workspace(workspace_id.inner()),
             KEY_PROJECT_PREFIX,
         )

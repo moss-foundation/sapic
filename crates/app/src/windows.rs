@@ -272,14 +272,18 @@ impl<R: AppRuntime> WindowManager<R> {
         Ok(window)
     }
 
-    pub async fn close_main_window(&self, label: &str) -> joinerror::Result<Option<MainWindow<R>>> {
+    pub async fn close_main_window(
+        &self,
+        ctx: &R::AsyncContext,
+        label: &str,
+    ) -> joinerror::Result<Option<MainWindow<R>>> {
         let window = if let Some(window) = self.main_window(label).await {
             window
         } else {
             return Ok(None);
         };
 
-        if let Err(e) = self.clean_up_before_workspace_close(&window).await {
+        if let Err(e) = self.clean_up_before_workspace_close(ctx, &window).await {
             tracing::warn!(
                 "failed to clean up before closing main window: {}",
                 e.to_string()
@@ -300,6 +304,7 @@ impl<R: AppRuntime> WindowManager<R> {
 
     pub async fn swap_main_window_workspace(
         &self,
+        ctx: &R::AsyncContext,
         label: &str,
         workspace: Arc<dyn Workspace>,
         old_window: OldSapicWindow<R>,
@@ -322,7 +327,7 @@ impl<R: AppRuntime> WindowManager<R> {
         }
 
         // Dispose the current workspace
-        self.clean_up_before_workspace_close(&window).await?;
+        self.clean_up_before_workspace_close(ctx, &window).await?;
 
         // Activate the new workspace
         {
@@ -341,6 +346,7 @@ impl<R: AppRuntime> WindowManager<R> {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Application,
                     &[
                         (
@@ -369,11 +375,12 @@ impl<R: AppRuntime> WindowManager<R> {
 impl<R: AppRuntime> WindowManager<R> {
     async fn clean_up_before_workspace_close(
         &self,
+        ctx: &R::AsyncContext,
         window: &MainWindow<R>,
     ) -> joinerror::Result<()> {
         if let Err(e) = self
             .storage
-            .remove(StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
+            .remove(ctx, StorageScope::Application, KEY_LAST_ACTIVE_WORKSPACE)
             .await
         {
             tracing::warn!(

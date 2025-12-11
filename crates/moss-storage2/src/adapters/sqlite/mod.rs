@@ -1,4 +1,3 @@
-use crate::adapters::{Closable, Flushable, KeyedStorage, Optimizable, Options};
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_logging::session;
@@ -13,6 +12,8 @@ use sqlx::{
 };
 use std::{collections::HashMap, path::Path, str::FromStr, sync::Arc, time::Duration};
 use tokio::sync::RwLock;
+
+use crate::adapters::{Closable, Flushable, KeyedStorage, Optimizable, Options};
 
 const DEFAULT_BUSY_TIMEOUT: Duration = Duration::from_secs(5);
 const DEFAULT_IN_MEMORY: bool = false;
