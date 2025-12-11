@@ -160,14 +160,11 @@ async fn get_item<'a, R: tauri::Runtime>(
         .ok_or_join_err::<()>("storage provider not found")?;
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
-    let value = storage
-        .get(input.scope.clone().into(), &input.key)
-        .await?
-        .ok_or_join_err::<()>("item not found")?;
+    let value = storage.get(input.scope.clone().into(), &input.key).await?;
 
     Ok(GetItemOutput {
         key: input.key.clone(),
-        value,
+        value: value.into(),
         scope: input.scope,
     })
 }
