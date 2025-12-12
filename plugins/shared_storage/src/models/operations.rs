@@ -27,7 +27,7 @@ pub struct GetItemInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct GetItemOutput {
     pub key: String,
-    pub value: OptionalJsonValue,
+    pub value: OptionalValue,
     pub scope: StorageScopeForFrontend,
 }
 
