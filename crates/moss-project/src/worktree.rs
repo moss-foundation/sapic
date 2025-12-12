@@ -233,7 +233,7 @@ impl Worktree {
 
     pub async fn scan<R: AppRuntime>(
         &self,
-        ctx: &dyn AnyAsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
+        _ctx: &dyn AnyAsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
         app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<ResourceId>>,

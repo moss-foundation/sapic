@@ -64,6 +64,7 @@ async fn create_environment_success() {
     let storage = GlobalKvStorage::get(&app_delegate);
     let stored_env_order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&id),
         )
@@ -74,7 +75,7 @@ async fn create_environment_success() {
     assert_eq!(stored_env_order, 42);
 
     let env = workspace.environment(&id).await.unwrap();
-    let variables = env.describe().await.unwrap().variables;
+    let variables = env.describe(&ctx).await.unwrap().variables;
 
     assert_eq!(variables.len(), 1);
 
@@ -182,6 +183,7 @@ async fn create_collection_environment_success() {
     let storage = GlobalKvStorage::get(&app_delegate);
     let stored_env_order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&id),
         )
@@ -192,7 +194,7 @@ async fn create_collection_environment_success() {
     assert_eq!(stored_env_order, 42);
 
     let env = workspace.environment(&id).await.unwrap();
-    let variables = env.describe().await.unwrap().variables;
+    let variables = env.describe(&ctx).await.unwrap().variables;
 
     assert_eq!(variables.len(), 1);
 
@@ -331,6 +333,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
     let storage = GlobalKvStorage::get(&app_delegate);
     let stored_project_env_order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&project_env_id),
         )
@@ -343,6 +346,7 @@ async fn create_collection_environment_same_name_as_workspace_environment() {
 
     let stored_workspace_env_order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&workspace_env_id),
         )
