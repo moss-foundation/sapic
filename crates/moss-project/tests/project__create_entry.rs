@@ -91,7 +91,7 @@ async fn create_dir_entry_with_order() {
 
     // Check order was updated
     let order_value = storage
-        .get(storage_scope, &key_resource_order(&id))
+        .get(&ctx, storage_scope, &key_resource_order(&id))
         .await
         .unwrap()
         .unwrap();

@@ -8,13 +8,13 @@ use crate::App;
 impl<R: AppRuntime> App<R> {
     pub async fn list_workspaces(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         _delegate: &AppDelegate<R>,
     ) -> joinerror::Result<ListWorkspacesOutput> {
         let workspaces = self
             .services
             .workspace_service
-            .workspaces()
+            .workspaces(ctx)
             .await?
             .into_iter()
             .map(|item| WorkspaceInfo {

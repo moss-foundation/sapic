@@ -80,7 +80,7 @@ async fn delete_environment_success() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe()
+        .describe(&ctx)
         .await
         .unwrap();
 
@@ -114,6 +114,7 @@ async fn delete_environment_success() {
 
     let env_order_result = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&environment_id),
         )
@@ -126,6 +127,7 @@ async fn delete_environment_success() {
     assert!(
         storage
             .get_batch_by_prefix(
+                &ctx,
                 StorageScope::Workspace(workspace.id().inner()),
                 &key_variable(&variable_id)
             )

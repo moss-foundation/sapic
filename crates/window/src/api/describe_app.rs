@@ -14,13 +14,13 @@ use crate::{
 impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn describe_app(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
     ) -> joinerror::Result<DescribeAppOutput> {
         let maybe_workspace_details =
             if let Some(workspace) = self.workspace_service.workspace().await {
                 self.workspace_service
-                    .workspace_details(&workspace.id())
+                    .workspace_details(ctx, &workspace.id())
                     .await
                     .unwrap()
             } else {

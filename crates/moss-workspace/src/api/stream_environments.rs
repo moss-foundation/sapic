@@ -3,6 +3,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_logging::session;
 use sapic_base::project::types::primitives::ProjectId;
+use std::sync::Arc;
 use tauri::ipc::Channel as TauriChannel;
 
 use crate::{
@@ -17,7 +18,10 @@ impl Workspace {
         _app_delegate: AppDelegate<R>,
         channel: TauriChannel<StreamEnvironmentsEvent>,
     ) -> joinerror::Result<StreamEnvironmentsOutput> {
-        let stream = self.environment_service.list_environments(ctx).await;
+        let stream = self
+            .environment_service
+            .list_environments(Arc::new(ctx.clone()))
+            .await;
         tokio::pin!(stream);
 
         let mut total_returned = 0;

@@ -72,7 +72,7 @@ pub struct DescribeEnvironment {
 pub trait AnyEnvironment {
     async fn abs_path(&self) -> Arc<Path>;
     async fn name(&self) -> joinerror::Result<String>;
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironment>;
+    async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
     async fn modify(
         &self,
         ctx: &dyn AnyAsyncContext,

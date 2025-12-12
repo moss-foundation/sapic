@@ -12,6 +12,7 @@ pub(crate) mod tests {
         FlushMode, KvStorage, KvStorageCapabilities, SubstoreManager,
         models::primitives::StorageScope,
     };
+    use sapic_core::context::AnyAsyncContext;
     use serde_json::Value as JsonValue;
     use std::{sync::Arc, time::Instant};
 
@@ -79,6 +80,7 @@ pub(crate) mod tests {
     impl KvStorage for MockStorage {
         async fn put(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _key: &str,
             _value: JsonValue,
@@ -88,6 +90,7 @@ pub(crate) mod tests {
 
         async fn get(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _key: &str,
         ) -> joinerror::Result<Option<JsonValue>> {
@@ -96,6 +99,7 @@ pub(crate) mod tests {
 
         async fn remove(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _key: &str,
         ) -> joinerror::Result<Option<JsonValue>> {
@@ -104,6 +108,7 @@ pub(crate) mod tests {
 
         async fn put_batch(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _items: &[(&str, JsonValue)],
         ) -> joinerror::Result<()> {
@@ -112,6 +117,7 @@ pub(crate) mod tests {
 
         async fn get_batch(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _keys: &[&str],
         ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
@@ -120,6 +126,7 @@ pub(crate) mod tests {
 
         async fn remove_batch(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _keys: &[&str],
         ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
@@ -128,6 +135,7 @@ pub(crate) mod tests {
 
         async fn get_batch_by_prefix(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _prefix: &str,
         ) -> joinerror::Result<Vec<(String, JsonValue)>> {
@@ -136,6 +144,7 @@ pub(crate) mod tests {
 
         async fn remove_batch_by_prefix(
             &self,
+            _ctx: &dyn AnyAsyncContext,
             _scope: StorageScope,
             _prefix: &str,
         ) -> joinerror::Result<Vec<(String, JsonValue)>> {

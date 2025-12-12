@@ -45,7 +45,7 @@ impl Project {
         let storage_scope = StorageScope::Project(self.id.inner());
         let expanded_entries: Arc<HashSet<ResourceId>> = match self
             .storage
-            .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+            .get(ctx, storage_scope.clone(), KEY_EXPANDED_ENTRIES)
             .await
         {
             Ok(Some(entries)) => serde_json::from_value::<HashSet<ResourceId>>(entries)
@@ -63,7 +63,7 @@ impl Project {
 
         let all_entry_keys: Arc<HashMap<String, JsonValue>> = match self
             .storage
-            .get_batch_by_prefix(storage_scope.clone(), KEY_RESOURCE_PREFIX)
+            .get_batch_by_prefix(ctx, storage_scope.clone(), KEY_RESOURCE_PREFIX)
             .await
         {
             Ok(keys) => keys.into_iter().collect::<HashMap<_, _>>().into(),

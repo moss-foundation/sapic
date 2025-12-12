@@ -135,7 +135,7 @@ impl EnvironmentService {
 
     pub async fn update_environment_group(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: UpdateEnvironmentGroupParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -169,6 +169,7 @@ impl EnvironmentService {
         if let Err(e) = self
             .storage
             .put_batch(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &batch_input,
             )
@@ -190,11 +191,12 @@ impl EnvironmentService {
 
     pub async fn list_environment_groups(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<EnvironmentGroup>> {
         let expanded_groups_result = self
             .storage
             .get(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_EXPANDED_ENVIRONMENT_GROUPS,
             )
@@ -220,6 +222,7 @@ impl EnvironmentService {
         let metadata = self
             .storage
             .get_batch_by_prefix(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ENVIRONMENT_GROUP_PREFIX,
             )
@@ -252,13 +255,14 @@ impl EnvironmentService {
 
     pub async fn list_environments(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: Arc<dyn AnyAsyncContext>,
     ) -> Pin<Box<dyn Stream<Item = EnvironmentItemDescription> + Send + '_>> {
         let state_clone = self.state.clone();
         let storage = self.storage.clone();
         let sources_clone = state_clone.read().await.sources.clone();
 
         Box::pin(async_stream::stream! {
+            let ctx_clone = ctx.clone();
             let storage_clone = storage.clone();
             let (tx, mut rx) = mpsc::unbounded_channel::<(EnvironmentItem, DescribeEnvironment)>();
             let scanner = EnvironmentSourceScanner {
@@ -271,13 +275,15 @@ impl EnvironmentService {
 
             let scan_task = {
                 tokio::spawn(async move {
-                    if let Err(e) = scanner.scan().await {
+                    let ctx_clone = ctx_clone.clone();
+                    if let Err(e) = scanner.scan(ctx_clone.as_ref()).await {
                         session::error!(format!("environment scan failed: {}", e));
                     }
                 })
             };
 
             let active_environments_result = storage.get(
+                ctx.as_ref(),
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ACTIVE_ENVIRONMENTS
             ).await;
@@ -365,6 +371,7 @@ impl EnvironmentService {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &key_environment_order(&params.id),
                     serde_json::to_value(order)?,
@@ -380,7 +387,7 @@ impl EnvironmentService {
 
     pub async fn create_environment(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItemDescription> {
         let abs_path = if let Some(collection_id) = params.project_id.clone() {
@@ -405,17 +412,20 @@ impl EnvironmentService {
             self.fs.clone(),
             self.storage.clone(),
         )
-        .create(moss_environment::builder::CreateEnvironmentParams {
-            name: params.name.clone(),
-            abs_path: &abs_path,
-            color: params.color,
-            variables: params.variables,
-        })
+        .create(
+            ctx,
+            moss_environment::builder::CreateEnvironmentParams {
+                name: params.name.clone(),
+                abs_path: &abs_path,
+                color: params.color,
+                variables: params.variables,
+            },
+        )
         .await?;
 
         let abs_path = environment.abs_path().await;
         let project_id_inner = params.project_id.as_ref().map(|id| id.inner());
-        let desc = environment.describe().await?;
+        let desc = environment.describe(ctx).await?;
 
         let mut state = self.state.write().await;
         state.environments.insert(
@@ -443,6 +453,7 @@ impl EnvironmentService {
         if let Err(e) = self
             .storage
             .put(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 &key_environment_order(&desc.id),
                 serde_json::to_value(params.order)?,
@@ -482,6 +493,7 @@ impl EnvironmentService {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.inner()),
                     &batch_input,
                 )
@@ -499,7 +511,7 @@ impl EnvironmentService {
 
     pub async fn delete_environment(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -522,7 +534,7 @@ impl EnvironmentService {
                 false
             };
 
-        let desc = environment.describe().await?;
+        let desc = environment.describe(ctx).await?;
         self.fs
             .remove_file(
                 &desc.abs_path,
@@ -545,7 +557,7 @@ impl EnvironmentService {
             // Clean all the data related to the deleted environment
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(storage_scope.clone(), &key_environment(id))
+                .remove_batch_by_prefix(ctx, storage_scope.clone(), &key_environment(id))
                 .await
             {
                 session::warn!(format!(
@@ -558,6 +570,7 @@ impl EnvironmentService {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         KEY_ACTIVE_ENVIRONMENTS,
                         serde_json::to_value(&state.active_environments)?,
@@ -577,6 +590,7 @@ impl EnvironmentService {
                 if let Err(e) = self
                     .storage
                     .remove_batch_by_prefix(
+                        ctx,
                         StorageScope::Workspace(self.workspace_id.inner()),
                         &key_variable(id),
                     )
@@ -594,7 +608,7 @@ impl EnvironmentService {
 
     pub async fn activate_environment(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: ActivateEnvironmentItemParams,
     ) -> joinerror::Result<()> {
         let mut state = self.state.write().await;
@@ -619,6 +633,7 @@ impl EnvironmentService {
         if let Err(e) = self
             .storage
             .put(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ACTIVE_ENVIRONMENTS,
                 serde_json::to_value(&state.active_environments)?,
@@ -657,10 +672,11 @@ impl EnvironmentSourceScanner {
     /// 2. Spawns parallel scanning tasks for each registered environment provider
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
-    async fn scan(&self) -> joinerror::Result<()> {
+    async fn scan(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let data = self
             .storage
             .get_batch_by_prefix(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ENVIRONMENT_PREFIX,
             )
@@ -729,7 +745,7 @@ impl EnvironmentSourceScanner {
         drop(provider_tx);
 
         while let Some((collection_id, environment)) = provider_rx.recv().await {
-            let desc = match environment.describe().await {
+            let desc = match environment.describe(ctx).await {
                 Ok(desc) => desc,
                 Err(e) => {
                     session::error!(format!("failed to describe environment: {}", e));

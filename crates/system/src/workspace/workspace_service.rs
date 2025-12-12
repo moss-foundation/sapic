@@ -1,14 +1,14 @@
+use crate::workspace::{
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
+};
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
-
-use crate::workspace::{
-    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
-};
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
@@ -30,12 +30,16 @@ impl WorkspaceService {
         Self { fs, storage }
     }
 
-    pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
+    pub async fn delete_workspace(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &WorkspaceId,
+    ) -> joinerror::Result<Option<PathBuf>> {
         // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
         // Remove storage entry first since files might not have been properly deleted yet
         if let Err(e) = self
             .storage
-            .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
+            .remove_batch_by_prefix(ctx, StorageScope::Application, &key_workspace(id))
             .await
         {
             tracing::warn!(
@@ -50,10 +54,13 @@ impl WorkspaceService {
         Ok(deleted_path)
     }
 
-    pub async fn workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+    pub async fn workspaces(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<WorkspaceItem>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
-            .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
+            .get_batch_by_prefix(ctx, StorageScope::Application, KEY_WORKSPACE_PREFIX)
             .await
         {
             items.into_iter().collect()

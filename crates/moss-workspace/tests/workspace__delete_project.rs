@@ -60,6 +60,7 @@ async fn delete_project_success() {
     let project_prefix = key_project(&id);
     let list_result = storage
         .get_batch_by_prefix(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &project_prefix,
         )
@@ -70,6 +71,7 @@ async fn delete_project_success() {
     // Check that expanded_items no longer contains the deleted project
     let expanded_items_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
