@@ -28,7 +28,7 @@ async fn create_workspace_success() {
     let expected_path = delegate.workspaces_dir().join(id.as_str());
 
     // Check known workspaces
-    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces(&ctx).await.unwrap();
 
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].name.as_str(), workspace_name);
@@ -56,7 +56,7 @@ async fn create_workspace_empty_name() {
     assert!(create_result.is_err());
 
     // Check no workspace was created
-    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 0);
 
     cleanup().await;
@@ -94,7 +94,7 @@ async fn create_workspace_same_name() {
 
     assert_ne!(first_id, second_id);
 
-    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 2);
 
     cleanup().await;
