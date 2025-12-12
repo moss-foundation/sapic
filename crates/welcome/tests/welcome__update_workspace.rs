@@ -37,7 +37,7 @@ async fn rename_workspace_success() {
         .unwrap();
 
     // Verify the workspace was renamed
-    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].name, new_workspace_name);
@@ -108,7 +108,7 @@ async fn rename_workspace_same_name() {
         .unwrap();
 
     // Verify the workspace has the same name
-    let list_workspaces = services.workspace_service.workspaces().await.unwrap();
+    let list_workspaces = services.workspace_service.workspaces(&ctx).await.unwrap();
     assert_eq!(list_workspaces.len(), 1);
     assert_eq!(list_workspaces[0].id, id);
     assert_eq!(list_workspaces[0].name, new_workspace_name);

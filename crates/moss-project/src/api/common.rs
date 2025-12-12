@@ -358,7 +358,11 @@ impl Project {
 
         let storage_scope = StorageScope::Project(self.id.inner());
 
-        if let Err(e) = self.storage.put_batch(storage_scope, &batch_input).await {
+        if let Err(e) = self
+            .storage
+            .put_batch(ctx, storage_scope, &batch_input)
+            .await
+        {
             session::warn!(format!(
                 "failed to update database after creating endpoint resource: {}",
                 e

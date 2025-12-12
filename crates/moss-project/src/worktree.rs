@@ -165,7 +165,7 @@ impl Worktree {
 
     pub async fn remove_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -195,6 +195,7 @@ impl Worktree {
         if let Err(e) = self
             .storage
             .remove_batch_by_prefix(
+                ctx,
                 StorageScope::Project(self.project_id.inner()),
                 &key_resource(id),
             )
@@ -214,6 +215,7 @@ impl Worktree {
         if let Err(e) = self
             .storage
             .put(
+                ctx,
                 StorageScope::Project(self.project_id.inner()),
                 KEY_EXPANDED_ENTRIES,
                 serde_json::to_value(&state_lock.expanded_entries)?,
@@ -424,7 +426,7 @@ impl Worktree {
 
     pub async fn create_item_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -474,7 +476,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -488,7 +494,7 @@ impl Worktree {
 
     pub async fn create_dir_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -536,7 +542,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -550,7 +560,7 @@ impl Worktree {
 
     pub async fn update_dir_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
@@ -629,7 +639,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -723,7 +737,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -737,7 +755,7 @@ impl Worktree {
 
     pub async fn describe_entry<R: AppRuntime>(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ResourceId,
     ) -> joinerror::Result<DescribeResourceOutput> {
@@ -778,6 +796,7 @@ impl Worktree {
             let entry_keys = self
                 .storage
                 .get_batch_by_prefix(
+                    ctx,
                     StorageScope::Project(self.project_id.inner()),
                     &key_resource(&id),
                 )
@@ -1069,6 +1088,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_header_order(&entry.id, &id),
                     serde_json::to_value(&header_to_add.order)?,
@@ -1206,6 +1226,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_header_order(&entry.id, &header_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1230,7 +1251,11 @@ impl Worktree {
 
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(storage_scope.clone(), &key_resource_header(&entry.id, id))
+                .remove_batch_by_prefix(
+                    ctx,
+                    storage_scope.clone(),
+                    &key_resource_header(&entry.id, id),
+                )
                 .await
             {
                 session::warn!(format!("failed to remove header cache: {}", e));
@@ -1295,6 +1320,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_path_param_order(&entry.id, &id),
                     serde_json::to_value(&path_param_to_add.order)?,
@@ -1435,6 +1461,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_path_param_order(&entry.id, &path_param_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1463,6 +1490,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .remove_batch_by_prefix(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_path_param(&entry.id, id),
                 )
@@ -1530,6 +1558,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_query_param_order(&entry.id, &id),
                     serde_json::to_value(&query_param_to_add.order)?,
@@ -1670,6 +1699,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_query_param_order(&entry.id, &query_param_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1698,6 +1728,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .remove_batch_by_prefix(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_query_param(&entry.id, id),
                 )
@@ -2071,6 +2102,7 @@ async fn patch_item_body<R: AppRuntime>(
             for (id, order) in param_order_updates {
                 if let Err(e) = storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_urlencoded_param_order(&resource_id, &id),
                         serde_json::to_value(order)?,
@@ -2084,6 +2116,7 @@ async fn patch_item_body<R: AppRuntime>(
             for id in param_removes {
                 if let Err(e) = storage
                     .remove(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_urlencoded_param(&resource_id, &id),
                     )
@@ -2323,6 +2356,7 @@ async fn patch_item_body<R: AppRuntime>(
             for (id, order) in param_order_updates {
                 if let Err(e) = storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_formdata_param_order(&resource_id, &id),
                         serde_json::to_value(order)?,
@@ -2336,6 +2370,7 @@ async fn patch_item_body<R: AppRuntime>(
             for id in param_removes {
                 if let Err(e) = storage
                     .remove(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_formdata_param(&resource_id, &id),
                     )
@@ -2354,7 +2389,7 @@ async fn patch_item_body<R: AppRuntime>(
 
 async fn clear_item_body(
     worktree: &Worktree,
-    _ctx: &dyn AnyAsyncContext,
+    ctx: &dyn AnyAsyncContext,
     id: &ResourceId,
     storage: Arc<dyn KvStorage>,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
@@ -2371,6 +2406,7 @@ async fn clear_item_body(
 
     if let Err(e) = storage
         .remove_batch_by_prefix(
+            ctx,
             StorageScope::Project(worktree.project_id.inner()),
             &key_resource_body(id),
         )

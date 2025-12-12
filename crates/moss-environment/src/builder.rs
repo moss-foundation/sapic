@@ -25,6 +25,7 @@ use crate::{
     utils,
 };
 use sapic_base::environment::types::primitives::{EnvironmentId, VariableId};
+use sapic_core::context::AnyAsyncContext;
 
 pub struct CreateEnvironmentParams<'a> {
     pub name: String,
@@ -126,6 +127,7 @@ impl EnvironmentBuilder {
 
     pub async fn create<'a>(
         mut self,
+        ctx: &dyn AnyAsyncContext,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<Environment> {
         debug_assert!(params.abs_path.is_absolute());
@@ -147,6 +149,7 @@ impl EnvironmentBuilder {
             if let Err(e) = self
                 .storage
                 .put_batch(
+                    ctx,
                     StorageScope::Workspace(self.workspace_id.clone()),
                     &batch_input,
                 )

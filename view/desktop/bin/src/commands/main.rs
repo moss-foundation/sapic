@@ -141,12 +141,12 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |_, app, app_delegate, window| async move {
+        |ctx, app, app_delegate, window| async move {
             app.ensure_welcome(&app_delegate)
                 .await
                 .join_err::<()>("failed to ensure welcome window")?;
 
-            app.close_main_window(window.label())
+            app.close_main_window(&ctx, window.label())
                 .await
                 .join_err::<()>("failed to close main window")?;
 

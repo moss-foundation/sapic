@@ -3,6 +3,7 @@ use sapic_system::workspace::{types::WorkspaceItem, workspace_service::Workspace
 use std::sync::Arc;
 
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_core::context::AnyAsyncContext;
 
 pub struct OldWorkspaceService {
     active_workspace: Arc<Workspace>,
@@ -45,6 +46,7 @@ impl OldWorkspaceService {
 
     pub(crate) async fn workspace_details(
         &self,
+        ctx: &dyn AnyAsyncContext,
         id: &WorkspaceId,
     ) -> joinerror::Result<Option<WorkspaceItem>> {
         // let state_lock = self.state.read().await;
@@ -58,7 +60,7 @@ impl OldWorkspaceService {
         //         last_opened_at: item.last_opened_at,
         //     })
 
-        let workspaces = self.workspace_service.workspaces().await?;
+        let workspaces = self.workspace_service.workspaces(ctx).await?;
 
         Ok(workspaces
             .into_iter()
