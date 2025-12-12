@@ -5,7 +5,7 @@ import { JsonValue } from "@repo/moss-bindingutils";
 /**
  * @category Primitive
  */
-export type OptionalJsonValue = "none" | { "value": JsonValue };
+export type OptionalValue = "none" | { "value": JsonValue };
 
 /**
  * @category Primitive

@@ -9,7 +9,7 @@ export const storageScopeSchema = z.union([
     "workspace": z.string(),
   }),
 ]);
-export const optionalJsonValueSchema = z.union([
+export const optionalValueSchema = z.union([
   z.literal("none"),
   z.object({
     "value": jsonValueSchema,
