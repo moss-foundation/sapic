@@ -3917,6 +3917,7 @@ dependencies = [
  "async-trait",
  "async_zip",
  "atomic_fs",
+ "core",
  "derive_more 2.0.1",
  "futures",
  "joinerror",
