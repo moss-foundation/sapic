@@ -1,9 +1,7 @@
-pub mod error;
 pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
-pub use error::*;
 pub use real::*;
 pub use utils::{desanitize_path, normalize_path, sanitize_path};
 

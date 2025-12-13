@@ -1,4 +1,4 @@
-use crate::{CreateOptions, FileSystem, FsError, FsResult, RemoveOptions, RenameOptions};
+use crate::{CreateOptions, FileSystem, RemoveOptions, RenameOptions};
 use async_stream::stream;
 use async_zip::{
     Compression, ZipEntryBuilder,
@@ -367,13 +367,15 @@ impl FileSystem for RealFileSystem {
 
             for index in 0..reader.file().entries().len() {
                 let entry = &reader.file().entries()[index];
-                let path =
-                    out_dir.join(entry.filename().as_str().map_err(|_| {
-                        FsError::Other("archive entry has non-UTF-8 path".to_string())
-                    })?);
+                let path = out_dir.join(entry.filename().as_str().map_err(|_| {
+                    joinerror::Error::new::<()>("archive entry has non-UTF-8 path")
+                })?);
 
                 let mut entry_reader = reader.reader_without_entry(index).await.map_err(|err| {
-                    FsError::Other(format!("failed to read entry in the archive file: {}", err))
+                    joinerror::Error::new::<()>(format!(
+                        "failed to read entry in the archive file: {}",
+                        err
+                    ))
                 })?;
 
                 let parent = path
