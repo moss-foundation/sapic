@@ -100,17 +100,20 @@ mod tests {
     use moss_fs::RealFileSystem;
     use moss_storage2::KvStorage;
     use moss_testutils::random_name::random_string;
+    use sapic_core::context::ArcContext;
     use sapic_system::workspace::WorkspaceServiceFs as WorkspaceServicePort;
 
     use super::*;
 
     // We need WorkspaceServiceFs and Storage to create a workspace for testing
     async fn setup_workspace_edit_test() -> (
+        ArcContext,
         Arc<WorkspaceServiceFs>,
         Arc<dyn KvStorage>,
         Arc<WorkspaceFsEditBackend>,
         PathBuf,
     ) {
+        let ctx = ArcContext::background();
         let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
             .join("tests")
             .join("data")
@@ -125,22 +128,23 @@ mod tests {
         let workspace_fs = WorkspaceServiceFs::new(fs.clone(), workspaces_dir.clone());
         let storage = MockStorage::new();
         let edit = WorkspaceFsEditBackend::new(fs.clone(), workspaces_dir);
-        (workspace_fs, storage, edit, test_path)
+        (ctx, workspace_fs, storage, edit, test_path)
     }
 
     #[tokio::test]
     async fn test_edit_rename() {
-        let (workspace_fs, storage, edit, test_path) = setup_workspace_edit_test().await;
+        let (ctx, workspace_fs, storage, edit, test_path) = setup_workspace_edit_test().await;
         let id = WorkspaceId::new();
         let old_name = random_string(10);
         let new_name = random_string(10);
 
         workspace_fs
-            .create_workspace(&id, &old_name, storage.clone())
+            .create_workspace(&ctx, &id, &old_name, storage.clone())
             .await
             .unwrap();
 
         edit.edit(
+            &ctx,
             &id,
             WorkspaceEditParams {
                 name: Some(new_name.clone()),
@@ -149,7 +153,7 @@ mod tests {
         .await
         .unwrap();
 
-        let workspaces = workspace_fs.lookup_workspaces().await.unwrap();
+        let workspaces = workspace_fs.lookup_workspaces(&ctx).await.unwrap();
         assert_eq!(workspaces[0].name, new_name);
 
         tokio::fs::remove_dir_all(test_path).await.unwrap();
@@ -157,12 +161,13 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_nonexistent() {
-        let (_workspace_fs, _storage, edit, test_path) = setup_workspace_edit_test().await;
+        let (ctx, _workspace_fs, _storage, edit, test_path) = setup_workspace_edit_test().await;
         let id = WorkspaceId::new();
 
         let new_name = random_string(10);
         let result = edit
             .edit(
+                &ctx,
                 &id,
                 WorkspaceEditParams {
                     name: Some(new_name.clone()),
