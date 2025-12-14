@@ -1,16 +1,16 @@
+use crate::workspace::MANIFEST_FILE_NAME;
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
 use moss_edit::json::{EditOptions, JsonEdit};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::workspace::{WorkspaceEditBackend, WorkspaceEditParams};
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
-
-use crate::workspace::MANIFEST_FILE_NAME;
 
 pub struct WorkspaceFsEditBackend {
     workspaces_dir: PathBuf,
@@ -31,7 +31,12 @@ impl WorkspaceFsEditBackend {
 
 #[async_trait]
 impl WorkspaceEditBackend for WorkspaceFsEditBackend {
-    async fn edit(&self, id: &WorkspaceId, params: WorkspaceEditParams) -> joinerror::Result<()> {
+    async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &WorkspaceId,
+        params: WorkspaceEditParams,
+    ) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
@@ -58,7 +63,7 @@ impl WorkspaceEditBackend for WorkspaceFsEditBackend {
             .join(MANIFEST_FILE_NAME);
         let rdr = self
             .fs
-            .open_file(&abs_path)
+            .open_file(ctx, &abs_path)
             .await
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
@@ -74,6 +79,7 @@ impl WorkspaceEditBackend for WorkspaceFsEditBackend {
 
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path,
                 content.as_bytes(),
                 CreateOptions {

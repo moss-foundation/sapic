@@ -1,6 +1,6 @@
 use derive_more::Deref;
 use futures::Stream;
-use joinerror::OptionExt;
+use joinerror::{OptionExt, ResultExt};
 use moss_common::continue_if_err;
 use moss_environment::{
     AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
@@ -10,7 +10,7 @@ use moss_environment::{
     models::types::AddVariableParams,
     storage::key_variable,
 };
-use moss_fs::{FileSystem, FsResultExt, RemoveOptions};
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_logging::session;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::{FxHashMap, FxHashSet};
@@ -276,7 +276,7 @@ impl EnvironmentService {
             let scan_task = {
                 tokio::spawn(async move {
                     let ctx_clone = ctx_clone.clone();
-                    if let Err(e) = scanner.scan(ctx_clone.as_ref()).await {
+                    if let Err(e) = scanner.scan(ctx_clone).await {
                         session::error!(format!("environment scan failed: {}", e));
                     }
                 })
@@ -537,6 +537,7 @@ impl EnvironmentService {
         let desc = environment.describe(ctx).await?;
         self.fs
             .remove_file(
+                ctx,
                 &desc.abs_path,
                 RemoveOptions {
                     recursive: false,
@@ -672,11 +673,11 @@ impl EnvironmentSourceScanner {
     /// 2. Spawns parallel scanning tasks for each registered environment provider
     /// 3. Collects environments from all providers through a unified channel
     /// 4. Enriches each environment with cached metadata and forwards to the output channel
-    async fn scan(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+    async fn scan(&self, ctx: Arc<dyn AnyAsyncContext>) -> joinerror::Result<()> {
         let data = self
             .storage
             .get_batch_by_prefix(
-                ctx,
+                ctx.as_ref(),
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_ENVIRONMENT_PREFIX,
             )
@@ -704,6 +705,7 @@ impl EnvironmentSourceScanner {
             let fs_clone = self.fs.clone();
             let storage_clone = self.storage.clone();
             let workspace_id_clone = workspace_id.clone();
+            let ctx_clone = ctx.clone();
 
             let task = tokio::spawn(async move {
                 let scan_task = tokio::spawn({
@@ -715,6 +717,7 @@ impl EnvironmentSourceScanner {
 
                     async move {
                         if let Err(e) = scan_source(
+                            ctx_clone.as_ref(),
                             workspace_id_for_scan,
                             fs_for_scan,
                             storage_for_scan,
@@ -745,7 +748,7 @@ impl EnvironmentSourceScanner {
         drop(provider_tx);
 
         while let Some((collection_id, environment)) = provider_rx.recv().await {
-            let desc = match environment.describe(ctx).await {
+            let desc = match environment.describe(ctx.as_ref()).await {
                 Ok(desc) => desc,
                 Err(e) => {
                     session::error!(format!("failed to describe environment: {}", e));
@@ -784,6 +787,7 @@ impl EnvironmentSourceScanner {
 }
 
 async fn scan_source(
+    ctx: &dyn AnyAsyncContext,
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
@@ -793,7 +797,7 @@ async fn scan_source(
         "scanning environment provider: {}",
         job.abs_path.to_string_lossy().to_string()
     );
-    let mut read_dir = fs.read_dir(&job.abs_path).await.map_err(|err| {
+    let mut read_dir = fs.read_dir(ctx, &job.abs_path).await.map_err(|err| {
         joinerror::Error::new::<()>(format!(
             "failed to read directory {} : {}",
             job.abs_path.display(),

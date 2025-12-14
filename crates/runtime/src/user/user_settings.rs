@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_fs::FileSystem;
+use sapic_core::context::AnyAsyncContext;
 use sapic_platform::configuration::FsSettingsStorage;
 use sapic_system::configuration::SettingsStore;
 use serde_json::{Map, Value as JsonValue};
@@ -13,9 +14,13 @@ pub struct UserSettingsService {
 }
 
 impl UserSettingsService {
-    pub async fn new(abs_path: PathBuf, fs: Arc<dyn FileSystem>) -> joinerror::Result<Self> {
+    pub async fn new(
+        ctx: &dyn AnyAsyncContext,
+        abs_path: PathBuf,
+        fs: Arc<dyn FileSystem>,
+    ) -> joinerror::Result<Self> {
         Ok(Self {
-            storage: Arc::new(FsSettingsStorage::new(fs, abs_path.join(SETTINGS_FILE)).await?),
+            storage: Arc::new(FsSettingsStorage::new(ctx, fs, abs_path.join(SETTINGS_FILE)).await?),
         })
     }
 }
@@ -30,9 +35,14 @@ impl SettingsStore for UserSettingsService {
         self.storage.get_value(key).await
     }
 
-    async fn update_value(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
+    async fn update_value(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        key: &str,
+        value: JsonValue,
+    ) -> joinerror::Result<()> {
         self.storage
-            .update_value(key, value)
+            .update_value(ctx, key, value)
             .await
             .join_err_with::<()>(|| format!("failed to update value for key: {}", key))
     }

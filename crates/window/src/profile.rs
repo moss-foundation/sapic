@@ -1,9 +1,11 @@
 mod registry;
 
+use crate::profile::registry::ProfileRegistryItem;
 use moss_common::collections::{nonempty_hashmap::NonEmptyHashMap, nonempty_vec::NonEmptyVec};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_keyring::KeyringClient;
 use sapic_base::user::types::primitives::{AccountKind, ProfileId, SessionKind};
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
     ports::server_api::{
         ServerApiClient,
@@ -17,8 +19,6 @@ use sapic_system::{
 };
 use std::{cell::LazyCell, collections::HashMap, path::Path, sync::Arc};
 use tokio::sync::RwLock;
-
-use crate::profile::registry::ProfileRegistryItem;
 
 pub(crate) const PROFILES_REGISTRY_FILE: &str = "profiles.json";
 
@@ -46,12 +46,13 @@ pub(crate) struct ProfileService {
 
 impl ProfileService {
     pub async fn new(
+        ctx: &dyn AnyAsyncContext,
         dir_abs: &Path,
         fs: Arc<dyn FileSystem>,
         server_api_client: Arc<dyn ServerApiClient>,
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
-        let profiles = load_or_init_profiles(fs.as_ref(), dir_abs).await?;
+        let profiles = load_or_init_profiles(ctx, fs.as_ref(), dir_abs).await?;
 
         let profiles = {
             let first_profile_item = profiles.first().clone();
@@ -174,33 +175,38 @@ async fn activate_profile(
 }
 
 async fn load_or_init_profiles(
+    ctx: &dyn AnyAsyncContext,
     fs: &dyn FileSystem,
     dir_abs: &Path,
 ) -> joinerror::Result<NonEmptyVec<ProfileRegistryItem>> {
     // If the profile registry file was not found, then we create this file by adding the default profile to it.
     if !dir_abs.join(PROFILES_REGISTRY_FILE).exists() {
-        return create_default_profile(fs, dir_abs).await;
+        return create_default_profile(ctx, fs, dir_abs).await;
     }
 
-    let rdr = fs.open_file(&dir_abs.join(PROFILES_REGISTRY_FILE)).await?;
+    let rdr = fs
+        .open_file(ctx, &dir_abs.join(PROFILES_REGISTRY_FILE))
+        .await?;
     let profiles: Vec<ProfileRegistryItem> = serde_json::from_reader(rdr)?;
 
     match NonEmptyVec::from_vec_option(profiles) {
         Some(non_empty_profiles) => Ok(non_empty_profiles),
         None => {
             // If the profile registry file is empty, create with default profile
-            create_default_profile(fs, dir_abs).await
+            create_default_profile(ctx, fs, dir_abs).await
         }
     }
 }
 
 async fn create_default_profile(
+    ctx: &dyn AnyAsyncContext,
     fs: &dyn FileSystem,
     dir_abs: &Path,
 ) -> joinerror::Result<NonEmptyVec<ProfileRegistryItem>> {
     let default_profiles = NonEmptyVec::new(DEFAULT_PROFILE.clone());
     let content = serde_json::to_string_pretty(&default_profiles.clone().into_vec())?;
     fs.create_file_with(
+        ctx,
         &dir_abs.join(PROFILES_REGISTRY_FILE),
         content.as_bytes(),
         CreateOptions {

@@ -1,10 +1,15 @@
 mod rollinglog_writer;
 mod taurilog_writer;
 
+use crate::{
+    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
+    models::{primitives::SessionId, types::LogEntryInfo},
+};
 use chrono::{DateTime, NaiveDate, NaiveDateTime};
 use joinerror::Error;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
+use sapic_core::context::AnyAsyncContext;
 use std::{
     collections::{HashSet, VecDeque},
     ffi::OsStr,
@@ -24,11 +29,6 @@ use tracing_subscriber::{
         time::ChronoLocal,
     },
     prelude::*,
-};
-
-use crate::{
-    logging::{constants::*, rollinglog_writer::RollingLogWriter, taurilog_writer::TauriLogWriter},
-    models::{primitives::SessionId, types::LogEntryInfo},
 };
 
 pub mod constants {
@@ -210,14 +210,20 @@ impl LogService {
 
     pub(crate) async fn list_logs_with_filter(
         &self,
+        ctx: &dyn AnyAsyncContext,
         filter: &LogFilter,
     ) -> joinerror::Result<Vec<LogEntryInfo>> {
         // Combining app and session logs from both the queue and the files
         let app_logs = self
-            .combine_logs(&self.applog_path, filter, self.applog_queue.clone())
+            .combine_logs(ctx, &self.applog_path, filter, self.applog_queue.clone())
             .await?;
         let session_logs = self
-            .combine_logs(&self.sessionlog_path, filter, self.sessionlog_queue.clone())
+            .combine_logs(
+                ctx,
+                &self.sessionlog_path,
+                filter,
+                self.sessionlog_queue.clone(),
+            )
             .await?;
         let merged_logs = LogService::merge_logs_chronologically(app_logs, session_logs)
             .into_iter()
@@ -232,12 +238,13 @@ impl LogService {
 impl LogService {
     async fn find_files_by_dates(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &Path,
         dates_filter: &HashSet<NaiveDate>,
     ) -> joinerror::Result<Vec<PathBuf>> {
         // Find log files with the given dates
         let mut file_list = Vec::new();
-        let mut read_dir = self.fs.read_dir(path).await?;
+        let mut read_dir = self.fs.read_dir(ctx, path).await?;
 
         while let Some(entry) = read_dir.next_entry().await? {
             let path = entry.path();
@@ -269,13 +276,14 @@ impl LogService {
     }
     async fn parse_file_with_filter(
         &self,
+        ctx: &dyn AnyAsyncContext,
         records: &mut Vec<(NaiveDateTime, LogEntryInfo)>,
         file_path: &Path,
         filter: &LogFilter,
     ) -> joinerror::Result<()> {
         // In the log files, each line is a LogEntry JSON object
         // Entries in each log files are already sorted chronologically
-        let file = self.fs.open_file(file_path).await?;
+        let file = self.fs.open_file(ctx, file_path).await?;
 
         for line in BufReader::new(file).lines() {
             let line = line?;
@@ -301,6 +309,7 @@ impl LogService {
 
     async fn combine_logs(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &Path,
         filter: &LogFilter,
         queue: Arc<Mutex<VecDeque<LogEntryInfo>>>,
@@ -310,12 +319,12 @@ impl LogService {
         let mut result = Vec::new();
 
         let dates = filter.dates.iter().cloned().collect::<HashSet<_>>();
-        let files = self.find_files_by_dates(path, &dates).await?;
+        let files = self.find_files_by_dates(ctx, path, &dates).await?;
 
         // The files are sorted chronologically, so are the log entries within a file
         // This will produce a vec of sorted LogEntryInfo
         for file in files {
-            self.parse_file_with_filter(&mut result, &file, &filter)
+            self.parse_file_with_filter(ctx, &mut result, &file, &filter)
                 .await?;
         }
 

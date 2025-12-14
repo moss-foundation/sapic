@@ -10,7 +10,7 @@ use crate::{
 impl Workspace {
     pub async fn export_project<R: AppRuntime>(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &ExportProjectInput,
     ) -> joinerror::Result<ExportProjectOutput> {
         input.validate().join_err_bare()?;
@@ -18,7 +18,7 @@ impl Workspace {
 
         let archive_path = self
             .project_service
-            .export_collection(&id, &input.inner)
+            .export_collection(ctx, &id, &input.inner)
             .await?;
 
         Ok(ExportProjectOutput { archive_path })

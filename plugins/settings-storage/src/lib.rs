@@ -5,7 +5,7 @@ use joinerror::OptionExt;
 use sapic_runtime::app::{GenericAppHandle, settings_storage::SettingsStorage};
 use std::sync::{Arc, OnceLock};
 use tauri::{
-    AppHandle, Runtime,
+    AppHandle, Runtime, State,
     plugin::{Builder, TauriPlugin},
 };
 use tracing::instrument;
@@ -14,6 +14,8 @@ use crate::operations::*;
 
 pub(crate) type ProviderCallback =
     Arc<dyn Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn SettingsStorage>> + Send + Sync>;
+
+type AsyncContext<'a> = State<'a, sapic_core::context::ArcContext>;
 
 pub(crate) static PROVIDER_CALLBACK: OnceLock<ProviderCallback> = OnceLock::new();
 
@@ -63,6 +65,7 @@ async fn get_value<'a, R: tauri::Runtime>(
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(app_handle))]
 async fn update_value<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: UpdateValueInput,
 ) -> joinerror::Result<UpdateValueOutput> {
@@ -73,7 +76,12 @@ async fn update_value<'a, R: tauri::Runtime>(
     let settings_storage: Arc<dyn SettingsStorage> = provider(&GenericAppHandle::new(app_handle))?;
 
     settings_storage
-        .update_value(&input.scope.clone().into(), &input.key, input.value)
+        .update_value(
+            ctx.inner(),
+            &input.scope.clone().into(),
+            &input.key,
+            input.value,
+        )
         .await?;
 
     Ok(UpdateValueOutput {})

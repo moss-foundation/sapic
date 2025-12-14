@@ -1,7 +1,10 @@
 use async_trait::async_trait;
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::configuration::ConfigurationModel;
-use sapic_core::subscription::{EventEmitter, EventMarker};
+use sapic_core::{
+    context::AnyAsyncContext,
+    subscription::{EventEmitter, EventMarker},
+};
 use sapic_system::configuration::{SettingsStore, configuration_registry::ConfigurationRegistry};
 use serde_json::Value as JsonValue;
 use std::sync::Arc;
@@ -31,6 +34,7 @@ pub trait SettingsStorage: Send + Sync {
     ) -> joinerror::Result<Option<JsonValue>>;
     async fn update_value(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: &SettingScope,
         key: &str,
         value: JsonValue,
@@ -135,6 +139,7 @@ impl SettingsStorage for AppSettingsStorage {
     }
     async fn update_value(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: &SettingScope,
         key: &str,
         value: JsonValue,
@@ -146,7 +151,7 @@ impl SettingsStorage for AppSettingsStorage {
         }
 
         if scope.is_user() {
-            return self.user_settings.update_value(key, value).await;
+            return self.user_settings.update_value(ctx, key, value).await;
         }
 
         if scope.is_workspace() {

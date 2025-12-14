@@ -28,6 +28,7 @@ pub struct ExtensionService<R: AppRuntime> {
 
 impl<R: AppRuntime> ExtensionService<R> {
     pub async fn new(
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         fs: Arc<dyn FileSystem>,
         points: Vec<Box<dyn ExtensionPoint<R>>>,
@@ -49,7 +50,7 @@ impl<R: AppRuntime> ExtensionService<R> {
             ],
         );
 
-        let descriptions = scanner.scan().await?;
+        let descriptions = scanner.scan(ctx).await?;
         for desc in descriptions {
             let info = LoadedExtensionInfo {
                 source: desc.abs_path.clone(),
