@@ -97,8 +97,10 @@ pub async fn setup_test_app() -> (
         auth_gateway_url,
         8081,
     ));
+    let ctx = ArcContext::background();
 
     let user = AppUser::new(
+        &ctx,
         delegate.user_dir(),
         fs.clone(),
         server_api_client.clone(),
@@ -121,7 +123,6 @@ pub async fn setup_test_app() -> (
 
     tao_app_handle.manage(delegate.clone());
 
-    let ctx = ArcContext::background();
     let ctx_clone = ctx.clone();
     let app = {
         let app_init_ctx = ArcContext::new_with_timeout(ctx_clone, Duration::from_secs(30));

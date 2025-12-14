@@ -6,7 +6,7 @@ use async_trait::async_trait;
 use moss_storage2::KvStorage;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::AnyAsyncContext;
-use std::{any::Any, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 
 pub struct LookedUpWorkspace {
     pub id: WorkspaceId,
