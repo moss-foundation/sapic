@@ -3,6 +3,7 @@ use joinerror::ResultExt;
 use moss_fs::FileSystem;
 use regorus::Value as RegoValue;
 use sapic_base::theme::manifest::ThemeFile;
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::theme::ThemeLoader as ThemeLoaderPort;
 use std::{
     path::{Path, PathBuf},
@@ -51,12 +52,12 @@ impl ColorThemeLoader {
 
 #[async_trait]
 impl ThemeLoaderPort for ColorThemeLoader {
-    async fn load(&self, path: &Path) -> joinerror::Result<ThemeFile> {
-        let rdr = self.fs.open_file(path).await?;
+    async fn load(&self, ctx: &dyn AnyAsyncContext, path: &Path) -> joinerror::Result<ThemeFile> {
+        let rdr = self.fs.open_file(ctx, path).await?;
         let file: ThemeFile = serde_json::from_reader(rdr)?;
 
         let mut buf = String::new();
-        let mut policy_rdr = self.fs.open_file(&self.policy_path).await?;
+        let mut policy_rdr = self.fs.open_file(ctx, &self.policy_path).await?;
         policy_rdr.read_to_string(&mut buf)?;
 
         self.validate(&file, buf)?;

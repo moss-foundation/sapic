@@ -1,8 +1,9 @@
 use joinerror::ResultExt;
 use json_patch::PatchOperation;
 use moss_edit::json::{EditOptions, JsonEdit};
-use moss_fs::{CreateOptions, FileSystem, RenameOptions, error::FsResultExt};
+use moss_fs::{CreateOptions, FileSystem, RenameOptions};
 use moss_hcl::HclResultExt;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
 use tokio::sync::{RwLock, watch};
@@ -35,7 +36,7 @@ impl EnvironmentEditing {
         }
     }
 
-    pub async fn rename(&self, new_name: &str) -> joinerror::Result<()> {
+    pub async fn rename(&self, ctx: &dyn AnyAsyncContext, new_name: &str) -> joinerror::Result<()> {
         let parent = self.abs_path_tx.borrow().parent.clone();
         let new_abs_path = EnvironmentPath::new(parent.join(new_name))
             .join_err::<()>("failed to create new environment path")?;
@@ -43,6 +44,7 @@ impl EnvironmentEditing {
         let mut state_lock = self.state.write().await;
         self.fs
             .rename(
+                ctx,
                 &state_lock.abs_path,
                 &new_abs_path.full_path,
                 RenameOptions {
@@ -60,12 +62,16 @@ impl EnvironmentEditing {
         Ok(())
     }
 
-    pub async fn edit(&self, params: &[(PatchOperation, EditOptions)]) -> joinerror::Result<()> {
+    pub async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &[(PatchOperation, EditOptions)],
+    ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
 
         let rdr = self
             .fs
-            .open_file(&state_lock.abs_path)
+            .open_file(ctx, &state_lock.abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to open file: {}", state_lock.abs_path.display())
@@ -82,6 +88,7 @@ impl EnvironmentEditing {
         let content = hcl::to_string(&parsed).join_err::<()>("failed to serialize json")?;
         self.fs
             .create_file_with(
+                ctx,
                 &state_lock.abs_path,
                 content.as_bytes(),
                 CreateOptions {

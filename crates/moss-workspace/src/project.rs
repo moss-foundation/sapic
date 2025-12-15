@@ -4,7 +4,7 @@ use joinerror::{Error, OptionExt, ResultExt};
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
 use moss_common::{continue_if_err, continue_if_none};
-use moss_fs::{FileSystem, RemoveOptions, error::FsResultExt};
+use moss_fs::{FileSystem, RemoveOptions};
 use moss_git::url::GitUrl;
 use moss_logging::session;
 use moss_project::{
@@ -196,7 +196,7 @@ impl ProjectService {
         account: Option<Account>,
         params: &CreateProjectParams,
     ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback().await?;
+        let mut rb = self.fs.start_rollback(ctx).await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
@@ -208,7 +208,7 @@ impl ProjectService {
         }
 
         self.fs
-            .create_dir_with_rollback(&mut rb, &abs_path)
+            .create_dir_with_rollback(ctx, &mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
@@ -274,13 +274,16 @@ impl ProjectService {
         let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
         let project = match builder
-            .create(ProjectCreateParams {
-                name: Some(params.name.to_owned()),
-                internal_abs_path: abs_path.clone(),
-                external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                git_params: git_params.clone(),
-                icon_path: params.icon_path.to_owned(),
-            })
+            .create(
+                ctx,
+                ProjectCreateParams {
+                    name: Some(params.name.to_owned()),
+                    internal_abs_path: abs_path.clone(),
+                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+                    git_params: git_params.clone(),
+                    icon_path: params.icon_path.to_owned(),
+                },
+            )
             .await
             .join_err::<()>("failed to build collection")
         {
@@ -403,7 +406,7 @@ impl ProjectService {
         account: Account,
         params: ProjectItemCloneParams,
     ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback().await?;
+        let mut rb = self.fs.start_rollback(ctx).await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
@@ -415,7 +418,7 @@ impl ProjectService {
         }
 
         self.fs
-            .create_dir_with_rollback(&mut rb, &abs_path)
+            .create_dir_with_rollback(ctx, &mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
@@ -477,7 +480,7 @@ impl ProjectService {
             }
         };
 
-        let desc = collection.details().await?;
+        let desc = collection.details(ctx).await?;
         let vcs = collection
             .vcs::<R>()
             .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
@@ -575,10 +578,11 @@ impl ProjectService {
 
         if abs_path.exists() {
             if let Some(item) = item {
-                item.dispose().await?;
+                item.dispose(ctx).await?;
             }
             self.fs
                 .remove_dir(
+                    ctx,
                     &abs_path,
                     RemoveOptions {
                         recursive: true,
@@ -661,11 +665,14 @@ impl ProjectService {
 
         // TODO: Implement relinking and unlinking remote repo when the user update it
 
-        item.modify(ProjectModifyParams {
-            name: params.name,
-            repository: params.repository,
-            icon_path: params.icon_path,
-        })
+        item.modify(
+            ctx,
+            ProjectModifyParams {
+                name: params.name,
+                repository: params.repository,
+                icon_path: params.icon_path,
+            },
+        )
         .await
         .join_err_with::<()>(|| {
             format!("failed to modify collection with id `{}`", id.to_string())
@@ -710,17 +717,17 @@ impl ProjectService {
         ctx: &R::AsyncContext,
     ) -> Pin<Box<dyn Stream<Item = ProjectItemDescription> + Send + '_>> {
         let state_clone = self.state.clone();
-        let ctx_clone = ctx.clone();
+        let ctx_clone = Arc::new(ctx.clone());
 
         Box::pin(async_stream::stream! {
             let state_lock = state_clone.read().await;
             for (id, item) in state_lock.projects.iter() {
-                let details = continue_if_err!(item.details().await, |e: Error| {
+                let details = continue_if_err!(item.details(ctx_clone.as_ref()).await, |e: Error| {
                     session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
                 });
 
                 let vcs = if let Some(vcs) = item.vcs::<R>() {
-                    match vcs.summary(&ctx_clone).await {
+                    match vcs.summary(ctx_clone.as_ref()).await {
                         Ok(summary) => Some(summary),
                         Err(e) => {
                             session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
@@ -749,7 +756,7 @@ impl ProjectService {
 
     pub(crate) async fn archive_project(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -760,12 +767,12 @@ impl ProjectService {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
-        item.archive().await
+        item.archive(ctx).await
     }
 
     pub(crate) async fn unarchive_project(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -776,7 +783,7 @@ impl ProjectService {
                 format!("failed to find collection with id `{}`", id.to_string())
             })?;
 
-        item.unarchive().await
+        item.unarchive(ctx).await
     }
 
     pub(crate) async fn import_archived_project(
@@ -785,7 +792,7 @@ impl ProjectService {
         id: &ProjectId,
         params: ProjectItemImportFromArchiveParams,
     ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback().await?;
+        let mut rb = self.fs.start_rollback(ctx).await?;
 
         let id_str = id.to_string();
         let abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
@@ -797,7 +804,7 @@ impl ProjectService {
         }
 
         self.fs
-            .create_dir_with_rollback(&mut rb, &abs_path)
+            .create_dir_with_rollback(ctx, &mut rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
@@ -806,10 +813,13 @@ impl ProjectService {
         let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
         let collection = match builder
-            .import_archive(ProjectImportArchiveParams {
-                internal_abs_path: abs_path.clone(),
-                archive_path: params.archive_path.into(),
-            })
+            .import_archive(
+                ctx,
+                ProjectImportArchiveParams {
+                    internal_abs_path: abs_path.clone(),
+                    archive_path: params.archive_path.into(),
+                },
+            )
             .await
             .join_err::<()>("failed to import project from archive file")
         {
@@ -824,11 +834,14 @@ impl ProjectService {
 
         // Update the collection name based on user input
         if let Err(e) = collection
-            .modify(ProjectModifyParams {
-                name: Some(params.name),
-                repository: None,
-                icon_path: None,
-            })
+            .modify(
+                ctx,
+                ProjectModifyParams {
+                    name: Some(params.name),
+                    repository: None,
+                    icon_path: None,
+                },
+            )
             .await
         {
             let _ = rb.rollback().await.map_err(|e| {
@@ -837,7 +850,7 @@ impl ProjectService {
             return Err(e);
         }
 
-        let desc = collection.details().await?;
+        let desc = collection.details(ctx).await?;
 
         let icon_path = collection.icon_path();
         {
@@ -910,7 +923,7 @@ impl ProjectService {
         id: &ProjectId,
         params: ProjectItemImportFromDiskParams,
     ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback().await?;
+        let mut rb = self.fs.start_rollback(ctx).await?;
 
         let id_str = id.to_string();
         let internal_abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
@@ -922,7 +935,7 @@ impl ProjectService {
         }
 
         self.fs
-            .create_dir_with_rollback(&mut rb, &internal_abs_path)
+            .create_dir_with_rollback(ctx, &mut rb, &internal_abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!(
@@ -933,10 +946,13 @@ impl ProjectService {
 
         let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
         let project = match builder
-            .import_external(ProjectImportExternalParams {
-                internal_abs_path: internal_abs_path.clone(),
-                external_abs_path: params.external_path.clone().into(),
-            })
+            .import_external(
+                ctx,
+                ProjectImportExternalParams {
+                    internal_abs_path: internal_abs_path.clone(),
+                    external_abs_path: params.external_path.clone().into(),
+                },
+            )
             .await
             .join_err::<()>("failed to import external project")
         {
@@ -950,7 +966,7 @@ impl ProjectService {
         };
 
         let icon_path = project.icon_path();
-        let name = project.details().await?.name;
+        let name = project.details(ctx).await?.name;
         let vcs_summary = if let Some(vcs) = project.vcs::<R>() {
             match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),
@@ -1025,6 +1041,7 @@ impl ProjectService {
 
     pub(crate) async fn export_collection(
         &self,
+        ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
         params: &ExportProjectParams,
     ) -> joinerror::Result<PathBuf> {
@@ -1033,7 +1050,7 @@ impl ProjectService {
             format!("failed to find collection with id `{}`", id.to_string())
         })?;
 
-        item.export_archive(&params.destination).await
+        item.export_archive(ctx, &params.destination).await
     }
 
     /// List file statuses for all collections that have a repository handle
@@ -1098,7 +1115,7 @@ async fn restore_projects<R: AppRuntime>(
 
     let mut projects = Vec::new();
     let mut read_dir = fs
-        .read_dir(&abs_path)
+        .read_dir(ctx, &abs_path)
         .await
         .join_err_with::<()>(|| format!("failed to read directory `{}`", abs_path.display()))?;
 
@@ -1126,9 +1143,12 @@ async fn restore_projects<R: AppRuntime>(
             let builder = ProjectBuilder::new(fs.clone(), storage.clone(), id.clone()).await;
 
             let project_result = builder
-                .load(ProjectLoadParams {
-                    internal_abs_path: project_abs_path,
-                })
+                .load(
+                    ctx,
+                    ProjectLoadParams {
+                        internal_abs_path: project_abs_path,
+                    },
+                )
                 .await;
             match project_result {
                 Ok(project) => project,
@@ -1158,7 +1178,7 @@ async fn restore_projects<R: AppRuntime>(
         }
         // Only load the vcs if the collection is not archived
 
-        let details = match project.details().await {
+        let details = match project.details(ctx).await {
             Ok(details) => details,
             Err(e) => {
                 app_delegate.emit_oneshot(ToLocation::Toast {
@@ -1201,7 +1221,7 @@ async fn restore_projects<R: AppRuntime>(
                 },
             };
 
-            if let Err(e) = project.load_vcs(client).await {
+            if let Err(e) = project.load_vcs(ctx, client).await {
                 let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                     activity_id: "restore_collections_failed_to_load_vcs",
                     title: localize!(NO_TRANSLATE_KEY, "Failed to load project vcs"),

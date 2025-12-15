@@ -1,7 +1,7 @@
 use indexmap::IndexMap;
 use joinerror::{Error, ResultExt};
 use moss_common::continue_if_err;
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_hcl::{Block, HclResultExt, LabeledBlock, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -61,6 +61,7 @@ impl EnvironmentBuilder {
 
     pub async fn initialize<'a>(
         &mut self,
+        ctx: &dyn AnyAsyncContext,
         params: CreateEnvironmentParams<'a>,
     ) -> joinerror::Result<PathBuf> {
         debug_assert!(params.abs_path.is_absolute());
@@ -110,6 +111,7 @@ impl EnvironmentBuilder {
 
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path,
                 content.as_bytes(),
                 CreateOptions {
@@ -133,7 +135,7 @@ impl EnvironmentBuilder {
         debug_assert!(params.abs_path.is_absolute());
 
         let abs_path = self
-            .initialize(params)
+            .initialize(ctx, params)
             .await
             .join_err::<()>("failed to initialize environment")?;
 

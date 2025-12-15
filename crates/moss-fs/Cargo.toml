@@ -5,7 +5,10 @@ edition = "2024"
 license = "MIT"
 
 [dependencies]
+sapic-core.workspace = true
+
 atomic_fs.workspace = true
+
 moss_applib.workspace = true
 moss_text.workspace = true
 

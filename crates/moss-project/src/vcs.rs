@@ -66,7 +66,11 @@ impl Vcs {
 
     // Sometimes objects might be set as readonly, preventing them from being deleted
     // we will need to recursively set all files in .git/objects as writable
-    pub(crate) async fn dispose(&self, fs: Arc<dyn FileSystem>) -> joinerror::Result<()> {
+    pub(crate) async fn dispose(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        fs: Arc<dyn FileSystem>,
+    ) -> joinerror::Result<()> {
         let repo_handle = self.repository.write().await.take();
         if repo_handle.is_none() {
             return Ok(());
@@ -78,7 +82,7 @@ impl Vcs {
         let mut folders = vec![path.join("objects")];
 
         while let Some(folder) = folders.pop() {
-            let mut read_dir = fs.read_dir(&folder).await?;
+            let mut read_dir = fs.read_dir(ctx, &folder).await?;
             while let Some(entry) = read_dir.next_entry().await? {
                 if entry.file_type().await?.is_dir() {
                     folders.push(entry.path());
@@ -90,6 +94,7 @@ impl Vcs {
         }
 
         fs.remove_dir(
+            ctx,
             &path,
             RemoveOptions {
                 recursive: true,

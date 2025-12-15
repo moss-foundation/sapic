@@ -6,7 +6,7 @@ use json_patch::{
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
 use moss_edit::json::EditOptions;
-use moss_fs::{FileSystem, FsResultExt};
+use moss_fs::FileSystem;
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -87,7 +87,7 @@ impl AnyEnvironment for Environment {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
-            .open_file(&abs_path)
+            .open_file(ctx, &abs_path)
             .await
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
@@ -165,7 +165,7 @@ impl AnyEnvironment for Environment {
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
-            self.edit.rename(&new_name).await?;
+            self.edit.rename(ctx, &new_name).await?;
         }
 
         let mut patches = Vec::new();
@@ -438,7 +438,7 @@ impl AnyEnvironment for Environment {
         }
 
         self.edit
-            .edit(&patches)
+            .edit(ctx, &patches)
             .await
             .join_err::<()>("failed to edit environment")?;
 

@@ -49,7 +49,7 @@ impl WorkspaceService {
             );
         }
 
-        let deleted_path = self.fs.delete_workspace(id).await?;
+        let deleted_path = self.fs.delete_workspace(ctx, id).await?;
 
         Ok(deleted_path)
     }
@@ -70,7 +70,7 @@ impl WorkspaceService {
 
         let discovered_workspaces = self
             .fs
-            .lookup_workspaces()
+            .lookup_workspaces(ctx)
             .await
             .join_err::<()>("failed to lookup workspaces")?;
 
@@ -101,11 +101,15 @@ impl WorkspaceService {
 
 #[async_trait]
 impl WorkspaceCreateOp for WorkspaceService {
-    async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
+    async fn create(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        name: String,
+    ) -> joinerror::Result<CreatedWorkspace> {
         let id = WorkspaceId::new();
         let abs_path = self
             .fs
-            .create_workspace(&id, &name, self.storage.clone())
+            .create_workspace(ctx, &id, &name, self.storage.clone())
             .await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })

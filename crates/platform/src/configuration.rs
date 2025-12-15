@@ -2,8 +2,9 @@ use async_trait::async_trait;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_edit::json::{EditOptions, JsonEdit};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use sapic_base::configuration::ConfigurationModel;
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::configuration::SettingsStore;
 use serde_json::{Map, Value as JsonValue};
 use std::{
@@ -20,8 +21,12 @@ pub struct FsSettingsStorage {
 }
 
 impl FsSettingsStorage {
-    pub async fn new(fs: Arc<dyn FileSystem>, abs_path: PathBuf) -> joinerror::Result<Self> {
-        let parsed = Self::load_internal(fs.as_ref(), &abs_path).await?;
+    pub async fn new(
+        ctx: &dyn AnyAsyncContext,
+        fs: Arc<dyn FileSystem>,
+        abs_path: PathBuf,
+    ) -> joinerror::Result<Self> {
+        let parsed = Self::load_internal(ctx, fs.as_ref(), &abs_path).await?;
 
         Ok(Self {
             fs,
@@ -34,8 +39,8 @@ impl FsSettingsStorage {
         })
     }
 
-    async fn reload(&self) -> joinerror::Result<()> {
-        let parsed = Self::load_internal(self.fs.as_ref(), &self.abs_path).await?;
+    async fn reload(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+        let parsed = Self::load_internal(ctx, self.fs.as_ref(), &self.abs_path).await?;
         *self.model.write().await = ConfigurationModel {
             keys: parsed.keys().map(|key| key.clone()).collect(),
             contents: parsed,
@@ -45,6 +50,7 @@ impl FsSettingsStorage {
     }
 
     async fn load_internal(
+        ctx: &dyn AnyAsyncContext,
         fs: &dyn FileSystem,
         source: &Path,
     ) -> joinerror::Result<Map<String, JsonValue>> {
@@ -52,7 +58,7 @@ impl FsSettingsStorage {
             return Ok(Map::new());
         }
 
-        let rdr = fs.open_file(&source).await.join_err_with::<()>(|| {
+        let rdr = fs.open_file(ctx, &source).await.join_err_with::<()>(|| {
             format!("failed to open profile settings file: {}", source.display())
         })?;
 
@@ -75,12 +81,18 @@ impl SettingsStore for FsSettingsStorage {
         self.model.read().await.contents.get(key).cloned()
     }
 
-    async fn update_value(&self, key: &str, value: JsonValue) -> joinerror::Result<()> {
+    async fn update_value(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        key: &str,
+        value: JsonValue,
+    ) -> joinerror::Result<()> {
         if !self.abs_path.exists() {
             let parent = self.abs_path.parent().unwrap();
-            self.fs.create_dir_all(parent).await?;
+            self.fs.create_dir_all(ctx, parent).await?;
             self.fs
                 .create_file_with(
+                    ctx,
                     &self.abs_path,
                     b"{}",
                     CreateOptions {
@@ -114,6 +126,7 @@ impl SettingsStore for FsSettingsStorage {
 
         self.fs
             .create_file_with(
+                ctx,
                 &self.abs_path,
                 content.as_bytes(),
                 CreateOptions {
@@ -124,7 +137,7 @@ impl SettingsStore for FsSettingsStorage {
             .await
             .join_err_with::<()>(|| format!("failed to write file: {}", self.abs_path.display()))?;
 
-        self.reload().await
+        self.reload(ctx).await
     }
 
     async fn remove_value(&self, _key: &str) -> joinerror::Result<Option<JsonValue>> {

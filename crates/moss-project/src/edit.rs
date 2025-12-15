@@ -1,7 +1,8 @@
 use joinerror::ResultExt;
 use json_patch::PatchOperation;
 use moss_edit::json::{EditOptions, JsonEdit};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::RwLock;
@@ -27,10 +28,14 @@ impl ProjectEdit {
         }
     }
 
-    pub async fn edit(&self, params: &[(PatchOperation, EditOptions)]) -> joinerror::Result<()> {
+    pub async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &[(PatchOperation, EditOptions)],
+    ) -> joinerror::Result<()> {
         let rdr = self
             .fs
-            .open_file(&self.manifest_abs_path)
+            .open_file(ctx, &self.manifest_abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to open file: {}", self.manifest_abs_path.display())
@@ -49,6 +54,7 @@ impl ProjectEdit {
 
         self.fs
             .create_file_with(
+                ctx,
                 &self.manifest_abs_path,
                 content.as_bytes(),
                 CreateOptions {

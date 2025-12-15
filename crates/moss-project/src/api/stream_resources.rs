@@ -81,13 +81,13 @@ impl Project {
             let handle = tokio::spawn({
                 let expanded_entries_clone = expanded_entries.clone();
                 let all_entry_keys_clone = all_entry_keys.clone();
-                let ctx_clone = ctx.clone();
+                let ctx = Arc::new(ctx.clone());
                 let app_handle_clone = app_delegate.clone();
 
                 async move {
                     let _ = worktree_service_clone
                         .scan(
-                            &ctx_clone,
+                            ctx,
                             app_handle_clone,
                             &dir,
                             expanded_entries_clone,

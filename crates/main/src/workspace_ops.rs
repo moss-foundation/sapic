@@ -1,3 +1,4 @@
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::workspace::{CreatedWorkspace, WorkspaceCreateOp};
 use std::sync::Arc;
 
@@ -11,7 +12,11 @@ impl MainWindowWorkspaceOps {
         Self { create_workspace }
     }
 
-    pub async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
-        self.create_workspace.create(name).await
+    pub async fn create(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        name: String,
+    ) -> joinerror::Result<CreatedWorkspace> {
+        self.create_workspace.create(ctx, name).await
     }
 }

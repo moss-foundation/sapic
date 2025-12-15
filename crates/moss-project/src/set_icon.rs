@@ -1,12 +1,12 @@
+use crate::dirs;
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
 use moss_fs::{FileSystem, RemoveOptions};
+use sapic_core::context::AnyAsyncContext;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-
-use crate::dirs;
 
 const COLLECTION_ICON_FILENAME: &str = "icon.png";
 pub struct SetIconService {
@@ -36,9 +36,10 @@ impl SetIconService {
         Ok(())
     }
 
-    pub async fn remove_icon(&self) -> Result<()> {
+    pub async fn remove_icon(&self, ctx: &dyn AnyAsyncContext) -> Result<()> {
         self.fs
             .remove_file(
+                ctx,
                 &self.assets_abs_path.join(COLLECTION_ICON_FILENAME),
                 RemoveOptions {
                     recursive: false,

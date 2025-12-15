@@ -166,6 +166,7 @@ pub async fn run<R: TauriRuntime>() {
                 );
 
                 let user = AppUser::new(
+                    &ctx,
                     delegate.user_dir(),
                     fs.clone(),
                     server_api_client.clone(),

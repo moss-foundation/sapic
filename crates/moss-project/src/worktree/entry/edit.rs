@@ -1,16 +1,16 @@
-use joinerror::{Error, OptionExt, ResultExt};
-use json_patch::PatchOperation;
-use moss_edit::json::{EditOptions, JsonEdit};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt, RenameOptions};
-use moss_hcl::HclResultExt;
-use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
-use tokio::sync::{RwLock, watch};
-
 use crate::{
     errors::{ErrorAlreadyExists, ErrorInternal},
     worktree::entry::model::EntryModel,
 };
+use joinerror::{Error, OptionExt, ResultExt};
+use json_patch::PatchOperation;
+use moss_edit::json::{EditOptions, JsonEdit};
+use moss_fs::{CreateOptions, FileSystem, RenameOptions};
+use moss_hcl::HclResultExt;
+use sapic_core::context::AnyAsyncContext;
+use serde_json::Value as JsonValue;
+use std::{path::Path, sync::Arc};
+use tokio::sync::{RwLock, watch};
 
 struct EntryEditingState {
     path: Arc<Path>,
@@ -44,7 +44,13 @@ impl EntryEditing {
         }
     }
 
-    pub async fn rename(&self, abs_path: &Path, from: &Path, to: &Path) -> joinerror::Result<()> {
+    pub async fn rename(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+        from: &Path,
+        to: &Path,
+    ) -> joinerror::Result<()> {
         debug_assert!(abs_path.is_absolute());
         debug_assert!(from.is_relative());
         debug_assert!(to.is_relative());
@@ -78,6 +84,7 @@ impl EntryEditing {
         let mut state_lock = self.state.write().await;
         self.fs
             .rename(
+                ctx,
                 &abs_from,
                 &abs_to,
                 RenameOptions {
@@ -99,6 +106,7 @@ impl EntryEditing {
 
     pub async fn edit(
         &self,
+        ctx: &dyn AnyAsyncContext,
         abs_path: &Path,
         params: &[(PatchOperation, EditOptions)],
     ) -> joinerror::Result<()> {
@@ -107,7 +115,7 @@ impl EntryEditing {
         let abs_path = abs_path.join(&state_lock.path.join(&self.config_filename));
         let rdr = self
             .fs
-            .open_file(&abs_path)
+            .open_file(ctx, &abs_path)
             .await
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
@@ -122,6 +130,7 @@ impl EntryEditing {
         let content = hcl::to_string(&parsed).join_err::<()>("failed to serialize json")?;
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path,
                 content.as_bytes(),
                 CreateOptions {

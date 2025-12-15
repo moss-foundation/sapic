@@ -10,14 +10,14 @@ use crate::WelcomeWindow;
 impl<R: AppRuntime> WelcomeWindow<R> {
     pub async fn create_workspace(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &CreateWorkspaceInput,
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
         let output = self
             .workspace_ops
-            .create_workspace(input.name.clone())
+            .create_workspace(ctx, input.name.clone())
             .await?;
 
         Ok(CreateWorkspaceOutput {

@@ -184,6 +184,7 @@ impl Worktree {
 
         self.fs
             .remove_dir(
+                ctx,
                 &abs_path,
                 RemoveOptions {
                     recursive: true,
@@ -233,7 +234,7 @@ impl Worktree {
 
     pub async fn scan<R: AppRuntime>(
         &self,
-        _ctx: &dyn AnyAsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
+        ctx: Arc<dyn AnyAsyncContext>, // TODO: use ctx ctx.done() to cancel the scan if needed
         app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<ResourceId>>,
@@ -276,11 +277,13 @@ impl Worktree {
                 job.path.display().to_string()
             )))?;
 
+            let ctx_clone = ctx.clone();
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
-
+                let ctx_clone = ctx_clone.clone();
                 if !job.path.as_os_str().is_empty() {
                     match process_entry(
+                        ctx_clone.clone(),
                         job.path.clone(),
                         &all_entry_keys,
                         &expanded_entries,
@@ -360,6 +363,7 @@ impl Worktree {
                     let maybe_entry = if child_file_type.is_dir() {
                         continue_if_err!(
                             process_entry(
+                                ctx_clone.clone(),
                                 child_path.clone(),
                                 &all_entry_keys,
                                 &expanded_entries,
@@ -441,7 +445,7 @@ impl Worktree {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry_internal(&sanitized_path, false, &content.as_bytes())
+        self.create_entry_internal(ctx, &sanitized_path, false, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -509,7 +513,7 @@ impl Worktree {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry_internal(&sanitized_path, true, &content.as_bytes())
+        self.create_entry_internal(ctx, &sanitized_path, true, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -589,6 +593,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -603,6 +608,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -686,6 +692,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -700,6 +707,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -777,7 +785,7 @@ impl Worktree {
             .unwrap_or_else(|| entry_path.to_string_lossy().to_string());
 
         if dir_config_path.exists() {
-            let mut rdr = self.fs.open_file(&dir_config_path).await?;
+            let mut rdr = self.fs.open_file(ctx, &dir_config_path).await?;
             let model: EntryModel =
                 hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
@@ -808,7 +816,7 @@ impl Worktree {
                 .into_iter()
                 .collect::<HashMap<_, _>>();
 
-            let mut rdr = self.fs.open_file(&item_config_path).await?;
+            let mut rdr = self.fs.open_file(ctx, &item_config_path).await?;
             let model: EntryModel =
                 hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
             let class = model.class();
@@ -969,6 +977,7 @@ impl Worktree {
 impl Worktree {
     async fn create_entry_internal(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &SanitizedPath,
         is_dir: bool,
         content: &[u8],
@@ -981,7 +990,7 @@ impl Worktree {
             )));
         }
 
-        self.fs.create_dir(&abs_path).await?;
+        self.fs.create_dir(ctx, &abs_path).await?;
 
         let file_path = if is_dir {
             abs_path.join(constants::DIR_CONFIG_FILENAME)
@@ -991,6 +1000,7 @@ impl Worktree {
 
         self.fs
             .create_file_with(
+                ctx,
                 &file_path,
                 content,
                 CreateOptions {
@@ -1766,7 +1776,7 @@ impl Worktree {
 
         entry
             .edit
-            .edit(&self.abs_path.join(dirs::RESOURCES_DIR), &patches)
+            .edit(ctx, &self.abs_path.join(dirs::RESOURCES_DIR), &patches)
             .await?;
 
         for callback in on_edit_success {
@@ -2441,6 +2451,7 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 }
 
 async fn process_entry(
+    ctx: Arc<dyn AnyAsyncContext>,
     path: Arc<Path>,
     all_entry_keys: &HashMap<String, JsonValue>,
     expanded_entries: &HashSet<ResourceId>,
@@ -2455,12 +2466,13 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
-    if fs.is_dir_empty(&abs_path).await? {
+    if fs.is_dir_empty(ctx.as_ref(), &abs_path).await? {
         session::info!(format!(
             "Deleting empty entry folder: {}",
             abs_path.display()
         ));
         fs.remove_dir(
+            ctx.as_ref(),
             &abs_path,
             RemoveOptions {
                 recursive: false,
@@ -2472,7 +2484,7 @@ async fn process_entry(
     }
 
     if dir_config_path.exists() {
-        let mut rdr = fs.open_file(&dir_config_path).await?;
+        let mut rdr = fs.open_file(ctx.as_ref(), &dir_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
@@ -2503,7 +2515,7 @@ async fn process_entry(
             desc,
         )));
     } else if item_config_path.exists() {
-        let mut rdr = fs.open_file(&item_config_path).await?;
+        let mut rdr = fs.open_file(ctx.as_ref(), &item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
 

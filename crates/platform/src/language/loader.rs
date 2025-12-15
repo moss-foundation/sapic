@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use moss_fs::FileSystem;
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::language::LanguagePackLoader as LanguageLoaderPort;
 use std::sync::Arc;
 
@@ -17,11 +18,12 @@ impl LanguagePackLoader {
 impl LanguageLoaderPort for LanguagePackLoader {
     async fn load_namespace(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &std::path::Path,
         namespace: &str,
     ) -> joinerror::Result<serde_json::Value> {
         let abs_path = path.join(format!("{}.json", namespace));
-        let rdr = self.fs.open_file(&abs_path).await?;
+        let rdr = self.fs.open_file(ctx, &abs_path).await?;
         let parsed: serde_json::Value = serde_json::from_reader(rdr)?;
 
         Ok(parsed)

@@ -1,5 +1,5 @@
 use joinerror::{Error, ResultExt};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use moss_storage2::KvStorage;
@@ -135,7 +135,11 @@ impl ProjectBuilder {
         }
     }
 
-    pub async fn load(self, params: ProjectLoadParams) -> joinerror::Result<Project> {
+    pub async fn load(
+        self,
+        ctx: &dyn AnyAsyncContext,
+        params: ProjectLoadParams,
+    ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         // Check if the project has an external path
@@ -143,7 +147,7 @@ impl ProjectBuilder {
             let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
             let rdr = self
                 .fs
-                .open_file(&config_path)
+                .open_file(ctx, &config_path)
                 .await
                 .join_err_with::<()>(|| {
                     format!("failed to open config file: {}", config_path.display())
@@ -196,7 +200,11 @@ impl ProjectBuilder {
         })
     }
 
-    pub async fn create(self, params: ProjectCreateParams) -> joinerror::Result<Project> {
+    pub async fn create(
+        self,
+        ctx: &dyn AnyAsyncContext,
+        params: ProjectCreateParams,
+    ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
@@ -217,7 +225,7 @@ impl ProjectBuilder {
             SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
         for dir in &OTHER_DIRS {
-            self.fs.create_dir(&abs_path.join(dir)).await?;
+            self.fs.create_dir(ctx, &abs_path.join(dir)).await?;
         }
 
         if let Some(icon_path) = params.icon_path {
@@ -251,6 +259,7 @@ impl ProjectBuilder {
 
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path.join(MANIFEST_FILE_NAME),
                 serde_json::to_string(&ProjectManifest {
                     name: params
@@ -268,6 +277,7 @@ impl ProjectBuilder {
 
         self.fs
             .create_file_with(
+                ctx,
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     archived: false,
@@ -285,6 +295,7 @@ impl ProjectBuilder {
         for file in PREDEFINED_FILES.iter() {
             self.fs
                 .create_file_with(
+                    ctx,
                     &abs_path.join(&file.path),
                     file.content.as_deref().unwrap_or(&[]),
                     CreateOptions {
@@ -345,6 +356,7 @@ impl ProjectBuilder {
 
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     archived: false,
@@ -377,13 +389,14 @@ impl ProjectBuilder {
 
     pub async fn import_archive(
         self,
+        ctx: &dyn AnyAsyncContext,
         params: ProjectImportArchiveParams,
     ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path;
         let archive_path = params.archive_path;
-        self.do_import(abs_path.clone(), archive_path).await?;
+        self.do_import(ctx, abs_path.clone(), archive_path).await?;
 
         let worktree_inner: Arc<Worktree> = Worktree::new(
             self.storage.clone(),
@@ -398,6 +411,7 @@ impl ProjectBuilder {
 
         self.fs
             .create_file_with(
+                ctx,
                 &abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     archived: false,
@@ -431,10 +445,12 @@ impl ProjectBuilder {
 
     pub async fn import_external(
         self,
+        ctx: &dyn AnyAsyncContext,
         params: ProjectImportExternalParams,
     ) -> joinerror::Result<Project> {
         self.fs
             .create_file_with(
+                ctx,
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
                 serde_json::to_string(&ConfigFile {
                     archived: false,
@@ -449,9 +465,12 @@ impl ProjectBuilder {
             )
             .await?;
 
-        self.load(ProjectLoadParams {
-            internal_abs_path: params.internal_abs_path,
-        })
+        self.load(
+            ctx,
+            ProjectLoadParams {
+                internal_abs_path: params.internal_abs_path,
+            },
+        )
         .await
     }
 }
@@ -485,6 +504,7 @@ impl ProjectBuilder {
 
     async fn do_import(
         &self,
+        ctx: &dyn AnyAsyncContext,
         internal_abs_path: Arc<Path>,
         archive_path: Arc<Path>,
     ) -> joinerror::Result<()> {
@@ -497,7 +517,7 @@ impl ProjectBuilder {
         }
 
         self.fs
-            .unzip(archive_path.as_ref(), internal_abs_path.as_ref())
+            .unzip(ctx, archive_path.as_ref(), internal_abs_path.as_ref())
             .await?;
         Ok(())
     }

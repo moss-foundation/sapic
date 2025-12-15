@@ -3917,6 +3917,7 @@ dependencies = [
  "async-trait",
  "async_zip",
  "atomic_fs",
+ "core",
  "derive_more 2.0.1",
  "futures",
  "joinerror",
@@ -6358,6 +6359,7 @@ name = "settings-storage"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "core",
  "ipc",
  "joinerror",
  "moss_applib",
