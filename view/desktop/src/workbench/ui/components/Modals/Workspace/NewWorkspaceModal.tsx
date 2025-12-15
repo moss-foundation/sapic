@@ -3,7 +3,6 @@ import { useRef, useState } from "react";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useFocusInputOnMount } from "@/hooks";
 import { useCreateWorkspace } from "@/hooks/workbench/useCreateWorkspace";
-import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
@@ -30,7 +29,6 @@ export const NewWorkspaceModal = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { mutateAsync: createWorkspace, isPending: isCreatingWorkspace } = useCreateWorkspace();
-  const { mutateAsync: openWorkspace, isPending: isOpeningWorkspace } = useOpenWorkspace();
 
   const { mutateAsync: openWelcomeWorkspace, isPending: isOpeningWelcomeWorkspace } = useWelcomeOpenWorkspace();
   const { mutateAsync: createWelcomeWorkspace, isPending: isCreatingWelcomeWorkspace } = useWelcomeCreateWorkspace();
@@ -44,8 +42,7 @@ export const NewWorkspaceModal = ({
   // Force openInNewWindow to true when forceNewWindow prop is enabled
   const effectiveOpenInNewWindow = forceNewWindow ? true : openInNewWindow;
 
-  const isLoadingWorkspaces =
-    isCreatingWorkspace || isOpeningWorkspace || isCreatingWelcomeWorkspace || isOpeningWelcomeWorkspace;
+  const isLoadingWorkspaces = isCreatingWorkspace || isCreatingWelcomeWorkspace || isOpeningWelcomeWorkspace;
 
   const handleSubmit = async () => {
     if (!name) return;
