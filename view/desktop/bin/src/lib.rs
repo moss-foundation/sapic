@@ -68,6 +68,11 @@ inventory::submit! {
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub async fn run<R: TauriRuntime>() {
+    // TODO: In the future we can add crash report function
+    // std::panic::set_hook(Box::new(|info| {
+    //     std::fs::write("panic.txt", format!("{}", info)).unwrap();
+    // }));
+
     #[allow(unused_mut)]
     let mut builder = tauri::Builder::<R>::new()
         .plugin(plugin_log::init())
@@ -119,6 +124,7 @@ pub async fn run<R: TauriRuntime>() {
                     .build()
                     .expect("failed to build http client");
 
+                // FIXME: In future we should have a build CI to bundle the endpoint during build
                 let server_api_endpoint =
                     dotenvy::var("SERVER_API_ENDPOINT").expect("SERVER_API_ENDPOINT is not set");
 
