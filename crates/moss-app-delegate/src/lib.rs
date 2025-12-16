@@ -38,7 +38,7 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(not(debug_assertions))]
     #[cfg(not(feature = "integration-tests"))]
     pub fn resource_dir(&self) -> PathBuf {
-        self.app_handle
+        self.tao_handle
             .path()
             .resource_dir()
             .expect("Cannot resolve resource dir")
@@ -53,7 +53,7 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(not(debug_assertions))]
     #[cfg(not(feature = "integration-tests"))]
     pub fn user_dir(&self) -> PathBuf {
-        self.app_handle
+        self.tao_handle
             .path()
             .app_data_dir()
             .expect("Cannot resolve user dir")
@@ -80,7 +80,7 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(not(debug_assertions))]
     #[cfg(not(feature = "integration-tests"))]
     pub fn tmp_dir(&self) -> PathBuf {
-        self.app_handle
+        self.tao_handle
             .path()
             .temp_dir()
             .expect("Cannot resolve tmp dir")
@@ -95,10 +95,7 @@ impl<R: AppRuntime> AppDelegate<R> {
     #[cfg(not(debug_assertions))]
     #[cfg(not(feature = "integration-tests"))]
     pub fn logs_dir(&self) -> PathBuf {
-        self.app_handle
-            .path()
-            .app_log_dir()
-            .expect("Cannot resolve log dir")
+        self.user_dir().join("logs")
     }
 
     #[cfg(debug_assertions)]
