@@ -22,6 +22,9 @@ CRATES_WITH_BINDINGS = {
 if __name__ == "__main__":
     updated_models = set()
     base = os.environ.get("GITHUB_BASE_REF", "main")
+    # When running in workflow dispatch, the ref is not available
+    if base.strip() == "":
+        base = "main"
     subprocess.run(
         ["git", "fetch", "origin", f"{base}:{base}"],
         check=True,
