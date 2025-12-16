@@ -7,3 +7,5 @@ describe("Simple test suite", () => {
     expect(1 + 1).toBe(2);
   });
 });
+
+// TEST
