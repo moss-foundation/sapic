@@ -9,6 +9,7 @@ import { tags } from "@lezer/highlight";
 import { parser } from "@repo/lezer-grammar";
 
 import { tooltipOnVariableHover } from "./extensions/tooltipOnVariableHover";
+import { hideVariableBracesPlugin } from "@/workbench/ui/components/UrlEditor/components/HideVariableBraces.tsx";
 
 interface UrlEditorProps {
   value?: string;
@@ -64,6 +65,7 @@ export const UrlEditor = ({ value = "", onChange }: UrlEditorProps) => {
         languageSupport,
         syntaxHighlighting(highlightStyle),
         tooltipOnVariableHover(ctx),
+        hideVariableBracesPlugin,
 
         EditorView.updateListener.of((update) => {
           const isExternal = update.transactions.some((tr) => tr.isUserEvent("input.prop"));
