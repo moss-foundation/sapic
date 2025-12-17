@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState } from "react";
 
-import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";

@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
 import { useDescribeProjectResource, useUpdateProjectResource } from "@/adapters";
-import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";

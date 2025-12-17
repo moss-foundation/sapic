@@ -1,4 +1,4 @@
-import { ResourceDetails } from "@/app/resourceSummariesCollection";
+import { ResourceDetails } from "@/db/resourceSummariesCollection";
 import {
   DescribeResourceOutput,
   PathParamInfo,

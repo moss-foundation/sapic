@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 
-import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
 import { Scrollbar } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { sortObjectsByOrder } from "@/utils";

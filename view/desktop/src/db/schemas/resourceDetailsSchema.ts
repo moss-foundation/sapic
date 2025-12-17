@@ -9,9 +9,8 @@ import {
   resourceKindSchema,
   resourceProtocolSchema,
 } from "@repo/moss-project";
-import { createCollection, localOnlyCollectionOptions } from "@tanstack/react-db";
 
-const resourceDetailsSchema = z.object({
+export const resourceDetailsSchema = z.object({
   id: z.string(),
   name: z.string(),
   class: resourceClassSchema,
@@ -23,13 +22,3 @@ const resourceDetailsSchema = z.object({
   queryParams: z.array(queryParamInfoSchema),
   body: bodyInfoSchema.optional(),
 });
-
-export type ResourceDetails = z.infer<typeof resourceDetailsSchema>;
-
-export const resourceDetailsCollection = createCollection(
-  localOnlyCollectionOptions({
-    id: "resourceDetails",
-    getKey: (item) => item.id,
-    schema: resourceDetailsSchema,
-  })
-);

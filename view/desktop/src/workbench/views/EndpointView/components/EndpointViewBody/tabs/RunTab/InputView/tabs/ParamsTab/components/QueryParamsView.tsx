@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";

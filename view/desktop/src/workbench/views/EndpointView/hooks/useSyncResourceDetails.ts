@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent } from "react";
 
 import { useDescribeProjectResource } from "@/adapters/tanstackQuery/resource";
-import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
 import { DescribeResourceOutput } from "@repo/moss-project";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 
