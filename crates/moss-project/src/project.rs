@@ -65,6 +65,7 @@ pub struct ProjectDetails {
     pub name: String,
     pub created_at: String, // File created time
     pub vcs: Option<VcsDetails>,
+    pub archived: bool,
     pub account_id: Option<AccountId>,
 }
 
@@ -326,6 +327,7 @@ impl Project {
             name: manifest.name,
             created_at: created_at.to_rfc3339(),
             vcs: manifest.vcs.map(|vcs| vcs.into()),
+            archived: config.archived,
             account_id: config.account_id,
         })
     }

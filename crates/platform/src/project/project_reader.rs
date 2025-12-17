@@ -11,8 +11,8 @@ pub struct FsProjectReader {
 }
 
 impl FsProjectReader {
-    pub fn new(fs: Arc<dyn FileSystem>) -> Self {
-        Self { fs }
+    pub fn new(fs: Arc<dyn FileSystem>) -> Arc<Self> {
+        Self { fs }.into()
     }
 }
 
@@ -24,6 +24,9 @@ impl ProjectReader for FsProjectReader {
         abs_path: &Path,
     ) -> joinerror::Result<ProjectManifest> {
         let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+
+        dbg!(&manifest_path);
+
         let rdr = self
             .fs
             .open_file(ctx, &manifest_path)

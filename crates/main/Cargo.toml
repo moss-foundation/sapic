@@ -36,6 +36,7 @@ async-trait = { workspace = true }
 validator = { workspace = true }
 futures = { workspace = true }
 arc-swap = { workspace = true }
+rustc-hash = { workspace = true }
 tracing.workspace = true
 
 [features]

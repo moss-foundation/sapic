@@ -17,6 +17,7 @@ use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
 use sapic_onboarding::OnboardingWindow;
+use sapic_platform::project::project_reader::FsProjectReader;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -24,6 +25,7 @@ use sapic_system::{
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
     },
+    project::project_service::ProjectService,
     theme::theme_service::ThemeService,
     user::User,
     workspace::{
@@ -172,20 +174,28 @@ impl<R: AppRuntime> App<R> {
             return Ok(());
         }
 
-        let abs_path = delegate
-            .workspaces_dir()
-            .join(workspace_id.to_string())
-            .into();
+        let abs_path = delegate.workspaces_dir().join(workspace_id.to_string());
 
         joinerror::ResultExt::join_err::<()>(
             self.storage.add_workspace(workspace_id.inner()).await,
             "failed to add workspace to storage",
         )?;
 
+        let project_service = ProjectService::new(
+            workspace_id.clone(),
+            abs_path.clone(),
+            self.fs.clone(),
+            FsProjectReader::new(self.fs.clone()),
+            self.storage.clone(),
+        );
+
         let workspace = Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
             abs_path,
+            self.fs.clone(),
+            self.storage.clone(),
             self.services.workspace_edit_service.clone(),
+            project_service,
         ));
         let old_window = OldSapicWindowBuilder::new(
             self.user.clone(),
@@ -222,10 +232,7 @@ impl<R: AppRuntime> App<R> {
         workspace_id: WorkspaceId,
         label: &str,
     ) -> joinerror::Result<()> {
-        let abs_path = delegate
-            .workspaces_dir()
-            .join(workspace_id.to_string())
-            .into();
+        let abs_path = delegate.workspaces_dir().join(workspace_id.to_string());
 
         // HACK: We're forced to add the store here instead of in the window creation
         // function because projects are currently loaded right away when an old workspace
@@ -237,10 +244,21 @@ impl<R: AppRuntime> App<R> {
             "failed to add workspace to storage",
         )?;
 
+        let project_service = ProjectService::new(
+            workspace_id.clone(),
+            abs_path.clone(),
+            self.fs.clone(),
+            FsProjectReader::new(self.fs.clone()),
+            self.storage.clone(),
+        );
+
         let workspace = Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
             abs_path,
+            self.fs.clone(),
+            self.storage.clone(),
             self.services.workspace_edit_service.clone(),
+            project_service,
         ));
 
         let old_window = OldSapicWindowBuilder::new(

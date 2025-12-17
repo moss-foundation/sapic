@@ -10,6 +10,7 @@ sapic-base.workspace = true
 moss_applib.workspace = true
 moss_common.workspace = true
 moss_text = { workspace = true }
+moss_git = { workspace = true }
 
 joinerror.workspace = true
 tokio = { workspace = true, features = ["full"] }

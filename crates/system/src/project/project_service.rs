@@ -1,10 +1,12 @@
-use moss_fs::{FileSystem, FsResultExt};
+use joinerror::ResultExt;
+use moss_fs::FileSystem;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
     project::{manifest::ProjectManifest, types::primitives::ProjectId},
     workspace::types::primitives::WorkspaceId,
 };
+use sapic_core::context::AnyAsyncContext;
 use std::{path::PathBuf, sync::Arc};
 
 use crate::project::ProjectReader;
@@ -25,6 +27,7 @@ pub struct ExportProjectParams {}
 
 pub struct ProjectItem {
     pub id: ProjectId,
+    pub abs_path: PathBuf,
     pub manifest: ProjectManifest,
 
     // DEPRECATED: we will get rid of this field in the future
@@ -88,12 +91,13 @@ impl ProjectService {
         todo!()
     }
 
-    pub async fn projects(&self) -> joinerror::Result<Vec<ProjectItem>> {
+    pub async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<ProjectItem>> {
         let mut projects = Vec::new();
 
         let metadata = self
             .storage
             .get_batch_by_prefix(
+                ctx,
                 StorageScope::Workspace(self.workspace_id.inner()),
                 KEY_PROJECT_PREFIX,
             )
@@ -110,7 +114,7 @@ impl ProjectService {
 
         let mut read_dir = self
             .fs
-            .read_dir(&self.abs_path)
+            .read_dir(ctx, &self.abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to read directory `{}`", self.abs_path.display())
@@ -124,9 +128,10 @@ impl ProjectService {
             let id_str = entry.file_name().to_string_lossy().to_string();
             let id: ProjectId = id_str.clone().into();
 
-            let manifest = self.reader.read_manifest(&entry.path()).await?;
+            let manifest = self.reader.read_manifest(ctx, &entry.path()).await?;
             projects.push(ProjectItem {
                 id: id.clone(),
+                abs_path: entry.path().to_owned(),
                 manifest,
                 order: metadata
                     .get(&key_project_order(&id))

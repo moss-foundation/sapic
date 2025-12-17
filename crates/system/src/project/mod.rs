@@ -3,7 +3,7 @@ use sapic_base::project::manifest::ProjectManifest;
 use sapic_core::context::AnyAsyncContext;
 use std::path::Path;
 // pub mod project_edit_service;
-// pub mod project_service;
+pub mod project_service;
 
 #[async_trait]
 pub trait ProjectReader: Send + Sync {

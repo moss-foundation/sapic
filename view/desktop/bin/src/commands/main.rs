@@ -1,10 +1,10 @@
 use joinerror::{OptionExt, ResultExt};
 use sapic_ipc::contracts::{
-    main::{OpenInTarget, workspace::*},
+    main::{OpenInTarget, project::*, workspace::*},
     other::CancelRequestInput,
 };
 use sapic_runtime::errors::Unavailable;
-use tauri::Window as TauriWindow;
+use tauri::{Window as TauriWindow, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
 
@@ -151,6 +151,43 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
                 .join_err::<()>("failed to close main window")?;
 
             Ok(())
+        },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
+pub async fn stream_projects<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    channel: TauriChannel<StreamProjectsEvent>,
+    options: Options,
+) -> joinerror::Result<StreamProjectsOutput> {
+    // super::with_workspace_timeout(
+    //     ctx.inner(),
+    //     app,
+    //     window,
+    //     options,
+    //     |ctx, _, workspace| async move {
+    //         workspace
+    //             .stream_projects::<TauriAppRuntime<R>>(&ctx, channel)
+    //             .await
+    //     },
+    // )
+    // .await
+
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, app_delegate, window| async move {
+            window
+                .stream_projects(&ctx, channel)
+                .await
+                .join_err::<()>("failed to stream projects")
         },
     )
     .await

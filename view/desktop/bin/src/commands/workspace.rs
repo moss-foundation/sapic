@@ -28,29 +28,6 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_projects<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    channel: TauriChannel<StreamProjectsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamProjectsOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move {
-            workspace
-                .stream_projects::<TauriAppRuntime<R>>(&ctx, channel)
-                .await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
