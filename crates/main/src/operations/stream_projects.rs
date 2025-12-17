@@ -12,6 +12,7 @@ impl<R: AppRuntime> MainWindow<R> {
     ) -> joinerror::Result<StreamProjectsOutput> {
         let projects = self.workspace.load().projects(ctx).await?;
 
+        let mut total_returned = 0;
         for project in projects {
             let details = if let Ok(details) = project.handle.details(ctx).await {
                 details
@@ -40,9 +41,11 @@ impl<R: AppRuntime> MainWindow<R> {
                     "failed to send project event through tauri channel: {}",
                     e.to_string()
                 );
+            } else {
+                total_returned += 1;
             }
         }
 
-        todo!()
+        Ok(StreamProjectsOutput { total_returned })
     }
 }

@@ -25,8 +25,6 @@ impl ProjectReader for FsProjectReader {
     ) -> joinerror::Result<ProjectManifest> {
         let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
 
-        dbg!(&manifest_path);
-
         let rdr = self
             .fs
             .open_file(ctx, &manifest_path)

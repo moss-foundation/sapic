@@ -183,7 +183,7 @@ impl<R: AppRuntime> App<R> {
 
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            abs_path.clone(),
+            abs_path.clone().join("projects"),
             self.fs.clone(),
             FsProjectReader::new(self.fs.clone()),
             self.storage.clone(),
@@ -246,7 +246,7 @@ impl<R: AppRuntime> App<R> {
 
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            abs_path.clone(),
+            abs_path.clone().join("projects"),
             self.fs.clone(),
             FsProjectReader::new(self.fs.clone()),
             self.storage.clone(),
