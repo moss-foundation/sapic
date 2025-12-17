@@ -185,6 +185,7 @@ export const QueryParamsView = () => {
                 onChange={handleParamRowChange}
                 onDelete={() => handleParamRowDelete(param)}
                 keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
+                setColumnToFocusOnMount={setColumnToFocusOnMount}
                 paramType="query"
               />
             );
