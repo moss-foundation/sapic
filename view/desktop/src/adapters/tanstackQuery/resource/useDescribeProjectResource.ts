@@ -1,4 +1,4 @@
-import { projectService } from "@/domains/project/projectService";
+import { resourceService } from "@/domains/resource/resourceService";
 import { DescribeResourceOutput } from "@repo/moss-project";
 import { keepPreviousData, useQuery, useQueryClient, UseQueryOptions } from "@tanstack/react-query";
 
@@ -16,7 +16,7 @@ export const useDescribeProjectResource = ({ projectId, resourceId, options }: U
   return useQuery<DescribeResourceOutput, Error>({
     queryKey: [USE_DESCRIBE_PROJECT_RESOURCE_QUERY_KEY, projectId, resourceId],
     queryFn: async () => {
-      const data = await projectService.describeProjectResource(projectId, resourceId);
+      const data = await resourceService.describe(projectId, resourceId);
       //TODO: this is a temporary solution to preserve the existing URL from cache
       //If backend returns "Hardcoded Value", preserve existing URL from cache
       if (data.url === "Hardcoded Value") {

@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useCreateProjectResource } from "@/adapters/tanstackQuery/project";
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
+import { useCreateProjectResource, useUpdateProjectResource } from "@/adapters";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";

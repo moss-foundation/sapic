@@ -1,4 +1,4 @@
-import { projectService } from "@/domains/project/projectService";
+import { resourceService } from "@/domains/resource/resourceService";
 import { BatchCreateResourceInput, BatchCreateResourceOutput } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 
@@ -9,6 +9,6 @@ interface UseBatchCreateProjectResourceInput {
 
 export const useBatchCreateProjectResource = () => {
   return useMutation<BatchCreateResourceOutput, Error, UseBatchCreateProjectResourceInput>({
-    mutationFn: ({ projectId, input }) => projectService.batchCreateProjectResource(projectId, input),
+    mutationFn: ({ projectId, input }) => resourceService.batchCreate(projectId, input),
   });
 };

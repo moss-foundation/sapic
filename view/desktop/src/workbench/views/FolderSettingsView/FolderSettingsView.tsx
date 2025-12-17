@@ -1,7 +1,7 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
-import { useStreamProjectResources } from "@/adapters/tanstackQuery/project/useStreamProjectResources";
+import { useStreamProjectResources } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";

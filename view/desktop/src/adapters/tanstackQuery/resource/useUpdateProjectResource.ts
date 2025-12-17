@@ -1,4 +1,4 @@
-import { projectService } from "@/domains/project/projectService";
+import { resourceService } from "@/domains/resource/resourceService";
 import { StreamResourcesEvent, UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -14,7 +14,7 @@ export const useUpdateProjectResource = () => {
   const queryClient = useQueryClient();
 
   return useMutation<UpdateResourceOutput, Error, UseUpdateProjectResourceInput>({
-    mutationFn: ({ projectId, updatedResource }) => projectService.updateProjectResource(projectId, updatedResource),
+    mutationFn: ({ projectId, updatedResource }) => resourceService.update(projectId, updatedResource),
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
