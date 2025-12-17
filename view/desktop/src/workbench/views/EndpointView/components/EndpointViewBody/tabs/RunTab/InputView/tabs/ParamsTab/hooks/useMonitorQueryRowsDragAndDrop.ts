@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { swapListByIndexWithEdge } from "@/workbench/utils/swapListByIndexWithEdge";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";

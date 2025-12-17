@@ -1,6 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 import { FolderTabs, TabItemProps } from "@/lib/ui";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { eq, useLiveQuery } from "@tanstack/react-db";

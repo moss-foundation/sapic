@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ResourceDetails, resourceDetailsCollection } from "@/db/resourceSummariesCollection";
+import { ResourceDetails, resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 
 import { useTabbedPaneStore } from "../store/tabbedPane";
 

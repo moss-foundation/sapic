@@ -1,6 +1,6 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ResourceKind } from "@repo/moss-project";

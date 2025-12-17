@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useContext, useEffect, useRef } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceSummariesCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
