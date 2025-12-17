@@ -6,42 +6,42 @@ import Input from "@/lib/ui/Input";
 interface EditableHeaderProps {
   icon: Icons;
   title: string;
-  isRenamingResource: boolean;
-  setIsRenamingResource: (isRenamingResource: boolean) => void;
-  handleRenamingResourceSubmit: (newName: string) => void;
-  handleRenamingResourceCancel: () => void;
+  isRenamingResourceDescription: boolean;
+  setIsRenamingResourceDescription: (isRenamingResource: boolean) => void;
+  handleRenamingResourceDescriptionSubmit: (newName: string) => void;
+  handleRenamingResourceDescriptionCancel: () => void;
   editable: boolean;
 }
 
 export const EditableHeader = ({
   icon,
   title: initialTitle,
-  isRenamingResource,
-  setIsRenamingResource,
-  handleRenamingResourceSubmit,
-  handleRenamingResourceCancel,
+  isRenamingResourceDescription,
+  setIsRenamingResourceDescription,
+  handleRenamingResourceDescriptionSubmit,
+  handleRenamingResourceDescriptionCancel,
   editable = false,
 }: EditableHeaderProps) => {
   const [newTitle, setNewTitle] = useState(initialTitle);
 
   const handleBlur = () => {
-    handleRenamingResourceSubmit(newTitle);
-    setIsRenamingResource(false);
+    handleRenamingResourceDescriptionSubmit(newTitle);
+    setIsRenamingResourceDescription(false);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleRenamingResourceSubmit(newTitle);
-    setIsRenamingResource(false);
+    handleRenamingResourceDescriptionSubmit(newTitle);
+    setIsRenamingResourceDescription(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
-      handleRenamingResourceCancel();
+      handleRenamingResourceDescriptionCancel();
     }
     if (e.key === "Enter") {
-      handleRenamingResourceSubmit(newTitle);
-      setIsRenamingResource(false);
+      handleRenamingResourceDescriptionSubmit(newTitle);
+      setIsRenamingResourceDescription(false);
     }
   };
 
@@ -51,7 +51,7 @@ export const EditableHeader = ({
         <Icon icon={icon} className="size-[18px]" />
       </div>
 
-      {isRenamingResource ? (
+      {isRenamingResourceDescription ? (
         <form onSubmit={handleSubmit} className="-mx-1 w-full max-w-[200px] px-1">
           <Input
             intent="plain"
@@ -66,7 +66,7 @@ export const EditableHeader = ({
         </form>
       ) : (
         <h2
-          onClick={editable ? () => setIsRenamingResource(true) : undefined}
+          onClick={editable ? () => setIsRenamingResourceDescription(true) : undefined}
           className="hover:background-(--moss-secondary-background-hover) text-(--moss-primary-foreground) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg font-bold leading-6 transition-colors"
         >
           {newTitle}

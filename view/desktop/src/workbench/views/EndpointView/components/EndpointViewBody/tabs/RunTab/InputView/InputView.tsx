@@ -1,7 +1,9 @@
 import { useContext, useMemo, useState } from "react";
 
+import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
 import { FolderTabs, TabItemProps } from "@/lib/ui";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import {
   AuthTabContent,
@@ -13,16 +15,23 @@ import {
 } from "./tabs";
 
 export const InputView = () => {
-  const { resourceDescription } = useContext(EndpointViewContext);
+  const { resourceId } = useContext(EndpointViewContext);
+
+  const { data: localResourceDescription } = useLiveQuery((q) =>
+    q
+      .from({ collection: resourcesDescriptionsCollection })
+      .where(({ collection }) => eq(collection.id, resourceId))
+      .findOne()
+  );
 
   const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 
   const numberOfActiveParams = useMemo(() => {
-    const queryParamsCount = resourceDescription?.queryParams.filter((param) => !param.disabled).length ?? 0;
-    const pathParamsCount = resourceDescription?.pathParams.filter((param) => !param.disabled).length ?? 0;
+    const queryParamsCount = localResourceDescription?.queryParams.filter((param) => !param.disabled).length ?? 0;
+    const pathParamsCount = localResourceDescription?.pathParams.filter((param) => !param.disabled).length ?? 0;
 
     return queryParamsCount + pathParamsCount;
-  }, [resourceDescription?.queryParams, resourceDescription?.pathParams]);
+  }, [localResourceDescription?.queryParams, localResourceDescription?.pathParams]);
 
   const endpointTabs: TabItemProps[] = [
     {

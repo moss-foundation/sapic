@@ -86,7 +86,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
           title: node.name,
           params: {
             projectId: id,
-            node,
+            resourceId: node.id,
           },
           component: node.class === "endpoint" ? "Endpoint" : "Default",
         });

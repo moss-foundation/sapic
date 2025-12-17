@@ -1,19 +1,28 @@
-import { useCallback, useState } from "react";
+import { useCallback, useContext, useState } from "react";
 
+import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
+import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";
-import { UrlEditor } from "@/workbench/ui/components/UrlEditor/UrlEditor";
-import { useEndpointView } from "@/workbench/views/EndpointView/hooks/useEndpointView";
+import { useTokenizer } from "@/workbench/adapters/tanstackQuery/tokenizer/useTokenizer";
+import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
+import { ResourceProtocol } from "@repo/moss-project";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
-import { areUrlsEquivalent, parseUrl } from "../../../../utils/urlParser";
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
-import { useMonitorParamsRowForms } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamRowForms";
-import { useMonitorParamsRows } from "./InputView/tabs/ParamsTab/hooks/useMonitorParamsRows";
 import { OutputView } from "./OutputView/OutputView";
+import { createPathParam, createQueryParam, extractParsedValueString } from "./utils";
 
 export const RunTab = () => {
-  const { endpointData, httpMethod, setHttpMethod, updateEndpointData } = useEndpointView();
+  const { resourceId } = useContext(EndpointViewContext);
+  const { mutateAsync: parseUrl } = useTokenizer();
+  const { data: localResourceDescription } = useLiveQuery((q) =>
+    q
+      .from({ collection: resourcesDescriptionsCollection })
+      .where(({ collection }) => eq(collection.id, resourceId))
+      .findOne()
+  );
 
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 
@@ -26,45 +35,99 @@ export const RunTab = () => {
 
   const handleUrlChange = useCallback(
     (url: string) => {
-      // Prevent unnecessary updates if URLs are functionally equivalent
-      if (areUrlsEquivalent(url, endpointData.url.raw)) {
-        return;
-      }
+      // 1. UPDATE URL IMMEDIATELY
+      // We must update the URL synchronously to keep the React state in sync with the CodeMirror instance.
+      // If we wait for the async `parseUrl` to finish, the parent component will pass an outdated `url` prop
+      // back to the UrlEditor while the user is still typing. This mismatch causes the UrlEditor to
+      // fully replace the document content, which resets the cursor position and the user's typing.
+      resourcesDescriptionsCollection.update(resourceId, (draft) => {
+        if (!draft) return;
+        draft.url = url;
+      });
 
-      const parsed = parseUrl(url);
+      // 2. PARSE AND UPDATE PARAMS ASYNC (Does not block typing)
+      // We handle the heavy parsing logic in a detached promise chain
+      parseUrl(url)
+        .then((parsedUrl) => {
+          try {
+            resourcesDescriptionsCollection.update(resourceId, (draft) => {
+              const pathVarsSet = new Set<string>();
 
-      const updatedData = {
-        url: {
-          raw: url,
-          originalPathTemplate: parsed.url.originalPathTemplate,
-          port: parsed.url.port,
-          host: parsed.url.host,
-          path_params: parsed.url.path_params,
-          query_params: parsed.url.query_params,
-        },
-      };
-      updateEndpointData(updatedData);
+              parsedUrl.pathPart.forEach((part) => {
+                if ("pathVariable" in part) {
+                  pathVarsSet.add(part.pathVariable);
+                }
+              });
+
+              // Path params logic
+              const pathParamNames = Array.from(pathVarsSet.values());
+              const newPathParams = pathParamNames.map((pathParamName, index) => {
+                const existingPathParam = draft.pathParams?.find((param) => param.name === pathParamName);
+                return createPathParam(pathParamName, index, existingPathParam);
+              });
+              draft.pathParams = newPathParams;
+
+              // Query params logic
+              const currentDisabledQueryParams = draft.queryParams?.filter((param) => param.disabled) ?? [];
+
+              const newQueryParams = parsedUrl.queryPart.map((queryParam, index) => {
+                const urlQueryParamName = extractParsedValueString(queryParam.key);
+                const urlQueryParamValue = queryParam.value ? extractParsedValueString(queryParam.value) : "";
+
+                const existingActiveQueryParam = draft.queryParams
+                  ?.filter((param) => !param.disabled)
+                  .map((param, index) => {
+                    return {
+                      ...param,
+                      order: index + 1,
+                    };
+                  })
+                  .find((param) => param.name === urlQueryParamName && param.order === index + 1);
+
+                return createQueryParam(urlQueryParamName, urlQueryParamValue, index, existingActiveQueryParam);
+              });
+
+              const allQueryParams = sortObjectsByOrder([...currentDisabledQueryParams, ...newQueryParams]).map(
+                (param, index) => ({
+                  ...param,
+                  order: index + 1,
+                })
+              );
+
+              draft.queryParams = allQueryParams;
+            });
+          } catch (error) {
+            console.error(error);
+          }
+        })
+        .catch((error) => {
+          // SILENCE THE ERROR
+          // It is normal for the parser to fail while the user is typing incomplete syntax.
+          // We simply ignore the failure; the raw URL (Step 1) remains correct.
+          console.error(error);
+        });
     },
-    [endpointData.url.raw, updateEndpointData]
+    [parseUrl, resourceId]
   );
 
-  useMonitorParamsRows();
-  useMonitorParamsRowForms();
+  const handleProtocolChange = (protocol: ResourceProtocol) => {
+    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      if (!draft) return;
+      draft.protocol = protocol;
+    });
+  };
+
+  if (!localResourceDescription) return null;
 
   return (
     <div className="flex grow flex-col gap-2.5">
       <EndpointInputField
-        initialMethod={httpMethod}
-        initialUrl={endpointData.url.raw}
+        initialProtocol={localResourceDescription.protocol}
+        initialUrl={localResourceDescription?.url}
         onSend={handleSendEndpoint}
         onUrlChange={handleUrlChange}
-        onMethodChange={(method) => {
-          if (method !== httpMethod) {
-            setHttpMethod(method);
-          }
-        }}
+        onProtocolChange={handleProtocolChange}
       />
-      <UrlEditor value={endpointData.url.raw} onChange={(url) => console.log("url", url)} />
 
       <Resizable separator={false} key={isResizableVertical ? "vertical" : "horizontal"} vertical={isResizableVertical}>
         <ResizablePanel

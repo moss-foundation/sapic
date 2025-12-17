@@ -1,158 +1,96 @@
-import { memo, useCallback, useEffect, useRef, useState } from "react";
-
 import { Button, Icon } from "@/lib/ui";
 import { cn } from "@/utils";
-import { ActionMenu, InputTemplating } from "@/workbench/ui/components";
-
-import { areUrlsEquivalent } from "../utils/urlParser";
+import { ActionMenu } from "@/workbench/ui/components";
+import { UrlEditor } from "@/workbench/ui/components/UrlEditor/UrlEditor";
+import { ResourceProtocol } from "@repo/moss-project";
 
 interface EndpointInputFieldProps {
   className?: string;
-  initialMethod?: string;
+  initialProtocol?: string;
   initialUrl?: string;
   onSend?: (method: string, url: string) => void;
   onUrlChange?: (url: string) => void;
-  onMethodChange?: (method: string) => void;
+  onProtocolChange?: (protocol: ResourceProtocol) => void;
 }
 
-const HTTP_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
+const HTTP_METHODS = [
+  "Get",
+  "Post",
+  "Put",
+  "Delete",
+  "WebSocket",
+  "Graphql",
+  "Grpc",
+] as const satisfies ResourceProtocol[];
 
-export const EndpointInputField = memo(
-  ({
-    className,
-    initialMethod = "POST",
-    initialUrl = "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2",
-    onSend,
-    onUrlChange,
-    onMethodChange,
-  }: EndpointInputFieldProps) => {
-    const [method, setMethod] = useState(initialMethod);
-    const [url, setUrl] = useState(initialUrl);
-    const lastExternalUrlRef = useRef(initialUrl);
-    const isUserTypingRef = useRef(false);
-    const lastSentUrlRef = useRef("");
+export const EndpointInputField = ({
+  className,
+  initialProtocol = "POST",
+  initialUrl,
+  onSend,
+  onUrlChange,
+  onProtocolChange,
+}: EndpointInputFieldProps) => {
+  const handleUrlChange = (newUrl: string) => {
+    onUrlChange?.(newUrl);
+  };
 
-    // Sync method changes
-    useEffect(() => {
-      if (initialMethod !== method) {
-        setMethod(initialMethod);
-      }
-    }, [initialMethod, method]);
+  const handleSend = () => {
+    // onSend?.(method, resourceDescription.url ?? "");
+  };
 
-    // Only sync URL from external source when user is not actively typing
-    useEffect(() => {
-      // Use normalized comparison to prevent unnecessary updates
-      if (
-        !areUrlsEquivalent(initialUrl, lastExternalUrlRef.current) &&
-        !isUserTypingRef.current &&
-        !areUrlsEquivalent(initialUrl, lastSentUrlRef.current)
-      ) {
-        setUrl(initialUrl);
-        lastExternalUrlRef.current = initialUrl;
-      }
-    }, [initialUrl]);
+  const handleProtocolChange = (newProtocol: ResourceProtocol) => {
+    onProtocolChange?.(newProtocol);
+  };
 
-    const handleSend = () => {
-      onSend?.(method, url);
-    };
-
-    // Debounced URL change handler with normalized comparison
-    const debouncedOnUrlChange = useCallback(
-      (() => {
-        let timeoutId: NodeJS.Timeout;
-        return (value: string) => {
-          clearTimeout(timeoutId);
-          timeoutId = setTimeout(() => {
-            // Only call onUrlChange if the URL has actually changed (normalized comparison)
-            if (!areUrlsEquivalent(value, lastSentUrlRef.current)) {
-              lastSentUrlRef.current = value;
-              onUrlChange?.(value);
-            }
-            isUserTypingRef.current = false;
-          }, 150); // 150ms debounce
-        };
-      })(),
-      [onUrlChange]
-    );
-
-    // Optimized change handlers with stable references
-    const handleTemplateChange = useCallback(
-      (value: string) => {
-        isUserTypingRef.current = true;
-        setUrl(value);
-        debouncedOnUrlChange(value);
-      },
-      [debouncedOnUrlChange]
-    );
-
-    const handleMethodChange = useCallback(
-      (newMethod: string) => {
-        setMethod(newMethod);
-        onMethodChange?.(newMethod);
-      },
-      [onMethodChange]
-    );
-
-    return (
-      <div
-        className={cn(
-          "border-(--moss-border) relative flex min-w-0 items-center gap-2 rounded-md border p-[5px]",
-          className
-        )}
-      >
-        {/* Left Side - HTTP Method Dropdown */}
-        <div className="relative flex items-center">
-          <ActionMenu.Root>
-            <ActionMenu.Trigger asChild>
-              <button
+  return (
+    <div
+      className={cn(
+        "border-(--moss-border) relative grid grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border p-0.5",
+        className
+      )}
+    >
+      <div className="relative flex h-full items-center">
+        <ActionMenu.Root>
+          <ActionMenu.Trigger asChild>
+            <button
+              className={cn(
+                "flex h-full items-center justify-between",
+                "gap-1.25 px-1",
+                "transition-colors",
+                "rounded-md",
+                "cursor-pointer font-bold",
+                "hover:background-(--moss-secondary-background-hover) text-(--moss-orange-5)"
+              )}
+            >
+              <span className="min-w-[50px] text-left uppercase">{initialProtocol}</span>
+              <Icon icon="ChevronDown" />
+            </button>
+          </ActionMenu.Trigger>
+          <ActionMenu.Content>
+            {HTTP_METHODS.map((httpMethod) => (
+              <ActionMenu.Item
+                key={httpMethod}
+                onClick={() => handleProtocolChange(httpMethod)}
                 className={cn(
-                  "flex items-center justify-between bg-red-700",
-                  "py-1.25 pr-1.25 gap-2 pl-2",
-                  "transition-colors",
-                  "rounded-md",
-                  "cursor-pointer font-bold",
-                  "background-(--moss-primary-background) hover:background-(--moss-secondary-background-hover) border-(--moss-border) text-(--moss-orange-5) border",
-                  "data-[state=open]:outline-(--moss-accent) data-[state=open]:outline-2 data-[state=open]:outline-offset-0"
+                  initialProtocol === httpMethod &&
+                    "background-(--moss-secondary-background-hover) text-(--moss-controls-foreground) font-medium"
                 )}
               >
-                <span>{method}</span>
-                <Icon icon="ChevronDown" />
-              </button>
-            </ActionMenu.Trigger>
-            <ActionMenu.Content>
-              {HTTP_METHODS.map((httpMethod) => (
-                <ActionMenu.Item
-                  key={httpMethod}
-                  onClick={() => handleMethodChange(httpMethod)}
-                  className={cn(
-                    method === httpMethod &&
-                      "background-(--moss-secondary-background-hover) text-(--moss-controls-foreground) font-medium"
-                  )}
-                >
-                  {httpMethod}
-                </ActionMenu.Item>
-              ))}
-            </ActionMenu.Content>
-          </ActionMenu.Root>
-        </div>
-
-        {/* Center - URL Input Field */}
-        <div className="relative z-20 min-w-0 flex-1 self-start">
-          <InputTemplating
-            value={url}
-            onTemplateChange={handleTemplateChange}
-            className="w-full rounded-none border-l-0 border-r-0 border-transparent"
-            size="md"
-            placeholder="Enter URL..."
-            highlightColonVariables={true}
-          />
-        </div>
-
-        {/* Right Side - Send Button */}
-        <Button intent="primary" onClick={handleSend}>
-          Send
-        </Button>
+                <span className="uppercase">{httpMethod}</span>
+              </ActionMenu.Item>
+            ))}
+          </ActionMenu.Content>
+        </ActionMenu.Root>
       </div>
-    );
-  }
-);
+
+      <div className="min-w-0">
+        <UrlEditor value={initialUrl} onChange={handleUrlChange} />
+      </div>
+
+      <Button intent="primary" onClick={handleSend}>
+        Send
+      </Button>
+    </div>
+  );
+};

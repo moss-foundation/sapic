@@ -1,33 +1,33 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { useDescribeProjectResource, useStreamProjectResources } from "@/adapters/tanstackQuery/project";
+import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
-import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import { ResourceKind } from "@repo/moss-project";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointViewBody, EndpointViewHeader } from "./components";
 import { EndpointViewContext } from "./EndpointViewContext";
+import { useSyncResourceDescriptionModel } from "./hooks/useSyncResourceDescriptionModel";
 
 export interface EndpointViewProps {
-  node: ProjectTreeNode;
+  resourceId: string;
   projectId: string;
+  //TODO since IconType is not used here and is needed in tabbed pane for the tab icon, we should consider removing it from the props here and add it to the tabbed pane props
   iconType: ResourceKind;
 }
 
 const EndpointView = ({ ...props }: IDockviewPanelProps<EndpointViewProps>) => {
-  const { data: streamedResources } = useStreamProjectResources(props.params?.projectId);
-  const resource = streamedResources?.find((resource) => resource.id === props.params?.node?.id);
+  const { data: localResourceDescription } = useLiveQuery((q) =>
+    q
+      .from({ collection: resourcesDescriptionsCollection })
+      .where(({ collection }) => eq(collection.id, props.params.resourceId))
+      .findOne()
+  );
 
-  const { data: resourceDescription } = useDescribeProjectResource({
-    projectId: props.params?.projectId ?? "",
-    resourceId: resource?.id ?? "",
-    options: {
-      enabled: !!resource?.id,
-    },
-  });
+  useSyncResourceDescriptionModel({ resourceId: props.params.resourceId, projectId: props.params.projectId });
 
-  if (!resource || !resourceDescription) {
+  if (!localResourceDescription) {
     return (
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">
@@ -40,7 +40,12 @@ const EndpointView = ({ ...props }: IDockviewPanelProps<EndpointViewProps>) => {
   }
 
   return (
-    <EndpointViewContext.Provider value={{ projectId: props.params.projectId, resourceDescription, resource }}>
+    <EndpointViewContext.Provider
+      value={{
+        projectId: props.params.projectId,
+        resourceId: props.params.resourceId,
+      }}
+    >
       <PageView>
         <EndpointViewHeader />
         <EndpointViewBody />

@@ -1,9 +1,10 @@
+import { EditorView, minimalSetup } from "codemirror";
 import { useContext, useEffect, useRef } from "react";
 
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
-import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting, syntaxTree } from "@codemirror/language";
+import { history } from "@codemirror/commands";
+import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
-import { EditorView } from "@codemirror/view";
 import { tags } from "@lezer/highlight";
 import { parser } from "@repo/lezer-grammar";
 
@@ -14,11 +15,26 @@ interface UrlEditorProps {
   onChange?: (value: string) => void;
 }
 
-export const UrlEditor = ({ value = "/:test/{{var}}", onChange }: UrlEditorProps) => {
+export const UrlEditor = ({ value = "", onChange }: UrlEditorProps) => {
+  //TODO: the context is used to get the path and the query params for the tooltip, we will be passing them as props to the component later
   const ctx = useContext(EndpointViewContext);
 
   const editorRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
+
+  useEffect(() => {
+    const view = viewRef.current;
+    if (!view) return;
+
+    const currentValue = view.state.doc.toString();
+
+    if (value === currentValue) return;
+
+    view.dispatch({
+      changes: { from: 0, to: view.state.doc.length, insert: value },
+      userEvent: "input.prop",
+    });
+  }, [value]);
 
   useEffect(() => {
     if (!editorRef.current) return;
@@ -27,58 +43,64 @@ export const UrlEditor = ({ value = "/:test/{{var}}", onChange }: UrlEditorProps
     const languageSupport = new LanguageSupport(language);
 
     const highlightStyle = HighlightStyle.define([
-      // {{ and }} and / and :
-      { tag: tags.punctuation, color: "black" }, //#9e9e9e
-      // The variable names (env, test1)
-      { tag: tags.variableName, color: "blue", fontWeight: "bold" }, //#9c27b0
-      // The normal URL text
-      { tag: tags.content, color: "black" }, //#424242
-      // (Optional) If you kept the parent tag mapping
-      { tag: tags.keyword, color: "black" }, //#9c27b0
+      { tag: tags.punctuation, color: "black" },
+      {
+        tag: tags.variableName,
+        color: "var(--moss-accent)",
+        backgroundColor: "var(--moss-accent-secondary)",
+        padding: "1px 2px",
+        borderRadius: "4px",
+        fontWeight: "bold",
+      },
+      { tag: tags.content, color: "black" },
+      { tag: tags.keyword, color: "black" },
     ]);
 
-    const state = EditorState.create({
+    const startState = EditorState.create({
       doc: value,
       extensions: [
+        minimalSetup,
+        history(),
         languageSupport,
         syntaxHighlighting(highlightStyle),
         tooltipOnVariableHover(ctx),
+
         EditorView.updateListener.of((update) => {
-          if (update.docChanged && onChange) {
-            onChange(update.state.doc.toString());
+          const isExternal = update.transactions.some((tr) => tr.isUserEvent("input.prop"));
+          if (update.docChanged && !isExternal) {
+            onChange?.(update.state.doc.toString());
           }
-          // Track parser output changes
-          if (update.docChanged || update.viewportChanged || update.selectionSet) {
-            const currentTree = syntaxTree(update.state);
-            console.log("currentTree", currentTree);
-          }
+        }),
+
+        //this is to prevent the editor from multiple lines
+        EditorState.transactionFilter.of((tr) => {
+          return tr.newDoc.lines > 1 ? [] : [tr];
+        }),
+        EditorView.theme({
+          "&.cm-focused": {
+            outline: "none",
+          },
+          ".cm-line": {
+            padding: "0",
+          },
+          ".cm-scroller": {
+            overflow: "hidden",
+          },
         }),
       ],
     });
 
     const view = new EditorView({
-      state,
+      state: startState,
       parent: editorRef.current,
     });
 
     viewRef.current = view;
 
     return () => view.destroy();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    // we create the editor only once
   }, []);
 
-  // Update editor content when value prop changes
-  useEffect(() => {
-    if (viewRef.current && value !== viewRef.current.state.doc.toString()) {
-      viewRef.current.dispatch({
-        changes: {
-          from: 0,
-          to: viewRef.current.state.doc.length,
-          insert: value,
-        },
-      });
-    }
-  }, [value]);
-
-  return <div ref={editorRef} className="border border-gray-200 p-2" />;
+  return <div ref={editorRef} className="min-w-0" />;
 };

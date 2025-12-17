@@ -1,11 +1,13 @@
-import { ChangeEvent, useCallback, useContext, useRef, useState } from "react";
+import { ChangeEvent, useContext, useRef, useState } from "react";
 
+import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { DropIndicator } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { ParamDragType } from "../constants";
 import { useDropTargetNewParamRowForm } from "../hooks/useDropTargetNewParamRowForm";
@@ -16,7 +18,14 @@ interface NewParamRowFormProps {
 }
 
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
-  const { resource } = useContext(EndpointViewContext);
+  const { resourceId } = useContext(EndpointViewContext);
+
+  const { data: localResourceDescription } = useLiveQuery((q) =>
+    q
+      .from({ collection: resourcesDescriptionsCollection })
+      .where(({ collection }) => eq(collection.id, resourceId))
+      .findOne()
+  );
 
   const newParamRowFormRef = useRef<HTMLDivElement>(null);
 
@@ -29,21 +38,6 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
     propagate: false,
   });
 
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const debouncedOnChange = useCallback(
-    (updatedParam: QueryParamInfo) => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-
-      debounceTimeoutRef.current = setTimeout(() => {
-        onAdd(updatedParam);
-      }, 500);
-    },
-    [onAdd]
-  );
-
   const onCheckedChange = (checked: CheckedState) => {
     onAdd({
       ...placeholderParam,
@@ -54,18 +48,18 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
   const onKeyChange = (e: ChangeEvent<HTMLInputElement>) => {
     const updatedParam = { ...placeholderParam, name: e.target.value };
     setPlaceholderParam(updatedParam);
-    debouncedOnChange(updatedParam);
+    onAdd(updatedParam);
   };
 
   const onValueChange = (e: ChangeEvent<HTMLInputElement>) => {
     const updatedParam = { ...placeholderParam, value: e.target.value };
     setPlaceholderParam(updatedParam);
-    debouncedOnChange(updatedParam);
+    onAdd(updatedParam);
   };
 
   const { closestEdge } = useDropTargetNewParamRowForm({
     newParamRowFormRef,
-    resourceId: resource.id,
+    resourceId: localResourceDescription?.id ?? "Unknown Resource ID",
     paramType,
   });
 

@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project";
+import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
@@ -8,104 +8,95 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ActionButton } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { AddQueryParamParams, QueryParamInfo, UpdateQueryParamParams } from "@repo/moss-project";
+import { QueryParamInfo } from "@repo/moss-project";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
+import { extractParsedValueString } from "../../../../utils";
 import { ParamDragType } from "../constants";
+import { useMonitorQueryParamsRowFormDragAndDrop } from "../hooks/useMonitorQueryParamsRowFormDragAndDrop";
+import { useMonitorQueryRowsDragAndDrop } from "../hooks/useMonitorQueryRowsDragAndDrop";
 import { NewParamRowForm } from "./NewParamRowForm";
-import { ParamRow } from "./ParamRow";
+import { QueryParamRow } from "./QueryParamRow";
 
 export const QueryParamsView = () => {
-  const { resourceDescription: entryDescription, resource, projectId } = useContext(EndpointViewContext);
+  const { resourceId } = useContext(EndpointViewContext);
 
-  const { mutate: updateProjectResource } = useUpdateProjectResource();
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
-  const handleParamRowChange = (updatedParam: QueryParamInfo) => {
-    const initialParam = entryDescription.queryParams.find((param) => param.id === updatedParam.id);
+  const { data: localResourceDescription } = useLiveQuery((q) =>
+    q
+      .from({ collection: resourcesDescriptionsCollection })
+      .where(({ collection }) => eq(collection.id, resourceId))
+      .findOne()
+  );
 
-    if (!initialParam) return;
+  useMonitorQueryRowsDragAndDrop();
+  useMonitorQueryParamsRowFormDragAndDrop();
 
-    const buildUpdateObject = (initial: QueryParamInfo, updated: QueryParamInfo) => {
-      const updateObj: UpdateQueryParamParams = { id: updated.id };
+  const handleParamRowChange = (updatedParam: QueryParamInfo, originalParam: QueryParamInfo) => {
+    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      if (!draft) return;
 
-      if (initial.name !== updated.name) updateObj.name = updated.name;
+      const newQueryParams = draft.queryParams.map((param) =>
+        param.id === updatedParam.id
+          ? {
+              ...param,
+              ...updatedParam,
+            }
+          : param
+      );
 
-      if (initial.value !== updated.value)
-        updateObj.value = {
-          "UPDATE": updated.value,
-        };
+      draft.queryParams = newQueryParams;
 
-      if (initial.description !== updated.description && updated.description)
-        updateObj.description = {
-          "UPDATE": updated.description,
-        };
+      if (updatedParam.disabled !== originalParam.disabled) {
+        const splitUrl = draft.url?.split("?");
+        if (splitUrl) {
+          const newUrlQueryParams = newQueryParams
+            .filter((param) => !param.disabled)
+            .map((param) => `${param.name}=${param.value}`)
+            .join("&");
 
-      if (initial.order !== updated.order) updateObj.order = updated.order;
-
-      const optionsChanged = initial.disabled !== updated.disabled || initial.propagate !== updated.propagate;
-
-      if (optionsChanged) {
-        updateObj.options = {
-          disabled: updated.disabled,
-          propagate: updated.propagate,
-        };
+          draft.url = splitUrl[0] + "?" + newUrlQueryParams;
+        }
+        return;
       }
 
-      return updateObj;
-    };
+      if (updatedParam.name !== originalParam.name || updatedParam.value !== originalParam.value) {
+        const splitUrl = draft.url?.split("?");
+        if (splitUrl) {
+          const newUrlQueryParams = newQueryParams
+            .filter((param) => !param.disabled)
+            .map((param) => {
+              return `${param.name}=${param.value ? extractParsedValueString([{ string: param.value.toString() }]) : ""}`;
+            })
+            .join("&");
 
-    if (entryDescription.kind === "Item") {
-      updateProjectResource({
-        projectId,
-        updatedResource: {
-          ITEM: {
-            id: resource.id,
-            queryParamsToUpdate: [buildUpdateObject(initialParam, updatedParam)],
-            headersToAdd: [],
-            headersToUpdate: [],
-            headersToRemove: [],
-            pathParamsToAdd: [],
-            pathParamsToUpdate: [],
-            pathParamsToRemove: [],
-            queryParamsToAdd: [],
-            queryParamsToRemove: [],
-          },
-        },
-      });
-    }
+          draft.url = splitUrl[0] + "?" + newUrlQueryParams;
+        }
+        return;
+      }
+    });
   };
 
-  const handleParamRowDelete = (paramId: string) => {
-    const deletedParam = entryDescription.queryParams.find((param) => param.id === paramId);
+  const handleParamRowDelete = (deletedParam: QueryParamInfo) => {
+    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      if (!draft?.queryParams) return;
 
-    if (!deletedParam) return;
+      const newQueryParams = draft.queryParams
+        .filter((param) => param.id !== deletedParam.id)
+        .map((param, index) => ({
+          ...param,
+          order: index + 1,
+        }));
 
-    const queryParamsToUpdate = entryDescription.queryParams
-      .filter((param) => param.order! > deletedParam.order!)
-      .map((param) => ({
-        id: param.id,
-        order: param.order! - 1,
-      }));
+      draft.queryParams = newQueryParams;
 
-    if (entryDescription.kind === "Item") {
-      updateProjectResource({
-        projectId,
-        updatedResource: {
-          ITEM: {
-            id: resource.id,
-            headersToAdd: [],
-            headersToUpdate: [],
-            headersToRemove: [],
-            pathParamsToAdd: [],
-            pathParamsToUpdate: [],
-            pathParamsToRemove: [],
-            queryParamsToAdd: [],
-            queryParamsToUpdate: queryParamsToUpdate,
-            queryParamsToRemove: [paramId],
-          },
-        },
-      });
-    }
+      const splitUrl = draft.url?.split("?");
+      if (splitUrl) {
+        const newUrlQueryParams = newQueryParams.map((param) => `${param.name}=${param.value}`).join("&");
+        draft.url = splitUrl[0] + "?" + newUrlQueryParams;
+      }
+    });
   };
 
   const handleAddNewRow = (queryParam: QueryParamInfo) => {
@@ -117,71 +108,53 @@ export const QueryParamsView = () => {
       setColumnToFocusOnMount(null);
     }
 
-    const newQueryParam: AddQueryParamParams = {
-      name: queryParam.name,
-      value: queryParam.value,
-      order: entryDescription.queryParams.length + 1,
-      options: {
-        disabled: false,
-        propagate: false,
-      },
-    };
+    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      if (!draft) return;
 
-    if (entryDescription.kind === "Item") {
-      updateProjectResource({
-        projectId,
-        updatedResource: {
-          ITEM: {
-            id: resource.id,
-            headersToAdd: [],
-            headersToUpdate: [],
-            headersToRemove: [],
-            pathParamsToAdd: [],
-            pathParamsToUpdate: [],
-            pathParamsToRemove: [],
-            queryParamsToUpdate: [],
-            queryParamsToRemove: [],
-            queryParamsToAdd: [newQueryParam],
-          },
+      const newQueryParams = [
+        ...draft.queryParams,
+        {
+          ...queryParam,
+          id: Math.random().toString(36).substring(2, 15),
+          disabled: false,
+          propagate: false,
+          order: draft.queryParams.length + 1,
         },
-      });
-    }
-  };
+      ];
 
-  const handleAllParamsCheckedChange = (checked: CheckedState) => {
-    if (checked === "indeterminate") return;
+      draft.queryParams = newQueryParams;
 
-    updateProjectResource({
-      projectId,
-      updatedResource: {
-        ITEM: {
-          id: resource.id,
-          queryParamsToUpdate: entryDescription.queryParams
-            .filter((param) => param.disabled === checked)
-            .map((param) => ({
-              id: param.id,
-              options: { disabled: !checked, propagate: param.propagate },
-            })),
-          headersToAdd: [],
-          headersToUpdate: [],
-          headersToRemove: [],
-          pathParamsToAdd: [],
-          pathParamsToUpdate: [],
-          pathParamsToRemove: [],
-          queryParamsToAdd: [],
-          queryParamsToRemove: [],
-        },
-      },
+      const splitUrl = draft.url?.split("?");
+      if (splitUrl) {
+        const baseUrl = splitUrl[0];
+        const newQueryString = newQueryParams
+          .filter((param) => !param.disabled)
+          .map((param) => `${param.name}=${param.value}`)
+          .join("&");
+
+        draft.url = baseUrl + "?" + newQueryString;
+      }
     });
   };
 
-  const allParamsChecked = entryDescription.queryParams.every((param) => !param.disabled);
-  const someParamsChecked = entryDescription.queryParams.some((param) => !param.disabled);
-  const howManyParamsChecked = entryDescription.queryParams.filter((param) => !param.disabled).length;
+  const handleAllParamsCheckedChange = (checked: CheckedState) => {
+    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      if (!draft) return;
+
+      draft.queryParams = draft.queryParams.map((param) => ({
+        ...param,
+        disabled: checked === "indeterminate" ? false : Boolean(!checked),
+      }));
+    });
+  };
+
+  const allParamsChecked = localResourceDescription?.queryParams?.every((param) => !param.disabled);
+  const someParamsChecked = localResourceDescription?.queryParams?.some((param) => !param.disabled);
+  const howManyParamsChecked = localResourceDescription?.queryParams?.filter((param) => !param.disabled).length;
 
   const headerCheckedState = allParamsChecked ? true : someParamsChecked ? "indeterminate" : false;
 
-  const sortedQueryParams = sortObjectsByOrder(entryDescription.queryParams);
+  const sortedQueryParams = sortObjectsByOrder(localResourceDescription?.queryParams ?? []);
 
   return (
     <div className="flex h-full flex-col">
@@ -193,7 +166,7 @@ export const QueryParamsView = () => {
             label="Query Params"
             className="gap-3 truncate"
           />
-          <RoundedCounter count={howManyParamsChecked} color="gray" />
+          <RoundedCounter count={howManyParamsChecked ?? 0} color="gray" />
         </div>
 
         <div className="flex items-center gap-1">
@@ -204,18 +177,19 @@ export const QueryParamsView = () => {
       <Scrollbar className="min-h-0 flex-1">
         <div className="grid grid-cols-[min-content_minmax(128px,1fr)_minmax(128px,1fr)_min-content_min-content_min-content] gap-2 p-3">
           {sortedQueryParams.map((param, index) => {
-            const isLastRow = index === entryDescription.queryParams.length - 1;
+            const isLastRow = index === sortedQueryParams.length - 1;
             return (
-              <ParamRow
+              <QueryParamRow
                 key={param.id}
                 param={param}
                 onChange={handleParamRowChange}
-                onDelete={() => handleParamRowDelete(param.id)}
+                onDelete={() => handleParamRowDelete(param)}
                 keyToFocusOnMount={isLastRow ? columnToFocusOnMount : null}
                 paramType="query"
               />
             );
           })}
+
           <NewParamRowForm onAdd={handleAddNewRow} paramType={ParamDragType.QUERY} key={sortedQueryParams.length} />
         </div>
       </Scrollbar>

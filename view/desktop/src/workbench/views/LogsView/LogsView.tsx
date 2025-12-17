@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
+import { EditorView, minimalSetup } from "codemirror";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
@@ -7,7 +8,8 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
-import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting, syntaxTree } from "@codemirror/language";
+import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
 import { tags } from "@lezer/highlight";
 import { AccountKind, ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
@@ -15,7 +17,6 @@ import { parser } from "@repo/lezer-grammar";
 import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
-import CodeMirror from "@uiw/react-codemirror";
 
 import { ParsedUrl } from "../EndpointView/utils";
 
@@ -528,6 +529,8 @@ const ExtensionRegistryTest = () => {
 };
 
 const UrlParserTest = () => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
   const [url, setUrl] = useState<string>();
   const [parsedUrl, setParsedUrl] = useState<ParsedUrl>();
 
@@ -544,39 +547,60 @@ const UrlParserTest = () => {
     }
   }
 
-  const language = LRLanguage.define({ parser: parser });
-  const languageSupport = new LanguageSupport(language);
-  const onChange = useCallback((value, viewUpdate) => {
-    setUrl(value);
-    if (viewUpdate) {
-      console.log("viewUpdate", viewUpdate);
-      console.log(syntaxTree(viewUpdate.state).toString());
-    }
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const language = LRLanguage.define({ parser });
+    const languageSupport = new LanguageSupport(language);
+
+    const highlightStyle = HighlightStyle.define([
+      { tag: tags.punctuation, color: "black" },
+      {
+        tag: tags.variableName,
+        color: "var(--moss-accent)",
+        backgroundColor: "var(--moss-accent-secondary)",
+        padding: "1px 2px",
+        borderRadius: "4px",
+        fontWeight: "bold",
+      },
+      { tag: tags.content, color: "black" },
+      { tag: tags.keyword, color: "black" },
+    ]);
+
+    const startState = EditorState.create({
+      doc: "",
+      extensions: [
+        minimalSetup,
+        languageSupport,
+        syntaxHighlighting(highlightStyle),
+
+        EditorView.updateListener.of((update) => {
+          setUrl(update.state.doc.toString());
+        }),
+
+        EditorView.theme({
+          "&.cm-focused": {
+            outline: "none",
+          },
+        }),
+      ],
+    });
+
+    const view = new EditorView({
+      state: startState,
+      parent: editorRef.current,
+    });
+
+    viewRef.current = view;
+
+    return () => view.destroy();
+    // we create the editor only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const highlightStyle = HighlightStyle.define([
-    // {{ and }} and / and :
-    { tag: tags.punctuation, color: "#9e9e9e" },
-
-    // The variable names (env, test1)
-    { tag: tags.variableName, color: "#9c27b0", fontWeight: "bold" },
-
-    // The normal URL text
-    { tag: tags.content, color: "#424242" },
-
-    // (Optional) If you kept the parent tag mapping
-    { tag: tags.keyword, color: "#9c27b0" },
-  ]);
 
   return (
     <div className={"overflow-x-auto rounded-md"}>
-      <CodeMirror
-        value={url}
-        height="200px"
-        onChange={onChange}
-        extensions={[languageSupport, syntaxHighlighting(highlightStyle)]}
-      />
-
+      <div ref={editorRef} className="bg-white" />
       <textarea value={JSON.stringify(parsedUrl, null, 2)} readOnly className="h-50 mt-4 w-full bg-white" />
       <button
         className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"

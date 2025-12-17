@@ -12,6 +12,7 @@ interface AddPanelOptionsWithoutMandatoryComponent
       iconType?: Icons;
       projectId?: string;
       node?: ProjectTreeNode;
+      resourceId?: string;
       workspace?: boolean;
     }>,
     "component" | "floating"

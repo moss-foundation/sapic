@@ -19,12 +19,6 @@ export const isSourceQueryParamRow = (source: ElementDragPayload) => {
   return data.data.paramType === "query";
 };
 
-export const isSourcePathParamRow = (source: ElementDragPayload) => {
-  if (!isSourceParamRow(source)) return false;
-  const data = source.data as DraggableParamRowData;
-  return data.data.paramType === "path";
-};
-
 export const getDraggableParamRowSourceData = (source: ElementDragPayload): DraggableParamRowData | null => {
   if (!isSourceParamRow(source)) return null;
 
@@ -71,18 +65,6 @@ export const calculateDropType = (
 ) => {
   if (sourceData.data.paramType === "query" && dropTargetData.data.paramType === "query") {
     return "WithinQueryList";
-  }
-
-  if (sourceData.data.paramType === "path" && dropTargetData.data.paramType === "path") {
-    return "WithinPathList";
-  }
-
-  if (sourceData.data.paramType === "query" && dropTargetData.data.paramType === "path") {
-    return "QueryToPath";
-  }
-
-  if (sourceData.data.paramType === "path" && dropTargetData.data.paramType === "query") {
-    return "PathToQuery";
   }
 
   return "Invalid";

@@ -7,6 +7,7 @@ import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import {
   AccountsView,
   EndpointView,
+  EndpointViewProps,
   FolderSettingsView,
   KitchenSinkView,
   LogsView,
@@ -50,13 +51,7 @@ export const tabbedPaneComponents = {
       </PageView>
     );
   },
-  Endpoint: (
-    props: IDockviewPanelProps<{
-      node: ProjectTreeNode;
-      projectId: string;
-      iconType: ResourceKind;
-    }>
-  ) => <EndpointView {...props} />,
+  Endpoint: (props: IDockviewPanelProps<EndpointViewProps>) => <EndpointView {...props} />,
   ProjectSettings: (
     props: IDockviewPanelProps<{
       node: ProjectTreeNode;

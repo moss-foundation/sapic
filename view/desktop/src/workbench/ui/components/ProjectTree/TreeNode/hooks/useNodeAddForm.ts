@@ -37,6 +37,7 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
         projectId: id,
         input: newResource,
       });
+
       await updateProjectResource({
         projectId: id,
         updatedResource: {
