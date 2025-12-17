@@ -259,6 +259,10 @@ impl EntryModel {
         self.url.as_ref().map(|url| url.protocol.clone())
     }
 
+    pub fn url(&self) -> Option<String> {
+        self.url.as_ref().map(|url| url.raw.clone())
+    }
+
     pub fn body_kind(&self) -> Option<BodyKind> {
         if let Some(body) = self.body.as_ref() {
             body.iter().map(|(kind, _)| *kind).next()
