@@ -5,7 +5,7 @@ use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_edit::json::EditOptions;
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
 use moss_text::sanitized::sanitize;
@@ -170,10 +170,13 @@ impl Project {
         // Since it will trigger spurious git2 type errors
         {
             let account_id = client.account_id();
-            self.modify_config(ProjectConfigModifyParams {
-                archived: None,
-                account_id: Some(account_id),
-            })
+            self.modify_config(
+                ctx,
+                ProjectConfigModifyParams {
+                    archived: None,
+                    account_id: Some(account_id),
+                },
+            )
             .await?;
         }
         let (access_token, username) = match &client {
@@ -252,7 +255,11 @@ impl Project {
         Ok(())
     }
 
-    pub async fn load_vcs(&self, client: GitClient) -> joinerror::Result<()> {
+    pub async fn load_vcs(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        client: GitClient,
+    ) -> joinerror::Result<()> {
         let abs_path = self.abs_path();
         let repository = Repository::open(&abs_path)?;
 
@@ -260,7 +267,7 @@ impl Project {
             let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
             let rdr = self
                 .fs
-                .open_file(&manifest_path)
+                .open_file(ctx, &manifest_path)
                 .await
                 .join_err_with::<()>(|| {
                     format!("failed to open manifest file: {}", manifest_path.display())
@@ -286,11 +293,11 @@ impl Project {
         Ok(())
     }
 
-    pub async fn details(&self) -> joinerror::Result<ProjectDetails> {
+    pub async fn details(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<ProjectDetails> {
         let manifest_path = self.abs_path().join(MANIFEST_FILE_NAME);
         let rdr = self
             .fs
-            .open_file(&manifest_path)
+            .open_file(ctx, &manifest_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to open manifest file: {}", manifest_path.display())
@@ -303,7 +310,7 @@ impl Project {
 
         let rdr = self
             .fs
-            .open_file(&config_path)
+            .open_file(ctx, &config_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to open config file: {}", config_path.display())
@@ -323,7 +330,11 @@ impl Project {
         })
     }
 
-    pub async fn modify(&self, params: ProjectModifyParams) -> joinerror::Result<()> {
+    pub async fn modify(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ProjectModifyParams,
+    ) -> joinerror::Result<()> {
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
@@ -345,11 +356,11 @@ impl Project {
                 self.set_icon_service.set_icon(&new_icon_path)?;
             }
             Some(ChangePath::Remove) => {
-                self.set_icon_service.remove_icon().await?;
+                self.set_icon_service.remove_icon(ctx).await?;
             }
         }
         self.edit
-            .edit(&patches)
+            .edit(ctx, &patches)
             .await
             .join_err::<()>("failed to edit project")?;
 
@@ -358,12 +369,13 @@ impl Project {
 
     pub(crate) async fn modify_config(
         &self,
+        ctx: &dyn AnyAsyncContext,
         params: ProjectConfigModifyParams,
     ) -> joinerror::Result<()> {
         let config_path = self.internal_abs_path.join(CONFIG_FILE_NAME);
         let rdr = self
             .fs
-            .open_file(&config_path)
+            .open_file(ctx, &config_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to open config file: {}", config_path.display())
@@ -389,6 +401,7 @@ impl Project {
 
         self.fs
             .create_file_with(
+                ctx,
                 &config_path,
                 serde_json::to_string(&config)?.as_bytes(),
                 CreateOptions {
@@ -400,15 +413,15 @@ impl Project {
         Ok(())
     }
 
-    pub async fn dispose(&self) -> joinerror::Result<()> {
+    pub async fn dispose(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         if let Some(vcs) = self.vcs.get() {
-            vcs.dispose(self.fs.clone()).await?;
+            vcs.dispose(ctx, self.fs.clone()).await?;
         }
 
         Ok(())
     }
 
-    pub async fn archive(&self) -> joinerror::Result<()> {
+    pub async fn archive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
@@ -421,10 +434,13 @@ impl Project {
         }
         self.archived.store(true, Ordering::Relaxed);
 
-        self.modify_config(ProjectConfigModifyParams {
-            archived: Some(true),
-            account_id: None,
-        })
+        self.modify_config(
+            ctx,
+            ProjectConfigModifyParams {
+                archived: Some(true),
+                account_id: None,
+            },
+        )
         .await?;
         // TODO: Dropping worktree and vcs?
         // Right now it's impossible since OnceCell requires &mut self
@@ -432,7 +448,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn unarchive(&self) -> joinerror::Result<()> {
+    pub async fn unarchive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
@@ -444,10 +460,13 @@ impl Project {
             return Ok(());
         }
 
-        self.modify_config(ProjectConfigModifyParams {
-            archived: Some(false),
-            account_id: None,
-        })
+        self.modify_config(
+            ctx,
+            ProjectConfigModifyParams {
+                archived: Some(false),
+                account_id: None,
+            },
+        )
         .await?;
 
         let _ = self
@@ -469,7 +488,11 @@ impl Project {
 
     /// Export the project to {destination}/{project_name}.zip
     /// Returns the path to the output archive file
-    pub async fn export_archive(&self, destination: &Path) -> joinerror::Result<PathBuf> {
+    pub async fn export_archive(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        destination: &Path,
+    ) -> joinerror::Result<PathBuf> {
         // If the output is inside the collection folder, it will also be bundled, which we don't want
         let abs_path = self.abs_path();
 
@@ -479,12 +502,12 @@ impl Project {
             ));
         }
         // Project name can contain special chars that need sanitizing
-        let raw_name = format!("{}", self.details().await?.name);
+        let raw_name = format!("{}", self.details(ctx).await?.name);
         let sanitized_name = sanitize(&raw_name);
         let archive_path = destination.join(format!("{}.zip", sanitized_name));
 
         self.fs
-            .zip(&abs_path, &archive_path, &ARCHIVE_EXCLUDED_ENTRIES)
+            .zip(ctx, &abs_path, &archive_path, &ARCHIVE_EXCLUDED_ENTRIES)
             .await?;
 
         Ok(archive_path)

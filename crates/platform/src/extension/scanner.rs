@@ -1,5 +1,7 @@
-use moss_fs::{FileSystem, FsResultExt};
+use joinerror::ResultExt;
+use moss_fs::FileSystem;
 use sapic_base::extension::manifest::AddonManifestFile;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
@@ -27,13 +29,20 @@ impl ExtensionScanner {
         Self { fs, roots }
     }
 
-    pub async fn scan(&self) -> joinerror::Result<Vec<ExtensionDescription>> {
+    pub async fn scan(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<ExtensionDescription>> {
         let mut extensions = Vec::new();
 
         for (abs_path, kind) in &self.roots {
-            let mut read_dir = self.fs.read_dir(abs_path).await.join_err_with::<()>(|| {
-                format!("failed to read directory {}", abs_path.display())
-            })?;
+            let mut read_dir = self
+                .fs
+                .read_dir(ctx, abs_path)
+                .await
+                .join_err_with::<()>(|| {
+                    format!("failed to read directory {}", abs_path.display())
+                })?;
 
             while let Some(entry) = read_dir.next_entry().await? {
                 if entry.file_type().await?.is_file() {
@@ -46,7 +55,7 @@ impl ExtensionScanner {
                     continue;
                 }
 
-                let rdr = self.fs.open_file(&manifest_path).await?;
+                let rdr = self.fs.open_file(ctx, &manifest_path).await?;
                 let parsed: AddonManifestFile = serde_json::from_reader(rdr)?;
 
                 extensions.push(ExtensionDescription {

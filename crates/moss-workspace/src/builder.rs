@@ -2,7 +2,7 @@ use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
-use moss_fs::{CreateOptions, FileSystem, FsResultExt};
+use moss_fs::{CreateOptions, FileSystem};
 use moss_storage2::KvStorage;
 use rustc_hash::FxHashMap;
 use sapic_base::{
@@ -89,6 +89,7 @@ impl WorkspaceBuilder {
     }
 
     pub async fn initialize(
+        ctx: &dyn AnyAsyncContext,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,
         workspace_id: WorkspaceId,
@@ -97,10 +98,11 @@ impl WorkspaceBuilder {
         debug_assert!(params.abs_path.is_absolute());
 
         for dir in &[dirs::PROJECTS_DIR, dirs::ENVIRONMENTS_DIR] {
-            fs.create_dir(&params.abs_path.join(dir)).await?;
+            fs.create_dir(ctx, &params.abs_path.join(dir)).await?;
         }
 
         fs.create_file_with(
+            ctx,
             &params.abs_path.join(MANIFEST_FILE_NAME),
             serde_json::to_string(&WorkspaceManifest { name: params.name })?.as_bytes(),
             CreateOptions::default(),
@@ -110,12 +112,15 @@ impl WorkspaceBuilder {
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             EnvironmentBuilder::new(workspace_id.inner(), fs.clone(), storage.clone())
-                .initialize(CreateEnvironmentParams {
-                    name: env.name.clone(),
-                    abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-                    color: env.color.clone(),
-                    variables: vec![],
-                })
+                .initialize(
+                    ctx,
+                    CreateEnvironmentParams {
+                        name: env.name.clone(),
+                        abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+                        color: env.color.clone(),
+                        variables: vec![],
+                    },
+                )
                 .await
                 .join_err_with::<()>(|| {
                     format!("failed to initialize environment `{}`", env.name)
@@ -209,6 +214,7 @@ impl WorkspaceBuilder {
         debug_assert!(params.abs_path.is_absolute());
 
         WorkspaceBuilder::initialize(
+            ctx,
             self.fs.clone(),
             self.storage.clone(),
             self.workspace_id.clone(),

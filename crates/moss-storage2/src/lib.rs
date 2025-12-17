@@ -4,11 +4,11 @@ pub mod models;
 pub mod project_storage;
 pub mod workspace_storage;
 
+use crate::models::primitives::StorageScope;
 use async_trait::async_trait;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{sync::Arc, time::Instant};
-
-use crate::models::primitives::StorageScope;
 
 #[async_trait]
 pub trait SubstoreManager: Send + Sync {
@@ -28,34 +28,55 @@ pub trait SubstoreManager: Send + Sync {
 
 #[async_trait]
 pub trait KvStorage: SubstoreManager + Send + Sync {
-    async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()>;
-    async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
-    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>>;
+    async fn put(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+        value: JsonValue,
+    ) -> joinerror::Result<()>;
+    async fn get(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>>;
+    async fn remove(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>>;
 
     async fn put_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         items: &[(&str, JsonValue)],
     ) -> joinerror::Result<()>;
     async fn get_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
     async fn remove_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 
     async fn get_batch_by_prefix(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         prefix: &str,
     ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 
     async fn remove_batch_by_prefix(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         prefix: &str,
     ) -> joinerror::Result<Vec<(String, JsonValue)>>;

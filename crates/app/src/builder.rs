@@ -78,7 +78,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         self
     }
 
-    pub async fn build(self, _ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
+    pub async fn build(self, ctx: &R::AsyncContext, delegate: &AppDelegate<R>) -> App<R> {
         // Ensure all the required folders exist
         let required_folders = vec![
             delegate.tmp_dir(),
@@ -95,6 +95,7 @@ impl<R: AppRuntime> AppBuilder<R> {
         }
         let extension_unpacker = ExtensionUnpackerImpl::new(self.fs.clone());
         let extension_service = ExtensionService::<R>::new(
+            ctx,
             &delegate,
             self.fs.clone(),
             self.extension_points,

@@ -1,11 +1,11 @@
+use super::{DynThemeLoader, DynThemeRegistry};
 use joinerror::OptionExt;
 use sapic_base::{
     errors::NotFound,
     theme::types::{ColorThemeInfo, primitives::ThemeId},
 };
+use sapic_core::context::AnyAsyncContext;
 use std::collections::HashMap;
-
-use super::{DynThemeLoader, DynThemeRegistry};
 
 pub struct ThemeService {
     loader: DynThemeLoader,
@@ -40,14 +40,14 @@ impl ThemeService {
             .collect()
     }
 
-    pub async fn read(&self, id: &ThemeId) -> joinerror::Result<String> {
+    pub async fn read(&self, ctx: &dyn AnyAsyncContext, id: &ThemeId) -> joinerror::Result<String> {
         let item = self
             .registry
             .get(id)
             .await
             .ok_or_join_err_with::<NotFound>(|| format!("theme with id `{}` not found", id))?;
 
-        let theme = self.loader.load(&item.path).await?;
+        let theme = self.loader.load(ctx, &item.path).await?;
 
         // TODO: apply color theme token overrides
 

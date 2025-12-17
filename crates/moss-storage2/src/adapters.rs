@@ -1,6 +1,7 @@
 pub mod sqlite;
 
 use async_trait::async_trait;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{sync::Arc, time::Duration};
 
@@ -46,29 +47,50 @@ pub trait Closable: Send + Sync {
 pub trait KeyedStorage: Send + Sync {
     /// Upserts `value` at `key`.
     /// Writes to SQLite, then updates the in-memory cache (write-through).
-    async fn put(&self, key: &str, value: JsonValue) -> joinerror::Result<()>;
+    async fn put(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        key: &str,
+        value: JsonValue,
+    ) -> joinerror::Result<()>;
 
     /// Gets `key` from the in-memory cache; on miss, reads from SQLite,
     /// caches the value, and returns it.
-    async fn get(&self, key: &str) -> joinerror::Result<Option<JsonValue>>;
+    async fn get(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>>;
 
     /// Removes `key` from the in-memory cache and SQLite.
     /// Returns the removed value.
-    async fn remove(&self, key: &str) -> joinerror::Result<Option<JsonValue>>;
+    async fn remove(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>>;
 
     /// Upserts `values` at `keys`.
     /// Writes to SQLite, then updates the in-memory cache (write-through).
-    async fn put_batch(&self, items: &[(&str, JsonValue)]) -> joinerror::Result<()>;
+    async fn put_batch(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        items: &[(&str, JsonValue)],
+    ) -> joinerror::Result<()>;
 
     /// Gets `keys` from the in-memory cache; on miss, reads from SQLite,
     /// caches the values, and returns them.
-    async fn get_batch(&self, keys: &[&str])
-    -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
+    async fn get_batch(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        keys: &[&str],
+    ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 
     /// Removes `keys` from the in-memory cache and SQLite.
     /// Returns the removed values.
     async fn remove_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>>;
 
@@ -76,6 +98,7 @@ pub trait KeyedStorage: Send + Sync {
     /// caches the values, and returns them
     async fn get_batch_by_prefix(
         &self,
+        ctx: &dyn AnyAsyncContext,
         prefix: &str,
     ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 
@@ -83,6 +106,7 @@ pub trait KeyedStorage: Send + Sync {
     /// Returns the removed values
     async fn remove_batch_by_prefix(
         &self,
+        ctx: &dyn AnyAsyncContext,
         prefix: &str,
     ) -> joinerror::Result<Vec<(String, JsonValue)>>;
 }

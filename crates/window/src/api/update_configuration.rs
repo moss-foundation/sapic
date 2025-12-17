@@ -16,7 +16,7 @@ use validator::Validate;
 impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn update_configuration(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         app_delegate: &AppDelegate<R>,
         input: UpdateConfigurationInput,
     ) -> joinerror::Result<()> {
@@ -25,6 +25,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         let settings_storage = GlobalSettingsStorage::get(app_delegate);
         settings_storage
             .update_value(
+                ctx,
                 &SettingScope::User,
                 &input.inner.key,
                 input.inner.value.clone(),

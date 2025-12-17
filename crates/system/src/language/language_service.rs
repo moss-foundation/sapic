@@ -1,10 +1,10 @@
+use crate::language::{LanguagePackLoader, LanguagePackRegistry};
 use joinerror::{OptionExt, ResultExt};
 use rustc_hash::FxHashMap;
 use sapic_base::language::types::{LanguageInfo, primitives::LanguageCode};
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, sync::Arc};
-
-use crate::language::{LanguagePackLoader, LanguagePackRegistry};
 
 type Namespace = String;
 
@@ -75,6 +75,7 @@ impl LanguageService {
 
     pub async fn get_namespace(
         &self,
+        ctx: &dyn AnyAsyncContext,
         code: &LanguageCode,
         ns: &str,
     ) -> joinerror::Result<JsonValue> {
@@ -94,7 +95,7 @@ impl LanguageService {
 
         let namespace_object = self
             .loader
-            .load_namespace(&language.path, ns)
+            .load_namespace(ctx, &language.path, ns)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to load namespace `{}` for language `{}`", ns, code)

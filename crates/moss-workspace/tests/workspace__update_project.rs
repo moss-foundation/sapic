@@ -57,7 +57,7 @@ async fn rename_project_success() {
         .project(&create_project_output.id.into())
         .await
         .unwrap();
-    assert_eq!(project.details().await.unwrap().name, new_project_name);
+    assert_eq!(project.details(&ctx).await.unwrap().name, new_project_name);
 
     cleanup().await;
 }

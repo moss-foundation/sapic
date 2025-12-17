@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_core::context::AnyAsyncContext;
 use sapic_system::workspace::{WorkspaceEditOp, WorkspaceEditParams};
 use std::{path::Path, sync::Arc};
 
@@ -9,7 +10,11 @@ pub trait Workspace: Send + Sync {
     fn abs_path(&self) -> Arc<Path>;
 
     async fn dispose(&self) -> joinerror::Result<()>;
-    async fn edit(&self, params: WorkspaceEditParams) -> joinerror::Result<()>;
+    async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: WorkspaceEditParams,
+    ) -> joinerror::Result<()>;
 }
 
 pub struct RuntimeWorkspace {
@@ -38,8 +43,12 @@ impl Workspace for RuntimeWorkspace {
         self.abs_path.clone()
     }
 
-    async fn edit(&self, params: WorkspaceEditParams) -> joinerror::Result<()> {
-        self.edit.edit(&self.id, params).await
+    async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: WorkspaceEditParams,
+    ) -> joinerror::Result<()> {
+        self.edit.edit(ctx, &self.id, params).await
     }
 
     async fn dispose(&self) -> joinerror::Result<()> {

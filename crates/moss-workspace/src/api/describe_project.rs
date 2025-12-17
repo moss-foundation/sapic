@@ -26,7 +26,7 @@ impl Workspace {
                 format!("project `{}` not found", input.id.as_str())
             })?;
 
-        let details = project.details().await?;
+        let details = project.details(ctx).await?;
         let (vcs_summary, contributors) = if let Some(vcs) = project.vcs::<R>() {
             let summary = match vcs.summary(ctx).await {
                 Ok(summary) => Some(summary),

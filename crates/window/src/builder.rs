@@ -72,7 +72,8 @@ impl OldSapicWindowBuilder {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
-        self.create_user_dirs_if_not_exists(user_dir.clone()).await;
+        self.create_user_dirs_if_not_exists::<R>(ctx, user_dir.clone())
+            .await;
 
         // let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
         // let on_did_change_profile_event = on_did_change_profile_emitter.event();
@@ -111,6 +112,7 @@ impl OldSapicWindowBuilder {
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
+            ctx,
             &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.server_api_client.clone(),
@@ -172,7 +174,11 @@ impl OldSapicWindowBuilder {
         })
     }
 
-    async fn create_user_dirs_if_not_exists(&self, user_dir: PathBuf) {
+    async fn create_user_dirs_if_not_exists<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        user_dir: PathBuf,
+    ) {
         for dir in &[
             dirs::WORKSPACES_DIR,
             dirs::GLOBALS_DIR,
@@ -185,7 +191,7 @@ impl OldSapicWindowBuilder {
             }
 
             self.fs
-                .create_dir(&dir_path)
+                .create_dir(ctx, &dir_path)
                 .await
                 .expect("Failed to create app directories");
         }

@@ -72,6 +72,9 @@ UV := uv
 run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools
 
+.PHONY: run-desktop-release
+run-desktop-release:
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools -- --release
 
 # ======================================================
 # Setup Commands
@@ -281,3 +284,9 @@ tidy: gen-license rust-audit check-unused-deps
 build:
 	@echo "Building with compression feature for reducing binary size..."
 	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features compression
+
+## Create a debug build
+.PHONY: build-debug
+build-debug:
+	@echo "Building with devtools..."
+	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features devtools

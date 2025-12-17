@@ -1,14 +1,13 @@
-pub mod error;
 pub mod fs_watcher;
 pub mod real;
 pub mod utils;
 
-pub use error::*;
 pub use real::*;
 pub use utils::{desanitize_path, normalize_path, sanitize_path};
 
 use atomic_fs::Rollback;
 use futures::stream::BoxStream;
+use sapic_core::context::AnyAsyncContext;
 use std::{io, path::Path, time::Duration};
 use tokio::fs::ReadDir;
 
@@ -51,57 +50,99 @@ impl Default for RenameOptions {
     }
 }
 
+// Swapping FsResult to joinerror::Result to make context easier to work with
 #[async_trait::async_trait]
 pub trait FileSystem: Send + Sync {
-    async fn create_dir_all(&self, path: &Path) -> FsResult<()>;
-    async fn create_dir(&self, path: &Path) -> FsResult<()>;
-    async fn read_dir(&self, path: &Path) -> FsResult<ReadDir>;
-    async fn remove_dir(&self, path: &Path, options: RemoveOptions) -> FsResult<()>;
-    async fn is_dir_empty(&self, path: &Path) -> FsResult<bool>;
+    async fn create_dir_all(&self, ctx: &dyn AnyAsyncContext, path: &Path)
+    -> joinerror::Result<()>;
+    async fn create_dir(&self, ctx: &dyn AnyAsyncContext, path: &Path) -> joinerror::Result<()>;
+    async fn read_dir(&self, ctx: &dyn AnyAsyncContext, path: &Path) -> joinerror::Result<ReadDir>;
+    async fn remove_dir(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> joinerror::Result<()>;
+    async fn is_dir_empty(&self, ctx: &dyn AnyAsyncContext, path: &Path)
+    -> joinerror::Result<bool>;
 
-    async fn rename(&self, from: &Path, to: &Path, options: RenameOptions) -> FsResult<()>;
+    async fn rename(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        from: &Path,
+        to: &Path,
+        options: RenameOptions,
+    ) -> joinerror::Result<()>;
 
-    async fn create_file(&self, path: &Path, options: CreateOptions) -> FsResult<()>;
+    async fn create_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        path: &Path,
+        options: CreateOptions,
+    ) -> joinerror::Result<()>;
 
     async fn create_file_with(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &Path,
         content: &[u8],
         options: CreateOptions,
-    ) -> FsResult<()>;
-    async fn remove_file(&self, path: &Path, options: RemoveOptions) -> FsResult<()>;
-    async fn open_file(&self, path: &Path) -> FsResult<Box<dyn io::Read + Send + Sync>>;
+    ) -> joinerror::Result<()>;
+    async fn remove_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        path: &Path,
+        options: RemoveOptions,
+    ) -> joinerror::Result<()>;
+    async fn open_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        path: &Path,
+    ) -> joinerror::Result<Box<dyn io::Read + Send + Sync>>;
 
-    async fn zip(&self, src_dir: &Path, out_file: &Path, excluded_entries: &[&str])
-    -> FsResult<()>;
+    async fn zip(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        src_dir: &Path,
+        out_file: &Path,
+        excluded_entries: &[&str],
+    ) -> joinerror::Result<()>;
 
-    async fn unzip(&self, src_archive: &Path, out_dir: &Path) -> FsResult<()>;
+    async fn unzip(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        src_archive: &Path,
+        out_dir: &Path,
+    ) -> joinerror::Result<()>;
 
     fn watch(
         &self,
         path: &Path,
         latency: Duration,
-    ) -> FsResult<(
+    ) -> joinerror::Result<(
         BoxStream<'static, Vec<notify::Event>>,
         notify::RecommendedWatcher,
     )>;
 
-    async fn start_rollback(&self) -> joinerror::Result<Rollback>;
+    async fn start_rollback(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Rollback>;
 
     async fn create_dir_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
     ) -> joinerror::Result<()>;
 
     async fn create_dir_all_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
     ) -> joinerror::Result<()>;
 
     async fn remove_dir_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
@@ -109,6 +150,7 @@ pub trait FileSystem: Send + Sync {
 
     async fn create_file_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
         options: CreateOptions,
@@ -116,6 +158,7 @@ pub trait FileSystem: Send + Sync {
 
     async fn create_file_with_content_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
         content: &[u8],
@@ -124,6 +167,7 @@ pub trait FileSystem: Send + Sync {
 
     async fn remove_file_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         path: &Path,
         options: RemoveOptions,
@@ -131,6 +175,7 @@ pub trait FileSystem: Send + Sync {
 
     async fn rename_with_rollback(
         &self,
+        ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
         from: &Path,
         to: &Path,

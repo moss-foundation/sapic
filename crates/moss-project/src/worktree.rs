@@ -165,7 +165,7 @@ impl Worktree {
 
     pub async fn remove_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
     ) -> joinerror::Result<()> {
         let mut state_lock = self.state.write().await;
@@ -184,6 +184,7 @@ impl Worktree {
 
         self.fs
             .remove_dir(
+                ctx,
                 &abs_path,
                 RemoveOptions {
                     recursive: true,
@@ -195,6 +196,7 @@ impl Worktree {
         if let Err(e) = self
             .storage
             .remove_batch_by_prefix(
+                ctx,
                 StorageScope::Project(self.project_id.inner()),
                 &key_resource(id),
             )
@@ -214,6 +216,7 @@ impl Worktree {
         if let Err(e) = self
             .storage
             .put(
+                ctx,
                 StorageScope::Project(self.project_id.inner()),
                 KEY_EXPANDED_ENTRIES,
                 serde_json::to_value(&state_lock.expanded_entries)?,
@@ -231,7 +234,7 @@ impl Worktree {
 
     pub async fn scan<R: AppRuntime>(
         &self,
-        _ctx: &dyn AnyAsyncContext, // TODO: use ctx ctx.done() to cancel the scan if needed
+        ctx: Arc<dyn AnyAsyncContext>, // TODO: use ctx ctx.done() to cancel the scan if needed
         app_delegate: AppDelegate<R>,
         path: &Path,
         expanded_entries: Arc<HashSet<ResourceId>>,
@@ -274,11 +277,13 @@ impl Worktree {
                 job.path.display().to_string()
             )))?;
 
+            let ctx_clone = ctx.clone();
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
-
+                let ctx_clone = ctx_clone.clone();
                 if !job.path.as_os_str().is_empty() {
                     match process_entry(
+                        ctx_clone.clone(),
                         job.path.clone(),
                         &all_entry_keys,
                         &expanded_entries,
@@ -358,6 +363,7 @@ impl Worktree {
                     let maybe_entry = if child_file_type.is_dir() {
                         continue_if_err!(
                             process_entry(
+                                ctx_clone.clone(),
                                 child_path.clone(),
                                 &all_entry_keys,
                                 &expanded_entries,
@@ -424,7 +430,7 @@ impl Worktree {
 
     pub async fn create_item_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -439,7 +445,7 @@ impl Worktree {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry_internal(&sanitized_path, false, &content.as_bytes())
+        self.create_entry_internal(ctx, &sanitized_path, false, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -474,7 +480,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -488,7 +498,7 @@ impl Worktree {
 
     pub async fn create_dir_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         name: &str,
         path: &Path,
         model: EntryModel,
@@ -503,7 +513,7 @@ impl Worktree {
 
         let content = hcl::to_string(&model)
             .join_err::<()>("failed to serialize configuration into hcl string")?;
-        self.create_entry_internal(&sanitized_path, true, &content.as_bytes())
+        self.create_entry_internal(ctx, &sanitized_path, true, &content.as_bytes())
             .await?;
 
         let mut state_lock = self.state.write().await;
@@ -536,7 +546,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -550,7 +564,7 @@ impl Worktree {
 
     pub async fn update_dir_entry(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         id: &ResourceId,
         params: ModifyParams,
     ) -> joinerror::Result<Arc<Path>> {
@@ -579,6 +593,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -593,6 +608,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -629,7 +645,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -672,6 +692,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -686,6 +707,7 @@ impl Worktree {
             entry
                 .edit
                 .rename(
+                    ctx,
                     &self.abs_path.join(dirs::RESOURCES_DIR),
                     &old_path,
                     &new_path,
@@ -723,7 +745,11 @@ impl Worktree {
 
         if let Err(e) = self
             .storage
-            .put_batch(StorageScope::Project(self.project_id.inner()), &batch_input)
+            .put_batch(
+                ctx,
+                StorageScope::Project(self.project_id.inner()),
+                &batch_input,
+            )
             .await
         {
             session::warn!(format!(
@@ -737,7 +763,7 @@ impl Worktree {
 
     pub async fn describe_entry<R: AppRuntime>(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         app_delegate: &AppDelegate<R>,
         id: &ResourceId,
     ) -> joinerror::Result<DescribeResourceOutput> {
@@ -759,7 +785,7 @@ impl Worktree {
             .unwrap_or_else(|| entry_path.to_string_lossy().to_string());
 
         if dir_config_path.exists() {
-            let mut rdr = self.fs.open_file(&dir_config_path).await?;
+            let mut rdr = self.fs.open_file(ctx, &dir_config_path).await?;
             let model: EntryModel =
                 hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
@@ -778,6 +804,7 @@ impl Worktree {
             let entry_keys = self
                 .storage
                 .get_batch_by_prefix(
+                    ctx,
                     StorageScope::Project(self.project_id.inner()),
                     &key_resource(&id),
                 )
@@ -789,7 +816,7 @@ impl Worktree {
                 .into_iter()
                 .collect::<HashMap<_, _>>();
 
-            let mut rdr = self.fs.open_file(&item_config_path).await?;
+            let mut rdr = self.fs.open_file(ctx, &item_config_path).await?;
             let model: EntryModel =
                 hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
             let class = model.class();
@@ -950,6 +977,7 @@ impl Worktree {
 impl Worktree {
     async fn create_entry_internal(
         &self,
+        ctx: &dyn AnyAsyncContext,
         path: &SanitizedPath,
         is_dir: bool,
         content: &[u8],
@@ -962,7 +990,7 @@ impl Worktree {
             )));
         }
 
-        self.fs.create_dir(&abs_path).await?;
+        self.fs.create_dir(ctx, &abs_path).await?;
 
         let file_path = if is_dir {
             abs_path.join(constants::DIR_CONFIG_FILENAME)
@@ -972,6 +1000,7 @@ impl Worktree {
 
         self.fs
             .create_file_with(
+                ctx,
                 &file_path,
                 content,
                 CreateOptions {
@@ -1069,6 +1098,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_header_order(&entry.id, &id),
                     serde_json::to_value(&header_to_add.order)?,
@@ -1206,6 +1236,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_header_order(&entry.id, &header_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1230,7 +1261,11 @@ impl Worktree {
 
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(storage_scope.clone(), &key_resource_header(&entry.id, id))
+                .remove_batch_by_prefix(
+                    ctx,
+                    storage_scope.clone(),
+                    &key_resource_header(&entry.id, id),
+                )
                 .await
             {
                 session::warn!(format!("failed to remove header cache: {}", e));
@@ -1295,6 +1330,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_path_param_order(&entry.id, &id),
                     serde_json::to_value(&path_param_to_add.order)?,
@@ -1435,6 +1471,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_path_param_order(&entry.id, &path_param_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1463,6 +1500,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .remove_batch_by_prefix(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_path_param(&entry.id, id),
                 )
@@ -1530,6 +1568,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .put(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_query_param_order(&entry.id, &id),
                     serde_json::to_value(&query_param_to_add.order)?,
@@ -1670,6 +1709,7 @@ impl Worktree {
                 if let Err(e) = self
                     .storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_query_param_order(&entry.id, &query_param_to_update.id),
                         serde_json::to_value(&order)?,
@@ -1698,6 +1738,7 @@ impl Worktree {
             if let Err(e) = self
                 .storage
                 .remove_batch_by_prefix(
+                    ctx,
                     storage_scope.clone(),
                     &key_resource_query_param(&entry.id, id),
                 )
@@ -1735,7 +1776,7 @@ impl Worktree {
 
         entry
             .edit
-            .edit(&self.abs_path.join(dirs::RESOURCES_DIR), &patches)
+            .edit(ctx, &self.abs_path.join(dirs::RESOURCES_DIR), &patches)
             .await?;
 
         for callback in on_edit_success {
@@ -2071,6 +2112,7 @@ async fn patch_item_body<R: AppRuntime>(
             for (id, order) in param_order_updates {
                 if let Err(e) = storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_urlencoded_param_order(&resource_id, &id),
                         serde_json::to_value(order)?,
@@ -2084,6 +2126,7 @@ async fn patch_item_body<R: AppRuntime>(
             for id in param_removes {
                 if let Err(e) = storage
                     .remove(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_urlencoded_param(&resource_id, &id),
                     )
@@ -2323,6 +2366,7 @@ async fn patch_item_body<R: AppRuntime>(
             for (id, order) in param_order_updates {
                 if let Err(e) = storage
                     .put(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_formdata_param_order(&resource_id, &id),
                         serde_json::to_value(order)?,
@@ -2336,6 +2380,7 @@ async fn patch_item_body<R: AppRuntime>(
             for id in param_removes {
                 if let Err(e) = storage
                     .remove(
+                        ctx,
                         storage_scope.clone(),
                         &key_resource_body_formdata_param(&resource_id, &id),
                     )
@@ -2354,7 +2399,7 @@ async fn patch_item_body<R: AppRuntime>(
 
 async fn clear_item_body(
     worktree: &Worktree,
-    _ctx: &dyn AnyAsyncContext,
+    ctx: &dyn AnyAsyncContext,
     id: &ResourceId,
     storage: Arc<dyn KvStorage>,
     patches: &mut Vec<(PatchOperation, EditOptions)>,
@@ -2371,6 +2416,7 @@ async fn clear_item_body(
 
     if let Err(e) = storage
         .remove_batch_by_prefix(
+            ctx,
             StorageScope::Project(worktree.project_id.inner()),
             &key_resource_body(id),
         )
@@ -2405,6 +2451,7 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 }
 
 async fn process_entry(
+    ctx: Arc<dyn AnyAsyncContext>,
     path: Arc<Path>,
     all_entry_keys: &HashMap<String, JsonValue>,
     expanded_entries: &HashSet<ResourceId>,
@@ -2419,12 +2466,13 @@ async fn process_entry(
         .map(|n| n.to_string_lossy().to_string())
         .unwrap_or_else(|| path.to_string_lossy().to_string());
 
-    if fs.is_dir_empty(&abs_path).await? {
+    if fs.is_dir_empty(ctx.as_ref(), &abs_path).await? {
         session::info!(format!(
             "Deleting empty entry folder: {}",
             abs_path.display()
         ));
         fs.remove_dir(
+            ctx.as_ref(),
             &abs_path,
             RemoveOptions {
                 recursive: false,
@@ -2436,7 +2484,7 @@ async fn process_entry(
     }
 
     if dir_config_path.exists() {
-        let mut rdr = fs.open_file(&dir_config_path).await?;
+        let mut rdr = fs.open_file(ctx.as_ref(), &dir_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
@@ -2467,7 +2515,7 @@ async fn process_entry(
             desc,
         )));
     } else if item_config_path.exists() {
-        let mut rdr = fs.open_file(&item_config_path).await?;
+        let mut rdr = fs.open_file(ctx.as_ref(), &item_config_path).await?;
         let model: EntryModel =
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
 

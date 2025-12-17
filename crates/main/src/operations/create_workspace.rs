@@ -13,12 +13,12 @@ use crate::MainWindow;
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn create_workspace(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &CreateWorkspaceInput,
     ) -> joinerror::Result<CreateWorkspaceOutput> {
         input.validate().join_err_bare()?;
 
-        let output = self.workspace_ops.create(input.name.clone()).await?;
+        let output = self.workspace_ops.create(ctx, input.name.clone()).await?;
 
         Ok(CreateWorkspaceOutput {
             id: output.id,
