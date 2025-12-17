@@ -29,5 +29,3 @@ fn main() {
 
     tauri_build::build()
 }
-
-// TEST Update
