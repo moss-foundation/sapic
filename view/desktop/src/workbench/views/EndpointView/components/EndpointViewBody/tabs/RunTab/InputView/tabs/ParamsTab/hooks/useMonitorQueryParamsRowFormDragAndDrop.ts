@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -18,20 +18,20 @@ import {
 export const useMonitorQueryParamsRowFormDragAndDrop = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
 
   const sortedQueryList = useMemo(() => {
-    return sortObjectsByOrder(localResourceDescription?.queryParams ?? []);
-  }, [localResourceDescription?.queryParams]);
+    return sortObjectsByOrder(localResourceDetails?.queryParams ?? []);
+  }, [localResourceDetails?.queryParams]);
 
   const handleDragAndDropWithinQueryListNewParamRowForm = useCallback(
     (sourceData: DraggableParamRowData) => {
-      if (!localResourceDescription) return;
+      if (!localResourceDetails) return;
 
       const queryListWithNewOrders = [
         ...sortedQueryList.filter((param) => {
@@ -47,7 +47,7 @@ export const useMonitorQueryParamsRowFormDragAndDrop = () => {
 
       if (!haveOrdersChanged) return;
 
-      resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      resourceDetailsCollection.update(resourceId, (draft) => {
         if (!draft) return;
         draft.queryParams = queryListWithNewOrders;
 
@@ -62,7 +62,7 @@ export const useMonitorQueryParamsRowFormDragAndDrop = () => {
         }
       });
     },
-    [localResourceDescription, sortedQueryList, resourceId]
+    [localResourceDetails, sortedQueryList, resourceId]
   );
 
   useEffect(() => {

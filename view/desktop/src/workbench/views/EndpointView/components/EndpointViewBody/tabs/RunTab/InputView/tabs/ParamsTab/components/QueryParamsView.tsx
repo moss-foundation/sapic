@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
@@ -23,9 +23,9 @@ export const QueryParamsView = () => {
 
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
@@ -34,7 +34,7 @@ export const QueryParamsView = () => {
   useMonitorQueryParamsRowFormDragAndDrop();
 
   const handleParamRowChange = (updatedParam: QueryParamInfo, originalParam: QueryParamInfo) => {
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
 
       const newQueryParams = draft.queryParams.map((param) =>
@@ -79,7 +79,7 @@ export const QueryParamsView = () => {
   };
 
   const handleParamRowDelete = (deletedParam: QueryParamInfo) => {
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft?.queryParams) return;
 
       const newQueryParams = draft.queryParams
@@ -108,7 +108,7 @@ export const QueryParamsView = () => {
       setColumnToFocusOnMount(null);
     }
 
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
 
       const newQueryParams = [
@@ -138,7 +138,7 @@ export const QueryParamsView = () => {
   };
 
   const handleAllParamsCheckedChange = (checked: CheckedState) => {
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
 
       draft.queryParams = draft.queryParams.map((param) => ({
@@ -148,13 +148,13 @@ export const QueryParamsView = () => {
     });
   };
 
-  const allParamsChecked = localResourceDescription?.queryParams?.every((param) => !param.disabled);
-  const someParamsChecked = localResourceDescription?.queryParams?.some((param) => !param.disabled);
-  const howManyParamsChecked = localResourceDescription?.queryParams?.filter((param) => !param.disabled).length;
+  const allParamsChecked = localResourceDetails?.queryParams?.every((param) => !param.disabled);
+  const someParamsChecked = localResourceDetails?.queryParams?.some((param) => !param.disabled);
+  const howManyParamsChecked = localResourceDetails?.queryParams?.filter((param) => !param.disabled).length;
 
   const headerCheckedState = allParamsChecked ? true : someParamsChecked ? "indeterminate" : false;
 
-  const sortedQueryParams = sortObjectsByOrder(localResourceDescription?.queryParams ?? []);
+  const sortedQueryParams = sortObjectsByOrder(localResourceDetails?.queryParams ?? []);
 
   return (
     <div className="flex h-full flex-col">

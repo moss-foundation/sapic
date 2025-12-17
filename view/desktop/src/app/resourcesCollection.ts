@@ -1,12 +1,11 @@
 import { z } from "zod";
 
-import { describeResourceOutputSchema, streamResourcesEventSchema } from "@repo/moss-project";
+import { streamResourcesEventSchema } from "@repo/moss-project";
 import { createCollection, localOnlyCollectionOptions } from "@tanstack/react-db";
 
 export const resourcesCollectionSchema = z.object({
   id: z.string(),
   resource: streamResourcesEventSchema.optional(),
-  resourceDescription: describeResourceOutputSchema.optional(),
 });
 
 export const resourcesCollection = createCollection(

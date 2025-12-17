@@ -1,6 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { swapListByIndexWithEdge } from "@/workbench/utils/swapListByIndexWithEdge";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
@@ -19,20 +19,20 @@ import {
 export const useMonitorQueryRowsDragAndDrop = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
 
   const sortedQueryList = useMemo(() => {
-    return sortObjectsByOrder(localResourceDescription?.queryParams ?? []);
-  }, [localResourceDescription?.queryParams]);
+    return sortObjectsByOrder(localResourceDetails?.queryParams ?? []);
+  }, [localResourceDetails?.queryParams]);
 
   const handleDragAndDropWithinQueryList = useCallback(
     (sourceData: DraggableParamRowData, dropTargetData: DropTargetParamRowData) => {
-      if (!localResourceDescription) return;
+      if (!localResourceDetails) return;
 
       const sourceIndex = sortedQueryList.findIndex((param) => param.id === sourceData.data.param.id);
       const targetIndex = sortedQueryList.findIndex((param) => param.id === dropTargetData.data.param.id);
@@ -52,7 +52,7 @@ export const useMonitorQueryRowsDragAndDrop = () => {
 
       if (!haveOrdersChanged) return;
 
-      resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      resourceDetailsCollection.update(resourceId, (draft) => {
         if (!draft) return;
         draft.queryParams = newQueryListWithNewOrders;
 
@@ -67,7 +67,7 @@ export const useMonitorQueryRowsDragAndDrop = () => {
         }
       });
     },
-    [localResourceDescription, sortedQueryList, resourceId]
+    [localResourceDetails, sortedQueryList, resourceId]
   );
 
   useEffect(() => {

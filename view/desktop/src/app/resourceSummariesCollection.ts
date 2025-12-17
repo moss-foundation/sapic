@@ -11,7 +11,7 @@ import {
 } from "@repo/moss-project";
 import { createCollection, localOnlyCollectionOptions } from "@tanstack/react-db";
 
-const resourceDescriptionSchema = z.object({
+const resourceDetailsSchema = z.object({
   id: z.string(),
   name: z.string(),
   class: resourceClassSchema,
@@ -24,12 +24,12 @@ const resourceDescriptionSchema = z.object({
   body: bodyInfoSchema.optional(),
 });
 
-export type ResourceDescription = z.infer<typeof resourceDescriptionSchema>;
+export type ResourceDetails = z.infer<typeof resourceDetailsSchema>;
 
-export const resourcesDescriptionsCollection = createCollection(
+export const resourceDetailsCollection = createCollection(
   localOnlyCollectionOptions({
-    id: "resourcesDescriptions",
+    id: "resourceDetails",
     getKey: (item) => item.id,
-    schema: resourceDescriptionSchema,
+    schema: resourceDetailsSchema,
   })
 );

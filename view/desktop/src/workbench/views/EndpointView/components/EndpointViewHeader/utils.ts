@@ -1,4 +1,4 @@
-import { ResourceDescription } from "@/app/resourcesDescriptionsCollection";
+import { ResourceDetails } from "@/app/resourceSummariesCollection";
 import {
   DescribeResourceOutput,
   PathParamInfo,
@@ -70,17 +70,17 @@ export const buildQueryParamUpdateObject = (
 };
 
 export const buildDescriptionParamsToAdd = (
-  localResourceDescription: ResourceDescription,
-  backendResourceDescription: DescribeResourceOutput
+  localResourceDetails: ResourceDetails,
+  backendResourceDetails: DescribeResourceOutput
 ) => {
   const updateObj: Partial<UpdateItemResourceParams> = {};
-  if (localResourceDescription.name !== backendResourceDescription.name) updateObj.name = localResourceDescription.name;
-  if (localResourceDescription.protocol !== backendResourceDescription.protocol)
-    updateObj.protocol = localResourceDescription.protocol;
+  if (localResourceDetails.name !== backendResourceDetails.name) updateObj.name = localResourceDetails.name;
+  if (localResourceDetails.protocol !== backendResourceDetails.protocol)
+    updateObj.protocol = localResourceDetails.protocol;
   //TODO this is not supported yet by the backend
-  // if(localResourceDescription.body) updateObj.body = localResourceDescription.body;
-  // if(localResourceDescription.order) updateObj.order = localResourceDescription.order;
-  // if(localResourceDescription.path) updateObj.path = localResourceDescription.path;
+  // if(localResourceDetails.body) updateObj.body = localResourceDetails.body;
+  // if(localResourceDetails.order) updateObj.order = localResourceDetails.order;
+  // if(localResourceDetails.path) updateObj.path = localResourceDetails.path;
 
   if (Object.keys(updateObj).length === 0) {
     return null;

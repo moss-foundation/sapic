@@ -1,6 +1,6 @@
 import { useCallback, useContext, useState } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";
@@ -17,9 +17,9 @@ import { createPathParam, createQueryParam, extractParsedValueString } from "./u
 export const RunTab = () => {
   const { resourceId } = useContext(EndpointViewContext);
   const { mutateAsync: parseUrl } = useTokenizer();
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
@@ -40,7 +40,7 @@ export const RunTab = () => {
       // If we wait for the async `parseUrl` to finish, the parent component will pass an outdated `url` prop
       // back to the UrlEditor while the user is still typing. This mismatch causes the UrlEditor to
       // fully replace the document content, which resets the cursor position and the user's typing.
-      resourcesDescriptionsCollection.update(resourceId, (draft) => {
+      resourceDetailsCollection.update(resourceId, (draft) => {
         if (!draft) return;
         draft.url = url;
       });
@@ -50,7 +50,7 @@ export const RunTab = () => {
       parseUrl(url)
         .then((parsedUrl) => {
           try {
-            resourcesDescriptionsCollection.update(resourceId, (draft) => {
+            resourceDetailsCollection.update(resourceId, (draft) => {
               const pathVarsSet = new Set<string>();
 
               parsedUrl.pathPart.forEach((part) => {
@@ -101,9 +101,7 @@ export const RunTab = () => {
           }
         })
         .catch((error) => {
-          // SILENCE THE ERROR
-          // It is normal for the parser to fail while the user is typing incomplete syntax.
-          // We simply ignore the failure; the raw URL (Step 1) remains correct.
+          //Technically it is normal for the parser to fail while the user is typing incomplete syntax.
           console.error(error);
         });
     },
@@ -111,19 +109,19 @@ export const RunTab = () => {
   );
 
   const handleProtocolChange = (protocol: ResourceProtocol) => {
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
       draft.protocol = protocol;
     });
   };
 
-  if (!localResourceDescription) return null;
+  if (!localResourceDetails) return null;
 
   return (
     <div className="flex grow flex-col gap-2.5">
       <EndpointInputField
-        initialProtocol={localResourceDescription.protocol}
-        initialUrl={localResourceDescription?.url}
+        initialProtocol={localResourceDetails.protocol}
+        initialUrl={localResourceDetails?.url}
         onSend={handleSendEndpoint}
         onUrlChange={handleUrlChange}
         onProtocolChange={handleProtocolChange}

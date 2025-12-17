@@ -1,11 +1,11 @@
 import { useCallback, useContext, useState } from "react";
 
 import { useDescribeProjectResource, useUpdateProjectResource } from "@/adapters";
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
-import { useRenameResourceDescriptionForm } from "@/workbench/hooks/useRenameResourceDescriptionForm";
+import { useRenameResourceDetailsForm } from "@/workbench/hooks/useRenameResourceDetailsForm";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import {
   AddPathParamParams,
@@ -33,31 +33,31 @@ export const EndpointViewHeader = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedValue, setSelectedValue] = useState("Released");
 
-  const { data: backendResourceDescription } = useDescribeProjectResource({ projectId, resourceId });
+  const { data: backendResourceDetails } = useDescribeProjectResource({ projectId, resourceId });
   const { mutate: updateProjectResource } = useUpdateProjectResource();
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
 
   const {
-    isRenamingResourceDescription,
-    setIsRenamingResourceDescription,
-    handleRenamingResourceDescriptionSubmit,
-    handleRenamingResourceDescriptionCancel,
-  } = useRenameResourceDescriptionForm(localResourceDescription);
+    isRenamingResourceDetails,
+    setIsRenamingResourceDetails,
+    handleRenamingResourceDetailsSubmit,
+    handleRenamingResourceDetailsCancel,
+  } = useRenameResourceDetailsForm(localResourceDetails);
 
   const handleSave = useCallback(() => {
-    if (!localResourceDescription || !backendResourceDescription) {
+    if (!localResourceDetails || !backendResourceDetails) {
       console.warn("Missing required data for save operation");
       return;
     }
 
-    const localPathParams = localResourceDescription.pathParams ?? [];
-    const backendPathParams = backendResourceDescription.pathParams ?? [];
+    const localPathParams = localResourceDetails.pathParams ?? [];
+    const backendPathParams = backendResourceDetails.pathParams ?? [];
 
     // Build maps for easier lookup
     const localPathParamsById = new Map(localPathParams.map((param) => [param.id, param]));
@@ -104,8 +104,8 @@ export const EndpointViewHeader = () => {
       })
       .map((param) => param.id);
 
-    const localQueryParams = localResourceDescription.queryParams ?? [];
-    const backendQueryParams = backendResourceDescription.queryParams ?? [];
+    const localQueryParams = localResourceDetails.queryParams ?? [];
+    const backendQueryParams = backendResourceDetails.queryParams ?? [];
 
     // Build maps for easier lookup
     const localQueryParamsById = new Map(localQueryParams.map((param) => [param.id, param]));
@@ -152,7 +152,7 @@ export const EndpointViewHeader = () => {
       })
       .map((param) => param.id);
 
-    const descriptionParamsToAdd = buildDescriptionParamsToAdd(localResourceDescription, backendResourceDescription);
+    const descriptionParamsToAdd = buildDescriptionParamsToAdd(localResourceDetails, backendResourceDetails);
 
     // Only proceed if there are changes to save
     if (
@@ -169,7 +169,7 @@ export const EndpointViewHeader = () => {
     }
 
     try {
-      if (localResourceDescription.kind === "Item") {
+      if (localResourceDetails.kind === "Item") {
         updateProjectResource({
           projectId,
           updatedResource: {
@@ -194,9 +194,9 @@ export const EndpointViewHeader = () => {
     } catch (error) {
       console.error("Error updating path params and query params:", error);
     }
-  }, [localResourceDescription, backendResourceDescription, updateProjectResource, projectId, resourceId]);
+  }, [localResourceDetails, backendResourceDetails, updateProjectResource, projectId, resourceId]);
 
-  if (!localResourceDescription) return null;
+  if (!localResourceDetails) return null;
 
   return (
     <PageWrapper>
@@ -204,11 +204,11 @@ export const EndpointViewHeader = () => {
         <div className="flex items-center justify-between">
           <EditableHeader
             icon="Http"
-            title={localResourceDescription.name}
-            isRenamingResourceDescription={isRenamingResourceDescription}
-            setIsRenamingResourceDescription={setIsRenamingResourceDescription}
-            handleRenamingResourceDescriptionSubmit={handleRenamingResourceDescriptionSubmit}
-            handleRenamingResourceDescriptionCancel={handleRenamingResourceDescriptionCancel}
+            title={localResourceDetails.name}
+            isRenamingResourceDetails={isRenamingResourceDetails}
+            setIsRenamingResourceDetails={setIsRenamingResourceDetails}
+            handleRenamingResourceDetailsSubmit={handleRenamingResourceDetailsSubmit}
+            handleRenamingResourceDetailsCancel={handleRenamingResourceDetailsCancel}
             editable
           />
           <div className="flex items-center gap-2">

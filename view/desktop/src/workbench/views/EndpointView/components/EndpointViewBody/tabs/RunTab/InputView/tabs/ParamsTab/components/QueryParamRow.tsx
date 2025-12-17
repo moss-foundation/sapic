@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useContext, useEffect, useRef } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
@@ -29,9 +29,9 @@ export const QueryParamRow = memo(
   ({ param, onChange, keyToFocusOnMount, onDelete, paramType, setColumnToFocusOnMount }: ParamRowProps) => {
     const { resourceId } = useContext(EndpointViewContext);
 
-    const { data: localResourceDescription } = useLiveQuery((q) =>
+    const { data: localResourceDetails } = useLiveQuery((q) =>
       q
-        .from({ collection: resourcesDescriptionsCollection })
+        .from({ collection: resourceDetailsCollection })
         .where(({ collection }) => eq(collection.id, resourceId))
         .findOne()
     );
@@ -43,7 +43,7 @@ export const QueryParamRow = memo(
 
     const { isDragging, dragHandleRef, paramRowRef, closestEdge } = useDraggableParamRow({
       param,
-      resourceId: localResourceDescription?.id ?? "Unknown Resource ID",
+      resourceId: localResourceDetails?.id ?? "Unknown Resource ID",
       paramType,
     });
 

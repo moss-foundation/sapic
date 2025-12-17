@@ -1,34 +1,34 @@
 import { useEffect, useEffectEvent } from "react";
 
 import { useDescribeProjectResource } from "@/adapters/tanstackQuery/project";
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { DescribeResourceOutput } from "@repo/moss-project";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 
-interface useSyncResourceDescriptionModelProps {
+interface useSyncResourceDetailsProps {
   resourceId: string;
   projectId: string;
 }
 
-export const useSyncResourceDescriptionModel = ({ resourceId, projectId }: useSyncResourceDescriptionModelProps) => {
-  const { data: backendResourceDescription } = useDescribeProjectResource({ projectId, resourceId });
+export const useSyncResourceDetails = ({ resourceId, projectId }: useSyncResourceDetailsProps) => {
+  const { data: backendResourceDetails } = useDescribeProjectResource({ projectId, resourceId });
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
 
   useEffect(() => {
-    if (!localResourceDescription && backendResourceDescription) {
-      const placeholderResourceDescription = {
-        ...backendResourceDescription,
+    if (!localResourceDetails && backendResourceDetails) {
+      const placeholderResourceDetails = {
+        ...backendResourceDetails,
         //FIXME this is a temporary solution because the backend returns hardcoded value for the url
         url:
-          backendResourceDescription.url === "Hardcoded Value" || backendResourceDescription.url === undefined
+          backendResourceDetails.url === "Hardcoded Value" || backendResourceDetails.url === undefined
             ? "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2"
-            : backendResourceDescription.url,
+            : backendResourceDetails.url,
         description: undefined,
         body: undefined,
         //TODO: zod schema type should be updated.
@@ -37,37 +37,37 @@ export const useSyncResourceDescriptionModel = ({ resourceId, projectId }: useSy
         //Error message:
         //SchemaValidationError: Insert validation failed:
         // - Expected string, received null - path: pathParams,0,description
-        pathParams: backendResourceDescription.pathParams.map((param) => ({
+        pathParams: backendResourceDetails.pathParams.map((param) => ({
           ...param,
           description: param.description ?? undefined,
         })),
-        queryParams: backendResourceDescription.queryParams.map((param) => ({
+        queryParams: backendResourceDetails.queryParams.map((param) => ({
           ...param,
           description: param.description ?? undefined,
         })),
       };
 
-      resourcesDescriptionsCollection.insert({
+      resourceDetailsCollection.insert({
         id: resourceId,
-        ...placeholderResourceDescription,
+        ...placeholderResourceDetails,
       });
     }
-  }, [backendResourceDescription, resourceId, localResourceDescription]);
+  }, [backendResourceDetails, resourceId, localResourceDetails]);
 
-  const updateLocalResourceDescription = useEffectEvent((backendResourceDescription: DescribeResourceOutput) => {
-    if (!localResourceDescription || !backendResourceDescription) return;
+  const updateLocalResourceDetails = useEffectEvent((backendResourceDetails: DescribeResourceOutput) => {
+    if (!localResourceDetails || !backendResourceDetails) return;
 
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
 
-      const placeholderResourceDescription = {
-        ...backendResourceDescription,
+      const placeholderResourceDetails = {
+        ...backendResourceDetails,
         id: resourceId,
         //FIXME this is a temporary solution because the backend returns hardcoded value for the url
         url:
-          backendResourceDescription.url === "Hardcoded Value" || backendResourceDescription.url === undefined
+          backendResourceDetails.url === "Hardcoded Value" || backendResourceDetails.url === undefined
             ? "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2"
-            : backendResourceDescription.url,
+            : backendResourceDetails.url,
         description: undefined,
         body: undefined,
         //TODO: zod schema type should be updated.
@@ -76,22 +76,22 @@ export const useSyncResourceDescriptionModel = ({ resourceId, projectId }: useSy
         //Error message:
         //SchemaValidationError: Insert validation failed:
         // - Expected string, received null - path: pathParams,0,description
-        pathParams: backendResourceDescription.pathParams.map((param) => ({
+        pathParams: backendResourceDetails.pathParams.map((param) => ({
           ...param,
           description: param.description ?? undefined,
         })),
-        queryParams: backendResourceDescription.queryParams.map((param) => ({
+        queryParams: backendResourceDetails.queryParams.map((param) => ({
           ...param,
           description: param.description ?? undefined,
         })),
       };
 
-      Object.assign(draft, placeholderResourceDescription);
+      Object.assign(draft, placeholderResourceDetails);
     });
   });
 
   useEffect(() => {
-    if (!backendResourceDescription) return;
-    updateLocalResourceDescription(backendResourceDescription);
-  }, [backendResourceDescription]);
+    if (!backendResourceDetails) return;
+    updateLocalResourceDetails(backendResourceDetails);
+  }, [backendResourceDetails]);
 };

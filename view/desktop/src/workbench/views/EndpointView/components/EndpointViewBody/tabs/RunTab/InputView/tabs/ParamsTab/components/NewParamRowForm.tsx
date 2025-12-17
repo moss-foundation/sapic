@@ -1,6 +1,6 @@
 import { ChangeEvent, useContext, useRef, useState } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { DropIndicator } from "@/workbench/ui/components";
@@ -20,9 +20,9 @@ interface NewParamRowFormProps {
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
@@ -59,7 +59,7 @@ export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
 
   const { closestEdge } = useDropTargetNewParamRowForm({
     newParamRowFormRef,
-    resourceId: localResourceDescription?.id ?? "Unknown Resource ID",
+    resourceId: localResourceDetails?.id ?? "Unknown Resource ID",
     paramType,
   });
 

@@ -1,6 +1,6 @@
 import { IDockviewPanelProps } from "moss-tabs";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ResourceKind } from "@repo/moss-project";
@@ -8,7 +8,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointViewBody, EndpointViewHeader } from "./components";
 import { EndpointViewContext } from "./EndpointViewContext";
-import { useSyncResourceDescriptionModel } from "./hooks/useSyncResourceDescriptionModel";
+import { useSyncResourceDetails } from "./hooks/useSyncResourceDetails";
 
 export interface EndpointViewProps {
   resourceId: string;
@@ -18,16 +18,16 @@ export interface EndpointViewProps {
 }
 
 const EndpointView = ({ ...props }: IDockviewPanelProps<EndpointViewProps>) => {
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, props.params.resourceId))
       .findOne()
   );
 
-  useSyncResourceDescriptionModel({ resourceId: props.params.resourceId, projectId: props.params.projectId });
+  useSyncResourceDetails({ resourceId: props.params.resourceId, projectId: props.params.projectId });
 
-  if (!localResourceDescription) {
+  if (!localResourceDetails) {
     return (
       <PageWrapper>
         <div className="flex flex-1 items-center justify-center">

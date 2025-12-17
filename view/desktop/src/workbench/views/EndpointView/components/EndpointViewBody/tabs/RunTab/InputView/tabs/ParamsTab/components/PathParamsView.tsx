@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 
-import { resourcesDescriptionsCollection } from "@/app/resourcesDescriptionsCollection";
+import { resourceDetailsCollection } from "@/app/resourceSummariesCollection";
 import { Scrollbar } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { sortObjectsByOrder } from "@/utils";
@@ -14,15 +14,15 @@ import { PathParamRow } from "./PathParamRow";
 export const PathParamsView = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDescription } = useLiveQuery((q) =>
+  const { data: localResourceDetails } = useLiveQuery((q) =>
     q
-      .from({ collection: resourcesDescriptionsCollection })
+      .from({ collection: resourceDetailsCollection })
       .where(({ collection }) => eq(collection.id, resourceId))
       .findOne()
   );
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
-    resourcesDescriptionsCollection.update(resourceId, (draft) => {
+    resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft?.pathParams) return;
 
       draft.pathParams = draft.pathParams.map((param) =>
@@ -37,10 +37,10 @@ export const PathParamsView = () => {
   };
 
   const pathParamsCount = useMemo(() => {
-    return localResourceDescription?.pathParams.filter((param) => !param.disabled).length ?? 0;
-  }, [localResourceDescription?.pathParams]);
+    return localResourceDetails?.pathParams.filter((param) => !param.disabled).length ?? 0;
+  }, [localResourceDetails?.pathParams]);
 
-  const sortedPathParams = sortObjectsByOrder(localResourceDescription?.pathParams ?? []);
+  const sortedPathParams = sortObjectsByOrder(localResourceDetails?.pathParams ?? []);
 
   return (
     <div className="flex h-full flex-col">
