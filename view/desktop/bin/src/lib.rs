@@ -104,7 +104,7 @@ pub async fn run<R: TauriRuntime>() {
 
             Ok(GlobalSettingsStorage::get(&delegate))
         }))
-        .plugin(url_parser::init());
+        .plugin(template_parser::init());
 
     #[cfg(target_os = "macos")]
     {

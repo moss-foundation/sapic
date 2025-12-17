@@ -49,7 +49,7 @@
     "@repo/moss-workspace": "workspace:*",
     "@repo/settings-storage": "workspace:*",
     "@repo/shared-storage": "workspace:*",
-    "@repo/url-parser": "workspace:*",
+    "@repo/template-parser": "workspace:*",
     "@repo/window": "workspace:*",
     "@tanstack/react-db": "^0.1.55",
     "@tanstack/react-pacer": "0.16.1",

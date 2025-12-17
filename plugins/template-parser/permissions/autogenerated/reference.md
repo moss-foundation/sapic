@@ -1,6 +1,6 @@
 ## Default Permission
 
-Default permissions for the url-parser plugin
+Default permissions for the template-parser plugin
 
 #### This default permission set includes the following:
 
@@ -18,7 +18,7 @@ Default permissions for the url-parser plugin
 <tr>
 <td>
 
-`url-parser:allow-parse-url`
+`template-parser:allow-parse-url`
 
 </td>
 <td>
@@ -31,7 +31,7 @@ Enables the parse_url command without any pre-configured scope.
 <tr>
 <td>
 
-`url-parser:deny-parse-url`
+`template-parser:deny-parse-url`
 
 </td>
 <td>

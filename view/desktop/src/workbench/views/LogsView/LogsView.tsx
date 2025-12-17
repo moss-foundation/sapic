@@ -536,7 +536,7 @@ const UrlParserTest = () => {
 
   async function handleParseUrlButton() {
     try {
-      const result = await invoke<ParsedUrl>("plugin:url-parser|parse_url", {
+      const result = await invoke<ParsedUrl>("plugin:template-parser|parse_url", {
         input: {
           url: url,
         },

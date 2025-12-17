@@ -13,7 +13,7 @@ mod parser;
 pub mod models;
 
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
-    Builder::new("url-parser")
+    Builder::new("template-parser")
         .invoke_handler(tauri::generate_handler![parse_url])
         .build()
 }

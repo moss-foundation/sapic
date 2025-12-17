@@ -1,5 +1,5 @@
 {
-    "name": "@repo/url-parser",
+    "name": "@repo/template-parser",
     "exports": {
       ".": "./index.ts"
     },

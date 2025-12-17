@@ -1,4 +1,4 @@
-//FIXME this should be imported from the @repo/url-parser plugin
+//FIXME this should be imported from the @repo/template-parser plugin
 export type ParsedUrl = {
   schemePart: Array<ParsedValue>;
   hostPart: Array<ParsedValue>;

@@ -49,7 +49,7 @@ members = [
     #
     "plugins/shared_storage",
     "plugins/settings-storage",
-    "plugins/url-parser",
+    "plugins/template-parser",
     #
     # Apps
     #
@@ -114,7 +114,7 @@ moss_storage2 = { path = "crates/moss-storage2" }
 #
 shared-storage = { path = "plugins/shared_storage" }
 settings-storage = { path = "plugins/settings-storage" }
-url-parser = { path = "plugins/url-parser" }
+template-parser = { path = "plugins/template-parser" }
 #
 # External crates
 #

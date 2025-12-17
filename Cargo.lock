@@ -1670,9 +1670,9 @@ dependencies = [
  "tauri-plugin-os",
  "tauri-plugin-single-instance",
  "tauri-plugin-window-state",
+ "template-parser",
  "tokio",
  "tracing",
- "url-parser",
  "welcome",
  "window",
  "window2",
@@ -7476,6 +7476,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "template-parser"
+version = "0.1.0"
+dependencies = [
+ "async-trait",
+ "ipc",
+ "joinerror",
+ "moss_applib",
+ "pest",
+ "pest_derive",
+ "runtime",
+ "serde",
+ "serde_json",
+ "tauri",
+ "tauri-plugin",
+ "tracing",
+ "ts-rs",
+ "validator",
+]
+
+[[package]]
 name = "tendril"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -8109,26 +8129,6 @@ dependencies = [
  "idna",
  "percent-encoding",
  "serde",
-]
-
-[[package]]
-name = "url-parser"
-version = "0.1.0"
-dependencies = [
- "async-trait",
- "ipc",
- "joinerror",
- "moss_applib",
- "pest",
- "pest_derive",
- "runtime",
- "serde",
- "serde_json",
- "tauri",
- "tauri-plugin",
- "tracing",
- "ts-rs",
- "validator",
 ]
 
 [[package]]

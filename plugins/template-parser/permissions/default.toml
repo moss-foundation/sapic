@@ -1,5 +1,5 @@
 [default]
-description = "Default permissions for the url-parser plugin"
+description = "Default permissions for the template-parser plugin"
 permissions = [
     "allow-parse-url"
 ]

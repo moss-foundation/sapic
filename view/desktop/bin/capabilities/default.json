@@ -53,7 +53,7 @@
 
     "shared-storage:default",
     "settings-storage:default",
-    "url-parser:default"
+    "template-parser:default"
   ],
   "platforms": ["macOS", "linux", "windows"]
 }

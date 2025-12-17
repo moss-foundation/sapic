@@ -345,7 +345,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/config-typescript
 
-  plugins/url-parser:
+  plugins/template-parser:
     dependencies:
       typescript:
         specifier: 5.9.2
@@ -484,9 +484,9 @@ importers:
       '@repo/shared-storage':
         specifier: workspace:*
         version: link:../../plugins/shared_storage
-      '@repo/url-parser':
+      '@repo/template-parser':
         specifier: workspace:*
-        version: link:../../plugins/url-parser
+        version: link:../../plugins/template-parser
       '@repo/window':
         specifier: workspace:*
         version: link:../../crates/window
