@@ -11,7 +11,8 @@ import {
   WorkspaceSettingsView,
 } from "@/workbench/views";
 
-//NOTE: every View component has to have a props type that extends DefaultViewProps for the addOrFocusPanel function's type checking to work correctly
+//NOTE: every View component has to have a props type that extends DefaultViewProps
+//for the addOrFocusPanel function's type checking to work correctly
 export const tabbedPaneComponents = {
   DefaultView,
   EndpointView,
