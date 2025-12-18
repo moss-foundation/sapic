@@ -100,8 +100,18 @@ impl ProjectService {
         todo!()
     }
 
-    pub async fn delete_project(&self, id: &ProjectId) -> joinerror::Result<()> {
-        todo!()
+    pub async fn delete_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<Option<PathBuf>> {
+        let abs_path = self.abs_path.join(id.to_string());
+        if abs_path.exists() {
+            self.backend.delete_project(ctx, &abs_path).await?;
+            Ok(Some(abs_path))
+        } else {
+            Ok(None)
+        }
     }
 
     pub async fn archive_project(&self, id: &ProjectId) -> joinerror::Result<()> {

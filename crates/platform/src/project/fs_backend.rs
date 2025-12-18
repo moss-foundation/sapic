@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use atomic_fs::Rollback;
 use joinerror::ResultExt;
-use moss_fs::{CreateOptions, FileSystem};
+use moss_fs::{CreateOptions, FileSystem, RemoveOptions};
 use sapic_base::{
     other::GitProviderKind,
     project::{
@@ -276,5 +276,22 @@ impl ProjectBackend for FsProjectBackend {
         } else {
             Ok(())
         }
+    }
+
+    async fn delete_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .remove_dir(
+                ctx,
+                &abs_path,
+                RemoveOptions {
+                    recursive: true,
+                    ignore_if_not_exists: true,
+                },
+            )
+            .await
     }
 }

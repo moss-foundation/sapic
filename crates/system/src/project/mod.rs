@@ -44,4 +44,10 @@ pub trait ProjectBackend: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         params: CreateProjectParams,
     ) -> joinerror::Result<()>;
+
+    async fn delete_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<()>;
 }

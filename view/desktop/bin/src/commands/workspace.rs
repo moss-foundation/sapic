@@ -1,3 +1,4 @@
+use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use tauri::{Window, ipc::Channel as TauriChannel};
@@ -105,15 +106,16 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
     input: DeleteProjectInput,
     options: Options,
 ) -> joinerror::Result<DeleteProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .delete_project::<TauriAppRuntime<R>>(&ctx, &input)
+        |ctx, _, _, window| async move {
+            window
+                .delete_project(&ctx, &input)
                 .await
+                .join_err::<()>("failed to delete project")
         },
     )
     .await

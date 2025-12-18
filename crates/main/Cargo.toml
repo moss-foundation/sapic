@@ -28,6 +28,7 @@ moss_text = { workspace = true }
 moss_workspace = { workspace = true }
 moss_keyring = { workspace = true }
 moss_storage2 = { workspace = true }
+moss_logging = { workspace = true }
 
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }

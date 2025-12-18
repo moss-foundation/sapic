@@ -557,92 +557,92 @@ impl ProjectService {
         })
     }
 
-    pub(crate) async fn delete_project<R: AppRuntime>(
-        &self,
-        ctx: &R::AsyncContext,
-        id: &ProjectId,
-    ) -> joinerror::Result<Option<PathBuf>> {
-        let id_str = id.to_string();
-        let abs_path = self.abs_path.join(id_str);
-
-        let mut state_lock = self.state.write().await;
-
-        let item = state_lock.projects.remove(&id);
-        let item_existed = item.is_some();
-
-        // Dropping the database first to prevent lock when deleting the folder
-        if let Err(e) = self
-            .storage
-            .remove_project(self.workspace_id.inner(), id.inner())
-            .await
-        {
-            session::warn!(format!("failed to remove project storage: {}", e));
-        }
-
-        if abs_path.exists() {
-            if let Some(item) = item {
-                item.dispose(ctx).await?;
-            }
-            self.fs
-                .remove_dir(
-                    ctx,
-                    &abs_path,
-                    RemoveOptions {
-                        recursive: true,
-                        ignore_if_not_exists: true,
-                    },
-                )
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to remove directory `{}`", abs_path.display())
-                })?;
-        }
-
-        state_lock.expanded_items.remove(&id);
-
-        if let Err(e) = self
-            .storage
-            .remove_batch_by_prefix(
-                ctx,
-                StorageScope::Workspace(self.workspace_id.inner()),
-                &key_project(id),
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to remove project `{}` from storage: {}",
-                id, e
-            ));
-        }
-
-        if let Err(e) = self
-            .storage
-            .put(
-                ctx,
-                StorageScope::Workspace(self.workspace_id.inner()),
-                KEY_EXPANDED_ITEMS,
-                serde_json::to_value(&state_lock.expanded_items)?,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to updated expanded_items after deleting project: {}",
-                e
-            ));
-        }
-
-        self.on_did_delete_project_emitter
-            .fire(OnDidDeleteProject {
-                project_id: id.to_owned(),
-            })
-            .await;
-
-        if item_existed {
-            Ok(Some(abs_path))
-        } else {
-            Ok(None)
-        }
-    }
+    // pub(crate) async fn delete_project<R: AppRuntime>(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     id: &ProjectId,
+    // ) -> joinerror::Result<Option<PathBuf>> {
+    //     let id_str = id.to_string();
+    //     let abs_path = self.abs_path.join(id_str);
+    //
+    //     let mut state_lock = self.state.write().await;
+    //
+    //     let item = state_lock.projects.remove(&id);
+    //     let item_existed = item.is_some();
+    //
+    //     // Dropping the database first to prevent lock when deleting the folder
+    //     if let Err(e) = self
+    //         .storage
+    //         .remove_project(self.workspace_id.inner(), id.inner())
+    //         .await
+    //     {
+    //         session::warn!(format!("failed to remove project storage: {}", e));
+    //     }
+    //
+    //     if abs_path.exists() {
+    //         if let Some(item) = item {
+    //             item.dispose(ctx).await?;
+    //         }
+    //         self.fs
+    //             .remove_dir(
+    //                 ctx,
+    //                 &abs_path,
+    //                 RemoveOptions {
+    //                     recursive: true,
+    //                     ignore_if_not_exists: true,
+    //                 },
+    //             )
+    //             .await
+    //             .join_err_with::<()>(|| {
+    //                 format!("failed to remove directory `{}`", abs_path.display())
+    //             })?;
+    //     }
+    //
+    //     state_lock.expanded_items.remove(&id);
+    //
+    //     if let Err(e) = self
+    //         .storage
+    //         .remove_batch_by_prefix(
+    //             ctx,
+    //             StorageScope::Workspace(self.workspace_id.inner()),
+    //             &key_project(id),
+    //         )
+    //         .await
+    //     {
+    //         session::warn!(format!(
+    //             "failed to remove project `{}` from storage: {}",
+    //             id, e
+    //         ));
+    //     }
+    //
+    //     if let Err(e) = self
+    //         .storage
+    //         .put(
+    //             ctx,
+    //             StorageScope::Workspace(self.workspace_id.inner()),
+    //             KEY_EXPANDED_ITEMS,
+    //             serde_json::to_value(&state_lock.expanded_items)?,
+    //         )
+    //         .await
+    //     {
+    //         session::warn!(format!(
+    //             "failed to updated expanded_items after deleting project: {}",
+    //             e
+    //         ));
+    //     }
+    //
+    //     self.on_did_delete_project_emitter
+    //         .fire(OnDidDeleteProject {
+    //             project_id: id.to_owned(),
+    //         })
+    //         .await;
+    //
+    //     if item_existed {
+    //         Ok(Some(abs_path))
+    //     } else {
+    //         Ok(None)
+    //     }
+    // }
 
     pub(crate) async fn update_project<R: AppRuntime>(
         &self,

@@ -2,12 +2,14 @@ use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
 use moss_fs::FileSystem;
 use moss_git::url::GitUrl;
+use moss_logging::session;
 use moss_project::{
     Project, ProjectBuilder,
     builder::{ProjectCreateParams, ProjectLoadParams},
     git::GitClient,
 };
-use moss_storage2::KvStorage;
+use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_workspace::storage::key_project;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     other::GitProviderKind, project::types::primitives::ProjectId,
@@ -50,6 +52,12 @@ pub trait Workspace: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         params: CreateProjectParams,
     ) -> joinerror::Result<RuntimeProject>;
+
+    async fn delete_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<Option<PathBuf>>;
 
     async fn project(
         &self,
@@ -296,6 +304,44 @@ impl Workspace for RuntimeWorkspace {
         }
 
         Ok(project)
+    }
+
+    async fn delete_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<Option<PathBuf>> {
+        let project = self.projects_internal(ctx).await?.write().await.remove(id);
+        if project.is_none() {
+            return Ok(None);
+        }
+
+        // Dropping repo and database handle to prevent lock when deleting the folder
+        let project = project.unwrap();
+        project.handle.dispose(ctx).await?;
+
+        self.storage
+            .remove_project(self.id.inner(), project.id.inner())
+            .await?;
+
+        let path = self.project_service.delete_project(ctx, id).await?;
+
+        if let Err(e) = self
+            .storage
+            .remove_batch_by_prefix(
+                ctx,
+                StorageScope::Workspace(self.id.inner()),
+                &key_project(id),
+            )
+            .await
+        {
+            session::warn!(format!(
+                "failed to remove project `{}` from storage: {}",
+                id, e
+            ));
+        }
+
+        Ok(path)
     }
 
     async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<RuntimeProject>> {

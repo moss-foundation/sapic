@@ -3623,6 +3623,7 @@ dependencies = [
  "moss_fs",
  "moss_git",
  "moss_keyring",
+ "moss_logging",
  "moss_project",
  "moss_storage2",
  "moss_text",
