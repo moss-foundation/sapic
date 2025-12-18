@@ -335,10 +335,7 @@ impl Workspace for RuntimeWorkspace {
             )
             .await
         {
-            session::warn!(format!(
-                "failed to remove project `{}` from storage: {}",
-                id, e
-            ));
+            tracing::warn!("failed to remove project `{}` from storage: {}", id, e);
         }
 
         Ok(path)

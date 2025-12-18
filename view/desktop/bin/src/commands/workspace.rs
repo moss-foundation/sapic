@@ -1,6 +1,7 @@
 use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
+use sapic_ipc::contracts::main::project::{DeleteProjectInput, DeleteProjectOutput};
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;

@@ -282,16 +282,22 @@ impl ProjectBackend for FsProjectBackend {
         &self,
         ctx: &dyn AnyAsyncContext,
         abs_path: &Path,
-    ) -> joinerror::Result<()> {
-        self.fs
-            .remove_dir(
-                ctx,
-                &abs_path,
-                RemoveOptions {
-                    recursive: true,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await
+    ) -> joinerror::Result<Option<PathBuf>> {
+        if abs_path.exists() {
+            self.fs
+                .remove_dir(
+                    ctx,
+                    &abs_path,
+                    RemoveOptions {
+                        recursive: true,
+                        ignore_if_not_exists: true,
+                    },
+                )
+                .await
+                .join_err::<()>("failed to remove directory")?;
+            Ok(Some(abs_path.to_path_buf()))
+        } else {
+            Ok(None)
+        }
     }
 }

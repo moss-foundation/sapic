@@ -49,5 +49,5 @@ pub trait ProjectBackend: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         abs_path: &Path,
-    ) -> joinerror::Result<()>;
+    ) -> joinerror::Result<Option<PathBuf>>;
 }

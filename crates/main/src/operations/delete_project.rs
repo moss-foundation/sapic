@@ -1,6 +1,7 @@
-use crate::MainWindow;
 use moss_applib::AppRuntime;
-use moss_workspace::models::operations::{DeleteProjectInput, DeleteProjectOutput};
+use sapic_ipc::contracts::main::project::{DeleteProjectInput, DeleteProjectOutput};
+
+use crate::MainWindow;
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn delete_project(
