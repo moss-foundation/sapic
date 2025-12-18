@@ -12,7 +12,7 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
     const tabId = `tab_${Date.now().toString()}`;
     addOrFocusPanel({
       id: tabId,
-      component: "Default",
+      component: "DefaultView",
       position: {
         referenceGroup: props.group,
       },

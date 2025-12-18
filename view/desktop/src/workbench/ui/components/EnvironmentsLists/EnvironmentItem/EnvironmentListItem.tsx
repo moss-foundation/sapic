@@ -37,7 +37,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
   const onClick = () => {
     addOrFocusPanel({
       id: environment.id,
-      component: "Default",
+      component: "DefaultView",
       title: environment.name,
       params: {
         tabIcon: type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL ? "Environment" : "GroupedEnvironment",

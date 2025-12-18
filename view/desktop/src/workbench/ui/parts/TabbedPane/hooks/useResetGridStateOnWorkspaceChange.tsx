@@ -17,7 +17,7 @@ export const useResetGridStateOnWorkspaceChange = () => {
       if (!activeWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
-          component: "Welcome",
+          component: "WelcomeView",
           title: "Welcome",
         });
       } else {
