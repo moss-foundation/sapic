@@ -1,7 +1,7 @@
 import { IDockviewPanelHeaderProps } from "moss-tabs";
-import { HTMLAttributes, MouseEvent, useCallback, useEffect, useState } from "react";
+import { HTMLAttributes, MouseEvent, useCallback, useEffect, useEffectEvent, useState } from "react";
 
-import { Icon } from "@/lib/ui/Icon";
+import { Icon, Icons } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { ResourceIcon } from "@/workbench/ui/components/ResourceIcon";
 
@@ -9,6 +9,7 @@ export type CustomTabProps = IDockviewPanelHeaderProps &
   HTMLAttributes<HTMLDivElement> & {
     hideClose?: boolean;
     closeActionOverride?: () => void;
+    tabIcon?: Icons;
   };
 
 export const CustomTab = ({
@@ -16,7 +17,6 @@ export const CustomTab = ({
   containerApi: _containerApi,
   params,
   hideClose,
-  closeActionOverride,
   onClick,
   tabLocation,
   ...props
@@ -25,47 +25,37 @@ export const CustomTab = ({
   const [isCloseHovered, setIsCloseHovered] = useState(false);
   const [isActive, setIsActive] = useState(api.isActive);
 
-  useEffect(() => {
-    const disposable = api.onDidTitleChange?.((event) => {
+  const setupListeners = useEffectEvent(() => {
+    const titleListener = api.onDidTitleChange?.((event) => {
       setTitle(event.title);
     });
 
-    return () => {
-      disposable?.dispose();
-    };
-  }, [api]);
-
-  useEffect(() => {
-    const disposable = api.onDidActiveChange?.((event) => {
+    const activePanelListener = api.onDidActiveChange?.((event) => {
       setIsActive(event.isActive);
     });
 
     return () => {
-      disposable?.dispose();
+      titleListener?.dispose();
+      activePanelListener?.dispose();
     };
-  }, [api]);
+  });
+
+  useEffect(() => setupListeners(), [api]);
 
   const handleClose = useCallback(
     (event: MouseEvent<HTMLSpanElement>) => {
       event.preventDefault();
 
-      if (closeActionOverride) {
-        closeActionOverride();
-      } else {
-        api.close();
-      }
+      api.close();
     },
-    [api, closeActionOverride]
+    [api]
   );
 
   const handleClick = useCallback(
     (event: MouseEvent<HTMLDivElement>) => {
-      if (event.defaultPrevented) {
-        return;
-      }
+      if (event.defaultPrevented) return;
 
       api.setActive();
-
       onClick?.(event);
     },
     [api, onClick]
@@ -81,6 +71,7 @@ export const CustomTab = ({
           "border-b-1 border-(--moss-border)": !isActive,
         }
       )}
+      //react React does not recognize the `tabLocation` prop on a DOM element, we have to use the `tab-location` attribute
       tab-location={tabLocation}
       {...props}
     >
@@ -90,12 +81,14 @@ export const CustomTab = ({
           "opacity-70 transition-opacity group-hover/customTab:opacity-100": !isActive,
         })}
       >
-        {params?.iconType ? (
-          <Icon icon={params?.iconType} className="size-4" />
+        {params?.tabIcon ? (
+          <Icon icon={params?.tabIcon} className="size-4" />
         ) : params?.node ? (
           <div className="relative size-4 shrink-0">
             <ResourceIcon resource={params?.node} className="absolute right-0 top-0 size-4" />
           </div>
+        ) : params?.tabIcon ? (
+          <Icon icon={params?.tabIcon} className="size-4" />
         ) : null}
         <span className="truncate">{title}</span>
       </span>

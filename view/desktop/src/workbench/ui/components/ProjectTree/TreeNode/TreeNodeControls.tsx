@@ -90,6 +90,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             params: {
               resourceId: node.id,
               projectId: id,
+              tabIcon: "Http",
             },
           });
         } else {

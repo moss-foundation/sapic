@@ -1,4 +1,5 @@
 import { AddPanelOptions } from "moss-tabs";
+import { ComponentType } from "react";
 
 import { tabbedPaneComponents } from "@/workbench/ui/parts";
 
@@ -6,7 +7,7 @@ import { tabbedPaneComponents } from "@/workbench/ui/parts";
 // We return 'Record<string, never>' (an empty object) instead of 'undefined'.
 // This fixes the "Type 'P' does not satisfy constraint 'object'" error.
 type ExtractParams<T> =
-  T extends React.ComponentType<infer P>
+  T extends ComponentType<infer P>
     ? "params" extends keyof P
       ? P["params"]
       : Record<string, never>

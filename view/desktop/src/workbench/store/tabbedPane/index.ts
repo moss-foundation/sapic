@@ -46,8 +46,7 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     } else {
       // We perform a double-cast (as unknown as AddPanelOptions) here because
       // 'options'(TypedAddPanelOptions) is a complex Discriminated Union (it is needed for complex TS type checking when calling addOrFocusPanel)
-      // that TypeScript cannot automatically map to the generic 'AddPanelOptions' type
-      // expected by the library.
+      // that TypeScript cannot automatically map to the generic 'AddPanelOptions' type expected by the library.
       get().api?.addPanel({
         ...options,
         component: options.component,
