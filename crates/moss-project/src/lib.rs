@@ -1,6 +1,5 @@
 pub mod api;
 pub mod builder;
-mod config;
 pub mod contribution;
 mod edit;
 pub mod git;

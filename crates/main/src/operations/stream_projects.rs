@@ -30,7 +30,7 @@ impl<R: AppRuntime> MainWindow<R> {
                 id: project.id,
                 name: details.name,
                 order: project.order,
-                expanded: false, // HACK: hardcoded value
+                expanded: true, // HACK: hardcoded value
                 branch: vcs.map(|vcs| vcs.branch),
                 icon_path: None, // HACK: hardcoded value
                 archived: details.archived,

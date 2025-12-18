@@ -3621,6 +3621,7 @@ dependencies = [
  "moss_applib",
  "moss_common",
  "moss_fs",
+ "moss_git",
  "moss_keyring",
  "moss_project",
  "moss_storage2",
@@ -5099,6 +5100,7 @@ name = "platform"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "atomic_fs",
  "base",
  "chrono",
  "core",

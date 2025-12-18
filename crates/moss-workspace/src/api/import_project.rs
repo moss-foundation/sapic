@@ -1,9 +1,8 @@
 use joinerror::OptionExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use sapic_base::project::types::primitives::ProjectId;
+use sapic_base::{other::GitProviderKind, project::types::primitives::ProjectId};
 use sapic_ipc::ValidationResultExt;
-use sapic_system::ports::GitProviderKind;
 use validator::Validate;
 
 use crate::{

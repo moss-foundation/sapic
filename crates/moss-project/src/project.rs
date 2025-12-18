@@ -10,7 +10,9 @@ use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
 use moss_text::sanitized::sanitize;
 use sapic_base::{
+    other::GitProviderKind,
     project::{
+        config::{CONFIG_FILE_NAME, ProjectConfig},
         manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
         types::primitives::ProjectId,
     },
@@ -20,7 +22,6 @@ use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
 };
-use sapic_system::ports::GitProviderKind;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
@@ -32,7 +33,6 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    config::{CONFIG_FILE_NAME, ConfigFile},
     dirs,
     edit::ProjectEdit,
     git::GitClient,
@@ -317,7 +317,7 @@ impl Project {
                 format!("failed to open config file: {}", config_path.display())
             })?;
 
-        let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let config: ProjectConfig = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse config file: {}", config_path.display())
         })?;
 
@@ -383,7 +383,7 @@ impl Project {
                 format!("failed to open config file: {}", config_path.display())
             })?;
 
-        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let mut config: ProjectConfig = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse config file: {}", config_path.display())
         })?;
 

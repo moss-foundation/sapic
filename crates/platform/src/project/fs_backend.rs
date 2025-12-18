@@ -1,0 +1,280 @@
+use async_trait::async_trait;
+use atomic_fs::Rollback;
+use joinerror::ResultExt;
+use moss_fs::{CreateOptions, FileSystem};
+use sapic_base::{
+    other::GitProviderKind,
+    project::{
+        config::{CONFIG_FILE_NAME, ProjectConfig},
+        manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
+    },
+};
+use sapic_core::context::AnyAsyncContext;
+use sapic_system::project::{CreateProjectParams, ProjectBackend};
+use std::{
+    cell::LazyCell,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
+
+mod dirs {
+    pub const ASSETS_DIR: &str = "assets";
+    pub const ENVIRONMENTS_DIR: &str = "environments";
+    pub const RESOURCES_DIR: &str = "resources";
+}
+
+const OTHER_DIRS: [&str; 3] = [
+    dirs::ASSETS_DIR,
+    dirs::ENVIRONMENTS_DIR,
+    dirs::RESOURCES_DIR,
+];
+
+/// List of files that are always created when a project is created.
+/// This list should include only files whose content is fixed and doesn't
+/// depend on any parameters or conditions.
+///
+/// Example:
+/// * .gitignore — This file is always created with the exact same content, regardless of context.
+/// * config.json — While it's always created, its content depends on the specific parameters of the
+/// project being created, so it is **not included** in the list of predefined files.
+const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
+    vec![
+        PredefinedFile {
+            path: PathBuf::from(".gitignore"),
+            content: Some("config.json\n**/state.db".as_bytes().to_vec()),
+        },
+        // ---------------------------------------------------------------------------
+        // We need to create `.gitkeep` files; otherwise, when committing the project
+        // to the repository, that folder won't be included in the commit.
+        //
+        // This will cause errors when cloning the project, since we expect that folder
+        // to always exist.
+        // ---------------------------------------------------------------------------
+        PredefinedFile {
+            path: PathBuf::from(format!("{}/.gitkeep", dirs::ENVIRONMENTS_DIR)),
+            content: None,
+        },
+        PredefinedFile {
+            path: PathBuf::from(format!("{}/.gitkeep", dirs::ASSETS_DIR)),
+            content: None,
+        },
+        PredefinedFile {
+            path: PathBuf::from(format!("{}/.gitkeep", dirs::RESOURCES_DIR)),
+            content: None,
+        },
+    ]
+});
+
+struct PredefinedFile {
+    path: PathBuf,
+    content: Option<Vec<u8>>,
+}
+
+pub struct FsProjectBackend {
+    fs: Arc<dyn FileSystem>,
+}
+
+impl FsProjectBackend {
+    pub fn new(fs: Arc<dyn FileSystem>) -> Arc<Self> {
+        Self { fs }.into()
+    }
+
+    async fn create_config_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        params: &CreateProjectParams,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .create_file_with_content_with_rollback(
+                ctx,
+                rb,
+                &params.internal_abs_path.join(CONFIG_FILE_NAME),
+                serde_json::to_string(&ProjectConfig {
+                    archived: false,
+                    external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
+                    account_id: None,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    async fn create_manifest_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        abs_path: &Path,
+        params: &CreateProjectParams,
+    ) -> joinerror::Result<()> {
+        let vcs = if let Some(git_params) = params.git_params.as_ref() {
+            match git_params.repository_url.normalize_to_string() {
+                Ok(normalized_repository) => match git_params.provider_kind {
+                    GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
+                        repository: normalized_repository,
+                    }),
+                    GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
+                        repository: normalized_repository,
+                    }),
+                },
+                Err(e) => {
+                    tracing::error!(
+                        "failed to normalize repository url `{:?}`: {}",
+                        git_params.repository_url,
+                        e.to_string()
+                    );
+                    None
+                }
+            }
+        } else {
+            None
+        };
+
+        self.fs
+            .create_file_with_content_with_rollback(
+                ctx,
+                rb,
+                &abs_path.join(MANIFEST_FILE_NAME),
+                serde_json::to_string(&ProjectManifest {
+                    name: params.name.clone().unwrap_or("New Project".to_string()),
+                    vcs,
+                })?
+                .as_bytes(),
+                CreateOptions {
+                    overwrite: false,
+                    ignore_if_exists: false,
+                },
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    async fn create_project_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        abs_path: &Path,
+        params: &CreateProjectParams,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .create_dir_with_rollback(ctx, rb, &abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
+
+        for dir in &OTHER_DIRS {
+            self.fs
+                .create_dir_with_rollback(ctx, rb, &abs_path.join(dir))
+                .await
+                .join_err::<()>("failed to create directory")?;
+        }
+
+        self.create_manifest_file(ctx, rb, &abs_path, &params)
+            .await
+            .join_err::<()>("failed to create manifest file")?;
+        self.create_config_file(ctx, rb, &params)
+            .await
+            .join_err::<()>("failed to create config file")?;
+
+        for file in PREDEFINED_FILES.iter() {
+            self.fs
+                .create_file_with_content_with_rollback(
+                    ctx,
+                    rb,
+                    &abs_path.join(&file.path),
+                    file.content.as_deref().unwrap_or(&[]),
+                    CreateOptions {
+                        overwrite: false,
+                        ignore_if_exists: false,
+                    },
+                )
+                .await
+                .join_err::<()>("failed to create predefined file")?;
+        }
+
+        Ok(())
+    }
+}
+
+#[async_trait]
+impl ProjectBackend for FsProjectBackend {
+    async fn read_project_config(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<ProjectConfig> {
+        let config_path = abs_path.join(CONFIG_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(ctx, &config_path)
+            .await
+            .join_err::<()>("failed to open config file")?;
+        let config: ProjectConfig =
+            serde_json::from_reader(rdr).join_err::<()>("failed to parse config file")?;
+
+        Ok(config)
+    }
+
+    async fn create_project_manifest(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<ProjectManifest> {
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+
+        let rdr = self
+            .fs
+            .open_file(ctx, &manifest_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open manifest file: {}", manifest_path.display())
+            })?;
+
+        serde_json::from_reader(rdr).join_err_with::<()>(|| {
+            format!("failed to parse manifest file: {}", manifest_path.display())
+        })
+    }
+
+    async fn create_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: CreateProjectParams,
+    ) -> joinerror::Result<()> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        let abs_path: Arc<Path> = params
+            .external_abs_path
+            .clone()
+            .unwrap_or(params.internal_abs_path.clone())
+            .into();
+
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "collection directory `{}` already exists",
+                abs_path.display()
+            )));
+        }
+
+        let mut rb = self.fs.start_rollback(ctx).await?;
+        if let Err(e) = self
+            .create_project_internal(ctx, &mut rb, &abs_path, &params)
+            .await
+        {
+            let _ = rb.rollback().await.map_err(|e| {
+                tracing::error!("failed to rollback fs changes: {}", e.to_string());
+            });
+
+            Err(e)
+        } else {
+            Ok(())
+        }
+    }
+}

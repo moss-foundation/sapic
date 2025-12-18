@@ -4,14 +4,15 @@ use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use moss_storage2::KvStorage;
 use sapic_base::{
+    other::GitProviderKind,
     project::{
+        config::{CONFIG_FILE_NAME, ProjectConfig},
         manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
         types::primitives::ProjectId,
     },
     user::types::primitives::AccountId,
 };
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
-use sapic_system::ports::GitProviderKind;
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
@@ -20,15 +21,8 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    Project,
-    config::{CONFIG_FILE_NAME, ConfigFile},
-    defaults, dirs,
-    edit::ProjectEdit,
-    errors::ErrorIo,
-    git::GitClient,
-    set_icon::SetIconService,
-    vcs::Vcs,
-    worktree::Worktree,
+    Project, defaults, dirs, edit::ProjectEdit, errors::ErrorIo, git::GitClient,
+    set_icon::SetIconService, vcs::Vcs, worktree::Worktree,
 };
 
 const PROJECT_ICON_SIZE: u32 = 128;
@@ -81,9 +75,11 @@ const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
 
 pub struct ProjectCreateParams {
     pub name: Option<String>,
-    pub internal_abs_path: Arc<Path>,
-    pub external_abs_path: Option<Arc<Path>>,
-    pub git_params: Option<ProjectCreateGitParams>,
+    pub abs_path: PathBuf,
+    pub config: ProjectConfig,
+    // pub internal_abs_path: Arc<Path>,
+    // pub external_abs_path: Option<Arc<Path>>,
+    // pub git_params: Option<ProjectCreateGitParams>,
     pub icon_path: Option<PathBuf>,
 }
 
@@ -143,7 +139,7 @@ impl ProjectBuilder {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         // Check if the project has an external path
-        let config: ConfigFile = {
+        let config: ProjectConfig = {
             let config_path = params.internal_abs_path.join(CONFIG_FILE_NAME);
             let rdr = self
                 .fs
@@ -205,12 +201,13 @@ impl ProjectBuilder {
         ctx: &dyn AnyAsyncContext,
         params: ProjectCreateParams,
     ) -> joinerror::Result<Project> {
-        debug_assert!(params.internal_abs_path.is_absolute());
+        // debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path: Arc<Path> = params
-            .external_abs_path
+            .config
+            .external_path
             .clone()
-            .unwrap_or(params.internal_abs_path.clone())
+            .unwrap_or(params.abs_path.clone().into())
             .into();
 
         let worktree_service_inner: Arc<Worktree> = Worktree::new(
@@ -224,9 +221,9 @@ impl ProjectBuilder {
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
-        for dir in &OTHER_DIRS {
-            self.fs.create_dir(ctx, &abs_path.join(dir)).await?;
-        }
+        // for dir in &OTHER_DIRS {
+        //     self.fs.create_dir(ctx, &params.abs_path.join(dir)).await?;
+        // }
 
         if let Some(icon_path) = params.icon_path {
             if let Err(err) = set_icon_service.set_icon(&icon_path) {
@@ -234,77 +231,77 @@ impl ProjectBuilder {
             }
         }
 
-        let manifest_vcs_block =
-            params
-                .git_params
-                .as_ref()
-                .and_then(|p| match p.repository.normalize_to_string() {
-                    Ok(normalized_repository) => match p.git_provider_type {
-                        GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
-                            repository: normalized_repository,
-                        }),
-                        GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
-                            repository: normalized_repository,
-                        }),
-                    },
-                    Err(e) => {
-                        session::error!(format!(
-                            "failed to normalize repository url `{:?}`: {}",
-                            p.repository,
-                            e.to_string()
-                        ));
-                        None
-                    }
-                });
+        // let manifest_vcs_block =
+        //     params
+        //         .git_params
+        //         .as_ref()
+        //         .and_then(|p| match p.repository.normalize_to_string() {
+        //             Ok(normalized_repository) => match p.git_provider_type {
+        //                 GitProviderKind::GitHub => Some(ManifestVcs::GitHub {
+        //                     repository: normalized_repository,
+        //                 }),
+        //                 GitProviderKind::GitLab => Some(ManifestVcs::GitLab {
+        //                     repository: normalized_repository,
+        //                 }),
+        //             },
+        //             Err(e) => {
+        //                 session::error!(format!(
+        //                     "failed to normalize repository url `{:?}`: {}",
+        //                     p.repository,
+        //                     e.to_string()
+        //                 ));
+        //                 None
+        //             }
+        //         });
 
-        self.fs
-            .create_file_with(
-                ctx,
-                &abs_path.join(MANIFEST_FILE_NAME),
-                serde_json::to_string(&ProjectManifest {
-                    name: params
-                        .name
-                        .unwrap_or(defaults::DEFAULT_PROJECT_NAME.to_string()),
-                    vcs: manifest_vcs_block,
-                })?
-                .as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        // self.fs
+        //     .create_file_with(
+        //         ctx,
+        //         &abs_path.join(MANIFEST_FILE_NAME),
+        //         serde_json::to_string(&ProjectManifest {
+        //             name: params
+        //                 .name
+        //                 .unwrap_or(defaults::DEFAULT_PROJECT_NAME.to_string()),
+        //             vcs: manifest_vcs_block,
+        //         })?
+        //         .as_bytes(),
+        //         CreateOptions {
+        //             overwrite: false,
+        //             ignore_if_exists: false,
+        //         },
+        //     )
+        //     .await?;
 
-        self.fs
-            .create_file_with(
-                ctx,
-                &params.internal_abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ConfigFile {
-                    archived: false,
-                    external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
-                    account_id: None,
-                })?
-                .as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        // self.fs
+        //     .create_file_with(
+        //         ctx,
+        //         &params.internal_abs_path.join(CONFIG_FILE_NAME),
+        //         serde_json::to_string(&ProjectConfig {
+        //             archived: false,
+        //             external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
+        //             account_id: None,
+        //         })?
+        //         .as_bytes(),
+        //         CreateOptions {
+        //             overwrite: false,
+        //             ignore_if_exists: false,
+        //         },
+        //     )
+        //     .await?;
 
-        for file in PREDEFINED_FILES.iter() {
-            self.fs
-                .create_file_with(
-                    ctx,
-                    &abs_path.join(&file.path),
-                    file.content.as_deref().unwrap_or(&[]),
-                    CreateOptions {
-                        overwrite: false,
-                        ignore_if_exists: false,
-                    },
-                )
-                .await?;
-        }
+        // for file in PREDEFINED_FILES.iter() {
+        //     self.fs
+        //         .create_file_with(
+        //             ctx,
+        //             &abs_path.join(&file.path),
+        //             file.content.as_deref().unwrap_or(&[]),
+        //             CreateOptions {
+        //                 overwrite: false,
+        //                 ignore_if_exists: false,
+        //             },
+        //         )
+        //         .await?;
+        // }
 
         let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 
@@ -312,8 +309,8 @@ impl ProjectBuilder {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
-            internal_abs_path: params.internal_abs_path,
-            external_abs_path: params.external_abs_path,
+            internal_abs_path: abs_path,
+            external_abs_path: params.config.external_path.map(|p| p.into()),
             edit,
             set_icon_service,
             vcs: OnceCell::new(),
@@ -358,7 +355,7 @@ impl ProjectBuilder {
             .create_file_with(
                 ctx,
                 &abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ConfigFile {
+                serde_json::to_string(&ProjectConfig {
                     archived: false,
                     external_path: None,
                     account_id: Some(git_client.account_id()),
@@ -413,7 +410,7 @@ impl ProjectBuilder {
             .create_file_with(
                 ctx,
                 &abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ConfigFile {
+                serde_json::to_string(&ProjectConfig {
                     archived: false,
                     external_path: None,
                     account_id: None,
@@ -452,7 +449,7 @@ impl ProjectBuilder {
             .create_file_with(
                 ctx,
                 &params.internal_abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ConfigFile {
+                serde_json::to_string(&ProjectConfig {
                     archived: false,
                     external_path: Some(params.external_abs_path.clone().to_path_buf()),
                     account_id: None,

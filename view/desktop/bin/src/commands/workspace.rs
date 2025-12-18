@@ -52,29 +52,6 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_project<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: CreateProjectInput,
-    options: Options,
-) -> joinerror::Result<CreateProjectOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .create_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
-                .await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn import_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,

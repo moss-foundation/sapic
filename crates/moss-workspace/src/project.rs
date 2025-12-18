@@ -19,12 +19,13 @@ use moss_project::{
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
-    language::i18n::NO_TRANSLATE_KEY, localize, project::types::primitives::ProjectId,
-    user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId,
+    language::i18n::NO_TRANSLATE_KEY, localize, other::GitProviderKind,
+    project::types::primitives::ProjectId, user::types::primitives::AccountId,
+    workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{
-    ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
+    ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::{account::Account, profile::Profile},
 };
 use serde_json::Value as JsonValue;
@@ -91,10 +92,12 @@ pub(crate) struct ProjectItemDescription {
 
 #[derive(Default)]
 struct ServiceState {
+    // This is a deprecated registry, we use RuntimeWorkspace projects instead
     projects: HashMap<ProjectId, ProjectItem>,
     expanded_items: HashSet<ProjectId>,
 }
 
+// Get rid of this service
 pub struct ProjectService {
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
@@ -188,212 +191,212 @@ impl ProjectService {
         state_lock.projects.get(id).map(|item| item.handle.clone())
     }
 
-    pub(crate) async fn create_project<R: AppRuntime>(
-        &self,
-        ctx: &R::AsyncContext,
-        app_delegate: &AppDelegate<R>,
-        id: &ProjectId,
-        account: Option<Account>,
-        params: &CreateProjectParams,
-    ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback(ctx).await?;
+    // pub(crate) async fn create_project<R: AppRuntime>(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     app_delegate: &AppDelegate<R>,
+    //     id: &ProjectId,
+    //     account: Option<Account>,
+    //     params: &CreateProjectParams,
+    // ) -> joinerror::Result<ProjectItemDescription> {
+    //     let mut rb = self.fs.start_rollback(ctx).await?;
 
-        let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
-        if abs_path.exists() {
-            return Err(Error::new::<()>(format!(
-                "collection directory `{}` already exists",
-                abs_path.display()
-            )));
-        }
+    //     let id_str = id.to_string();
+    //     let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+    //     if abs_path.exists() {
+    //         return Err(Error::new::<()>(format!(
+    //             "collection directory `{}` already exists",
+    //             abs_path.display()
+    //         )));
+    //     }
 
-        self.fs
-            .create_dir_with_rollback(ctx, &mut rb, &abs_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to create directory `{}`", abs_path.display())
-            })?;
+    //     self.fs
+    //         .create_dir_with_rollback(ctx, &mut rb, &abs_path)
+    //         .await
+    //         .join_err_with::<()>(|| {
+    //             format!("failed to create directory `{}`", abs_path.display())
+    //         })?;
 
-        let git_params = match params.git_params.as_ref() {
-            None => None,
-            Some(CreateProjectGitParams::GitHub(git_params)) => {
-                let repository = match GitUrl::parse(&git_params.repository) {
-                    Ok(repository) => Some(repository),
-                    Err(e) => {
-                        // Continue creating a collection without vcs
-                        app_delegate.emit_oneshot(ToLocation::Toast {
-                            activity_id: "create_collection_invalid_repository",
-                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
-                            detail: Some(localize!(
-                                NO_TRANSLATE_KEY,
-                                "The provided repository is invalid, skipping the vcs"
-                            )),
-                        })?;
-                        session::error!(format!(
-                            "failed to parse repository url: {}",
-                            e.to_string()
-                        ));
-                        None
-                    }
-                };
-                repository.map(|repository| ProjectCreateGitParams {
-                    git_provider_type: GitProviderKind::GitHub,
-                    repository,
-                    branch: git_params.branch.clone(),
-                })
-            }
-            Some(CreateProjectGitParams::GitLab(git_params)) => {
-                let repository = match GitUrl::parse(&git_params.repository) {
-                    Ok(repository) => Some(repository),
-                    Err(e) => {
-                        // Continue creating a collection without vcs
-                        app_delegate.emit_oneshot(ToLocation::Toast {
-                            activity_id: "create_collection_invalid_repository",
-                            title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
-                            detail: Some(localize!(
-                                NO_TRANSLATE_KEY,
-                                "The provided repository is invalid, skipping the vcs"
-                            )),
-                        })?;
-                        session::error!(format!(
-                            "failed to parse repository url: {}",
-                            e.to_string()
-                        ));
-                        None
-                    }
-                };
-                repository.map(|repository| ProjectCreateGitParams {
-                    git_provider_type: GitProviderKind::GitLab,
-                    repository,
-                    branch: git_params.branch.clone(),
-                })
-            }
-        };
+    //     let git_params = match params.git_params.as_ref() {
+    //         None => None,
+    //         Some(CreateProjectGitParams::GitHub(git_params)) => {
+    //             let repository = match GitUrl::parse(&git_params.repository) {
+    //                 Ok(repository) => Some(repository),
+    //                 Err(e) => {
+    //                     // Continue creating a collection without vcs
+    //                     app_delegate.emit_oneshot(ToLocation::Toast {
+    //                         activity_id: "create_collection_invalid_repository",
+    //                         title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+    //                         detail: Some(localize!(
+    //                             NO_TRANSLATE_KEY,
+    //                             "The provided repository is invalid, skipping the vcs"
+    //                         )),
+    //                     })?;
+    //                     session::error!(format!(
+    //                         "failed to parse repository url: {}",
+    //                         e.to_string()
+    //                     ));
+    //                     None
+    //                 }
+    //             };
+    //             repository.map(|repository| ProjectCreateGitParams {
+    //                 git_provider_type: GitProviderKind::GitHub,
+    //                 repository,
+    //                 branch: git_params.branch.clone(),
+    //             })
+    //         }
+    //         Some(CreateProjectGitParams::GitLab(git_params)) => {
+    //             let repository = match GitUrl::parse(&git_params.repository) {
+    //                 Ok(repository) => Some(repository),
+    //                 Err(e) => {
+    //                     // Continue creating a collection without vcs
+    //                     app_delegate.emit_oneshot(ToLocation::Toast {
+    //                         activity_id: "create_collection_invalid_repository",
+    //                         title: localize!(NO_TRANSLATE_KEY, "Invalid Repository"),
+    //                         detail: Some(localize!(
+    //                             NO_TRANSLATE_KEY,
+    //                             "The provided repository is invalid, skipping the vcs"
+    //                         )),
+    //                     })?;
+    //                     session::error!(format!(
+    //                         "failed to parse repository url: {}",
+    //                         e.to_string()
+    //                     ));
+    //                     None
+    //                 }
+    //             };
+    //             repository.map(|repository| ProjectCreateGitParams {
+    //                 git_provider_type: GitProviderKind::GitLab,
+    //                 repository,
+    //                 branch: git_params.branch.clone(),
+    //             })
+    //         }
+    //     };
 
-        let abs_path: Arc<Path> = abs_path.clone().into();
-        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
+    //     let abs_path: Arc<Path> = abs_path.clone().into();
+    //     let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
 
-        let project = match builder
-            .create(
-                ctx,
-                ProjectCreateParams {
-                    name: Some(params.name.to_owned()),
-                    internal_abs_path: abs_path.clone(),
-                    external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
-                    git_params: git_params.clone(),
-                    icon_path: params.icon_path.to_owned(),
-                },
-            )
-            .await
-            .join_err::<()>("failed to build collection")
-        {
-            Ok(collection) => collection,
-            Err(e) => {
-                let _ = rb.rollback().await.map_err(|e| {
-                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
-                });
-                return Err(e);
-            }
-        };
+    //     let project = match builder
+    //         .create(
+    //             ctx,
+    //             ProjectCreateParams {
+    //                 name: Some(params.name.to_owned()),
+    //                 internal_abs_path: abs_path.clone(),
+    //                 external_abs_path: params.external_path.as_deref().map(|p| p.to_owned().into()),
+    //                 git_params: git_params.clone(),
+    //                 icon_path: params.icon_path.to_owned(),
+    //             },
+    //         )
+    //         .await
+    //         .join_err::<()>("failed to build collection")
+    //     {
+    //         Ok(collection) => collection,
+    //         Err(e) => {
+    //             let _ = rb.rollback().await.map_err(|e| {
+    //                 session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+    //             });
+    //             return Err(e);
+    //         }
+    //     };
 
-        if let (Some(git_params), Some(account)) = (git_params, account) {
-            let client = match git_params.git_provider_type {
-                GitProviderKind::GitHub => GitClient::GitHub {
-                    account: account,
-                    api: self.global_github_api.clone(),
-                },
-                GitProviderKind::GitLab => GitClient::GitLab {
-                    account: account,
-                    api: self.global_gitlab_api.clone(),
-                },
-            };
+    //     if let (Some(git_params), Some(account)) = (git_params, account) {
+    //         let client = match git_params.git_provider_type {
+    //             GitProviderKind::GitHub => GitClient::GitHub {
+    //                 account: account,
+    //                 api: self.global_github_api.clone(),
+    //             },
+    //             GitProviderKind::GitLab => GitClient::GitLab {
+    //                 account: account,
+    //                 api: self.global_gitlab_api.clone(),
+    //             },
+    //         };
 
-            if let Err(e) = project
-                .init_vcs(ctx, client, git_params.repository, git_params.branch)
-                .await
-            {
-                session::warn!(format!("failed to init vcs: {}", e.to_string()));
-                app_delegate.emit_oneshot(ToLocation::Toast {
-                    activity_id: "create_collection_init_vcs_failure",
-                    title: localize!(NO_TRANSLATE_KEY, "Failed to initialized collection vcs"),
-                    detail: Some(localize!(
-                        NO_TRANSLATE_KEY,
-                        "Failed to initialize collection vcs, creating a local only collection"
-                    )),
-                })?;
-            }
-        }
+    //         if let Err(e) = project
+    //             .init_vcs(ctx, client, git_params.repository, git_params.branch)
+    //             .await
+    //         {
+    //             session::warn!(format!("failed to init vcs: {}", e.to_string()));
+    //             app_delegate.emit_oneshot(ToLocation::Toast {
+    //                 activity_id: "create_collection_init_vcs_failure",
+    //                 title: localize!(NO_TRANSLATE_KEY, "Failed to initialized collection vcs"),
+    //                 detail: Some(localize!(
+    //                     NO_TRANSLATE_KEY,
+    //                     "Failed to initialize collection vcs, creating a local only collection"
+    //                 )),
+    //             })?;
+    //         }
+    //     }
 
-        let icon_path = project.icon_path();
+    //     let icon_path = project.icon_path();
 
-        {
-            let mut state_lock = self.state.write().await;
-            state_lock.expanded_items.insert(id.to_owned());
-            state_lock.projects.insert(
-                id.to_owned(),
-                ProjectItem {
-                    id: id.to_owned(),
-                    order: Some(params.order),
-                    handle: Arc::new(project),
-                },
-            );
-        }
+    //     {
+    //         let mut state_lock = self.state.write().await;
+    //         state_lock.expanded_items.insert(id.to_owned());
+    //         state_lock.projects.insert(
+    //             id.to_owned(),
+    //             ProjectItem {
+    //                 id: id.to_owned(),
+    //                 order: Some(params.order),
+    //                 handle: Arc::new(project),
+    //             },
+    //         );
+    //     }
 
-        if let Err(e) = self
-            .storage
-            .add_project(self.workspace_id.inner(), id.inner())
-            .await
-        {
-            session::error!(format!("failed to create project storage backend: {}", e))
-        }
+    //     if let Err(e) = self
+    //         .storage
+    //         .add_project(self.workspace_id.inner(), id.inner())
+    //         .await
+    //     {
+    //         session::error!(format!("failed to create project storage backend: {}", e))
+    //     }
 
-        self.on_did_add_project_emitter
-            .fire(OnDidAddProject {
-                project_id: id.clone(),
-            })
-            .await;
+    //     self.on_did_add_project_emitter
+    //         .fire(OnDidAddProject {
+    //             project_id: id.clone(),
+    //         })
+    //         .await;
 
-        let desc = ProjectItemDescription {
-            id: id.to_owned(),
-            name: params.name.clone(),
-            order: Some(params.order),
-            expanded: true,
-            vcs: None,
-            icon_path,
-            internal_abs_path: abs_path.into(),
-            external_path: params.external_path.clone(),
-            archived: false,
-        };
+    //     let desc = ProjectItemDescription {
+    //         id: id.to_owned(),
+    //         name: params.name.clone(),
+    //         order: Some(params.order),
+    //         expanded: true,
+    //         vcs: None,
+    //         icon_path,
+    //         internal_abs_path: abs_path.into(),
+    //         external_path: params.external_path.clone(),
+    //         archived: false,
+    //     };
 
-        {
-            let state_lock = self.state.read().await;
-            let order_key = key_project_order(id);
-            let batch_input = vec![
-                (order_key.as_str(), JsonValue::Number(params.order.into())),
-                (
-                    KEY_EXPANDED_ITEMS,
-                    serde_json::to_value(&state_lock.expanded_items)?,
-                ),
-            ];
+    //     {
+    //         let state_lock = self.state.read().await;
+    //         let order_key = key_project_order(id);
+    //         let batch_input = vec![
+    //             (order_key.as_str(), JsonValue::Number(params.order.into())),
+    //             (
+    //                 KEY_EXPANDED_ITEMS,
+    //                 serde_json::to_value(&state_lock.expanded_items)?,
+    //             ),
+    //         ];
 
-            if let Err(e) = self
-                .storage
-                .put_batch(
-                    ctx,
-                    StorageScope::Workspace(self.workspace_id.inner()),
-                    &batch_input,
-                )
-                .await
-            {
-                session::warn!(format!(
-                    "failed to update database after creating project: {}",
-                    e
-                ));
-            }
-        }
+    //         if let Err(e) = self
+    //             .storage
+    //             .put_batch(
+    //                 ctx,
+    //                 StorageScope::Workspace(self.workspace_id.inner()),
+    //                 &batch_input,
+    //             )
+    //             .await
+    //         {
+    //             session::warn!(format!(
+    //                 "failed to update database after creating project: {}",
+    //                 e
+    //             ));
+    //         }
+    //     }
 
-        Ok(desc)
-    }
+    //     Ok(desc)
+    // }
 
     // TODO: Setting the cloned collection's name and icon is not yet implemented
     // Since they are currently committed to the repository

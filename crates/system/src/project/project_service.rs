@@ -3,13 +3,13 @@ use moss_fs::FileSystem;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
-    project::{manifest::ProjectManifest, types::primitives::ProjectId},
+    project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::project::ProjectReader;
+use crate::project::{CreateProjectGitParams, CreateProjectParams, ProjectBackend};
 
 pub static KEY_PROJECT_PREFIX: &'static str = "project";
 
@@ -17,18 +17,11 @@ pub fn key_project_order(id: &ProjectId) -> String {
     format!("{KEY_PROJECT_PREFIX}.{id}.order")
 }
 
-pub struct CreateProjectParams {}
-
-pub struct CloneProjectParams {}
-
-pub struct ImportProjectParams {}
-
-pub struct ExportProjectParams {}
-
 pub struct ProjectItem {
     pub id: ProjectId,
     pub abs_path: PathBuf,
     pub manifest: ProjectManifest,
+    pub config: ProjectConfig,
 
     // DEPRECATED: we will get rid of this field in the future
     pub order: Option<isize>,
@@ -36,34 +29,74 @@ pub struct ProjectItem {
 
 pub struct ProjectService {
     workspace_id: WorkspaceId,
+    backend: Arc<dyn ProjectBackend>,
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
-    reader: Arc<dyn ProjectReader>,
     storage: Arc<dyn KvStorage>,
 }
 
 impl ProjectService {
     pub fn new(
         workspace_id: WorkspaceId,
+        backend: Arc<dyn ProjectBackend>,
         abs_path: PathBuf,
         fs: Arc<dyn FileSystem>,
-        reader: Arc<dyn ProjectReader>,
         storage: Arc<dyn KvStorage>,
     ) -> Self {
         Self {
             workspace_id,
+            backend,
             abs_path,
             fs,
-            reader,
             storage,
         }
     }
 
-    pub async fn create_project(&self, params: CreateProjectParams) -> joinerror::Result<()> {
-        todo!()
+    pub async fn create_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        name: String,
+        order: isize,
+        external_path: Option<PathBuf>,
+        git_params: Option<CreateProjectGitParams>,
+        icon_path: Option<PathBuf>,
+    ) -> joinerror::Result<ProjectItem> {
+        let id = ProjectId::new();
+        let internal_abs_path = self.abs_path.join(id.to_string());
+        let external_abs_path = external_path.map(|p| p);
+        self.backend
+            .create_project(
+                ctx,
+                CreateProjectParams {
+                    name: Some(name),
+                    internal_abs_path: internal_abs_path.clone(),
+                    external_abs_path,
+                    git_params,
+                    icon_path: icon_path.map(|p| p.into()),
+                },
+            )
+            .await
+            .join_err::<()>("failed to create project")?;
+
+        let manifest = self
+            .backend
+            .create_project_manifest(ctx, &internal_abs_path)
+            .await?;
+        let config = self
+            .backend
+            .read_project_config(ctx, &internal_abs_path)
+            .await?;
+
+        Ok(ProjectItem {
+            id,
+            abs_path: internal_abs_path,
+            manifest,
+            config,
+            order: Some(order),
+        })
     }
 
-    pub async fn clone_project(&self, params: CloneProjectParams) -> joinerror::Result<()> {
+    pub async fn clone_project(&self) -> joinerror::Result<()> {
         todo!()
     }
 
@@ -79,15 +112,11 @@ impl ProjectService {
         todo!()
     }
 
-    pub async fn import_project(&self, params: ImportProjectParams) -> joinerror::Result<()> {
+    pub async fn import_project(&self) -> joinerror::Result<()> {
         todo!()
     }
 
-    pub async fn export_project(
-        &self,
-        id: &ProjectId,
-        params: ExportProjectParams,
-    ) -> joinerror::Result<()> {
+    pub async fn export_project(&self, id: &ProjectId) -> joinerror::Result<()> {
         todo!()
     }
 
@@ -128,11 +157,22 @@ impl ProjectService {
             let id_str = entry.file_name().to_string_lossy().to_string();
             let id: ProjectId = id_str.clone().into();
 
-            let manifest = self.reader.read_manifest(ctx, &entry.path()).await?;
+            let manifest = self
+                .backend
+                .create_project_manifest(ctx, &entry.path())
+                .await
+                .join_err::<()>("failed to read manifest")?;
+            let config = self
+                .backend
+                .read_project_config(ctx, &entry.path())
+                .await
+                .join_err::<()>("failed to read project config")?;
+
             projects.push(ProjectItem {
                 id: id.clone(),
                 abs_path: entry.path().to_owned(),
                 manifest,
+                config,
                 order: metadata
                     .get(&key_project_order(&id))
                     .and_then(|v| serde_json::from_value(v.clone()).ok()),
