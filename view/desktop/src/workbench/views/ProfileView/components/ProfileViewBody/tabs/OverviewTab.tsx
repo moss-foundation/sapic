@@ -1,7 +1,7 @@
 import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
-import { useUpdateProfile } from "@/adapters";
+import { useRemoveUserAccount } from "@/adapters";
 import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
 import { EditAccountModal } from "@/workbench/ui/components/Modals/Account/EditAccountModal";
@@ -9,7 +9,6 @@ import { NewAccountModal } from "@/workbench/ui/components/Modals/Account/NewAcc
 import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
 import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
 import { AccountInfo, ProfileInfo } from "@repo/base";
-import { UpdateProfileInput } from "@repo/window";
 
 import { ProfileViewProps } from "../../../ProfileView";
 
@@ -23,7 +22,7 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [accountToRemove, setAccountToRemove] = useState<AccountInfo | null>(null);
   const [accountToEdit, setAccountToEdit] = useState<AccountInfo | null>(null);
-  const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { mutateAsync: removeUserAccount } = useRemoveUserAccount();
 
   const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
   const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
@@ -43,13 +42,8 @@ export const OverviewTab = ({ profile, refetchProfile }: OverviewTabProps) => {
 
     try {
       setIsSubmitting(true);
-      const input: UpdateProfileInput = {
-        accountsToAdd: [],
-        accountsToRemove: [accountToRemove.id],
-        accountsToUpdate: [],
-      };
 
-      await updateProfile(input);
+      await removeUserAccount({ id: accountToRemove.id });
 
       closeRevokeModal();
       setAccountToRemove(null);

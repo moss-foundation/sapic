@@ -48,7 +48,7 @@ export const ActivityBarLastItems = () => {
                   id: "Accounts",
                   component: "AccountsView",
                   params: {
-                    tabIcon: "Calendar",
+                    tabIcon: "Accounts",
                   },
                 });
               }}

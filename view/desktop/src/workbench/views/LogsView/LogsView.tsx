@@ -15,7 +15,7 @@ import { tags } from "@lezer/highlight";
 import { AccountKind, ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
 import { parser } from "@repo/lezer-grammar";
-import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
+import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
@@ -103,12 +103,11 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handleAddAccount = async () => {
     try {
-      const input: UpdateProfileInput = {
-        accountsToAdd: [accountForm],
-        accountsToRemove: [],
-        accountsToUpdate: [],
-      };
-      await invoke("update_profile", { input });
+      await invoke("add_user_account", {
+        host: accountForm.host,
+        kind: accountForm.kind,
+        pat: accountForm.pat ? accountForm.pat : undefined,
+      });
       console.log("Account added:", accountForm);
     } catch (error) {
       console.error("Error adding account:", error);
