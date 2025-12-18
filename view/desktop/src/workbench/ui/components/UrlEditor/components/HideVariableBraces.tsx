@@ -1,5 +1,6 @@
 import { syntaxTree } from "@codemirror/language";
 // Create a zero-width widget to replace the brace characters
+import { Range } from "@codemirror/state";
 import { Decoration, DecorationSet, ViewPlugin, WidgetType } from "@codemirror/view";
 
 // Create a zero-width widget to replace the brace characters
