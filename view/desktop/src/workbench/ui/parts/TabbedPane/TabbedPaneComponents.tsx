@@ -9,11 +9,15 @@ import {
   FolderSettingsView,
   FolderSettingsViewProps,
   KitchenSinkView,
+  KitchenSinkViewProps,
   LogsView,
+  LogsViewProps,
   ProjectSettingsView,
   ProjectSettingsViewProps,
   SettingsView,
+  SettingsViewProps,
   WelcomeView,
+  WelcomeViewProps,
   WorkspaceSettingsView,
   WorkspaceSettingsViewProps,
 } from "@/workbench/views";
@@ -21,6 +25,7 @@ import {
 import Metadata from "./DebugComponents/Metadata";
 import { DefaultViewProps } from "./types";
 
+//NOTE: every component has to have a props type that extends DefaultViewProps for the addOrFocusPanel function's type checking to work correctly
 export const tabbedPaneComponents = {
   Default: (props: DefaultViewProps) => {
     const { showDebugPanels } = useTabbedPaneStore();
@@ -49,10 +54,10 @@ export const tabbedPaneComponents = {
   Endpoint: (props: EndpointViewProps) => <EndpointView {...props} />,
   ProjectSettings: (props: ProjectSettingsViewProps) => <ProjectSettingsView {...props} />,
   FolderSettings: (props: FolderSettingsViewProps) => <FolderSettingsView {...props} />,
-  Welcome: () => <WelcomeView />,
+  Welcome: (props: WelcomeViewProps) => <WelcomeView {...props} />,
   WorkspaceSettings: (props: WorkspaceSettingsViewProps) => <WorkspaceSettingsView {...props} />,
-  KitchenSink: () => <KitchenSinkView />,
-  Settings: () => <SettingsView />,
+  KitchenSink: (props: KitchenSinkViewProps) => <KitchenSinkView {...props} />,
+  Settings: (props: SettingsViewProps) => <SettingsView {...props} />,
   Accounts: (props: AccountsViewProps) => <AccountsView {...props} />,
-  Logs: () => <LogsView />,
+  Logs: (props: LogsViewProps) => <LogsView {...props} />,
 };

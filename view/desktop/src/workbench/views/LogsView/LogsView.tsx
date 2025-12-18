@@ -8,6 +8,7 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { tags } from "@lezer/highlight";
@@ -30,7 +31,9 @@ interface LoginData {
   provider: string;
 }
 
-export const LogsView = () => {
+export type LogsViewProps = DefaultViewProps;
+
+export const LogsView = ({}: LogsViewProps) => {
   const { t } = useTranslation(["main", "bootstrap"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { windowEvents } = useActivityRouter();

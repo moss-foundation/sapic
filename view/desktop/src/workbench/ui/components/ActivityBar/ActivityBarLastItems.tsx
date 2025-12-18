@@ -47,6 +47,9 @@ export const ActivityBarLastItems = () => {
                 addOrFocusPanel({
                   id: "Accounts",
                   component: "Accounts",
+                  params: {
+                    tabIcon: "Calendar",
+                  },
                 });
               }}
             >
