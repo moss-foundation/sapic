@@ -64,7 +64,7 @@ export const TreeRootControls = ({
       component: "ProjectSettings",
       params: {
         projectId: id,
-        iconType: "Project",
+        tabIcon: "Project",
       },
     });
   };

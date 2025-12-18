@@ -1,4 +1,3 @@
-import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { useStreamProjectResources } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
@@ -7,18 +6,17 @@ import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
-import { ResourceKind } from "@repo/moss-project";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
 import { getFolderIcon } from "./utils";
 
-export interface FolderSettingsViewParams {
+export type FolderSettingsViewProps = DefaultViewProps<{
   projectId: string;
   node: ProjectTreeNode;
-  iconType: ResourceKind;
-}
+}>;
 
-export const FolderSettingsView = ({ ...props }: IDockviewPanelProps<FolderSettingsViewParams>) => {
+export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
   const { data: streamedResources } = useStreamProjectResources(props.params?.projectId);
   const node = streamedResources?.find((resource) => resource.id === props.params?.node?.id);
 

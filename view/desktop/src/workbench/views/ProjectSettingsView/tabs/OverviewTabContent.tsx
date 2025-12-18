@@ -1,4 +1,3 @@
-import { IDockviewPanelProps } from "moss-tabs";
 import { useEffect, useState } from "react";
 
 import { useStreamProjects, useUpdateProject } from "@/adapters/tanstackQuery/project";
@@ -8,13 +7,10 @@ import Input from "@/lib/ui/Input";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
 import { ProjectDangerZoneSection } from "../ProjectDangerZoneSection";
+import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 import { ProjectSummarySection } from "../ProjectSummarySection";
 
-interface OverviewTabContentProps {
-  projectId: string;
-}
-
-export const OverviewTabContent = ({ params, containerApi }: IDockviewPanelProps<OverviewTabContentProps>) => {
+export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsViewProps) => {
   const { data: streamedProjects } = useStreamProjects();
   const { mutateAsync: updateProject } = useUpdateProject();
 

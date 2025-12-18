@@ -1,23 +1,19 @@
-import { IDockviewPanelProps } from "moss-tabs";
-
 import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
-import { ResourceKind } from "@repo/moss-project";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointViewBody, EndpointViewHeader } from "./components";
 import { EndpointViewContext } from "./EndpointViewContext";
 import { useSyncResourceDetails } from "./hooks/useSyncResourceDetails";
 
-export interface EndpointViewProps {
+export type EndpointViewProps = DefaultViewProps<{
   resourceId: string;
   projectId: string;
-  //TODO since IconType is not used here and is needed in tabbed pane for the tab icon, we should consider removing it from the props here and add it to the tabbed pane props
-  iconType: ResourceKind;
-}
+}>;
 
-const EndpointView = ({ ...props }: IDockviewPanelProps<EndpointViewProps>) => {
+const EndpointView = ({ ...props }: EndpointViewProps) => {
   const { data: localResourceDetails } = useLiveQuery((q) =>
     q
       .from({ collection: resourceDetailsCollection })

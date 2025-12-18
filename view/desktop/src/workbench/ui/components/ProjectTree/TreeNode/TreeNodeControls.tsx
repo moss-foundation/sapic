@@ -80,16 +80,25 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             },
           });
         }
-      } else {
-        addOrFocusPanel({
-          id: node.id,
-          title: node.name,
-          params: {
-            projectId: id,
-            resourceId: node.id,
-          },
-          component: node.class === "endpoint" ? "Endpoint" : "Default",
-        });
+      }
+      if (node.kind === "Item") {
+        if (node.class === "endpoint") {
+          addOrFocusPanel({
+            id: node.id,
+            title: node.name,
+            component: "Endpoint",
+            params: {
+              resourceId: node.id,
+              projectId: id,
+            },
+          });
+        } else {
+          addOrFocusPanel({
+            id: node.id,
+            title: node.name,
+            component: "Default",
+          });
+        }
       }
     };
 

@@ -1,33 +1,28 @@
-import { IDockviewPanelProps } from "moss-tabs";
-
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { PageContent, PageHeader, PageView } from "@/workbench/ui/components";
-import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
 import {
   AccountsView,
+  AccountsViewProps,
   EndpointView,
   EndpointViewProps,
   FolderSettingsView,
+  FolderSettingsViewProps,
   KitchenSinkView,
   LogsView,
   ProjectSettingsView,
+  ProjectSettingsViewProps,
   SettingsView,
   WelcomeView,
   WorkspaceSettingsView,
+  WorkspaceSettingsViewProps,
 } from "@/workbench/views";
-import { ResourceKind } from "@repo/moss-project";
 
 import Metadata from "./DebugComponents/Metadata";
+import { DefaultViewProps } from "./types";
 
 export const tabbedPaneComponents = {
-  Default: (
-    props: IDockviewPanelProps<{
-      node?: ProjectTreeNode;
-      projectId: string;
-      iconType: ResourceKind;
-    }>
-  ) => {
+  Default: (props: DefaultViewProps) => {
     const { showDebugPanels } = useTabbedPaneStore();
 
     return (
@@ -51,25 +46,13 @@ export const tabbedPaneComponents = {
       </PageView>
     );
   },
-  Endpoint: (props: IDockviewPanelProps<EndpointViewProps>) => <EndpointView {...props} />,
-  ProjectSettings: (
-    props: IDockviewPanelProps<{
-      node: ProjectTreeNode;
-      projectId: string;
-      iconType: ResourceKind;
-    }>
-  ) => <ProjectSettingsView {...props} />,
-  FolderSettings: (
-    props: IDockviewPanelProps<{
-      node: ProjectTreeNode;
-      projectId: string;
-      iconType: ResourceKind;
-    }>
-  ) => <FolderSettingsView {...props} />,
+  Endpoint: (props: EndpointViewProps) => <EndpointView {...props} />,
+  ProjectSettings: (props: ProjectSettingsViewProps) => <ProjectSettingsView {...props} />,
+  FolderSettings: (props: FolderSettingsViewProps) => <FolderSettingsView {...props} />,
   Welcome: () => <WelcomeView />,
-  WorkspaceSettings: (props: IDockviewPanelProps) => <WorkspaceSettingsView {...props} />,
+  WorkspaceSettings: (props: WorkspaceSettingsViewProps) => <WorkspaceSettingsView {...props} />,
   KitchenSink: () => <KitchenSinkView />,
   Settings: () => <SettingsView />,
-  Accounts: (props: IDockviewPanelProps) => <AccountsView {...props} />,
+  Accounts: (props: AccountsViewProps) => <AccountsView {...props} />,
   Logs: () => <LogsView />,
 };

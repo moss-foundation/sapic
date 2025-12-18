@@ -40,7 +40,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
       component: "Default",
       title: environment.name,
       params: {
-        iconType: type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL ? "Environment" : "GroupedEnvironment",
+        tabIcon: type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL ? "Environment" : "GroupedEnvironment",
       },
     });
   };

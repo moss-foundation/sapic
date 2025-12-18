@@ -13,9 +13,6 @@ export const AddPanelButton = (props: IDockviewHeaderActionsProps) => {
     addOrFocusPanel({
       id: tabId,
       component: "Default",
-      params: {
-        workspace: true,
-      },
       position: {
         referenceGroup: props.group,
       },

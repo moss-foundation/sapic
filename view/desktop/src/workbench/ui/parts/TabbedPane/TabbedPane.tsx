@@ -57,6 +57,7 @@ export const TabbedPane = () => {
       component: "Endpoint",
       params: {
         projectId: pragmaticDropElement.projectId,
+        resourceId: pragmaticDropElement.node.id,
         node: pragmaticDropElement.node,
       },
       position: {

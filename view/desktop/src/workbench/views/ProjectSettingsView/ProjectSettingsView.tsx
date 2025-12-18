@@ -1,4 +1,3 @@
-import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { useStreamProjects } from "@/adapters/tanstackQuery/project";
@@ -7,6 +6,7 @@ import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { useRenameProjectForm } from "@/workbench/hooks/useRenameProjectForm";
 import { PageHeader, PageView } from "@/workbench/ui/components/PageView";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { AuthTabContent } from "./tabs/AuthTabContent";
 import { HeadersTabContent } from "./tabs/HeadersTabContent";
@@ -15,15 +15,11 @@ import { PostRequestTabContent } from "./tabs/PostRequestTabContent";
 import { PreRequestTabContent } from "./tabs/PreRequestTabContent";
 import { VariablesTabContent } from "./tabs/VariablesTabContent";
 
-// Indicator dot for status
-const PlaceholderStatusDot = ({ active }: { active: boolean }) =>
-  active ? <div className="background-(--moss-green-4) h-2 w-2 rounded-full" /> : null;
-
-export interface ProjectSettingsParams {
+export type ProjectSettingsViewProps = DefaultViewProps<{
   projectId: string;
-}
+}>;
 
-export const ProjectSettingsView = ({ ...props }: IDockviewPanelProps<ProjectSettingsParams>) => {
+export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
   const { projectId } = props.params;
 
   const { data: streamedProjects } = useStreamProjects();
@@ -142,3 +138,7 @@ export const ProjectSettingsView = ({ ...props }: IDockviewPanelProps<ProjectSet
     </PageView>
   );
 };
+
+// Indicator dot for status
+const PlaceholderStatusDot = ({ active }: { active: boolean }) =>
+  active ? <div className="background-(--moss-green-4) h-2 w-2 rounded-full" /> : null;
