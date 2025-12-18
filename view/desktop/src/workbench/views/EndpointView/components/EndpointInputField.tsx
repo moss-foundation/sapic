@@ -36,7 +36,7 @@ export const EndpointInputField = ({
   };
 
   const handleSend = () => {
-    // onSend?.(method, resourceDetails.url ?? "");
+    onSend?.(initialProtocol, initialUrl ?? "");
   };
 
   const handleProtocolChange = (newProtocol: ResourceProtocol) => {

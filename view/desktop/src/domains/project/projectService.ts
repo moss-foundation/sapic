@@ -22,7 +22,6 @@ interface IProjectService {
 
   deleteProject: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
 
-
   importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
   streamProjects: (channelEvent: Channel<StreamProjectsEvent>) => Promise<StreamProjectsEvent[]>;

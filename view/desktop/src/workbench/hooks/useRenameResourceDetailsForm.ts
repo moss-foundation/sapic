@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-import { ResourceDetails, resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { ResourceDetails } from "@/db/types";
 
 import { useTabbedPaneStore } from "../store/tabbedPane";
 
@@ -24,9 +25,7 @@ export const useRenameResourceDetailsForm = (details?: ResourceDetails) => {
       });
 
       const panel = api?.getPanel(details.id);
-      if (panel) {
-        panel.setTitle(trimmedNewName);
-      }
+      panel?.setTitle(trimmedNewName);
     } catch (error) {
       console.error("Error renaming resource details", error);
     } finally {
