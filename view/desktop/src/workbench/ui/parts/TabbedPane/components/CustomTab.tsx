@@ -3,7 +3,6 @@ import { HTMLAttributes, MouseEvent, useCallback, useEffect, useEffectEvent, use
 
 import { Icon, Icons } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
-import { ResourceIcon } from "@/workbench/ui/components/ResourceIcon";
 
 export type CustomTabProps = IDockviewPanelHeaderProps &
   HTMLAttributes<HTMLDivElement> & {
@@ -71,7 +70,8 @@ export const CustomTab = ({
           "border-b-1 border-(--moss-border)": !isActive,
         }
       )}
-      //react React does not recognize the `tabLocation` prop on a DOM element, we have to use the `tab-location` attribute
+      //react React does not recognize the `tabLocation` prop on a DOM element
+      //so we have to use the `tab-location` attribute to silence the error
       tab-location={tabLocation}
       {...props}
     >
@@ -81,15 +81,8 @@ export const CustomTab = ({
           "opacity-70 transition-opacity group-hover/customTab:opacity-100": !isActive,
         })}
       >
-        {params?.tabIcon ? (
-          <Icon icon={params?.tabIcon} className="size-4" />
-        ) : params?.node ? (
-          <div className="relative size-4 shrink-0">
-            <ResourceIcon resource={params?.node} className="absolute right-0 top-0 size-4" />
-          </div>
-        ) : params?.tabIcon ? (
-          <Icon icon={params?.tabIcon} className="size-4" />
-        ) : null}
+        {params?.tabIcon && <Icon icon={params?.tabIcon} className="size-4" />}
+
         <span className="truncate">{title}</span>
       </span>
 
