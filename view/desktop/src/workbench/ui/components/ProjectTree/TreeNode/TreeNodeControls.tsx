@@ -59,6 +59,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         addOrFocusPanel({
           id: node.id,
           title: node.name,
+          component: "FolderSettingsView",
           params: {
             projectId: id,
             node: {
@@ -66,7 +67,6 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
               expanded: true,
             },
           },
-          component: "FolderSettingsView",
         });
 
         if (!node.expanded) {

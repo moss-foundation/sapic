@@ -17,8 +17,8 @@ export const useResetGridStateOnWorkspaceChange = () => {
       if (!activeWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
-          component: "WelcomeView",
           title: "Welcome",
+          component: "WelcomeView",
         });
       } else {
         api.fromJSON(layout?.tabbedPaneState.gridState);

@@ -48,11 +48,11 @@ export const BreadcrumbNode = ({
             addOrFocusPanel({
               id: `${node.id}`,
               title: node.name,
+              component: "DefaultView",
               params: {
                 projectId,
                 node,
               },
-              component: "DefaultView",
             });
         }}
         className="hover:background-(--moss-secondary-background-hover) relative flex w-full cursor-pointer items-center gap-1 rounded-sm py-0.5 dark:hover:text-black"
