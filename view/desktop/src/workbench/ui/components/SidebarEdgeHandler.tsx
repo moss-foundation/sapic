@@ -17,7 +17,7 @@ export const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerPro
         "bottom-0 h-2 w-full": alignment === "bottom",
       })}
     >
-      {/* handle bg*/}
+      {/* handle's background */}
       <div
         className={cn(`background-(--moss-accent)/50 absolute z-40 hidden cursor-pointer`, {
           "left-0 top-0 h-full w-3": alignment === "left",
@@ -30,7 +30,7 @@ export const SidebarEdgeHandler = ({ alignment, onClick }: SidebarEdgeHandlerPro
         onClick={onClick}
       />
 
-      {/* handle */}
+      {/* handle itself */}
       <div
         className={cn(
           `background-(--moss-accent)/50 hover:background-(--moss-accent)/80 absolute z-50 cursor-pointer rounded`,
