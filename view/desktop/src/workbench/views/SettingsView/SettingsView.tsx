@@ -7,7 +7,7 @@ import { ThemeSection } from "./sections/ThemeSection";
 
 export type SettingsViewProps = DefaultViewProps;
 
-export const SettingsView = (props: SettingsViewProps) => {
+export const SettingsView = ({}: SettingsViewProps) => {
   return (
     <PageContent className="flex flex-col gap-4">
       <LanguageSection />
