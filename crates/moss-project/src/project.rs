@@ -435,15 +435,6 @@ impl Project {
             return Ok(());
         }
         self.archived.store(true, Ordering::Relaxed);
-
-        self.modify_config(
-            ctx,
-            ProjectConfigModifyParams {
-                archived: Some(true),
-                account_id: None,
-            },
-        )
-        .await?;
         // TODO: Dropping worktree and vcs?
         // Right now it's impossible since OnceCell requires &mut self
 

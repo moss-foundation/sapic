@@ -3,7 +3,7 @@ use sapic_base::project::types::primitives::ProjectId;
 use sapic_core::context::AnyAsyncContext;
 use std::sync::Arc;
 
-use crate::project::{ProjectEditBackend, ProjectEditParams};
+use crate::project::{ProjectConfigEditParams, ProjectEditBackend, ProjectEditParams};
 
 pub struct ProjectEditService {
     backend: Arc<dyn ProjectEditBackend>,
@@ -30,8 +30,21 @@ impl ProjectEditService {
         self.backend
             .edit(ctx, id, params)
             .await
-            .join_err::<()>("failed to edit project")?;
+            .join_err::<()>("failed to edit project manifest")?;
 
+        Ok(())
+    }
+
+    pub async fn edit_config(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+        params: ProjectConfigEditParams,
+    ) -> joinerror::Result<()> {
+        self.backend
+            .edit_config(ctx, id, params)
+            .await
+            .join_err::<()>("failed to edit project config")?;
         Ok(())
     }
 }

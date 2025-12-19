@@ -229,6 +229,22 @@ pub struct BatchUpdateProjectOutput {
     pub ids: Vec<ProjectId>,
 }
 
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveProjectInput {
+    pub id: ProjectId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ArchiveProjectOutput {
+    pub id: ProjectId,
+}
+
 fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
     match repo {
         ChangeString::Update(repo) => GIT_URL_REGEX

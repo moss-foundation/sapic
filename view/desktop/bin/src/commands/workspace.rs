@@ -2,8 +2,8 @@ use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use sapic_ipc::contracts::main::project::{
-    BatchUpdateProjectInput, BatchUpdateProjectOutput, DeleteProjectInput, DeleteProjectOutput,
-    UpdateProjectInput, UpdateProjectOutput,
+    ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
+    DeleteProjectInput, DeleteProjectOutput, UpdateProjectInput, UpdateProjectOutput,
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
 
@@ -158,16 +158,12 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
     input: ArchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<ArchiveProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .archive_project::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.archive_project(&ctx, input).await },
     )
     .await
 }

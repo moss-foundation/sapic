@@ -58,6 +58,10 @@ pub struct ProjectEditParams {
     pub repository: Option<ChangeString>,
 }
 
+pub struct ProjectConfigEditParams {
+    pub archived: Option<bool>,
+}
+
 #[async_trait]
 pub trait ProjectEditBackend: Send + Sync {
     async fn edit(
@@ -65,5 +69,12 @@ pub trait ProjectEditBackend: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
         params: ProjectEditParams,
+    ) -> joinerror::Result<()>;
+
+    async fn edit_config(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+        params: ProjectConfigEditParams,
     ) -> joinerror::Result<()>;
 }

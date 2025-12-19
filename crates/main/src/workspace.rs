@@ -21,8 +21,8 @@ use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
 use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     project::{
-        CreateProjectGitParams, ProjectEditParams, project_edit_service::ProjectEditService,
-        project_service::ProjectService,
+        CreateProjectGitParams, ProjectConfigEditParams, ProjectEditParams,
+        project_edit_service::ProjectEditService, project_service::ProjectService,
     },
     user::User,
     workspace::{WorkspaceEditOp, WorkspaceEditParams},
@@ -68,6 +68,12 @@ pub trait Workspace: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: UpdateProjectParams,
+    ) -> joinerror::Result<()>;
+
+    async fn archive_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
     ) -> joinerror::Result<()>;
 
     async fn project(
@@ -380,6 +386,28 @@ impl Workspace for RuntimeWorkspace {
             .await?;
 
         // TODO: Migrate icon update logic or remove it?
+        Ok(())
+    }
+
+    async fn archive_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<()> {
+        let project = self.project(ctx, &id).await?;
+        project.handle.archive(ctx).await?;
+
+        project
+            .edit
+            .edit_config(
+                ctx,
+                id,
+                ProjectConfigEditParams {
+                    archived: Some(true),
+                },
+            )
+            .await?;
+
         Ok(())
     }
 

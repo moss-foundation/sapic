@@ -21,37 +21,6 @@ use crate::models::types::*;
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct CreateProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: CreateProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateProjectOutput {
-    pub id: ProjectId,
-    pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
-    pub icon_path: Option<PathBuf>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub external_path: Option<PathBuf>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
 pub struct ImportProjectInput {
     #[serde(flatten)]
     #[validate(nested)]
@@ -97,22 +66,6 @@ pub struct ExportProjectInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct ExportProjectOutput {
     pub archive_path: PathBuf,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ArchiveProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ArchiveProjectOutput {
-    pub id: ProjectId,
 }
 
 /// @category Operation

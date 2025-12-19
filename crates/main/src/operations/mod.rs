@@ -1,3 +1,4 @@
+pub mod archive_project;
 pub mod batch_update_project;
 pub mod cancel_request;
 pub mod create_project;

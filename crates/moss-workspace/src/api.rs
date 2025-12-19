@@ -1,5 +1,4 @@
 pub mod activate_environment;
-pub mod archive_project;
 pub mod batch_update_environment;
 pub mod batch_update_environment_group;
 pub mod create_environment;
