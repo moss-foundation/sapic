@@ -1,3 +1,4 @@
+use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use sapic_base::{
     other::GitProviderKind, project::types::primitives::ProjectId,
@@ -9,8 +10,7 @@ use std::{
     sync::Arc,
 };
 use ts_rs::TS;
-use validator::Validate;
-
+use validator::{Validate, ValidationError};
 //
 // Stream Projects
 //
@@ -167,4 +167,74 @@ pub struct DeleteProjectOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub abs_path: Option<Arc<Path>>,
+}
+
+/// @category Type
+#[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct UpdateProjectParams {
+    pub id: ProjectId,
+
+    #[validate(length(min = 1))]
+    pub name: Option<String>,
+
+    #[validate(custom(function = "validate_change_repository"))]
+    #[ts(optional, type = "ChangeString")]
+    pub repository: Option<ChangeString>,
+
+    // TODO: add validation
+    #[ts(optional, type = "ChangePath")]
+    pub icon_path: Option<ChangePath>,
+    pub order: Option<isize>,
+    pub expanded: Option<bool>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateProjectInput {
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: UpdateProjectParams,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UpdateProjectOutput {
+    pub id: ProjectId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateProjectInput {
+    #[validate(nested)]
+    pub items: Vec<UpdateProjectParams>,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct BatchUpdateProjectOutput {
+    #[ts(as = "Vec<String>")]
+    pub ids: Vec<ProjectId>,
+}
+
+fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
+    match repo {
+        ChangeString::Update(repo) => GIT_URL_REGEX
+            .is_match(repo)
+            .then_some(())
+            .ok_or(ValidationError::new("Invalid Git URL format")),
+        ChangeString::Remove => Ok(()),
+    }
 }

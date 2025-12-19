@@ -90,28 +90,28 @@ pub struct UpdateEnvironmentGroupParams {
     pub expanded: Option<bool>,
     pub order: Option<isize>,
 }
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct UpdateProjectParams {
-    pub id: ProjectId,
-
-    #[validate(length(min = 1))]
-    pub name: Option<String>,
-
-    #[validate(custom(function = "validate_change_repository"))]
-    #[ts(optional, type = "ChangeString")]
-    pub repository: Option<ChangeString>,
-
-    // TODO: add validation
-    #[ts(optional, type = "ChangePath")]
-    pub icon_path: Option<ChangePath>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
-}
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct UpdateProjectParams {
+//     pub id: ProjectId,
+//
+//     #[validate(length(min = 1))]
+//     pub name: Option<String>,
+//
+//     #[validate(custom(function = "validate_change_repository"))]
+//     #[ts(optional, type = "ChangeString")]
+//     pub repository: Option<ChangeString>,
+//
+//     // TODO: add validation
+//     #[ts(optional, type = "ChangePath")]
+//     pub icon_path: Option<ChangePath>,
+//     pub order: Option<isize>,
+//     pub expanded: Option<bool>,
+// }
 
 /// @category Type
 #[derive(Debug, Deserialize, Validate, TS)]
@@ -128,16 +128,6 @@ pub struct UpdateEnvironmentParams {
     pub vars_to_add: Vec<AddVariableParams>,
     pub vars_to_update: Vec<UpdateVariableParams>,
     pub vars_to_delete: Vec<VariableId>,
-}
-
-fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
-    match repo {
-        ChangeString::Update(repo) => GIT_URL_REGEX
-            .is_match(repo)
-            .then_some(())
-            .ok_or(ValidationError::new("Invalid Git URL format")),
-        ChangeString::Remove => Ok(()),
-    }
 }
 
 // INFO: moved to sapic-base

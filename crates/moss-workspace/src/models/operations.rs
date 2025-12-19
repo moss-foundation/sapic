@@ -100,44 +100,6 @@ pub struct ExportProjectOutput {
 }
 
 /// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: UpdateProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateProjectOutput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateProjectInput {
-    #[validate(nested)]
-    pub items: Vec<UpdateProjectParams>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateProjectOutput {
-    #[ts(as = "Vec<String>")]
-    pub ids: Vec<ProjectId>,
-}
-
-/// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

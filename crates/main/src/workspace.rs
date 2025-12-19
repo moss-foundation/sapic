@@ -16,10 +16,14 @@ use sapic_base::{
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
-use sapic_ipc::contracts::main::project::CreateProjectParams;
+use sapic_ipc::contracts::main::project::{CreateProjectParams, UpdateProjectParams};
+use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
 use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
-    project::{CreateProjectGitParams, project_service::ProjectService},
+    project::{
+        CreateProjectGitParams, ProjectEditParams, project_edit_service::ProjectEditService,
+        project_service::ProjectService,
+    },
     user::User,
     workspace::{WorkspaceEditOp, WorkspaceEditParams},
 };
@@ -31,6 +35,7 @@ pub struct RuntimeProject {
     pub id: ProjectId,
     pub handle: Arc<Project>,
 
+    pub(crate) edit: ProjectEditService,
     // edit: ProjectEditService
     pub order: Option<isize>,
 }
@@ -58,6 +63,12 @@ pub trait Workspace: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>>;
+
+    async fn update_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: UpdateProjectParams,
+    ) -> joinerror::Result<()>;
 
     async fn project(
         &self,
@@ -143,6 +154,10 @@ impl RuntimeWorkspace {
                         RuntimeProject {
                             id: project.id.clone(),
                             handle: handle.into(),
+                            edit: ProjectEditService::new(ProjectFsEditBackend::new(
+                                self.fs.clone(),
+                                self.abs_path.join("projects"),
+                            )),
                             order: project.order,
                         },
                     );
@@ -243,6 +258,10 @@ impl Workspace for RuntimeWorkspace {
         let project = RuntimeProject {
             id: project_item.id.clone(),
             handle: handle.into(),
+            edit: ProjectEditService::new(ProjectFsEditBackend::new(
+                self.fs.clone(),
+                self.abs_path.join("projects"),
+            )),
             order: Some(params.order),
         };
 
@@ -339,6 +358,29 @@ impl Workspace for RuntimeWorkspace {
         }
 
         Ok(path)
+    }
+
+    async fn update_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: UpdateProjectParams,
+    ) -> joinerror::Result<()> {
+        let project = self.project(ctx, &params.id).await?;
+
+        project
+            .edit
+            .edit(
+                ctx,
+                &params.id,
+                ProjectEditParams {
+                    name: params.name,
+                    repository: params.repository,
+                },
+            )
+            .await?;
+
+        // TODO: Migrate icon update logic or remove it?
+        Ok(())
     }
 
     async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<RuntimeProject>> {

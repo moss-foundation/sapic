@@ -1,10 +1,12 @@
+pub mod project_edit_service;
 pub mod project_service;
 
 use async_trait::async_trait;
+use moss_bindingutils::primitives::{ChangePath, ChangeString};
 use moss_git::url::GitUrl;
 use sapic_base::{
     other::GitProviderKind,
-    project::{config::ProjectConfig, manifest::ProjectManifest},
+    project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
 };
 use sapic_core::context::AnyAsyncContext;
 use std::path::{Path, PathBuf};
@@ -25,7 +27,6 @@ pub struct CreateProjectParams {
 }
 
 #[async_trait]
-
 pub trait ProjectBackend: Send + Sync {
     async fn read_project_config(
         &self,
@@ -50,4 +51,19 @@ pub trait ProjectBackend: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         abs_path: &Path,
     ) -> joinerror::Result<Option<PathBuf>>;
+}
+
+pub struct ProjectEditParams {
+    pub name: Option<String>,
+    pub repository: Option<ChangeString>,
+}
+
+#[async_trait]
+pub trait ProjectEditBackend: Send + Sync {
+    async fn edit(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+        params: ProjectEditParams,
+    ) -> joinerror::Result<()>;
 }

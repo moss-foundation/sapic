@@ -42,7 +42,6 @@ use crate::{
     dirs,
     models::types::{
         CreateProjectGitParams, CreateProjectParams, EntryChange, ExportProjectParams,
-        UpdateProjectParams,
     },
     storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project, key_project_order},
 };
@@ -644,76 +643,76 @@ impl ProjectService {
     //     }
     // }
 
-    pub(crate) async fn update_project<R: AppRuntime>(
-        &self,
-        ctx: &R::AsyncContext,
-        id: &ProjectId,
-        params: UpdateProjectParams,
-    ) -> joinerror::Result<()> {
-        let mut state_lock = self.state.write().await;
-        let item = state_lock
-            .projects
-            .get_mut(&id)
-            .ok_or_join_err_with::<()>(|| {
-                format!("failed to find collection with id `{}`", id.to_string())
-            })?;
-
-        let project_order_key = key_project_order(id);
-        let mut batch_input = vec![];
-
-        if let Some(order) = params.order {
-            item.order = Some(order.clone());
-            batch_input.push((project_order_key.as_str(), serde_json::to_value(&order)?));
-        }
-
-        // TODO: Implement relinking and unlinking remote repo when the user update it
-
-        item.modify(
-            ctx,
-            ProjectModifyParams {
-                name: params.name,
-                repository: params.repository,
-                icon_path: params.icon_path,
-            },
-        )
-        .await
-        .join_err_with::<()>(|| {
-            format!("failed to modify collection with id `{}`", id.to_string())
-        })?;
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state_lock.expanded_items.insert(id.to_owned());
-            } else {
-                state_lock.expanded_items.remove(id);
-            }
-            batch_input.push((
-                KEY_EXPANDED_ITEMS,
-                serde_json::to_value(&state_lock.expanded_items)?,
-            ));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(());
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Workspace(self.workspace_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update database after updating project: {}",
-                e
-            ));
-        }
-
-        Ok(())
-    }
+    // pub(crate) async fn update_project<R: AppRuntime>(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     id: &ProjectId,
+    //     params: UpdateProjectParams,
+    // ) -> joinerror::Result<()> {
+    //     let mut state_lock = self.state.write().await;
+    //     let item = state_lock
+    //         .projects
+    //         .get_mut(&id)
+    //         .ok_or_join_err_with::<()>(|| {
+    //             format!("failed to find collection with id `{}`", id.to_string())
+    //         })?;
+    //
+    //     let project_order_key = key_project_order(id);
+    //     let mut batch_input = vec![];
+    //
+    //     if let Some(order) = params.order {
+    //         item.order = Some(order.clone());
+    //         batch_input.push((project_order_key.as_str(), serde_json::to_value(&order)?));
+    //     }
+    //
+    //     // TODO: Implement relinking and unlinking remote repo when the user update it
+    //
+    //     item.modify(
+    //         ctx,
+    //         ProjectModifyParams {
+    //             name: params.name,
+    //             repository: params.repository,
+    //             icon_path: params.icon_path,
+    //         },
+    //     )
+    //     .await
+    //     .join_err_with::<()>(|| {
+    //         format!("failed to modify collection with id `{}`", id.to_string())
+    //     })?;
+    //
+    //     if let Some(expanded) = params.expanded {
+    //         if expanded {
+    //             state_lock.expanded_items.insert(id.to_owned());
+    //         } else {
+    //             state_lock.expanded_items.remove(id);
+    //         }
+    //         batch_input.push((
+    //             KEY_EXPANDED_ITEMS,
+    //             serde_json::to_value(&state_lock.expanded_items)?,
+    //         ));
+    //     }
+    //
+    //     if batch_input.is_empty() {
+    //         return Ok(());
+    //     }
+    //
+    //     if let Err(e) = self
+    //         .storage
+    //         .put_batch(
+    //             ctx,
+    //             StorageScope::Workspace(self.workspace_id.inner()),
+    //             &batch_input,
+    //         )
+    //         .await
+    //     {
+    //         session::warn!(format!(
+    //             "failed to update database after updating project: {}",
+    //             e
+    //         ));
+    //     }
+    //
+    //     Ok(())
+    // }
 
     pub(crate) async fn list_projects<R: AppRuntime>(
         &self,

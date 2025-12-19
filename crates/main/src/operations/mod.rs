@@ -1,7 +1,9 @@
+pub mod batch_update_project;
 pub mod cancel_request;
 pub mod create_project;
 pub mod create_workspace;
 pub mod delete_project;
 pub mod open_workspace;
 pub mod stream_projects;
+pub mod update_project;
 pub mod update_workspace;

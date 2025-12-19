@@ -1,7 +1,10 @@
 use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
-use sapic_ipc::contracts::main::project::{DeleteProjectInput, DeleteProjectOutput};
+use sapic_ipc::contracts::main::project::{
+    BatchUpdateProjectInput, BatchUpdateProjectOutput, DeleteProjectInput, DeleteProjectOutput,
+    UpdateProjectInput, UpdateProjectOutput,
+};
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
@@ -131,15 +134,16 @@ pub async fn update_project<'a, R: tauri::Runtime>(
     input: UpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<UpdateProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .update_project::<TauriAppRuntime<R>>(&ctx, input)
+        |ctx, _, _, window| async move {
+            window
+                .update_project(&ctx, &input)
                 .await
+                .join_err::<()>("failed to update project")
         },
     )
     .await
@@ -200,15 +204,16 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
     input: BatchUpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<BatchUpdateProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .batch_update_project::<TauriAppRuntime<R>>(&ctx, input)
+        |ctx, _, _, window| async move {
+            window
+                .batch_update_project(&ctx, input)
                 .await
+                .join_err::<()>("failed to batch update project")
         },
     )
     .await
