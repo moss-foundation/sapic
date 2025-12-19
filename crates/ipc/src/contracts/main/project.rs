@@ -149,6 +149,10 @@ pub struct CreateProjectOutput {
     pub external_path: Option<PathBuf>,
 }
 
+//
+// Delete Project
+//
+
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -168,6 +172,10 @@ pub struct DeleteProjectOutput {
     #[ts(skip)]
     pub abs_path: Option<Arc<Path>>,
 }
+
+//
+// Update Project
+//
 
 /// @category Type
 #[derive(Clone, Debug, Serialize, Deserialize, TS, Validate)]
@@ -210,6 +218,10 @@ pub struct UpdateProjectOutput {
     pub id: ProjectId,
 }
 
+//
+// Batch Update Project
+//
+
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -229,6 +241,10 @@ pub struct BatchUpdateProjectOutput {
     pub ids: Vec<ProjectId>,
 }
 
+//
+// Archive Project
+//
+
 /// @category Operation
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -242,6 +258,26 @@ pub struct ArchiveProjectInput {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct ArchiveProjectOutput {
+    pub id: ProjectId,
+}
+
+//
+// Unarchive Project
+//
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveProjectInput {
+    pub id: ProjectId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct UnarchiveProjectOutput {
     pub id: ProjectId,
 }
 

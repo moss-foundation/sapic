@@ -6,5 +6,6 @@ pub mod create_workspace;
 pub mod delete_project;
 pub mod open_workspace;
 pub mod stream_projects;
+pub mod unarchive_project;
 pub mod update_project;
 pub mod update_workspace;

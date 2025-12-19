@@ -69,22 +69,6 @@ pub struct ExportProjectOutput {
 }
 
 /// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveProjectOutput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]

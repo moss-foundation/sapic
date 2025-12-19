@@ -9,6 +9,5 @@ pub mod import_project;
 pub mod list_changes;
 pub mod stream_environments;
 pub mod stream_projects;
-pub mod unarchive_project;
 pub mod update_environment;
 pub mod update_environment_group;

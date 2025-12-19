@@ -3,7 +3,8 @@ use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use sapic_ipc::contracts::main::project::{
     ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
-    DeleteProjectInput, DeleteProjectOutput, UpdateProjectInput, UpdateProjectOutput,
+    DeleteProjectInput, DeleteProjectOutput, UnarchiveProjectInput, UnarchiveProjectOutput,
+    UpdateProjectInput, UpdateProjectOutput,
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
 
@@ -177,16 +178,12 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
     input: UnarchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<UnarchiveProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .unarchive_project::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.unarchive_project(&ctx, input).await },
     )
     .await
 }

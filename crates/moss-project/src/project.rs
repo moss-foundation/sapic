@@ -452,16 +452,6 @@ impl Project {
         if !updated {
             return Ok(());
         }
-
-        self.modify_config(
-            ctx,
-            ProjectConfigModifyParams {
-                archived: Some(false),
-                account_id: None,
-            },
-        )
-        .await?;
-
         let _ = self
             .worktree
             .get_or_init(|| async {

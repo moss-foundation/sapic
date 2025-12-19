@@ -76,6 +76,12 @@ pub trait Workspace: Send + Sync {
         id: &ProjectId,
     ) -> joinerror::Result<()>;
 
+    async fn unarchive_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<()>;
+
     async fn project(
         &self,
         ctx: &dyn AnyAsyncContext,
@@ -404,6 +410,28 @@ impl Workspace for RuntimeWorkspace {
                 id,
                 ProjectConfigEditParams {
                     archived: Some(true),
+                },
+            )
+            .await?;
+
+        Ok(())
+    }
+
+    async fn unarchive_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+    ) -> joinerror::Result<()> {
+        let project = self.project(ctx, &id).await?;
+        project.handle.unarchive(ctx).await?;
+
+        project
+            .edit
+            .edit_config(
+                ctx,
+                id,
+                ProjectConfigEditParams {
+                    archived: Some(false),
                 },
             )
             .await?;
