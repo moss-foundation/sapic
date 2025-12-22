@@ -39,6 +39,7 @@ export const EndpointViewHeader = () => {
 
   const {
     isRenamingResourceDetails,
+    isUpdatingResourceDetails,
     setIsRenamingResourceDetails,
     handleRenamingResourceDetailsSubmit,
     handleRenamingResourceDetailsCancel,
@@ -206,7 +207,12 @@ export const EndpointViewHeader = () => {
           />
 
           <div className="flex items-center gap-2">
-            <Button intent="outlined" onClick={handleSave}>
+            <Button
+              intent="outlined"
+              onClick={handleSave}
+              disabled={localResourceDetails.metadata?.isDirty === false}
+              loading={isUpdatingResourceDetails}
+            >
               Save
             </Button>
 

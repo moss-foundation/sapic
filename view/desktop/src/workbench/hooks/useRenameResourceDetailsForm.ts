@@ -10,7 +10,7 @@ export const useRenameResourceDetailsForm = (
   projectId: string | undefined
 ) => {
   const { api } = useTabbedPaneStore();
-  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
+  const { mutateAsync: updateProjectResource, isPending: isUpdatingResourceDetails } = useUpdateProjectResource();
 
   const [isRenamingResourceDetails, setIsRenamingResourceDetails] = useState(false);
 
@@ -18,6 +18,7 @@ export const useRenameResourceDetailsForm = (
     if (!resourceDetails || !projectId) return;
 
     const trimmedNewName = newName.trim();
+
     if (trimmedNewName === resourceDetails.name) return;
 
     await updateProjectResource({
@@ -51,6 +52,7 @@ export const useRenameResourceDetailsForm = (
   return {
     isRenamingResourceDetails,
     setIsRenamingResourceDetails,
+    isUpdatingResourceDetails,
     handleRenamingResourceDetailsSubmit,
     handleRenamingResourceDetailsCancel,
   };
