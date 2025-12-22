@@ -40,6 +40,11 @@ pub struct ImportArchivedProjectParams {
     pub archive_path: PathBuf,
 }
 
+pub struct ImportExternalProjectParams {
+    pub internal_abs_path: PathBuf,
+    pub external_abs_path: PathBuf,
+}
+
 pub struct CloneProjectGitParams {
     pub provider_kind: GitProviderKind,
     pub repository_url: GitUrl,
@@ -87,6 +92,12 @@ pub trait ProjectBackend: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: ImportArchivedProjectParams,
+    ) -> joinerror::Result<()>;
+
+    async fn import_external_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ImportExternalProjectParams,
     ) -> joinerror::Result<()>;
 
     async fn delete_project(

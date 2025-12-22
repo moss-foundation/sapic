@@ -14,7 +14,7 @@ use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
     project::{
         CloneProjectParams, CreateConfigParams, CreateProjectParams, ImportArchivedProjectParams,
-        ProjectBackend,
+        ImportExternalProjectParams, ProjectBackend,
     },
     user::account::Account,
 };
@@ -312,6 +312,37 @@ impl FsProjectBackend {
 
         Ok(())
     }
+
+    async fn import_external_project_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        params: &ImportExternalProjectParams,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .create_dir_with_rollback(ctx, rb, &params.internal_abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!(
+                    "failed to create directory `{}`",
+                    params.internal_abs_path.display()
+                )
+            })?;
+
+        self.create_config_file(
+            ctx,
+            rb,
+            &CreateConfigParams {
+                internal_abs_path: params.internal_abs_path.clone(),
+                external_abs_path: Some(params.external_abs_path.clone()),
+                account_id: None,
+            },
+        )
+        .await
+        .join_err::<()>("failed to create config file")?;
+
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -455,6 +486,34 @@ impl ProjectBackend for FsProjectBackend {
         let mut rb = self.fs.start_rollback(ctx).await?;
         if let Err(e) = self
             .import_archived_project_internal(ctx, &mut rb, &params)
+            .await
+        {
+            let _ = rb.rollback().await.map_err(|e| {
+                tracing::error!("failed to rollback fs changes: {}", e.to_string());
+            });
+            return Err(e);
+        }
+
+        Ok(())
+    }
+
+    async fn import_external_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ImportExternalProjectParams,
+    ) -> joinerror::Result<()> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        if params.internal_abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "project directory `{}` already exists",
+                params.internal_abs_path.display()
+            )));
+        }
+
+        let mut rb = self.fs.start_rollback(ctx).await?;
+        if let Err(e) = self
+            .import_external_project_internal(ctx, &mut rb, &params)
             .await
         {
             let _ = rb.rollback().await.map_err(|e| {

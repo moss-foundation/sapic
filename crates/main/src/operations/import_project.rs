@@ -48,16 +48,9 @@ impl<R: AppRuntime> MainWindow<R> {
                     .await?
             }
             ImportProjectSource::Disk(external_params) => {
-                unimplemented!()
-                // workspace.import_external_project(
-                //     ctx,
-                //     &id,
-                //     ProjectItemImportFromDiskParams {
-                //         order: params.order,
-                //         external_path: external_params.external_path.clone(),
-                //     },
-                // )
-                //     .await?
+                workspace
+                    .import_external_project(ctx, external_params)
+                    .await?
             }
         };
 

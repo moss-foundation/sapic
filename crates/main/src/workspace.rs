@@ -8,7 +8,8 @@ use moss_logging::session;
 use moss_project::{
     Project, ProjectBuilder,
     builder::{
-        ProjectCloneParams, ProjectCreateParams, ProjectImportArchiveParams, ProjectLoadParams,
+        ProjectCloneParams, ProjectCreateParams, ProjectImportArchiveParams,
+        ProjectImportExternalParams, ProjectLoadParams,
     },
     git::GitClient,
 };
@@ -21,7 +22,7 @@ use sapic_base::{
 };
 use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::project::{
-    CreateProjectParams, ImportArchiveParams, UpdateProjectParams,
+    CreateProjectParams, ImportArchiveParams, ImportDiskParams, UpdateProjectParams,
 };
 use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
 use sapic_system::{
@@ -77,6 +78,12 @@ pub trait Workspace: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: &ImportArchiveParams,
+    ) -> joinerror::Result<RuntimeProject>;
+
+    async fn import_external_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &ImportDiskParams,
     ) -> joinerror::Result<RuntimeProject>;
 
     async fn delete_project(
@@ -486,7 +493,63 @@ impl Workspace for RuntimeWorkspace {
             order: None, // HACK: deprecated field
         };
 
-        // 5. Add project to registry and storage
+        let projects = self.projects_internal(ctx).await?;
+        projects
+            .write()
+            .await
+            .insert(project_item.id.clone(), project.clone());
+
+        if let Err(e) = self
+            .storage
+            .add_project(self.id.inner(), project_item.id.inner())
+            .await
+        {
+            return Err(joinerror::Error::new::<()>(format!(
+                "failed to add project storage: {}",
+                e
+            )));
+        }
+
+        Ok(project)
+    }
+
+    async fn import_external_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &ImportDiskParams,
+    ) -> joinerror::Result<RuntimeProject> {
+        let project_item = self
+            .project_service
+            .import_external_project(ctx, &params.external_path)
+            .await?;
+
+        let builder = ProjectBuilder::new(
+            self.fs.clone(),
+            self.storage.clone(),
+            project_item.id.clone(),
+        )
+        .await;
+
+        let handle = builder
+            .import_external(
+                ctx,
+                ProjectImportExternalParams {
+                    internal_abs_path: project_item.abs_path.clone().into(),
+                    external_abs_path: params.external_path.clone().into(),
+                },
+            )
+            .await?;
+
+        let project = RuntimeProject {
+            id: project_item.id.clone(),
+            handle: handle.into(),
+            edit: ProjectEditService::new(ProjectFsEditBackend::new(
+                self.fs.clone(),
+                self.abs_path.join("projects"),
+            )),
+            order: None, // HACK: deprecated field
+        };
+
         let projects = self.projects_internal(ctx).await?;
         projects
             .write()

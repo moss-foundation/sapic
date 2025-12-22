@@ -444,22 +444,22 @@ impl ProjectBuilder {
         ctx: &dyn AnyAsyncContext,
         params: ProjectImportExternalParams,
     ) -> joinerror::Result<Project> {
-        self.fs
-            .create_file_with(
-                ctx,
-                &params.internal_abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ProjectConfig {
-                    archived: false,
-                    external_path: Some(params.external_abs_path.clone().to_path_buf()),
-                    account_id: None,
-                })?
-                .as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        // self.fs
+        //     .create_file_with(
+        //         ctx,
+        //         &params.internal_abs_path.join(CONFIG_FILE_NAME),
+        //         serde_json::to_string(&ProjectConfig {
+        //             archived: false,
+        //             external_path: Some(params.external_abs_path.clone().to_path_buf()),
+        //             account_id: None,
+        //         })?
+        //         .as_bytes(),
+        //         CreateOptions {
+        //             overwrite: false,
+        //             ignore_if_exists: false,
+        //         },
+        //     )
+        //     .await?;
 
         self.load(
             ctx,

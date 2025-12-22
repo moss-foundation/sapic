@@ -18,7 +18,7 @@ use std::{
 use crate::{
     project::{
         CloneProjectGitParams, CloneProjectParams, CreateProjectGitParams, CreateProjectParams,
-        ImportArchivedProjectParams, ProjectBackend,
+        ImportArchivedProjectParams, ImportExternalProjectParams, ProjectBackend,
     },
     user::account::Account,
 };
@@ -179,6 +179,47 @@ impl ProjectService {
         let project_item = ProjectItem {
             id,
             abs_path,
+            manifest,
+            config,
+            order: None,
+        };
+
+        Ok(project_item)
+    }
+
+    pub async fn import_external_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        external_abs_path: &Path,
+    ) -> joinerror::Result<ProjectItem> {
+        let id = ProjectId::new();
+
+        let internal_abs_path = self.abs_path.join(id.to_string());
+
+        self.backend
+            .import_external_project(
+                ctx,
+                ImportExternalProjectParams {
+                    internal_abs_path: internal_abs_path.clone(),
+                    external_abs_path: external_abs_path.to_path_buf(),
+                },
+            )
+            .await?;
+
+        let manifest = self
+            .backend
+            .read_project_manifest(ctx, &internal_abs_path)
+            .await?;
+
+        let config = self
+            .backend
+            .read_project_config(ctx, &internal_abs_path)
+            .await?;
+
+        let project_item = ProjectItem {
+            id,
+            // FIXME: Should this be internal abs path?
+            abs_path: internal_abs_path,
             manifest,
             config,
             order: None,
