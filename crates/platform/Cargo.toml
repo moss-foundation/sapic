@@ -39,6 +39,7 @@ tar.workspace = true
 flate2.workspace = true
 nanoid.workspace = true
 atomic_fs.workspace = true
+git2.workspace = true
 
 [dev-dependencies]
 moss_testutils = { workspace = true }

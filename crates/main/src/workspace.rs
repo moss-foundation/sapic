@@ -1,11 +1,13 @@
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
+use moss_app_delegate::AppDelegate;
+use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
 use moss_git::url::GitUrl;
 use moss_logging::session;
 use moss_project::{
     Project, ProjectBuilder,
-    builder::{ProjectCreateParams, ProjectLoadParams},
+    builder::{ProjectCloneParams, ProjectCreateParams, ProjectLoadParams},
     git::GitClient,
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -13,7 +15,7 @@ use moss_workspace::storage::key_project;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     other::GitProviderKind, project::types::primitives::ProjectId,
-    workspace::types::primitives::WorkspaceId,
+    user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::project::{CreateProjectParams, UpdateProjectParams};
@@ -56,6 +58,15 @@ pub trait Workspace: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: CreateProjectParams,
+    ) -> joinerror::Result<RuntimeProject>;
+
+    async fn clone_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        account_id: &AccountId,
+        git_provider_kind: GitProviderKind,
+        repository: &str,
+        branch: Option<String>,
     ) -> joinerror::Result<RuntimeProject>;
 
     async fn delete_project(
@@ -317,6 +328,98 @@ impl Workspace for RuntimeWorkspace {
             }
         }
 
+        let projects = self.projects_internal(ctx).await?;
+        projects
+            .write()
+            .await
+            .insert(project_item.id.clone(), project.clone());
+
+        if let Err(e) = self
+            .storage
+            .add_project(self.id.inner(), project_item.id.inner())
+            .await
+        {
+            return Err(joinerror::Error::new::<()>(format!(
+                "failed to add project storage: {}",
+                e
+            )));
+        }
+
+        Ok(project)
+    }
+
+    async fn clone_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        account_id: &AccountId,
+        git_provider_kind: GitProviderKind,
+        repository: &str,
+        branch: Option<String>,
+    ) -> joinerror::Result<RuntimeProject> {
+        let account = self
+            .user
+            .account(account_id)
+            .await
+            .ok_or_join_err_with::<()>(|| format!("account `{}` not found", account_id.inner()))?;
+
+        let repo_url =
+            GitUrl::parse(&repository).join_err::<()>("failed to parse repository url")?;
+        // 1. Create directory
+        // 2. Clone repo
+        // 3. Setup config
+        let (project_item, repository) = self
+            .project_service
+            .clone_project(
+                ctx,
+                &account,
+                git_provider_kind.clone(),
+                repo_url.clone(),
+                branch,
+            )
+            .await?;
+
+        // 4. Build project
+        let builder = ProjectBuilder::new(
+            self.fs.clone(),
+            self.storage.clone(),
+            project_item.id.clone(),
+        )
+        .await;
+
+        let git_client = match git_provider_kind {
+            GitProviderKind::GitHub => GitClient::GitHub {
+                account,
+                api: self.global_github_api.clone(),
+            },
+            GitProviderKind::GitLab => GitClient::GitLab {
+                account,
+                api: self.global_gitlab_api.clone(),
+            },
+        };
+
+        let handle = builder
+            .clone(
+                ctx,
+                repository,
+                git_client,
+                ProjectCloneParams {
+                    internal_abs_path: project_item.abs_path.clone().into(),
+                    repository: repo_url,
+                },
+            )
+            .await?;
+
+        let project = RuntimeProject {
+            id: project_item.id.clone(),
+            handle: handle.into(),
+            edit: ProjectEditService::new(ProjectFsEditBackend::new(
+                self.fs.clone(),
+                self.abs_path.join("projects"),
+            )),
+            order: None, // HACK: deprecated field
+        };
+
+        // 5. Add project to registry and storage
         let projects = self.projects_internal(ctx).await?;
         projects
             .write()

@@ -46,6 +46,7 @@ pub struct StreamProjectsOutput {
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate, Clone)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitHubCreateParams {
     pub account_id: AccountId,
 
@@ -57,6 +58,7 @@ pub struct GitHubCreateParams {
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate, Clone)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
 pub struct GitLabCreateParams {
     pub account_id: AccountId,
 
@@ -68,6 +70,7 @@ pub struct GitLabCreateParams {
 
 #[derive(Debug, Serialize, Deserialize, TS, Clone)]
 #[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
 pub enum CreateProjectGitParams {
     GitHub(GitHubCreateParams),
     GitLab(GitLabCreateParams),
@@ -106,6 +109,7 @@ impl CreateProjectGitParams {
 #[derive(Debug, Serialize, Deserialize, TS, Validate, Clone)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
 pub struct CreateProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
@@ -114,7 +118,6 @@ pub struct CreateProjectParams {
     pub external_path: Option<PathBuf>,
 
     pub git_params: Option<CreateProjectGitParams>,
-
     pub icon_path: Option<PathBuf>,
 }
 

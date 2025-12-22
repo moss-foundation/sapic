@@ -65,16 +65,12 @@ pub async fn import_project<'a, R: tauri::Runtime>(
     input: ImportProjectInput,
     options: Options,
 ) -> joinerror::Result<ImportProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .import_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.import_project(&ctx, &input).await },
     )
     .await
 }

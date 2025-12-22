@@ -1,15 +1,24 @@
 use joinerror::ResultExt;
 use moss_fs::FileSystem;
+use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
+    other::GitProviderKind,
     project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
+    user::types::primitives::AccountId,
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
 use std::{path::PathBuf, sync::Arc};
 
-use crate::project::{CreateProjectGitParams, CreateProjectParams, ProjectBackend};
+use crate::{
+    project::{
+        CloneProjectGitParams, CloneProjectParams, CreateProjectGitParams, CreateProjectParams,
+        ProjectBackend,
+    },
+    user::account::Account,
+};
 
 pub static KEY_PROJECT_PREFIX: &'static str = "project";
 
@@ -96,8 +105,49 @@ impl ProjectService {
         })
     }
 
-    pub async fn clone_project(&self) -> joinerror::Result<()> {
-        todo!()
+    // FIXME: I think repo cloning is at the same level as fs operations, handled by platform backends
+    // However, we also need to Repository handle when building the Project
+    // Not sure if there's a better way than passing the repository from here
+
+    pub async fn clone_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        account: &Account,
+        git_provider_kind: GitProviderKind,
+        repo_url: GitUrl,
+        branch: Option<String>,
+    ) -> joinerror::Result<(ProjectItem, Repository)> {
+        let id = ProjectId::new();
+        let abs_path = self.abs_path.join(id.to_string());
+        let repository = self
+            .backend
+            .clone_project(
+                ctx,
+                account,
+                CloneProjectParams {
+                    internal_abs_path: abs_path.clone(),
+                    git_params: CloneProjectGitParams {
+                        provider_kind: git_provider_kind,
+                        repository_url: repo_url,
+                        branch_name: branch,
+                    },
+                },
+            )
+            .await?;
+
+        let manifest = self.backend.read_project_manifest(ctx, &abs_path).await?;
+
+        let config = self.backend.read_project_config(ctx, &abs_path).await?;
+
+        let project_item = ProjectItem {
+            id,
+            abs_path,
+            manifest,
+            config,
+            order: None,
+        };
+
+        Ok((project_item, repository))
     }
 
     pub async fn delete_project(

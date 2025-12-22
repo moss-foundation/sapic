@@ -2,14 +2,23 @@ pub mod project_edit_service;
 pub mod project_service;
 
 use async_trait::async_trait;
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_git::url::GitUrl;
+use moss_bindingutils::primitives::ChangeString;
+use moss_git::{repository::Repository, url::GitUrl};
 use sapic_base::{
     other::GitProviderKind,
     project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
+    user::types::primitives::AccountId,
 };
 use sapic_core::context::AnyAsyncContext;
 use std::path::{Path, PathBuf};
+
+use crate::user::account::Account;
+
+pub struct CreateConfigParams {
+    pub internal_abs_path: PathBuf,
+    pub external_abs_path: Option<PathBuf>,
+    pub account_id: Option<AccountId>,
+}
 
 #[derive(Clone)]
 pub struct CreateProjectGitParams {
@@ -26,6 +35,16 @@ pub struct CreateProjectParams {
     pub icon_path: Option<PathBuf>,
 }
 
+pub struct CloneProjectGitParams {
+    pub provider_kind: GitProviderKind,
+    pub repository_url: GitUrl,
+    pub branch_name: Option<String>,
+}
+pub struct CloneProjectParams {
+    pub internal_abs_path: PathBuf,
+    pub git_params: CloneProjectGitParams,
+}
+
 #[async_trait]
 pub trait ProjectBackend: Send + Sync {
     async fn read_project_config(
@@ -33,6 +52,12 @@ pub trait ProjectBackend: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         abs_path: &Path,
     ) -> joinerror::Result<ProjectConfig>;
+
+    async fn read_project_manifest(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<ProjectManifest>;
 
     async fn create_project_manifest(
         &self,
@@ -45,6 +70,13 @@ pub trait ProjectBackend: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         params: CreateProjectParams,
     ) -> joinerror::Result<()>;
+
+    async fn clone_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        account: &Account,
+        params: CloneProjectParams,
+    ) -> joinerror::Result<Repository>;
 
     async fn delete_project(
         &self,

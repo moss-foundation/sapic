@@ -5109,6 +5109,7 @@ dependencies = [
  "core",
  "derive_more 2.0.1",
  "flate2",
+ "git2",
  "joinerror",
  "json-patch 4.1.0",
  "jsonptr 0.7.1",

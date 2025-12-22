@@ -397,164 +397,164 @@ impl ProjectService {
     //     Ok(desc)
     // }
 
-    // TODO: Setting the cloned collection's name and icon is not yet implemented
-    // Since they are currently committed to the repository
-    // Updating them here would be a committable change
-    pub(crate) async fn clone_project<R: AppRuntime>(
-        &self,
-        ctx: &R::AsyncContext,
-        app_delegate: &AppDelegate<R>,
-        id: &ProjectId,
-        account: Account,
-        params: ProjectItemCloneParams,
-    ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback(ctx).await?;
-
-        let id_str = id.to_string();
-        let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
-        if abs_path.exists() {
-            return Err(Error::new::<()>(format!(
-                "collection directory `{}` already exists",
-                abs_path.display()
-            )));
-        }
-
-        self.fs
-            .create_dir_with_rollback(ctx, &mut rb, &abs_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!("failed to create directory `{}`", abs_path.display())
-            })?;
-
-        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
-
-        let repository = match GitUrl::parse(&params.repository) {
-            Ok(repository) => repository,
-            Err(e) => {
-                app_delegate.emit_oneshot(ToLocation::Toast {
-                    activity_id: "clone_collection_invalid_repository",
-                    title: localize!(NO_TRANSLATE_KEY, "Invalid repository url"),
-                    detail: Some(localize!(
-                        NO_TRANSLATE_KEY,
-                        "Cannot clone remote collection since the url is invalid"
-                    )),
-                })?;
-
-                let _ = rb
-                    .rollback()
-                    .await
-                    .map_err(|e| session::warn!(format!("failed to rollback: {}", e.to_string())));
-                return Err(e);
-            }
-        };
-
-        let git_client = match params.git_provider_type {
-            GitProviderKind::GitHub => GitClient::GitHub {
-                account: account,
-                api: self.global_github_api.clone(),
-            },
-            GitProviderKind::GitLab => GitClient::GitLab {
-                account: account,
-                api: self.global_gitlab_api.clone(),
-            },
-        };
-        let collection = match builder
-            .clone(
-                ctx,
-                git_client,
-                ProjectCloneParams {
-                    internal_abs_path: abs_path.clone(),
-                    account_id: params.account_id,
-                    git_provider_type: params.git_provider_type.clone(),
-                    repository,
-                    branch: params.branch.clone(),
-                },
-            )
-            .await
-            .join_err::<()>("failed to clone collection")
-        {
-            Ok(collection) => collection,
-            Err(e) => {
-                let _ = rb.rollback().await.map_err(|e| {
-                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
-                });
-                return Err(e);
-            }
-        };
-
-        let desc = collection.details(ctx).await?;
-        let vcs = collection
-            .vcs::<R>()
-            .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
-            .summary(ctx)
-            .await?;
-
-        // FIXME: Should we allow user to set local icon when cloning a collection?
-        let icon_path = collection.icon_path();
-
-        {
-            let mut state_lock = self.state.write().await;
-            state_lock.expanded_items.insert(id.clone());
-            state_lock.projects.insert(
-                id.clone(),
-                ProjectItem {
-                    id: id.clone(),
-                    order: Some(params.order.clone()),
-                    handle: Arc::new(collection),
-                },
-            );
-            let order_key = key_project_order(id);
-
-            let batch_input = vec![
-                (order_key.as_str(), JsonValue::Number(params.order.into())),
-                (
-                    KEY_EXPANDED_ITEMS,
-                    serde_json::to_value(&state_lock.expanded_items)?,
-                ),
-            ];
-
-            if let Err(e) = self
-                .storage
-                .put_batch(
-                    ctx,
-                    StorageScope::Workspace(self.workspace_id.inner()),
-                    &batch_input,
-                )
-                .await
-            {
-                session::warn!(format!(
-                    "failed to update database after cloning project: {}",
-                    e
-                ));
-            }
-        }
-
-        if let Err(e) = self
-            .storage
-            .add_project(self.workspace_id.inner(), id.inner())
-            .await
-        {
-            session::error!(format!("failed to create project storage backend: {}", e))
-        }
-
-        self.on_did_add_project_emitter
-            .fire(OnDidAddProject {
-                project_id: id.clone(),
-            })
-            .await;
-
-        Ok(ProjectItemDescription {
-            id: id.clone(),
-            name: desc.name,
-            order: Some(params.order),
-            expanded: true,
-            vcs: Some(vcs),
-            icon_path,
-            internal_abs_path: abs_path,
-            external_path: None,
-            archived: false,
-        })
-    }
+    // // TODO: Setting the cloned collection's name and icon is not yet implemented
+    // // Since they are currently committed to the repository
+    // // Updating them here would be a committable change
+    // pub(crate) async fn clone_project<R: AppRuntime>(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    //     app_delegate: &AppDelegate<R>,
+    //     id: &ProjectId,
+    //     account: Account,
+    //     params: ProjectItemCloneParams,
+    // ) -> joinerror::Result<ProjectItemDescription> {
+    //     let mut rb = self.fs.start_rollback(ctx).await?;
+    //
+    //     let id_str = id.to_string();
+    //     let abs_path: Arc<Path> = self.abs_path.join(id_str).into();
+    //     if abs_path.exists() {
+    //         return Err(Error::new::<()>(format!(
+    //             "collection directory `{}` already exists",
+    //             abs_path.display()
+    //         )));
+    //     }
+    //
+    //     self.fs
+    //         .create_dir_with_rollback(ctx, &mut rb, &abs_path)
+    //         .await
+    //         .join_err_with::<()>(|| {
+    //             format!("failed to create directory `{}`", abs_path.display())
+    //         })?;
+    //
+    //     let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
+    //
+    //     let repository = match GitUrl::parse(&params.repository) {
+    //         Ok(repository) => repository,
+    //         Err(e) => {
+    //             app_delegate.emit_oneshot(ToLocation::Toast {
+    //                 activity_id: "clone_collection_invalid_repository",
+    //                 title: localize!(NO_TRANSLATE_KEY, "Invalid repository url"),
+    //                 detail: Some(localize!(
+    //                     NO_TRANSLATE_KEY,
+    //                     "Cannot clone remote collection since the url is invalid"
+    //                 )),
+    //             })?;
+    //
+    //             let _ = rb
+    //                 .rollback()
+    //                 .await
+    //                 .map_err(|e| session::warn!(format!("failed to rollback: {}", e.to_string())));
+    //             return Err(e);
+    //         }
+    //     };
+    //
+    //     let git_client = match params.git_provider_type {
+    //         GitProviderKind::GitHub => GitClient::GitHub {
+    //             account: account,
+    //             api: self.global_github_api.clone(),
+    //         },
+    //         GitProviderKind::GitLab => GitClient::GitLab {
+    //             account: account,
+    //             api: self.global_gitlab_api.clone(),
+    //         },
+    //     };
+    //     let collection = match builder
+    //         .clone(
+    //             ctx,
+    //             git_client,
+    //             ProjectCloneParams {
+    //                 internal_abs_path: abs_path.clone(),
+    //                 account_id: params.account_id,
+    //                 git_provider_type: params.git_provider_type.clone(),
+    //                 repository,
+    //                 branch: params.branch.clone(),
+    //             },
+    //         )
+    //         .await
+    //         .join_err::<()>("failed to clone collection")
+    //     {
+    //         Ok(collection) => collection,
+    //         Err(e) => {
+    //             let _ = rb.rollback().await.map_err(|e| {
+    //                 session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+    //             });
+    //             return Err(e);
+    //         }
+    //     };
+    //
+    //     let desc = collection.details(ctx).await?;
+    //     let vcs = collection
+    //         .vcs::<R>()
+    //         .unwrap() // SAFETY: Collection is built from the clone operation, so it must have a VCS
+    //         .summary(ctx)
+    //         .await?;
+    //
+    //     // FIXME: Should we allow user to set local icon when cloning a collection?
+    //     let icon_path = collection.icon_path();
+    //
+    //     {
+    //         let mut state_lock = self.state.write().await;
+    //         state_lock.expanded_items.insert(id.clone());
+    //         state_lock.projects.insert(
+    //             id.clone(),
+    //             ProjectItem {
+    //                 id: id.clone(),
+    //                 order: Some(params.order.clone()),
+    //                 handle: Arc::new(collection),
+    //             },
+    //         );
+    //         let order_key = key_project_order(id);
+    //
+    //         let batch_input = vec![
+    //             (order_key.as_str(), JsonValue::Number(params.order.into())),
+    //             (
+    //                 KEY_EXPANDED_ITEMS,
+    //                 serde_json::to_value(&state_lock.expanded_items)?,
+    //             ),
+    //         ];
+    //
+    //         if let Err(e) = self
+    //             .storage
+    //             .put_batch(
+    //                 ctx,
+    //                 StorageScope::Workspace(self.workspace_id.inner()),
+    //                 &batch_input,
+    //             )
+    //             .await
+    //         {
+    //             session::warn!(format!(
+    //                 "failed to update database after cloning project: {}",
+    //                 e
+    //             ));
+    //         }
+    //     }
+    //
+    //     if let Err(e) = self
+    //         .storage
+    //         .add_project(self.workspace_id.inner(), id.inner())
+    //         .await
+    //     {
+    //         session::error!(format!("failed to create project storage backend: {}", e))
+    //     }
+    //
+    //     self.on_did_add_project_emitter
+    //         .fire(OnDidAddProject {
+    //             project_id: id.clone(),
+    //         })
+    //         .await;
+    //
+    //     Ok(ProjectItemDescription {
+    //         id: id.clone(),
+    //         name: desc.name,
+    //         order: Some(params.order),
+    //         expanded: true,
+    //         vcs: Some(vcs),
+    //         icon_path,
+    //         internal_abs_path: abs_path,
+    //         external_path: None,
+    //         archived: false,
+    //     })
+    // }
 
     // pub(crate) async fn delete_project<R: AppRuntime>(
     //     &self,

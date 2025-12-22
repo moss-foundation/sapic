@@ -96,10 +96,7 @@ pub struct ProjectLoadParams {
 
 pub struct ProjectCloneParams {
     pub internal_abs_path: Arc<Path>,
-    pub account_id: AccountId,
-    pub git_provider_type: GitProviderKind,
     pub repository: GitUrl,
-    pub branch: Option<String>,
 }
 
 pub struct ProjectImportArchiveParams {
@@ -320,25 +317,28 @@ impl ProjectBuilder {
         })
     }
 
-    // TODO: Handle non-collection repo
+    // FIXME: Not sure if this is the correct way
+    // My assumption is that the git clone step should be done from the project backend
+    // Here the project just needs a repository handle to put in its vcs
     pub async fn clone(
         self,
-        ctx: &dyn AnyAsyncContext,
+        _ctx: &dyn AnyAsyncContext,
+        repository: Repository,
         git_client: GitClient,
         params: ProjectCloneParams,
     ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path.clone();
-        let repository = self
-            .do_clone(
-                ctx,
-                &git_client,
-                abs_path.clone(),
-                params.repository.to_string_with_suffix()?,
-                params.branch,
-            )
-            .await?;
+        // let repository = self
+        //     .do_clone(
+        //         ctx,
+        //         &git_client,
+        //         abs_path.clone(),
+        //         params.repository.to_string_with_suffix()?,
+        //         params.branch,
+        //     )
+        //     .await?;
 
         let worktree_inner: Arc<Worktree> = Worktree::new(
             self.storage.clone(),
@@ -351,22 +351,22 @@ impl ProjectBuilder {
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
-        self.fs
-            .create_file_with(
-                ctx,
-                &abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ProjectConfig {
-                    archived: false,
-                    external_path: None,
-                    account_id: Some(git_client.account_id()),
-                })?
-                .as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        // self.fs
+        //     .create_file_with(
+        //         ctx,
+        //         &abs_path.join(CONFIG_FILE_NAME),
+        //         serde_json::to_string(&ProjectConfig {
+        //             archived: false,
+        //             external_path: None,
+        //             account_id: Some(git_client.account_id()),
+        //         })?
+        //         .as_bytes(),
+        //         CreateOptions {
+        //             overwrite: false,
+        //             ignore_if_exists: false,
+        //         },
+        //     )
+        //     .await?;
 
         let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
         Ok(Project {
@@ -473,31 +473,31 @@ impl ProjectBuilder {
 }
 
 impl ProjectBuilder {
-    async fn do_clone(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        git_client: &GitClient,
-        abs_path: Arc<Path>,
-        repo_url: String,
-        branch: Option<String>,
-    ) -> joinerror::Result<Repository> {
-        let access_token = git_client.session().token(ctx).await?;
-        let username = git_client.username();
-
-        let mut cb = git2::RemoteCallbacks::new();
-        cb.credentials(move |_url, username_from_url, _allowed| {
-            git2::Cred::userpass_plaintext(username_from_url.unwrap_or(&username), &access_token)
-        });
-
-        let repository = Repository::clone(&repo_url, abs_path.as_ref(), cb)?;
-        if let Some(branch) = branch {
-            // Try to check out to the user-selected branch
-            // if it fails, we consider the repo creation to also fail
-            repository.checkout_branch(None, &branch, true)?;
-        }
-
-        Ok(repository)
-    }
+    // async fn do_clone(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     git_client: &GitClient,
+    //     abs_path: Arc<Path>,
+    //     repo_url: String,
+    //     branch: Option<String>,
+    // ) -> joinerror::Result<Repository> {
+    //     let access_token = git_client.session().token(ctx).await?;
+    //     let username = git_client.username();
+    //
+    //     let mut cb = git2::RemoteCallbacks::new();
+    //     cb.credentials(move |_url, username_from_url, _allowed| {
+    //         git2::Cred::userpass_plaintext(username_from_url.unwrap_or(&username), &access_token)
+    //     });
+    //
+    //     let repository = Repository::clone(&repo_url, abs_path.as_ref(), cb)?;
+    //     if let Some(branch) = branch {
+    //         // Try to check out to the user-selected branch
+    //         // if it fails, we consider the repo creation to also fail
+    //         repository.checkout_branch(None, &branch, true)?;
+    //     }
+    //
+    //     Ok(repository)
+    // }
 
     async fn do_import(
         &self,

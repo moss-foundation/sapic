@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use atomic_fs::Rollback;
 use joinerror::ResultExt;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions};
+use moss_git::repository::Repository;
 use sapic_base::{
     other::GitProviderKind,
     project::{
@@ -10,7 +11,10 @@ use sapic_base::{
     },
 };
 use sapic_core::context::AnyAsyncContext;
-use sapic_system::project::{CreateProjectParams, ProjectBackend};
+use sapic_system::{
+    project::{CloneProjectParams, CreateConfigParams, CreateProjectParams, ProjectBackend},
+    user::account::Account,
+};
 use std::{
     cell::LazyCell,
     path::{Path, PathBuf},
@@ -83,7 +87,7 @@ impl FsProjectBackend {
         &self,
         ctx: &dyn AnyAsyncContext,
         rb: &mut Rollback,
-        params: &CreateProjectParams,
+        params: &CreateConfigParams,
     ) -> joinerror::Result<()> {
         self.fs
             .create_file_with_content_with_rollback(
@@ -93,7 +97,7 @@ impl FsProjectBackend {
                 serde_json::to_string(&ProjectConfig {
                     archived: false,
                     external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
-                    account_id: None,
+                    account_id: params.account_id.clone(),
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -180,9 +184,17 @@ impl FsProjectBackend {
         self.create_manifest_file(ctx, rb, &abs_path, &params)
             .await
             .join_err::<()>("failed to create manifest file")?;
-        self.create_config_file(ctx, rb, &params)
-            .await
-            .join_err::<()>("failed to create config file")?;
+        self.create_config_file(
+            ctx,
+            rb,
+            &CreateConfigParams {
+                internal_abs_path: params.internal_abs_path.clone(),
+                external_abs_path: params.external_abs_path.clone(),
+                account_id: None,
+            },
+        )
+        .await
+        .join_err::<()>("failed to create config file")?;
 
         for file in PREDEFINED_FILES.iter() {
             self.fs
@@ -201,6 +213,61 @@ impl FsProjectBackend {
         }
 
         Ok(())
+    }
+
+    async fn clone_project_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        account: &Account,
+        abs_path: &Path,
+        params: &CloneProjectParams,
+    ) -> joinerror::Result<Repository> {
+        // 1. Create directory
+        // 2. Do cloning
+        // 3. Setup config
+        self.fs
+            .create_dir_with_rollback(ctx, rb, &abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to create directory `{}`", abs_path.display())
+            })?;
+
+        self.create_config_file(
+            ctx,
+            rb,
+            &CreateConfigParams {
+                internal_abs_path: params.internal_abs_path.clone(),
+                external_abs_path: None,
+                account_id: Some(account.id()),
+            },
+        )
+        .await
+        .join_err::<()>("failed to create config file")?;
+
+        let token = account.session().token(ctx).await?;
+        let username = account.username();
+        let mut cb = git2::RemoteCallbacks::new();
+        cb.credentials(move |_url, username_from_url, _allowed| {
+            git2::Cred::userpass_plaintext(username_from_url.unwrap_or(&username), &token)
+        });
+
+        let repository = Repository::clone(
+            &params.git_params.repository_url.to_string_with_suffix()?,
+            abs_path,
+            cb,
+        )
+        .join_err::<()>("failed to clone project repository")?;
+
+        if let Some(branch) = &params.git_params.branch_name {
+            // Try to check out to the user-selected branch
+            // if it fails, we consider the repo creation to also fail
+            repository
+                .checkout_branch(None, branch, true)
+                .join_err_with::<()>(|| format!("failed to checkout branch `{}`", branch))?;
+        }
+
+        Ok(repository)
     }
 }
 
@@ -221,6 +288,23 @@ impl ProjectBackend for FsProjectBackend {
             serde_json::from_reader(rdr).join_err::<()>("failed to parse config file")?;
 
         Ok(config)
+    }
+
+    async fn read_project_manifest(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        abs_path: &Path,
+    ) -> joinerror::Result<ProjectManifest> {
+        let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
+        let rdr = self
+            .fs
+            .open_file(ctx, &manifest_path)
+            .await
+            .join_err::<()>("failed to open manifest file")?;
+        let manifest: ProjectManifest =
+            serde_json::from_reader(rdr).join_err::<()>("failed to parse manifest file")?;
+
+        Ok(manifest)
     }
 
     async fn create_project_manifest(
@@ -258,7 +342,7 @@ impl ProjectBackend for FsProjectBackend {
 
         if abs_path.exists() {
             return Err(joinerror::Error::new::<()>(format!(
-                "collection directory `{}` already exists",
+                "project directory `{}` already exists",
                 abs_path.display()
             )));
         }
@@ -275,6 +359,39 @@ impl ProjectBackend for FsProjectBackend {
             Err(e)
         } else {
             Ok(())
+        }
+    }
+
+    async fn clone_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        account: &Account,
+        params: CloneProjectParams,
+    ) -> joinerror::Result<Repository> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        let abs_path: Arc<Path> = params.internal_abs_path.clone().into();
+
+        if abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "project directory `{}` already exists",
+                abs_path.display()
+            )));
+        }
+
+        let mut rb = self.fs.start_rollback(ctx).await?;
+
+        match self
+            .clone_project_internal(ctx, &mut rb, account, &abs_path, &params)
+            .await
+        {
+            Ok(repository) => Ok(repository),
+            Err(e) => {
+                let _ = rb.rollback().await.map_err(|e| {
+                    tracing::error!("failed to rollback fs changes: {}", e.to_string());
+                });
+                Err(e)
+            }
         }
     }
 
