@@ -101,7 +101,6 @@ pub struct ProjectCloneParams {
 
 pub struct ProjectImportArchiveParams {
     pub internal_abs_path: Arc<Path>,
-    pub archive_path: Arc<Path>,
 }
 
 pub struct ProjectImportExternalParams {
@@ -392,8 +391,8 @@ impl ProjectBuilder {
         debug_assert!(params.internal_abs_path.is_absolute());
 
         let abs_path = params.internal_abs_path;
-        let archive_path = params.archive_path;
-        self.do_import(ctx, abs_path.clone(), archive_path).await?;
+        // let archive_path = params.archive_path;
+        // self.do_import(ctx, abs_path.clone(), archive_path).await?;
 
         let worktree_inner: Arc<Worktree> = Worktree::new(
             self.storage.clone(),
@@ -406,22 +405,22 @@ impl ProjectBuilder {
         let set_icon_service =
             SetIconService::new(abs_path.clone(), self.fs.clone(), PROJECT_ICON_SIZE);
 
-        self.fs
-            .create_file_with(
-                ctx,
-                &abs_path.join(CONFIG_FILE_NAME),
-                serde_json::to_string(&ProjectConfig {
-                    archived: false,
-                    external_path: None,
-                    account_id: None,
-                })?
-                .as_bytes(),
-                CreateOptions {
-                    overwrite: false,
-                    ignore_if_exists: false,
-                },
-            )
-            .await?;
+        // self.fs
+        //     .create_file_with(
+        //         ctx,
+        //         &abs_path.join(CONFIG_FILE_NAME),
+        //         serde_json::to_string(&ProjectConfig {
+        //             archived: false,
+        //             external_path: None,
+        //             account_id: None,
+        //         })?
+        //         .as_bytes(),
+        //         CreateOptions {
+        //             overwrite: false,
+        //             ignore_if_exists: false,
+        //         },
+        //     )
+        //     .await?;
 
         let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
 

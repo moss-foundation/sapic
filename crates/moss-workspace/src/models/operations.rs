@@ -21,39 +21,6 @@ use crate::models::types::*;
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct ImportProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: ImportProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ImportProjectOutput {
-    pub id: ProjectId,
-    // FIXME: Maybe we should remove the name field until we have local display name
-    // Since a cloned/imported project already has a name
-    pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
-    pub icon_path: Option<PathBuf>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub external_path: Option<PathBuf>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
 pub struct ExportProjectInput {
     #[serde(flatten)]
     #[validate(nested)]

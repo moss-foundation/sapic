@@ -3,8 +3,8 @@ use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use sapic_ipc::contracts::main::project::{
     ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
-    DeleteProjectInput, DeleteProjectOutput, UnarchiveProjectInput, UnarchiveProjectOutput,
-    UpdateProjectInput, UpdateProjectOutput,
+    DeleteProjectInput, DeleteProjectOutput, ImportProjectInput, ImportProjectOutput,
+    UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput, UpdateProjectOutput,
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
 

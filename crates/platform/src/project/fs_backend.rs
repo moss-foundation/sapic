@@ -12,7 +12,10 @@ use sapic_base::{
 };
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
-    project::{CloneProjectParams, CreateConfigParams, CreateProjectParams, ProjectBackend},
+    project::{
+        CloneProjectParams, CreateConfigParams, CreateProjectParams, ImportArchivedProjectParams,
+        ProjectBackend,
+    },
     user::account::Account,
 };
 use std::{
@@ -269,6 +272,46 @@ impl FsProjectBackend {
 
         Ok(repository)
     }
+
+    async fn import_archived_project_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        rb: &mut Rollback,
+        params: &ImportArchivedProjectParams,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .create_dir_with_rollback(ctx, rb, &params.internal_abs_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!(
+                    "failed to create directory `{}`",
+                    params.internal_abs_path.display()
+                )
+            })?;
+
+        self.fs
+            .unzip(
+                ctx,
+                params.archive_path.as_ref(),
+                params.internal_abs_path.as_ref(),
+            )
+            .await
+            .join_err::<()>("failed to unzip archive")?;
+
+        self.create_config_file(
+            ctx,
+            rb,
+            &CreateConfigParams {
+                internal_abs_path: params.internal_abs_path.clone(),
+                external_abs_path: None,
+                account_id: None,
+            },
+        )
+        .await
+        .join_err::<()>("failed to create config file")?;
+
+        Ok(())
+    }
 }
 
 #[async_trait]
@@ -393,6 +436,34 @@ impl ProjectBackend for FsProjectBackend {
                 Err(e)
             }
         }
+    }
+
+    async fn import_archived_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ImportArchivedProjectParams,
+    ) -> joinerror::Result<()> {
+        debug_assert!(params.internal_abs_path.is_absolute());
+
+        if params.internal_abs_path.exists() {
+            return Err(joinerror::Error::new::<()>(format!(
+                "project directory `{}` already exists",
+                params.internal_abs_path.display()
+            )));
+        }
+
+        let mut rb = self.fs.start_rollback(ctx).await?;
+        if let Err(e) = self
+            .import_archived_project_internal(ctx, &mut rb, &params)
+            .await
+        {
+            let _ = rb.rollback().await.map_err(|e| {
+                tracing::error!("failed to rollback fs changes: {}", e.to_string());
+            });
+            return Err(e);
+        }
+
+        Ok(())
     }
 
     async fn delete_project(

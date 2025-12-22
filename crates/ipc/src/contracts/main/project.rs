@@ -153,6 +153,111 @@ pub struct CreateProjectOutput {
 }
 
 //
+// Import Project
+//
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ImportProjectInput {
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: ImportProjectParams,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportProjectParams {
+    #[validate(length(min = 1))]
+    pub name: String,
+    pub order: isize,
+    pub source: ImportProjectSource,
+    pub icon_path: Option<PathBuf>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum ImportProjectSource {
+    GitHub(ImportGitHubParams),
+    GitLab(ImportGitLabParams),
+    Archive(ImportArchiveParams),
+    Disk(ImportDiskParams),
+}
+
+// FIXME: Validation for provider specific url?
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportGitHubParams {
+    pub account_id: AccountId,
+
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    /// If provided, this branch will be checked out instead of the default branch
+    pub branch: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportGitLabParams {
+    pub account_id: AccountId,
+
+    #[validate(regex(path = "*GIT_URL_REGEX"))]
+    pub repository: String,
+    /// If provided, this branch will be checked out instead of the default branch
+    pub branch: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportArchiveParams {
+    pub archive_path: PathBuf,
+}
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct ImportDiskParams {
+    pub external_path: PathBuf,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ImportProjectOutput {
+    pub id: ProjectId,
+    // FIXME: Maybe we should remove the name field until we have local display name
+    // Since a cloned/imported project already has a name
+    pub name: String,
+    pub order: Option<isize>,
+    pub expanded: bool,
+    pub icon_path: Option<PathBuf>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub abs_path: Arc<Path>,
+
+    #[serde(skip)]
+    #[ts(skip)]
+    pub external_path: Option<PathBuf>,
+}
+
+//
 // Delete Project
 //
 

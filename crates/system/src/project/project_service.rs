@@ -1,4 +1,4 @@
-use joinerror::ResultExt;
+use joinerror::{Error, ResultExt};
 use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -10,12 +10,15 @@ use sapic_base::{
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 use crate::{
     project::{
         CloneProjectGitParams, CloneProjectParams, CreateProjectGitParams, CreateProjectParams,
-        ProjectBackend,
+        ImportArchivedProjectParams, ProjectBackend,
     },
     user::account::Account,
 };
@@ -148,6 +151,40 @@ impl ProjectService {
         };
 
         Ok((project_item, repository))
+    }
+
+    pub async fn import_archived_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        archive_path: &Path,
+    ) -> joinerror::Result<ProjectItem> {
+        let id = ProjectId::new();
+
+        let abs_path = self.abs_path.join(id.to_string());
+
+        self.backend
+            .import_archived_project(
+                ctx,
+                ImportArchivedProjectParams {
+                    internal_abs_path: abs_path.to_path_buf(),
+                    archive_path: archive_path.to_path_buf(),
+                },
+            )
+            .await?;
+
+        let manifest = self.backend.read_project_manifest(ctx, &abs_path).await?;
+
+        let config = self.backend.read_project_config(ctx, &abs_path).await?;
+
+        let project_item = ProjectItem {
+            id,
+            abs_path,
+            manifest,
+            config,
+            order: None,
+        };
+
+        Ok(project_item)
     }
 
     pub async fn delete_project(

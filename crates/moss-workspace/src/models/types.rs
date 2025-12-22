@@ -21,35 +21,35 @@ pub type EnvironmentName = String;
 // ------------------------------ //
 // Project
 // ------------------------------ //
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct CreateProjectParams {
+//     #[validate(length(min = 1))]
+//     pub name: String,
+//
+//     pub order: isize,
+//     pub external_path: Option<PathBuf>,
+//
+//     pub git_params: Option<CreateProjectGitParams>,
+//
+//     pub icon_path: Option<PathBuf>,
+// }
 
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct CreateProjectParams {
-    #[validate(length(min = 1))]
-    pub name: String,
-
-    pub order: isize,
-    pub external_path: Option<PathBuf>,
-
-    pub git_params: Option<CreateProjectGitParams>,
-
-    pub icon_path: Option<PathBuf>,
-}
-
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ImportProjectParams {
-    #[validate(length(min = 1))]
-    pub name: String,
-    pub order: isize,
-    pub source: ImportProjectSource,
-    pub icon_path: Option<PathBuf>,
-}
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ImportProjectParams {
+//     #[validate(length(min = 1))]
+//     pub name: String,
+//     pub order: isize,
+//     pub source: ImportProjectSource,
+//     pub icon_path: Option<PathBuf>,
+// }
 
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -146,92 +146,92 @@ pub struct UpdateEnvironmentParams {
 //     pub variables: Vec<VariableInfo>,
 // }
 
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum ImportProjectSource {
-    GitHub(ImportGitHubParams),
-    GitLab(ImportGitLabParams),
-    Archive(ImportArchiveParams),
-    Disk(ImportDiskParams),
-}
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub enum ImportProjectSource {
+//     GitHub(ImportGitHubParams),
+//     GitLab(ImportGitLabParams),
+//     Archive(ImportArchiveParams),
+//     Disk(ImportDiskParams),
+// }
+//
+// // FIXME: Validation for provider specific url?
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ImportGitHubParams {
+//     pub account_id: AccountId,
+//
+//     #[validate(regex(path = "*GIT_URL_REGEX"))]
+//     pub repository: String,
+//     /// If provided, this branch will be checked out instead of the default branch
+//     pub branch: Option<String>,
+// }
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ImportGitLabParams {
+//     pub account_id: AccountId,
+//
+//     #[validate(regex(path = "*GIT_URL_REGEX"))]
+//     pub repository: String,
+//     /// If provided, this branch will be checked out instead of the default branch
+//     pub branch: Option<String>,
+// }
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ImportArchiveParams {
+//     pub archive_path: PathBuf,
+// }
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct ImportDiskParams {
+//     pub external_path: PathBuf,
+// }
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub enum CreateProjectGitParams {
+//     GitHub(GitHubCreateParams),
+//     GitLab(GitLabCreateParams),
+// }
 
-// FIXME: Validation for provider specific url?
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ImportGitHubParams {
-    pub account_id: AccountId,
-
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    /// If provided, this branch will be checked out instead of the default branch
-    pub branch: Option<String>,
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ImportGitLabParams {
-    pub account_id: AccountId,
-
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    /// If provided, this branch will be checked out instead of the default branch
-    pub branch: Option<String>,
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct ImportArchiveParams {
-    pub archive_path: PathBuf,
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct ImportDiskParams {
-    pub external_path: PathBuf,
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum CreateProjectGitParams {
-    GitHub(GitHubCreateParams),
-    GitLab(GitLabCreateParams),
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct GitHubCreateParams {
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    /// The name of the default branch
-    pub branch: String,
-}
-
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub struct GitLabCreateParams {
-    #[validate(regex(path = "*GIT_URL_REGEX"))]
-    pub repository: String,
-    /// The name of the default branch
-    pub branch: String,
-}
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct GitHubCreateParams {
+//     #[validate(regex(path = "*GIT_URL_REGEX"))]
+//     pub repository: String,
+//     /// The name of the default branch
+//     pub branch: String,
+// }
+//
+// /// @category Type
+// #[derive(Debug, Serialize, Deserialize, TS, Validate)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "types.ts")]
+// pub struct GitLabCreateParams {
+//     #[validate(regex(path = "*GIT_URL_REGEX"))]
+//     pub repository: String,
+//     /// The name of the default branch
+//     pub branch: String,
+// }
 
 /// @category Type
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]

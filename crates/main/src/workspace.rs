@@ -7,7 +7,9 @@ use moss_git::url::GitUrl;
 use moss_logging::session;
 use moss_project::{
     Project, ProjectBuilder,
-    builder::{ProjectCloneParams, ProjectCreateParams, ProjectLoadParams},
+    builder::{
+        ProjectCloneParams, ProjectCreateParams, ProjectImportArchiveParams, ProjectLoadParams,
+    },
     git::GitClient,
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -18,7 +20,9 @@ use sapic_base::{
     user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
-use sapic_ipc::contracts::main::project::{CreateProjectParams, UpdateProjectParams};
+use sapic_ipc::contracts::main::project::{
+    CreateProjectParams, ImportArchiveParams, UpdateProjectParams,
+};
 use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
 use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
@@ -67,6 +71,12 @@ pub trait Workspace: Send + Sync {
         git_provider_kind: GitProviderKind,
         repository: &str,
         branch: Option<String>,
+    ) -> joinerror::Result<RuntimeProject>;
+
+    async fn import_archived_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &ImportArchiveParams,
     ) -> joinerror::Result<RuntimeProject>;
 
     async fn delete_project(
@@ -405,6 +415,63 @@ impl Workspace for RuntimeWorkspace {
                 ProjectCloneParams {
                     internal_abs_path: project_item.abs_path.clone().into(),
                     repository: repo_url,
+                },
+            )
+            .await?;
+
+        let project = RuntimeProject {
+            id: project_item.id.clone(),
+            handle: handle.into(),
+            edit: ProjectEditService::new(ProjectFsEditBackend::new(
+                self.fs.clone(),
+                self.abs_path.join("projects"),
+            )),
+            order: None, // HACK: deprecated field
+        };
+
+        // 5. Add project to registry and storage
+        let projects = self.projects_internal(ctx).await?;
+        projects
+            .write()
+            .await
+            .insert(project_item.id.clone(), project.clone());
+
+        if let Err(e) = self
+            .storage
+            .add_project(self.id.inner(), project_item.id.inner())
+            .await
+        {
+            return Err(joinerror::Error::new::<()>(format!(
+                "failed to add project storage: {}",
+                e
+            )));
+        }
+
+        Ok(project)
+    }
+
+    async fn import_archived_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: &ImportArchiveParams,
+    ) -> joinerror::Result<RuntimeProject> {
+        let project_item = self
+            .project_service
+            .import_archived_project(ctx, &params.archive_path)
+            .await?;
+
+        let builder = ProjectBuilder::new(
+            self.fs.clone(),
+            self.storage.clone(),
+            project_item.id.clone(),
+        )
+        .await;
+
+        let handle = builder
+            .import_archive(
+                ctx,
+                ProjectImportArchiveParams {
+                    internal_abs_path: project_item.abs_path.clone().into(),
                 },
             )
             .await?;

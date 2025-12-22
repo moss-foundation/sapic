@@ -1,11 +1,9 @@
-use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_workspace::models::{
-    operations::{ImportProjectInput, ImportProjectOutput},
-    types::ImportProjectSource,
+use sapic_base::other::GitProviderKind;
+use sapic_ipc::{
+    ValidationResultExt,
+    contracts::main::project::{ImportProjectInput, ImportProjectOutput, ImportProjectSource},
 };
-use sapic_base::{other::GitProviderKind, project::types::primitives::ProjectId};
-use sapic_ipc::ValidationResultExt;
 use validator::Validate;
 
 use crate::MainWindow;
@@ -45,18 +43,9 @@ impl<R: AppRuntime> MainWindow<R> {
                     .await?
             }
             ImportProjectSource::Archive(archive_params) => {
-                unimplemented!()
-                // workspace
-                //     .import_archived_project(
-                //         ctx,
-                //         &id,
-                //         ProjectItemImportFromArchiveParams {
-                //             name: params.name.clone(),
-                //             order: params.order,
-                //             archive_path: archive_params.archive_path.clone(),
-                //         },
-                //     )
-                //     .await?
+                workspace
+                    .import_archived_project(ctx, archive_params)
+                    .await?
             }
             ImportProjectSource::Disk(external_params) => {
                 unimplemented!()
