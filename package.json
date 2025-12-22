@@ -53,5 +53,8 @@
     "overrides": {
       "brace-expansion": "2.0.2"
     }
+  },
+  "dependencies": {
+    "rollup-plugin-dts": "^6.3.0"
   }
 }

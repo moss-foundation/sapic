@@ -3,6 +3,8 @@
   "exclude": ["dist", "build", "node_modules"],
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "composite": false,
+    "declaration": true
   }
 }

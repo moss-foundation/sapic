@@ -10,6 +10,10 @@ overrides:
 importers:
 
   .:
+    dependencies:
+      rollup-plugin-dts:
+        specifier: ^6.3.0
+        version: 6.3.0(rollup@4.53.5)(typescript@5.9.2)
     devDependencies:
       '@getgrit/cli':
         specifier: 0.1.0-alpha.1743007075
@@ -4455,6 +4459,13 @@ packages:
     resolution: {integrity: sha512-l0OE8wL34P4nJH/H2ffoaniAokM2qSmrtXHmlpvYr5AVVX8msAyW0l8NVJFDxlSK4u3Uh/f41cQheDVdnYijwQ==}
     hasBin: true
 
+  rollup-plugin-dts@6.3.0:
+    resolution: {integrity: sha512-d0UrqxYd8KyZ6i3M2Nx7WOMy708qsV/7fTHMHxCMCBOAe3V/U7OMPu5GkX8hC+cmkHhzGnfeYongl1IgiooddA==}
+    engines: {node: '>=16'}
+    peerDependencies:
+      rollup: ^3.29.4 || ^4
+      typescript: ^4.5 || ^5.0
+
   rollup@4.53.5:
     resolution: {integrity: sha512-iTNAbFSlRpcHeeWu73ywU/8KuU/LZmNCSxp6fjQkJBD3ivUb8tpDrXhIxEzA05HlYMEwmtaUnb3RP+YNv162OQ==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
@@ -8760,6 +8771,14 @@ snapshots:
   rimraf@5.0.10:
     dependencies:
       glob: 10.5.0
+
+  rollup-plugin-dts@6.3.0(rollup@4.53.5)(typescript@5.9.2):
+    dependencies:
+      magic-string: 0.30.21
+      rollup: 4.53.5
+      typescript: 5.9.2
+    optionalDependencies:
+      '@babel/code-frame': 7.27.1
 
   rollup@4.53.5:
     dependencies:

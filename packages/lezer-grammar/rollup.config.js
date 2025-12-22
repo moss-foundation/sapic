@@ -1,6 +1,6 @@
+import { lezer } from "@lezer/generator/rollup";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
-import { lezer } from "@lezer/generator/rollup";
 
 export default {
   input: "./src/parser.ts",
@@ -18,6 +18,10 @@ export default {
   plugins: [
     lezer(), // <--- Compiles the .grammar file
     nodeResolve({ extensions: [".js", ".ts"] }),
-    typescript(),
+    typescript({
+      declaration: true,
+      declarationDir: "./dist",
+      rootDir: "./src",
+    }),
   ],
 };
