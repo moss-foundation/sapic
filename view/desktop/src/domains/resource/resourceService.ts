@@ -1,4 +1,4 @@
-import { resourceIpc } from "@/infra/ipc/resource";
+import { resourceIpc } from "@/infra/ipc/resourceIpc";
 import {
   BatchCreateResourceInput,
   BatchCreateResourceOutput,

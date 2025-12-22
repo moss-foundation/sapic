@@ -1,4 +1,4 @@
-import { userIpc } from "@/infra/ipc/user";
+import { userIpc } from "@/infra/ipc/userIpc";
 import { AddUserAccountInput, ListUserAccountsOutput, RemoveUserAccountInput, UpdateUserAccountInput } from "@repo/ipc";
 
 export interface IUserService {

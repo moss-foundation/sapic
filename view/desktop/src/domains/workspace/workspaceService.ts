@@ -1,4 +1,4 @@
-import { workspaceIpc } from "@/infra/ipc/workspace";
+import { workspaceIpc } from "@/infra/ipc/workspaceIpc";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/ipc";
 
 export interface IWorkspaceService {

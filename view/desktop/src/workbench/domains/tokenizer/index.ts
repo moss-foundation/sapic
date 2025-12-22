@@ -1,4 +1,4 @@
-import { tokenizerIpc } from "@/infra/ipc/tokenizer";
+import { tokenizerIpc } from "@/infra/ipc/tokenizerIpc";
 import { ParsedUrl } from "@/workbench/views/EndpointView/utils";
 
 export interface ITokenizerService {

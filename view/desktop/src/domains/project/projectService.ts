@@ -1,4 +1,4 @@
-import { projectIpc } from "@/infra/ipc/project";
+import { projectIpc } from "@/infra/ipc/projectIpc";
 import {
   BatchUpdateProjectInput,
   BatchUpdateProjectOutput,
