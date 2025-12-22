@@ -2,7 +2,7 @@ name: CI
 
 on:
   workflow_dispatch:
-    
+
   # push:
   #   branches: ["main"]
   # pull_request:
@@ -450,8 +450,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Dependencies for desktop
-#        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
+        #        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
         run: cd view/desktop && pnpm install --frozen-lockfile
+
+      - name: Build TypeScript Dependencies
+        run: pnpm run build --filter=@repo/lezer-grammar
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
