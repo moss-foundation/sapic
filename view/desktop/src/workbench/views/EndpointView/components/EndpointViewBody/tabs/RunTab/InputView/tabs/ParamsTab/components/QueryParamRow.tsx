@@ -1,6 +1,6 @@
 import { ChangeEvent, memo, useContext, useEffect, useRef } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import { useHoverDelay } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
@@ -11,7 +11,6 @@ import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { useDraggableParamRow } from "../hooks/useDraggableParamRow";
 import { ParamDragType } from "../types";
@@ -29,12 +28,7 @@ export const QueryParamRow = memo(
   ({ param, onChange, keyToFocusOnMount, onDelete, paramType, setColumnToFocusOnMount }: ParamRowProps) => {
     const { resourceId } = useContext(EndpointViewContext);
 
-    const { data: localResourceDetails } = useLiveQuery((q) =>
-      q
-        .from({ collection: resourceDetailsCollection })
-        .where(({ collection }) => eq(collection.id, resourceId))
-        .findOne()
-    );
+    const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
     const keyRef = useRef<HTMLInputElement>(null);
     const valueRef = useRef<HTMLInputElement>(null);

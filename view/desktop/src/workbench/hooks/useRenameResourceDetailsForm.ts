@@ -1,38 +1,49 @@
 import { useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
-import { ResourceDetails } from "@/db/types";
+import { useUpdateProjectResource } from "@/adapters";
+import { ResourceDetails } from "@/db/resource/types";
 
 import { useTabbedPaneStore } from "../store/tabbedPane";
 
-export const useRenameResourceDetailsForm = (details?: ResourceDetails) => {
+export const useRenameResourceDetailsForm = (
+  resourceDetails: ResourceDetails | undefined,
+  projectId: string | undefined
+) => {
   const { api } = useTabbedPaneStore();
+  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
   const [isRenamingResourceDetails, setIsRenamingResourceDetails] = useState(false);
 
   const handleRenamingResourceDetailsSubmit = async (newName: string) => {
-    if (!details) return;
+    if (!resourceDetails || !projectId) return;
 
-    try {
-      const trimmedNewName = newName.trim();
+    const trimmedNewName = newName.trim();
+    if (trimmedNewName === resourceDetails.name) return;
 
-      if (trimmedNewName === details.name) {
-        return;
-      }
+    await updateProjectResource({
+      projectId,
+      updateResourceInput: {
+        ITEM: {
+          id: resourceDetails.id,
+          name: trimmedNewName,
+          headersToAdd: [],
+          headersToUpdate: [],
+          headersToRemove: [],
+          pathParamsToAdd: [],
+          pathParamsToUpdate: [],
+          pathParamsToRemove: [],
+          queryParamsToAdd: [],
+          queryParamsToUpdate: [],
+          queryParamsToRemove: [],
+        },
+      },
+    });
 
-      resourceDetailsCollection.update(details.id, (draft) => {
-        draft.name = trimmedNewName;
-      });
+    const panel = api?.getPanel(resourceDetails.id);
+    panel?.setTitle(trimmedNewName);
 
-      const panel = api?.getPanel(details.id);
-      panel?.setTitle(trimmedNewName);
-    } catch (error) {
-      console.error("Error renaming resource details", error);
-    } finally {
-      setIsRenamingResourceDetails(false);
-    }
+    setIsRenamingResourceDetails(false);
   };
-
   const handleRenamingResourceDetailsCancel = () => {
     setIsRenamingResourceDetails(false);
   };

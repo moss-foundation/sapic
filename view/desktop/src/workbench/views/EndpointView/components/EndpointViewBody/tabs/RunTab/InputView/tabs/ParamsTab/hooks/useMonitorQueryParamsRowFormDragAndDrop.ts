@@ -1,10 +1,10 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { DraggableParamRowData } from "../types";
 import {
@@ -18,12 +18,7 @@ import {
 export const useMonitorQueryParamsRowFormDragAndDrop = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const sortedQueryList = useMemo(() => {
     return sortObjectsByOrder(localResourceDetails?.queryParams ?? []);
@@ -49,6 +44,7 @@ export const useMonitorQueryParamsRowFormDragAndDrop = () => {
 
       resourceDetailsCollection.update(resourceId, (draft) => {
         if (!draft) return;
+        draft.metadata.isDirty = true;
         draft.queryParams = queryListWithNewOrders;
 
         const splitUrl = draft.url?.split("?");

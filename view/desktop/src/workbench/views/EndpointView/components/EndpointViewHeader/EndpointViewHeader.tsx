@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
 import { useDescribeProjectResource, useUpdateProjectResource } from "@/adapters";
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
@@ -13,7 +13,6 @@ import {
   UpdatePathParamParams,
   UpdateQueryParamParams,
 } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointViewContext } from "../../EndpointViewContext";
 import { EditableHeader } from "./EditableHeader";
@@ -36,19 +35,14 @@ export const EndpointViewHeader = () => {
   const { data: backendResourceDetails } = useDescribeProjectResource({ projectId, resourceId });
   const { mutate: updateProjectResource } = useUpdateProjectResource();
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const {
     isRenamingResourceDetails,
     setIsRenamingResourceDetails,
     handleRenamingResourceDetailsSubmit,
     handleRenamingResourceDetailsCancel,
-  } = useRenameResourceDetailsForm(localResourceDetails);
+  } = useRenameResourceDetailsForm(localResourceDetails, projectId);
 
   const handleSave = useCallback(() => {
     if (!localResourceDetails || !backendResourceDetails) {
@@ -172,7 +166,7 @@ export const EndpointViewHeader = () => {
       if (localResourceDetails.kind === "Item") {
         updateProjectResource({
           projectId,
-          updatedResource: {
+          updateResourceInput: {
             ITEM: {
               id: resourceId,
               ...descriptionParamsToAdd,
@@ -209,8 +203,8 @@ export const EndpointViewHeader = () => {
             setIsRenamingResourceDetails={setIsRenamingResourceDetails}
             handleRenamingResourceDetailsSubmit={handleRenamingResourceDetailsSubmit}
             handleRenamingResourceDetailsCancel={handleRenamingResourceDetailsCancel}
-            editable
           />
+
           <div className="flex items-center gap-2">
             <Button intent="outlined" onClick={handleSave}>
               Save

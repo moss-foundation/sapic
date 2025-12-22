@@ -1,13 +1,13 @@
 import { useCallback, useContext, useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";
 import { useTokenizer } from "@/workbench/adapters/tanstackQuery/tokenizer/useTokenizer";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { ResourceProtocol } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointInputField } from "../../../EndpointInputField";
 import { InputView } from "./InputView/InputView";
@@ -17,12 +17,7 @@ import { createPathParam, createQueryParam, extractParsedValueString } from "./u
 export const RunTab = () => {
   const { resourceId } = useContext(EndpointViewContext);
   const { mutateAsync: parseUrl } = useTokenizer();
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 
@@ -42,6 +37,7 @@ export const RunTab = () => {
       // fully replace the document content, which resets the cursor position and the user's typing.
       resourceDetailsCollection.update(resourceId, (draft) => {
         if (!draft) return;
+        draft.metadata.isDirty = true;
         draft.url = url;
       });
 
@@ -51,6 +47,8 @@ export const RunTab = () => {
         .then((parsedUrl) => {
           try {
             resourceDetailsCollection.update(resourceId, (draft) => {
+              draft.metadata.isDirty = true;
+
               const pathVarsSet = new Set<string>();
 
               parsedUrl.pathPart.forEach((part) => {
@@ -110,7 +108,7 @@ export const RunTab = () => {
 
   const handleProtocolChange = (protocol: ResourceProtocol) => {
     resourceDetailsCollection.update(resourceId, (draft) => {
-      if (!draft) return;
+      draft.metadata.isDirty = true;
       draft.protocol = protocol;
     });
   };

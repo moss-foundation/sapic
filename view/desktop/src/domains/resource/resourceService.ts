@@ -29,7 +29,7 @@ interface IResourceService {
 
   stream: (projectId: string, channelEvent: Channel<StreamResourcesEvent>, path?: string) => Promise<void>;
 
-  update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput>;
+  update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput >;
 }
 
 export const resourceService: IResourceService = {

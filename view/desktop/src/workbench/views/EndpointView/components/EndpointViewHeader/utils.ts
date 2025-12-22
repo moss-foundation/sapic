@@ -1,4 +1,4 @@
-import { ResourceDetails } from "@/db/types";
+import { ResourceDetails } from "@/db/resource/types";
 import {
   DescribeResourceOutput,
   PathParamInfo,

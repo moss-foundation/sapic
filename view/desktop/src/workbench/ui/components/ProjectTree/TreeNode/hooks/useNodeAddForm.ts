@@ -39,7 +39,7 @@ export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode
 
       await updateProjectResource({
         projectId: id,
-        updatedResource: {
+        updateResourceInput: {
           DIR: {
             id: parentNode.id,
             expanded: true,

@@ -1,25 +1,20 @@
 import { useContext, useMemo } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
 import { Scrollbar } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { sortObjectsByOrder } from "@/utils";
 import { ActionButton } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { QueryParamInfo } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { PathParamRow } from "./PathParamRow";
 
 export const PathParamsView = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
     resourceDetailsCollection.update(resourceId, (draft) => {
@@ -33,6 +28,7 @@ export const PathParamsView = () => {
             }
           : param
       );
+      draft.metadata.isDirty = true;
     });
   };
 

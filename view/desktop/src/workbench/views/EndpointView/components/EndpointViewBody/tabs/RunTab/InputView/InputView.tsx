@@ -1,9 +1,8 @@
 import { useContext, useMemo, useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import { FolderTabs, TabItemProps } from "@/lib/ui";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import {
   AuthTabContent,
@@ -17,12 +16,7 @@ import {
 export const InputView = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 

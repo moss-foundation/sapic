@@ -8,7 +8,7 @@ export const resourceSummariesSchema = z.object({
   resource: streamResourcesEventSchema.optional(),
 });
 
-export const resourcesCollection = createCollection(
+export const resourceSummariesCollection = createCollection(
   localOnlyCollectionOptions({
     id: "resourceSummaries",
     getKey: (item) => item.id,

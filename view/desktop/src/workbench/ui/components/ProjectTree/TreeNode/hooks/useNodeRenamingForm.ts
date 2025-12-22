@@ -25,7 +25,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       if (node.kind === "Dir") {
         await updateProjectResource({
           projectId: id,
-          updatedResource: {
+          updateResourceInput: {
             DIR: {
               id: node.id,
               name: trimmedNewName,
@@ -38,7 +38,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       } else {
         await updateProjectResource({
           projectId: id,
-          updatedResource: {
+          updateResourceInput: {
             ITEM: {
               id: node.id,
               name: trimmedNewName,

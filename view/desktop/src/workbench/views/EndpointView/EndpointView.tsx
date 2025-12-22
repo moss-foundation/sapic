@@ -1,8 +1,7 @@
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { EndpointViewBody, EndpointViewHeader } from "./components";
 import { EndpointViewContext } from "./EndpointViewContext";
@@ -13,15 +12,10 @@ export type EndpointViewProps = DefaultViewProps<{
   projectId: string;
 }>;
 
-const EndpointView = ({ ...props }: EndpointViewProps) => {
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, props.params.resourceId))
-      .findOne()
-  );
+const EndpointView = ({ params }: EndpointViewProps) => {
+  const localResourceDetails = useGetLocalResourceDetails(params.resourceId);
 
-  useSyncResourceDetails({ resourceId: props.params.resourceId, projectId: props.params.projectId });
+  useSyncResourceDetails({ resourceId: params.resourceId, projectId: params.projectId });
 
   if (!localResourceDetails) {
     return (
@@ -38,8 +32,8 @@ const EndpointView = ({ ...props }: EndpointViewProps) => {
   return (
     <EndpointViewContext.Provider
       value={{
-        projectId: props.params.projectId,
-        resourceId: props.params.resourceId,
+        projectId: params.projectId,
+        resourceId: params.resourceId,
       }}
     >
       <PageView>

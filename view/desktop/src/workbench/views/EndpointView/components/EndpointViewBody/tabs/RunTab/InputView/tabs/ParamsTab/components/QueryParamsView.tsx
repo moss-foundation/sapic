@@ -1,6 +1,7 @@
 import { useContext, useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
@@ -9,7 +10,6 @@ import { ActionButton } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { extractParsedValueString } from "../../../../utils";
 import { ParamDragType } from "../constants";
@@ -23,12 +23,7 @@ export const QueryParamsView = () => {
 
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   useMonitorQueryRowsDragAndDrop();
   useMonitorQueryParamsRowFormDragAndDrop();
@@ -36,6 +31,7 @@ export const QueryParamsView = () => {
   const handleParamRowChange = (updatedParam: QueryParamInfo, originalParam: QueryParamInfo) => {
     resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
+      draft.metadata.isDirty = true;
 
       const newQueryParams = draft.queryParams.map((param) =>
         param.id === updatedParam.id
@@ -82,6 +78,8 @@ export const QueryParamsView = () => {
     resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft?.queryParams) return;
 
+      draft.metadata.isDirty = true;
+
       const newQueryParams = draft.queryParams
         .filter((param) => param.id !== deletedParam.id)
         .map((param, index) => ({
@@ -110,6 +108,8 @@ export const QueryParamsView = () => {
 
     resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
+
+      draft.metadata.isDirty = true;
 
       const newQueryParams = [
         ...draft.queryParams,
@@ -140,6 +140,8 @@ export const QueryParamsView = () => {
   const handleAllParamsCheckedChange = (checked: CheckedState) => {
     resourceDetailsCollection.update(resourceId, (draft) => {
       if (!draft) return;
+
+      draft.metadata.isDirty = true;
 
       draft.queryParams = draft.queryParams.map((param) => ({
         ...param,

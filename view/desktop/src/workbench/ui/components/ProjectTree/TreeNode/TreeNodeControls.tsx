@@ -72,7 +72,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         if (!node.expanded) {
           updateProjectResource({
             projectId: id,
-            updatedResource: {
+            updateResourceInput: {
               DIR: {
                 id: node.id,
                 expanded: true,
@@ -109,7 +109,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
       updateProjectResource({
         projectId: id,
-        updatedResource: {
+        updateResourceInput: {
           DIR: {
             id: node.id,
             expanded: !node.expanded,

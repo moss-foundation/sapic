@@ -23,7 +23,7 @@ export const useRenameResourceForm = (resource: StreamResourcesEvent, projectId:
       if (resource.kind === "Dir") {
         await updateProjectResource({
           projectId,
-          updatedResource: {
+          updateResourceInput: {
             DIR: {
               id: resource.id,
               name: trimmedNewName,
@@ -39,7 +39,7 @@ export const useRenameResourceForm = (resource: StreamResourcesEvent, projectId:
       } else {
         await updateProjectResource({
           projectId,
-          updatedResource: {
+          updateResourceInput: {
             ITEM: {
               id: resource.id,
               name: trimmedNewName,

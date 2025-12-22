@@ -21,4 +21,7 @@ export const resourceDetailsSchema = z.object({
   pathParams: z.array(pathParamInfoSchema),
   queryParams: z.array(queryParamInfoSchema),
   body: bodyInfoSchema.optional(),
+  metadata: z.object({
+    isDirty: z.boolean(),
+  }),
 });

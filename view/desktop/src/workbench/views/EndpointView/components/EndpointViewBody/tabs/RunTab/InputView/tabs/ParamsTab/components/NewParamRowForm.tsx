@@ -1,13 +1,12 @@
 import { ChangeEvent, useContext, useRef, useState } from "react";
 
-import { resourceDetailsCollection } from "@/db/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { DropIndicator } from "@/workbench/ui/components";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { QueryParamInfo } from "@repo/moss-project";
-import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { ParamDragType } from "../constants";
 import { useDropTargetNewParamRowForm } from "../hooks/useDropTargetNewParamRowForm";
@@ -20,12 +19,7 @@ interface NewParamRowFormProps {
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const { data: localResourceDetails } = useLiveQuery((q) =>
-    q
-      .from({ collection: resourceDetailsCollection })
-      .where(({ collection }) => eq(collection.id, resourceId))
-      .findOne()
-  );
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const newParamRowFormRef = useRef<HTMLDivElement>(null);
 

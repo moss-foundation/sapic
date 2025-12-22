@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
 import { Icon, Icons } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
@@ -10,19 +10,22 @@ interface EditableHeaderProps {
   setIsRenamingResourceDetails: (isRenamingResource: boolean) => void;
   handleRenamingResourceDetailsSubmit: (newName: string) => void;
   handleRenamingResourceDetailsCancel: () => void;
-  editable: boolean;
 }
 
 export const EditableHeader = ({
   icon,
-  title: initialTitle,
+  title,
   isRenamingResourceDetails,
   setIsRenamingResourceDetails,
   handleRenamingResourceDetailsSubmit,
   handleRenamingResourceDetailsCancel,
-  editable = false,
 }: EditableHeaderProps) => {
-  const [newTitle, setNewTitle] = useState(initialTitle);
+  const [newTitle, setNewTitle] = useState(title);
+
+  // Reset the title when the renaming resource details is finished
+  // It's needed in case the renaming has failed
+  const resetTitle = useEffectEvent(() => setNewTitle(title));
+  useEffect(() => resetTitle, [isRenamingResourceDetails]);
 
   const handleBlur = () => {
     handleRenamingResourceDetailsSubmit(newTitle);
@@ -66,10 +69,10 @@ export const EditableHeader = ({
         </form>
       ) : (
         <h2
-          onClick={editable ? () => setIsRenamingResourceDetails(true) : undefined}
+          onClick={() => setIsRenamingResourceDetails(true)}
           className="hover:background-(--moss-secondary-background-hover) text-(--moss-primary-foreground) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg font-bold leading-6 transition-colors"
         >
-          {newTitle}
+          {title}
         </h2>
       )}
     </div>
