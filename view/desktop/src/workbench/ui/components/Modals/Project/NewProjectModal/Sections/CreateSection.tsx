@@ -1,60 +1,72 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
-import { useFocusInputOnMount } from "@/hooks";
+import { useDescribeApp, useFocusInputOnMount } from "@/hooks";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { CheckedState } from "@radix-ui/react-checkbox";
 import { CreateProjectGitParams } from "@repo/moss-workspace";
 
+import { AccountSelect } from "../components/AccountSelect";
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
 import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
 interface CreateSectionProps {
-  onValuesUpdate: (values: { name: string; gitParams: CreateProjectGitParams | undefined }) => void;
+  onValuesUpdate: (values: {
+    name: string;
+    gitParams: CreateProjectGitParams | undefined;
+    accountId: string | undefined;
+  }) => void;
 }
 
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const { data: appState } = useDescribeApp();
 
   const [name, setName] = useState(DEFAULT_NAME);
   const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
   const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [vcs, setVCS] = useState(DEFAULT_VCS);
+  const [accountId, setAccountId] = useState<string | undefined>(undefined);
 
   useFocusInputOnMount({ inputRef });
 
+  const gitParams = useMemo(() => {
+    if (!vcs) return undefined;
+
+    const params = { repository, branch };
+    const providerMap = {
+      github: { gitHub: params },
+      gitlab: { gitLab: params },
+    } as const;
+
+    return providerMap[provider] ?? undefined;
+  }, [vcs, provider, repository, branch]);
+
   useEffect(() => {
-    const deriveGitParams = () => {
-      if (!vcs) return undefined;
+    onValuesUpdate({ name, gitParams, accountId });
+  }, [name, gitParams, onValuesUpdate, accountId]);
 
-      if (provider === "github") {
-        return {
-          gitHub: { repository, branch },
-        };
-      }
-
-      if (provider === "gitlab") {
-        return {
-          gitLab: { repository, branch },
-        };
-      }
-
-      return undefined;
-    };
-
-    onValuesUpdate({
-      name,
-      gitParams: deriveGitParams(),
-    });
-  }, [name, onValuesUpdate, repository, branch, provider, vcs]);
+  const githubAccounts = useMemo(
+    () => appState?.profile?.accounts.filter((account) => account.kind === "GITHUB") ?? [],
+    [appState?.profile?.accounts]
+  );
+  const gitlabAccounts = useMemo(
+    () => appState?.profile?.accounts.filter((account) => account.kind === "GITLAB") ?? [],
+    [appState?.profile?.accounts]
+  );
 
   const handleSetVCS = (checked: CheckedState) => {
     if (checked === "indeterminate") return;
     setVCS(checked);
+  };
+
+  const handleSetAccount = (accountId: string) => {
+    setAccountId(accountId);
   };
 
   return (
@@ -81,31 +93,19 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
           >
             <>
               <PillTabs.Content value="github" className="contents">
+                <AccountSelect accounts={githubAccounts} onValueChange={handleSetAccount} />
                 <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </PillTabs.Content>
+
               <PillTabs.Content value="gitlab" className="contents">
+                <AccountSelect accounts={gitlabAccounts} onValueChange={handleSetAccount} />
                 <RepositoryInput repository={repository} setRepository={setRepository} disabled={!vcs} />
                 <BranchInput branch={branch} setBranch={setBranch} disabled={!vcs} />
               </PillTabs.Content>
             </>
           </VcsProviderSwitcher>
         </div>
-
-        {/* {gitProvider === null && (
-          <div className={cn("flex w-full gap-5 py-3 pl-5", !vcs && "opacity-50")}>
-            <Button intent="primary"  className="px-3 py-1.5" disabled={!vcs} onClick={handleAddAccount}>
-              {provider === "github" ? "Log In via GitHub..." : "Log In via GitLab..."}
-            </Button>
-            <ButtonNeutralOutlined
-              className="px-3 py-1.5"
-              disabled={!vcs}
-              // onClick={handleAddAccount}
-            >
-              Log In with Token...
-            </Button>
-          </div>
-        )} */}
       </div>
     </div>
   );

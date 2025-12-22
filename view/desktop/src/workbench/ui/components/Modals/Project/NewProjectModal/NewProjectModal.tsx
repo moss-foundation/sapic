@@ -35,6 +35,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const [createParams, setCreateParams] = useState<CreateProjectGitParams | undefined>(undefined);
   const [importParams, setImportParams] = useState<ImportProjectSource | undefined>(undefined);
   const [tab, setTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(initialTab);
+  const [accountId, setAccountId] = useState<string | undefined>(undefined);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,6 +45,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         name,
         gitParams: createParams,
         order: projects?.length ? projects.length + 1 : 1,
+        accountId,
       });
 
       closeModal();
@@ -88,17 +90,19 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   };
 
   const handleCreateSectionValuesUpdate = useCallback(
-    (values: { name: string; gitParams: CreateProjectGitParams | undefined }) => {
+    (values: { name: string; gitParams: CreateProjectGitParams | undefined; accountId: string | undefined }) => {
       setName(values.name);
       setCreateParams(values.gitParams);
+      setAccountId(values.accountId);
     },
     []
   );
 
   const handleImportSectionValuesUpdate = useCallback(
-    (values: { name: string; importParams: ImportProjectSource | undefined }) => {
+    (values: { name: string; importParams: ImportProjectSource | undefined; accountId: string | undefined }) => {
       setName(values.name);
       setImportParams(values.importParams);
+      setAccountId(values.accountId);
     },
     []
   );
