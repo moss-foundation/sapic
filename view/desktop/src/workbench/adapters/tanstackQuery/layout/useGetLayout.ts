@@ -1,18 +1,20 @@
+import { useActiveWorkspace } from "@/hooks";
+import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { layoutService } from "@/workbench/domains/layout/service";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_LAYOUT_QUERY_KEY = "getLayout";
 
-interface UseGetLayoutProps {
-  workspaceId?: string;
-}
+export const useGetLayout = (workspaceId?: string) => {
+  const { activeWorkspaceId } = useActiveWorkspace();
+  const workspaceIdToUse = workspaceId || activeWorkspaceId;
 
-export const useGetLayout = ({ workspaceId }: UseGetLayoutProps) => {
   return useQuery({
-    queryKey: [USE_GET_LAYOUT_QUERY_KEY, workspaceId],
+    queryKey: [USE_GET_LAYOUT_QUERY_KEY, workspaceIdToUse],
     queryFn: async () => {
-      if (!workspaceId) return;
-      return await layoutService.getLayout(workspaceId);
+      return await layoutService.getLayout(workspaceIdToUse!);
     },
+    enabled: !!workspaceIdToUse,
+    placeholderData: defaultLayoutState,
   });
 };

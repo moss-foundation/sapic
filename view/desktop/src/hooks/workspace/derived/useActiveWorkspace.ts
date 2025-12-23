@@ -8,8 +8,8 @@ export const useActiveWorkspace = () => {
   const { workspaceId } = useParams({ strict: false });
   const { data: workspaces } = useListWorkspaces();
 
-  const activeWorkspace = workspaces?.find((workspace) => workspace.id === workspaceId) || undefined;
-  const activeWorkspaceId = activeWorkspace?.id || undefined;
+  const activeWorkspace = workspaces?.find((workspace) => workspace.id === workspaceId);
+  const activeWorkspaceId = activeWorkspace?.id;
   const hasActiveWorkspace = !!activeWorkspace;
 
   return {

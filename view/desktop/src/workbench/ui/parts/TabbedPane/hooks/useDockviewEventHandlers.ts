@@ -1,8 +1,8 @@
 import { SerializedDockview } from "moss-tabs";
 import React from "react";
 
-import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useUpdateLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 interface UseTabbedPaneEventHandlersProps {
@@ -16,7 +16,7 @@ export const useTabbedPaneEventHandlers = ({ canPragmaticDrop }: UseTabbedPaneEv
   const { mutate: updateLayout } = useUpdateLayout();
 
   React.useEffect(() => {
-    if (!api) return;
+    if (!api || !activeWorkspaceId) return;
 
     const disposables = [
       api.onDidLayoutChange(() => {

@@ -1,7 +1,8 @@
 import { ReactNode } from "react";
 
-import { useActiveWorkspace, useDescribeApp } from "@/hooks";
+import { useActiveWorkspace } from "@/hooks";
 import { cn } from "@/utils";
+import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBar } from "@/workbench/ui/components";
 import { EmptyWorkspace } from "@/workbench/ui/components/EmptyWorkspace";
@@ -14,9 +15,9 @@ export interface BaseSidebarProps {
 }
 
 const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
-  const { data: appState } = useDescribeApp();
+  const { data: layout } = useGetLayout();
   //TODO later we should handle the JsonValue differently
-  const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
+  const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   return (
     <div
@@ -34,10 +35,10 @@ const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 };
 
 export const Sidebar = () => {
-  const { data: appState } = useDescribeApp();
+  const { data: layout } = useGetLayout();
   const { hasActiveWorkspace } = useActiveWorkspace();
 
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
   const sidebarContent = hasActiveWorkspace ? <SidebarWorkspaceContent /> : <EmptyWorkspace inSidebar={true} />;
 

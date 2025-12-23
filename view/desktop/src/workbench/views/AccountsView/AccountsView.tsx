@@ -1,5 +1,5 @@
-import { useRemoveUserAccount } from "@/adapters/tanstackQuery/user";
-import { useDescribeApp, useModal } from "@/hooks";
+import { useListUserAccounts, useRemoveUserAccount } from "@/adapters/tanstackQuery/user";
+import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ConfirmationModal, PageView } from "@/workbench/ui/components";
@@ -13,8 +13,8 @@ import { AccountInfo } from "@repo/base";
 export type AccountsViewProps = DefaultViewProps;
 
 export const AccountsView = ({}: AccountsViewProps) => {
-  const { data: appState, isLoading, error } = useDescribeApp();
-  const profile = appState?.profile;
+  const { data, isLoading, error } = useListUserAccounts();
+  const accounts = data?.accounts;
 
   const {
     openModal: openNewAccountModal,
@@ -40,7 +40,7 @@ export const AccountsView = ({}: AccountsViewProps) => {
     );
   }
 
-  if (!profile) {
+  if (!accounts) {
     return (
       <PageView>
         <PageWrapper>
@@ -78,14 +78,14 @@ export const AccountsView = ({}: AccountsViewProps) => {
 
               {/* Accounts List */}
               <div className="mt-2.5">
-                {profile.accounts.length === 0 ? (
+                {accounts.length === 0 ? (
                   <div className="border-(--moss-border) text-(--moss-secondary-foreground) rounded-sm border p-6 text-center text-sm">
                     <p>No accounts connected yet</p>
                   </div>
                 ) : (
                   <div className="border-(--moss-border) overflow-hidden rounded-md border">
-                    {profile.accounts.map((account: AccountInfo, index: number) => (
-                      <AccountRow key={account.id} account={account} isLast={index === profile.accounts.length - 1} />
+                    {accounts.map((account: AccountInfo, index: number) => (
+                      <AccountRow key={account.id} account={account} isLast={index === accounts.length - 1} />
                     ))}
                   </div>
                 )}
@@ -101,7 +101,7 @@ export const AccountsView = ({}: AccountsViewProps) => {
 };
 
 const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean }) => {
-  const { isFetching: isFetchingDescribeApp } = useDescribeApp();
+  const { isLoading: isLoadingUserAccounts } = useListUserAccounts();
   const { mutateAsync: removeUserAccount } = useRemoveUserAccount();
 
   const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
@@ -151,7 +151,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
               Edit details
             </Button>
           )}
-          <Button intent="danger" onClick={openRevokeModal} disabled={isFetchingDescribeApp}>
+          <Button intent="danger" onClick={openRevokeModal} disabled={isLoadingUserAccounts}>
             Revoke
           </Button>
         </div>
@@ -174,7 +174,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
           cancelLabel="Cancel"
           onConfirm={handleRemoveAccount}
           variant="danger"
-          loading={isFetchingDescribeApp}
+          loading={isLoadingUserAccounts}
         />
       )}
     </>

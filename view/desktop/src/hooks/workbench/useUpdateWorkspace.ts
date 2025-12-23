@@ -1,10 +1,8 @@
 import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { ListWorkspacesOutput, MainWindow_UpdateWorkspaceInput, MainWindow_UpdateWorkspaceOutput } from "@repo/ipc";
-import { DescribeAppOutput } from "@repo/window";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
-import { USE_DESCRIBE_APP_QUERY_KEY } from "../app/useDescribeApp";
 import { useActiveWorkspace } from "../workspace";
 
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
@@ -32,18 +30,6 @@ export const useUpdateWorkspace = () => {
           }
           return workspace;
         });
-      });
-
-      queryClient.setQueryData<DescribeAppOutput>([USE_DESCRIBE_APP_QUERY_KEY], (old) => {
-        if (!old || !old.workspace) return old;
-
-        return {
-          ...old,
-          workspace: {
-            ...old.workspace,
-            name: variables.name ?? old.workspace.name,
-          },
-        };
       });
     },
   });

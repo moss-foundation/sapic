@@ -1,6 +1,5 @@
-import { ConfigurationTargetEnum } from "@/domains/configuration/types";
-import { useDescribeApp } from "@/hooks";
-import { useUpdateConfiguration } from "@/hooks/useUpdateConfiguration";
+import { useActiveWorkspace } from "@/hooks";
+import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
@@ -19,8 +18,11 @@ export const AppLayoutSection = () => {
 };
 
 const SideBarPositionSection = () => {
-  const { data: appState } = useDescribeApp();
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
+  const { activeWorkspaceId } = useActiveWorkspace();
+  const { data: layout } = useGetLayout();
+  const { mutate: updateLayout } = useUpdateLayout();
+
+  const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   const sidebarTypeItems: MenuItemProps[] = [
     {
@@ -38,10 +40,11 @@ const SideBarPositionSection = () => {
   ];
 
   const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
-    updateConfiguration({
-      key: "sideBarPosition",
-      value: value,
-      target: ConfigurationTargetEnum.USER,
+    if (!activeWorkspaceId) return;
+
+    updateLayout({
+      layout: { sidebarState: { position: value } },
+      workspaceId: activeWorkspaceId,
     });
   };
 
@@ -49,10 +52,7 @@ const SideBarPositionSection = () => {
     <div>
       <h3 className="mb-2 font-medium">Sidebar Position</h3>
       <div className="w-[200px]">
-        <SelectOutlined.Root
-          value={(appState?.configuration.contents.sideBarPosition as SIDEBAR_POSITION) || SIDEBAR_POSITION.LEFT}
-          onValueChange={handleSidebarTypeChange}
-        >
+        <SelectOutlined.Root value={sideBarPosition} onValueChange={handleSidebarTypeChange}>
           <SelectOutlined.Trigger />
           <SelectOutlined.Content>
             {sidebarTypeItems.map((item) => (
@@ -68,12 +68,13 @@ const SideBarPositionSection = () => {
 };
 
 const ActivityBarPositionSection = () => {
-  const { data: appState } = useDescribeApp();
-  //TODO later we should handle the JsonValue differently
-  const activityBarPosition =
-    (appState?.configuration.contents.activityBarPosition as ACTIVITYBAR_POSITION) || ACTIVITYBAR_POSITION.DEFAULT;
+  const { activeWorkspaceId } = useActiveWorkspace();
 
-  const { mutate: updateConfiguration } = useUpdateConfiguration();
+  const { data: layout } = useGetLayout();
+  //TODO later we should handle the JsonValue differently
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
+
+  const { mutate: updateLayout } = useUpdateLayout();
 
   const activityBarPositionItems: MenuItemProps[] = [
     {
@@ -103,10 +104,11 @@ const ActivityBarPositionSection = () => {
   ];
 
   const handleActivityBarPositionChange = (position: ACTIVITYBAR_POSITION) => {
-    updateConfiguration({
-      key: "activityBarPosition",
-      value: position,
-      target: ConfigurationTargetEnum.USER,
+    if (!activeWorkspaceId) return;
+
+    updateLayout({
+      layout: { activitybarState: { position: position } },
+      workspaceId: activeWorkspaceId,
     });
   };
 

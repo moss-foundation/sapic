@@ -1,7 +1,6 @@
-import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
+import { useActiveWorkspace } from "@/hooks";
 import { cn } from "@/utils";
+import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActionButton } from "@/workbench/ui/components/ActionButton";
 
@@ -10,15 +9,15 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { data: appState } = useDescribeApp();
   const { activeWorkspaceId } = useActiveWorkspace();
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
   //TODO later we should handle the JsonValue differently
-  const sideBarPosition = appState?.configuration.contents.sideBarPosition as SIDEBAR_POSITION;
+  const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   const toggleSidebar = () => {
+    if (!activeWorkspaceId) return;
     updateLayout({
       layout: { sidebarState: { visible: !layout?.sidebarState.visible } },
       workspaceId: activeWorkspaceId,

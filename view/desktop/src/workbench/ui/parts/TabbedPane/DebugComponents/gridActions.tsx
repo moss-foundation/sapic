@@ -1,9 +1,9 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
 import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
+import { useUpdateLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { defaultConfig, nextId } from "./defaultLayout";
@@ -100,7 +100,7 @@ export const GridActions = () => {
   };
 
   const onSave = () => {
-    if (api) {
+    if (api && activeWorkspaceId) {
       updateLayout({ layout: { tabbedPaneState: { gridState: api.toJSON() } }, workspaceId: activeWorkspaceId });
     }
   };

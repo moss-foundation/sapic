@@ -13,7 +13,6 @@ export type TauriIpcCommand =
   // App
   //
   | "list_workspaces"
-  | "describe_app" // DEPRECATED
   | "list_user_accounts"
   | "add_user_account"
   | "update_user_account"
@@ -29,7 +28,6 @@ export type TauriIpcCommand =
   | "download_extension"
   | "delete_workspace"
   | "update_workspace"
-  | "update_profile" // DEPRECATED
   | "get_mistral_api_key"
   //
   // Main
