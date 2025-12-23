@@ -6,7 +6,7 @@ export const useCurrentWorkspace = () => {
   const { data: workspaces } = useListWorkspaces();
 
   const currentWorkspace = workspaces?.find((workspace) => workspace.id === workspaceId);
-  const currentWorkspaceId = currentWorkspace?.id;
+  const currentWorkspaceId = workspaceId!;
 
   return {
     currentWorkspace,
