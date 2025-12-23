@@ -1,11 +1,11 @@
 import { useEffect, useEffectEvent } from "react";
 
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 export const useResetGridStateOnWorkspaceChange = () => {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { api, addOrFocusPanel } = useTabbedPaneStore();
   const { data: layout, isFetching: isFetchingLayout } = useGetLayout();
 
@@ -14,7 +14,7 @@ export const useResetGridStateOnWorkspaceChange = () => {
 
     try {
       api.clear();
-      if (!activeWorkspaceId) {
+      if (!currentWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
           title: "Welcome",
@@ -35,5 +35,5 @@ export const useResetGridStateOnWorkspaceChange = () => {
     //we only want to run this effect when the workspace changes
     //but there is a race condition where the workspace changes before the layout is fetched
     //so we need to check if the layout is fetching
-  }, [activeWorkspaceId, isFetchingLayout]);
+  }, [currentWorkspaceId, isFetchingLayout]);
 };

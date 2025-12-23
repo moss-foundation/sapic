@@ -1,4 +1,4 @@
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { SIDEBAR_POSITION } from "@/workbench/domains/layout";
@@ -9,7 +9,7 @@ export interface PanelToggleButtonsProps {
 }
 
 export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
@@ -17,18 +17,18 @@ export const PanelToggleButtons = ({ className }: PanelToggleButtonsProps) => {
   const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   const toggleSidebar = () => {
-    if (!activeWorkspaceId) return;
+    if (!currentWorkspaceId) return;
     updateLayout({
       layout: { sidebarState: { visible: !layout?.sidebarState.visible } },
-      workspaceId: activeWorkspaceId,
+      workspaceId: currentWorkspaceId,
     });
   };
 
   const toggleBottomPane = () => {
-    if (!activeWorkspaceId) return;
+    if (!currentWorkspaceId) return;
     updateLayout({
       layout: { bottomPanelState: { visible: !layout?.bottomPanelState.visible } },
-      workspaceId: activeWorkspaceId,
+      workspaceId: currentWorkspaceId,
     });
   };
 

@@ -1,1 +1,1 @@
-export * from "./useActiveWorkspace";
+export * from "./useCurrentWorkspace";

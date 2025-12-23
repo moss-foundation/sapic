@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
@@ -31,7 +31,7 @@ export const ActivityBarButton = ({
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
@@ -104,7 +104,7 @@ export const ActivityBarButton = ({
   }, [activityBarPosition, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
-    if (!activeWorkspaceId) return;
+    if (!currentWorkspaceId) return;
 
     if (isActive && layout?.sidebarState.visible) {
       updateLayout({
@@ -113,7 +113,7 @@ export const ActivityBarButton = ({
             visible: false,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     } else {
       updateLayout({
@@ -125,7 +125,7 @@ export const ActivityBarButton = ({
             visible: true,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     }
   };

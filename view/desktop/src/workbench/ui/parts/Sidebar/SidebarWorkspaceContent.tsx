@@ -1,4 +1,4 @@
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
 import { ProjectTreesView } from "@/workbench/ui/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/workbench/ui/parts/Sidebar/SidebarHeader";
@@ -12,16 +12,12 @@ import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListVi
 import { SourceControlView } from "../SourceControlView/SourceControlView";
 
 export const SidebarWorkspaceContent = () => {
-  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+  const { currentWorkspace } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
 
   const activeContainerId = layout?.activitybarState.activeContainerId;
 
-  if (!hasActiveWorkspace) {
-    return <div className="flex h-full w-full items-center justify-center p-4">No workspace selected</div>;
-  }
-
-  if (!activeWorkspace) {
+  if (!currentWorkspace) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">

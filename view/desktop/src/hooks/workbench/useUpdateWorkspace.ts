@@ -3,7 +3,7 @@ import { ListWorkspacesOutput, MainWindow_UpdateWorkspaceInput, MainWindow_Updat
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
-import { useActiveWorkspace } from "../workspace";
+import { useCurrentWorkspace } from "../workspace";
 
 export const USE_UPDATE_WORKSPACE_MUTATION_KEY = "updateWorkspace";
 
@@ -12,7 +12,7 @@ const updateWorkspaceFn = async (input: MainWindow_UpdateWorkspaceInput): Promis
 };
 
 export const useUpdateWorkspace = () => {
-  const { activeWorkspace } = useActiveWorkspace();
+  const { currentWorkspace } = useCurrentWorkspace();
 
   const queryClient = useQueryClient();
   return useMutation<MainWindow_UpdateWorkspaceOutput, Error, MainWindow_UpdateWorkspaceInput>({
@@ -22,7 +22,7 @@ export const useUpdateWorkspace = () => {
       queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (old) => {
         if (!old) return old;
         return old.map((workspace) => {
-          if (workspace.id === activeWorkspace?.id) {
+          if (workspace.id === currentWorkspace?.id) {
             return {
               ...workspace,
               name: variables.name ?? workspace.name,

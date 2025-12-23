@@ -1,4 +1,4 @@
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
@@ -18,7 +18,7 @@ export const AppLayoutSection = () => {
 };
 
 const SideBarPositionSection = () => {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
@@ -40,11 +40,11 @@ const SideBarPositionSection = () => {
   ];
 
   const handleSidebarTypeChange = (value: SIDEBAR_POSITION) => {
-    if (!activeWorkspaceId) return;
+    if (!currentWorkspaceId) return;
 
     updateLayout({
       layout: { sidebarState: { position: value } },
-      workspaceId: activeWorkspaceId,
+      workspaceId: currentWorkspaceId,
     });
   };
 
@@ -68,7 +68,7 @@ const SideBarPositionSection = () => {
 };
 
 const ActivityBarPositionSection = () => {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: layout } = useGetLayout();
   //TODO later we should handle the JsonValue differently
@@ -104,11 +104,11 @@ const ActivityBarPositionSection = () => {
   ];
 
   const handleActivityBarPositionChange = (position: ACTIVITYBAR_POSITION) => {
-    if (!activeWorkspaceId) return;
+    if (!currentWorkspaceId) return;
 
     updateLayout({
       layout: { activitybarState: { position: position } },
-      workspaceId: activeWorkspaceId,
+      workspaceId: currentWorkspaceId,
     });
   };
 

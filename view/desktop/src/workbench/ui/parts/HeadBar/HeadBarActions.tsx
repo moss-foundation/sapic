@@ -3,7 +3,7 @@ import { RefObject } from "react";
 import { useWorkspaceMapping } from "@/hooks/workbench/derived/useWorkspaceMapping";
 import { useCloseWorkspace } from "@/hooks/workbench/useCloseWorkspace";
 import { useOpenWorkspace } from "@/hooks/workbench/useOpenWorkspace";
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { OpenInTargetEnum } from "@/main/types";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
@@ -130,7 +130,7 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { mutate: closeWorkspace } = useCloseWorkspace();
   const { getWorkspaceById } = useWorkspaceMapping();
-  const { activeWorkspace, activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspace, currentWorkspaceId } = useCurrentWorkspace();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -165,10 +165,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         }
 
         if (actionType === "rename") {
-          if (workspaceId === activeWorkspaceId) {
+          if (workspaceId === currentWorkspaceId) {
             addOrFocusPanel({
               id: "WorkspaceSettings",
-              title: activeWorkspace?.name || "Workspace Settings",
+              title: currentWorkspace?.name || "Workspace Settings",
               component: "WorkspaceSettingsView",
               params: {
                 tabIcon: "Workspace",
@@ -216,19 +216,19 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         openOpenWorkspaceModal?.();
         break;
       case "delete":
-        if (activeWorkspace) {
+        if (currentWorkspace) {
           setWorkspaceToDelete?.({
-            id: activeWorkspace.id,
-            name: activeWorkspace.name,
+            id: currentWorkspace.id,
+            name: currentWorkspace.name,
           });
           openDeleteConfirmModal?.();
         }
         break;
       case "rename":
-        if (activeWorkspace) {
+        if (currentWorkspace) {
           addOrFocusPanel({
             id: "WorkspaceSettings",
-            title: activeWorkspace.name,
+            title: currentWorkspace.name,
             component: "WorkspaceSettingsView",
             params: {
               tabIcon: "Workspace",
@@ -246,8 +246,8 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         setShowDebugPanels(!showDebugPanels);
         break;
       case "exit-workspace":
-        if (activeWorkspace) {
-          closeWorkspace(activeWorkspace.id);
+        if (currentWorkspace) {
+          closeWorkspace(currentWorkspace.id);
         }
         break;
       default:

@@ -1,7 +1,6 @@
 import { DockviewDidDropEvent, DockviewReact, DockviewReadyEvent, positionToDirection } from "moss-tabs";
 import { useRef, useState } from "react";
 
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
 import { useGetLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DropNode } from "@/workbench/ui/components/ProjectTree/types";
@@ -23,7 +22,6 @@ export const TabbedPane = () => {
   const [pragmaticDropElement, setPragmaticDropElement] = useState<DropNode | null>(null);
 
   const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
-  const { hasActiveWorkspace } = useActiveWorkspace();
   const { data: layout } = useGetLayout();
 
   const { canDrop } = useTabbedPaneDropTarget(dockviewRef, setPragmaticDropElement);
@@ -34,16 +32,8 @@ export const TabbedPane = () => {
   const onReady = (event: DockviewReadyEvent) => {
     setApi(event.api);
 
-    if (!hasActiveWorkspace) {
-      event.api.addPanel({
-        id: "Welcome",
-        component: "WelcomeView",
-        title: "Welcome",
-      });
-    } else {
-      if (layout?.tabbedPaneState.gridState) {
-        event.api.fromJSON(layout?.tabbedPaneState.gridState);
-      }
+    if (layout?.tabbedPaneState.gridState) {
+      event.api.fromJSON(layout?.tabbedPaneState.gridState);
     }
   };
 

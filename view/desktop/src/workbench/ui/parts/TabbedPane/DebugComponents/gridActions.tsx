@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { Scrollbar } from "@/lib/ui/Scrollbar";
 import { useUpdateLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
@@ -77,7 +77,7 @@ export const GridActions = () => {
   const { api, watermark, setWatermark } = useTabbedPaneStore();
   const { mutate: updateLayout } = useUpdateLayout();
 
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
   const hasCustomWatermark = watermark;
   const toggleCustomWatermark = () => {
@@ -100,8 +100,8 @@ export const GridActions = () => {
   };
 
   const onSave = () => {
-    if (api && activeWorkspaceId) {
-      updateLayout({ layout: { tabbedPaneState: { gridState: api.toJSON() } }, workspaceId: activeWorkspaceId });
+    if (api && currentWorkspaceId) {
+      updateLayout({ layout: { tabbedPaneState: { gridState: api.toJSON() } }, workspaceId: currentWorkspaceId });
     }
   };
 

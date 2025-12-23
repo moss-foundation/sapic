@@ -1,11 +1,9 @@
 import { ReactNode } from "react";
 
-import { useActiveWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBar } from "@/workbench/ui/components";
-import { EmptyWorkspace } from "@/workbench/ui/components/EmptyWorkspace";
 import WorkspaceModeToggle from "@/workbench/ui/components/WorkspaceModeToggle";
 import { SidebarWorkspaceContent } from "@/workbench/ui/parts/Sidebar/SidebarWorkspaceContent";
 
@@ -36,22 +34,20 @@ const BaseSidebar = ({ className, children }: BaseSidebarProps) => {
 
 export const Sidebar = () => {
   const { data: layout } = useGetLayout();
-  const { hasActiveWorkspace } = useActiveWorkspace();
 
   const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
-  const sidebarContent = hasActiveWorkspace ? <SidebarWorkspaceContent /> : <EmptyWorkspace inSidebar={true} />;
+  const sidebarContent = <SidebarWorkspaceContent />;
 
   if (activityBarPosition === ACTIVITYBAR_POSITION.TOP) {
     return (
       <BaseSidebar>
         <ActivityBar />
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
-        {hasActiveWorkspace && (
-          <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
-            <WorkspaceModeToggle />
-          </div>
-        )}
+
+        <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
+          <WorkspaceModeToggle />
+        </div>
       </BaseSidebar>
     );
   }
@@ -60,11 +56,11 @@ export const Sidebar = () => {
     return (
       <BaseSidebar>
         <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
-        {hasActiveWorkspace && (
-          <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
-            <WorkspaceModeToggle />
-          </div>
-        )}
+
+        <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
+          <WorkspaceModeToggle />
+        </div>
+
         <ActivityBar />
       </BaseSidebar>
     );
@@ -73,11 +69,10 @@ export const Sidebar = () => {
   return (
     <BaseSidebar>
       <div className="min-h-0 flex-1 overflow-hidden">{sidebarContent}</div>
-      {hasActiveWorkspace && (
-        <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
-          <WorkspaceModeToggle />
-        </div>
-      )}
+
+      <div className="border-t-(--moss-border) z-20 flex w-full justify-end border-t px-1 py-2">
+        <WorkspaceModeToggle />
+      </div>
     </BaseSidebar>
   );
 };
