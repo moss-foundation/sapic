@@ -117,6 +117,7 @@ jobs:
   check-bindings:
     name: Check Bindings
     needs: check-modified-models
+    if: needs.check-modified-models.outputs.UPDATED_MODELS != '' && needs.check-modified-models.outputs.UPDATED_MODELS != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
