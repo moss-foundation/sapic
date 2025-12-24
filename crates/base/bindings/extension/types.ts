@@ -12,3 +12,16 @@ export type ExtensionInfo = {
   updatedAt: string;
   latestVersion: string;
 };
+
+export type ExtensionVersionInfo = {
+  id: string;
+  externalId: string;
+  name: string;
+  authors: Array<string>;
+  description: string;
+  repository: string;
+  downloads: bigint;
+  createdAt: string;
+  updatedAt: string;
+  version: string;
+};

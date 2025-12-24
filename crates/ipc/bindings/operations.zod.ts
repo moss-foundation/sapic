@@ -26,7 +26,7 @@ export const deleteWorkspaceOutputSchema = z.object({
 });
 
 export const downloadExtensionInputSchema = z.object({
-  extension_id: z.string(),
+  extensionId: z.string(),
   version: z.string(),
 });
 
