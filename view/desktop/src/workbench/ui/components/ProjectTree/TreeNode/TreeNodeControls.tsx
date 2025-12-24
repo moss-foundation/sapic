@@ -1,7 +1,7 @@
 import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
+import { useUpdateProjectResource } from "@/adapters";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -59,6 +59,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         addOrFocusPanel({
           id: node.id,
           title: node.name,
+          component: "FolderSettingsView",
           params: {
             projectId: id,
             node: {
@@ -66,13 +67,12 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
               expanded: true,
             },
           },
-          component: "FolderSettings",
         });
 
         if (!node.expanded) {
           updateProjectResource({
             projectId: id,
-            updatedResource: {
+            updateResourceInput: {
               DIR: {
                 id: node.id,
                 expanded: true,
@@ -80,16 +80,26 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             },
           });
         }
-      } else {
-        addOrFocusPanel({
-          id: node.id,
-          title: node.name,
-          params: {
-            projectId: id,
-            node,
-          },
-          component: node.class === "endpoint" ? "Endpoint" : "Default",
-        });
+      }
+      if (node.kind === "Item") {
+        if (node.class === "endpoint") {
+          addOrFocusPanel({
+            id: node.id,
+            title: node.name,
+            component: "EndpointView",
+            params: {
+              resourceId: node.id,
+              projectId: id,
+              tabIcon: "Http",
+            },
+          });
+        } else {
+          addOrFocusPanel({
+            id: node.id,
+            title: node.name,
+            component: "DefaultView",
+          });
+        }
       }
     };
 
@@ -99,7 +109,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
       updateProjectResource({
         projectId: id,
-        updatedResource: {
+        updateResourceInput: {
           DIR: {
             id: node.id,
             expanded: !node.expanded,

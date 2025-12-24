@@ -52,7 +52,8 @@
     },
 
     "shared-storage:default",
-    "settings-storage:default"
+    "settings-storage:default",
+    "template-parser:default"
   ],
   "platforms": ["macOS", "linux", "windows"]
 }

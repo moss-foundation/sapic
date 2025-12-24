@@ -37,7 +37,7 @@ export const TabbedPane = () => {
     if (!hasActiveWorkspace) {
       event.api.addPanel({
         id: "Welcome",
-        component: "Welcome",
+        component: "WelcomeView",
         title: "Welcome",
       });
     } else {
@@ -54,9 +54,10 @@ export const TabbedPane = () => {
       id: pragmaticDropElement.node.id,
       title: pragmaticDropElement.node.name,
       //TODO: this is a hardcoded component, later we we will need to have a more flexible way to handle this
-      component: "Endpoint",
+      component: "EndpointView",
       params: {
         projectId: pragmaticDropElement.projectId,
+        resourceId: pragmaticDropElement.node.id,
         node: pragmaticDropElement.node,
       },
       position: {

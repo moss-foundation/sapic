@@ -1,11 +1,13 @@
 import { useCallback, useEffect } from "react";
 
-import { useDeleteProjectResource } from "@/adapters/tanstackQuery/project";
-import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
-import { useBatchCreateProjectResource } from "@/adapters/tanstackQuery/project/useBatchCreateProjectResource";
-import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/project/useBatchUpdateProjectResource";
-import { useCreateProjectResource } from "@/adapters/tanstackQuery/project/useCreateProjectResource";
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
+import {
+  useBatchCreateProjectResource,
+  useBatchUpdateProjectResource,
+  useCreateProjectResource,
+  useDeleteProjectResource,
+  useFetchResourcesForPath,
+  useUpdateProjectResource,
+} from "@/adapters";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";

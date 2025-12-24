@@ -1,0 +1,13 @@
+# Automatically generated - DO NOT EDIT!
+
+"$schema" = "../../schemas/schema.json"
+
+[[permission]]
+identifier = "allow-parse-url"
+description = "Enables the parse_url command without any pre-configured scope."
+commands.allow = ["parse_url"]
+
+[[permission]]
+identifier = "deny-parse-url"
+description = "Denies the parse_url command without any pre-configured scope."
+commands.deny = ["parse_url"]

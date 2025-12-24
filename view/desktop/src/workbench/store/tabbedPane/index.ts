@@ -1,23 +1,9 @@
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
-import { Icons } from "@/lib/ui";
 import { emptyGridState } from "@/workbench/domains/layout/defaults";
-import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
-import { tabbedPaneComponents } from "@/workbench/ui/parts";
 
-interface AddPanelOptionsWithoutMandatoryComponent
-  extends Omit<
-    AddPanelOptions<{
-      iconType?: Icons;
-      projectId?: string;
-      node?: ProjectTreeNode;
-      workspace?: boolean;
-    }>,
-    "component" | "floating"
-  > {
-  component?: keyof typeof tabbedPaneComponents;
-}
+import { TypedAddPanelOptions } from "./types";
 
 interface TabbedPaneState {
   gridState: SerializedDockview;
@@ -29,7 +15,7 @@ interface TabbedPaneState {
   activePanelId: string | undefined;
   setActivePanelId: (id: string | undefined) => void;
 
-  addOrFocusPanel: (options: AddPanelOptionsWithoutMandatoryComponent) => void;
+  addOrFocusPanel: (options: TypedAddPanelOptions) => void;
   openPanel: (panelType: string) => void;
   removePanel: (panelId: string) => void;
 
@@ -58,13 +44,16 @@ export const useTabbedPaneStore = create<TabbedPaneState>((set, get) => ({
     if (activePanel && !activePanel.api.isFocused) {
       activePanel.focus();
     } else {
+      // We perform a double-cast (as unknown as AddPanelOptions) here because
+      // 'options'(TypedAddPanelOptions) is a complex Discriminated Union (it is needed for complex TS type checking when calling addOrFocusPanel)
+      // that TypeScript cannot automatically map to the generic 'AddPanelOptions' type expected by the library.
       get().api?.addPanel({
         ...options,
-        component: options.component || "Default",
+        component: options.component,
         params: {
-          ...options.params,
+          ...(options.params || {}),
         },
-      });
+      } as unknown as AddPanelOptions);
     }
   },
   openPanel: (panelType: string) => {

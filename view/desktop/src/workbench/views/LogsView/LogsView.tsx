@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { EditorView, minimalSetup } from "codemirror";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
@@ -7,11 +8,18 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
+import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
+import { tags } from "@lezer/highlight";
 import { AccountKind, ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
-import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
+import { parser } from "@repo/lezer-grammar";
+import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
+
+import { ParsedUrl } from "../EndpointView/utils";
 
 interface CreateProfileData {
   name: string;
@@ -23,7 +31,9 @@ interface LoginData {
   provider: string;
 }
 
-export const LogsView = () => {
+export type LogsViewProps = DefaultViewProps;
+
+export const LogsView = ({}: LogsViewProps) => {
   const { t } = useTranslation(["main", "bootstrap"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { windowEvents } = useActivityRouter();
@@ -93,12 +103,11 @@ export const LogsView = () => {
 
   const handleAddAccount = async () => {
     try {
-      const input: UpdateProfileInput = {
-        accountsToAdd: [accountForm],
-        accountsToRemove: [],
-        accountsToUpdate: [],
-      };
-      await invoke("update_profile", { input });
+      await invoke("add_user_account", {
+        host: accountForm.host,
+        kind: accountForm.kind,
+        pat: accountForm.pat ? accountForm.pat : undefined,
+      });
       console.log("Account added:", accountForm);
     } catch (error) {
       console.error("Error adding account:", error);
@@ -180,6 +189,13 @@ export const LogsView = () => {
 
   return (
     <PageContent className="space-y-6">
+      <section className="mb-6">
+        <h2 className="mb-2 text-xl">Url Parser</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <UrlParserTest />
+        </div>
+      </section>
+
       <section className="mb-6">
         <h2 className="mb-2 text-xl">Extension Registry</h2>
         <div className="rounded bg-gray-50 p-4">
@@ -509,6 +525,90 @@ const ExtensionRegistryTest = () => {
         onClick={handleListExtensionsButton}
       >
         List Available Extensions From the Extension Registry
+      </button>
+    </div>
+  );
+};
+
+const UrlParserTest = () => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+  const [url, setUrl] = useState<string>();
+  const [parsedUrl, setParsedUrl] = useState<ParsedUrl>();
+
+  async function handleParseUrlButton() {
+    try {
+      const result = await invoke<ParsedUrl>("plugin:template-parser|parse_url", {
+        input: {
+          url: url,
+        },
+      });
+      setParsedUrl(result);
+    } catch (e) {
+      alert(`Failed to parse url: ${e}`);
+    }
+  }
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const language = LRLanguage.define({ parser });
+    const languageSupport = new LanguageSupport(language);
+
+    const highlightStyle = HighlightStyle.define([
+      { tag: tags.punctuation, color: "black" },
+      {
+        tag: tags.variableName,
+        color: "var(--moss-accent)",
+        backgroundColor: "var(--moss-accent-secondary)",
+        padding: "1px 2px",
+        borderRadius: "4px",
+        fontWeight: "bold",
+      },
+      { tag: tags.content, color: "black" },
+      { tag: tags.keyword, color: "black" },
+    ]);
+
+    const startState = EditorState.create({
+      doc: "",
+      extensions: [
+        minimalSetup,
+        languageSupport,
+        syntaxHighlighting(highlightStyle),
+
+        EditorView.updateListener.of((update) => {
+          setUrl(update.state.doc.toString());
+        }),
+
+        EditorView.theme({
+          "&.cm-focused": {
+            outline: "none",
+          },
+        }),
+      ],
+    });
+
+    const view = new EditorView({
+      state: startState,
+      parent: editorRef.current,
+    });
+
+    viewRef.current = view;
+
+    return () => view.destroy();
+    // we create the editor only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className={"overflow-x-auto rounded-md"}>
+      <div ref={editorRef} className="bg-white" />
+      <textarea value={JSON.stringify(parsedUrl, null, 2)} readOnly className="h-50 mt-4 w-full bg-white" />
+      <button
+        className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
+        onClick={handleParseUrlButton}
+      >
+        Parse Url
       </button>
     </div>
   );

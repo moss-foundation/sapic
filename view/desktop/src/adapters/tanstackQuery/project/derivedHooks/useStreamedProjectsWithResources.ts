@@ -4,8 +4,8 @@ import { StreamResourcesEvent } from "@repo/moss-project";
 import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
 import { startStreamingProjectResources } from "../queries/startStreamingProjectResources";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../useStreamProjectResources";
 import { useStreamProjects } from "../useStreamProjects";
 
 export interface ProjectWithResources extends StreamProjectsEvent {

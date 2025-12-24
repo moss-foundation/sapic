@@ -39,7 +39,7 @@ export const EnvironmentsListView = () => {
           onClick={() => {
             addOrFocusPanel({
               id: "Vault",
-              component: "Default",
+              component: "DefaultView",
             });
           }}
         />

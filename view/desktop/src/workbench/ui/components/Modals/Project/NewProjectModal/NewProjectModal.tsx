@@ -54,7 +54,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         addOrFocusPanel({
           id: result.id,
           title: result.name,
-          component: "ProjectSettings",
+          component: "ProjectSettingsView",
           params: {
             projectId: result.id,
           },
@@ -75,7 +75,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       if (openAutomatically) {
         addOrFocusPanel({
           id: result.id,
-          component: "ProjectSettings",
+          component: "ProjectSettingsView",
           title: result.name,
           params: {
             projectId: result.id,

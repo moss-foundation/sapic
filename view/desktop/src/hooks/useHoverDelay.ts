@@ -4,6 +4,13 @@ export const useHoverDelay = (delay = 500) => {
   const [isHovered, setIsHovered] = useState(false);
   const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const resetHover = () => {
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+    setIsHovered(false);
+  };
+
   const handleMouseEnter = () => {
     hoverTimeoutRef.current = setTimeout(() => {
       setIsHovered(true);
@@ -25,5 +32,5 @@ export const useHoverDelay = (delay = 500) => {
     };
   }, []);
 
-  return { isHovered, handleMouseEnter, handleMouseLeave };
+  return { isHovered, handleMouseEnter, handleMouseLeave, resetHover };
 };
