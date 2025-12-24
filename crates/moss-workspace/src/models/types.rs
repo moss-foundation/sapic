@@ -215,46 +215,6 @@ pub struct UpdateEnvironmentParams {
 //     pub branch: String,
 // }
 
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "types.ts")]
-pub enum VcsInfo {
-    GitHub(GitHubVcsInfo),
-    GitLab(GitLabVcsInfo),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct GitHubVcsInfo {
-    pub branch: BranchInfo,
-    pub url: String,
-    pub updated_at: Option<String>,
-    pub owner: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct GitLabVcsInfo {
-    pub branch: BranchInfo,
-    pub url: String,
-    pub updated_at: Option<String>,
-    pub owner: Option<String>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct Contributor {
-    pub name: String,
-    pub avatar_url: Option<String>,
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]

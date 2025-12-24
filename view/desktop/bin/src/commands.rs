@@ -281,16 +281,17 @@ where
             format!("window '{}' is unavailable", window.label())
         })?;
 
-    let workspace = window
-        .inner()
-        .workspace()
-        .await
-        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
-
-    let project = workspace
-        .project(&id)
-        .await
-        .ok_or_join_err::<NotFound>("project is not found")?;
+    let workspace = window.workspace.load();
+    // let workspace = window
+    //     .inner()
+    //     .workspace()
+    //     .await
+    //     .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
+    let project = workspace.project(&ctx, &id).await?;
+    // let project = workspace
+    //     .project(&id)
+    //     .await
+    //     .ok_or_join_err::<NotFound>("project is not found")?;
 
     if let Some(request_id) = &request_id {
         window
@@ -301,7 +302,7 @@ where
     let result = f(
         ctx,
         app.handle().state::<AppDelegate<R>>().inner().clone(),
-        project,
+        project.handle.clone(),
     )
     .await;
 

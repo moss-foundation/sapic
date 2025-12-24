@@ -169,26 +169,26 @@ pub struct StreamEnvironmentsOutput {
 }
 
 // Describe Project
+//
+// /// @category Operation
+// #[derive(Debug, Deserialize, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DescribeProjectInput {
+//     pub id: ProjectId,
+// }
 
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeProjectOutput {
-    pub name: String,
-    pub vcs: Option<VcsInfo>,
-    pub contributors: Vec<Contributor>,
-    pub created_at: String,
-}
+// /// @category Operation
+// #[derive(Debug, Deserialize, Serialize, TS)]
+// #[serde(rename_all = "camelCase")]
+// #[ts(optional_fields)]
+// #[ts(export, export_to = "operations.ts")]
+// pub struct DescribeProjectOutput {
+//     pub name: String,
+//     pub vcs: Option<VcsInfo>,
+//     pub contributors: Vec<Contributor>,
+//     pub created_at: String,
+// }
 
 // Get File Statuses
 /// @category Operation

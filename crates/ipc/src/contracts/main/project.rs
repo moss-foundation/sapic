@@ -11,6 +11,75 @@ use std::{
 };
 use ts_rs::TS;
 use validator::{Validate, ValidationError};
+
+//
+// Describe Project
+//
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeProjectInput {
+    pub id: ProjectId,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct DescribeProjectOutput {
+    pub name: String,
+    pub vcs: Option<VcsInfo>,
+    pub contributors: Vec<Contributor>,
+    pub created_at: String,
+}
+
+// FIXME: The following types should probably be somewhere else
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitHubVcsInfo {
+    pub branch: BranchInfo,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct GitLabVcsInfo {
+    pub branch: BranchInfo,
+    pub url: String,
+    pub updated_at: Option<String>,
+    pub owner: Option<String>,
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub enum VcsInfo {
+    GitHub(GitHubVcsInfo),
+    GitLab(GitLabVcsInfo),
+}
+
+/// @category Type
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct Contributor {
+    pub name: String,
+    pub avatar_url: Option<String>,
+}
+
 //
 // Stream Projects
 //
