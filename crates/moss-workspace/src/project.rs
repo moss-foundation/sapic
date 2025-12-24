@@ -40,7 +40,7 @@ use tokio::sync::RwLock;
 use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
-    models::types::{EntryChange, ExportProjectParams},
+    models::types::EntryChange,
     storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project, key_project_order},
 };
 
@@ -916,142 +916,142 @@ impl ProjectService {
     //         archived: false,
     //     })
     // }
+    //
+    // pub(crate) async fn import_external_project<R: AppRuntime>(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     id: &ProjectId,
+    //     params: ProjectItemImportFromDiskParams,
+    // ) -> joinerror::Result<ProjectItemDescription> {
+    //     let mut rb = self.fs.start_rollback(ctx).await?;
+    //
+    //     let id_str = id.to_string();
+    //     let internal_abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
+    //     if internal_abs_path.exists() {
+    //         return Err(Error::new::<()>(format!(
+    //             "collection directory `{}` already exists",
+    //             internal_abs_path.display()
+    //         )));
+    //     }
+    //
+    //     self.fs
+    //         .create_dir_with_rollback(ctx, &mut rb, &internal_abs_path)
+    //         .await
+    //         .join_err_with::<()>(|| {
+    //             format!(
+    //                 "failed to create directory `{}`",
+    //                 internal_abs_path.display()
+    //             )
+    //         })?;
+    //
+    //     let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
+    //     let project = match builder
+    //         .import_external(
+    //             ctx,
+    //             ProjectImportExternalParams {
+    //                 internal_abs_path: internal_abs_path.clone(),
+    //                 external_abs_path: params.external_path.clone().into(),
+    //             },
+    //         )
+    //         .await
+    //         .join_err::<()>("failed to import external project")
+    //     {
+    //         Ok(project) => project,
+    //         Err(e) => {
+    //             let _ = rb.rollback().await.map_err(|e| {
+    //                 session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
+    //             });
+    //             return Err(e);
+    //         }
+    //     };
+    //
+    //     let icon_path = project.icon_path();
+    //     let name = project.details(ctx).await?.name;
+    //     let vcs_summary = if let Some(vcs) = project.vcs::<R>() {
+    //         match vcs.summary(ctx).await {
+    //             Ok(summary) => Some(summary),
+    //             Err(e) => {
+    //                 session::error!(format!("failed to get vcs summary: {}", e));
+    //                 None
+    //             }
+    //         }
+    //     } else {
+    //         None
+    //     };
+    //
+    //     {
+    //         let mut state_lock = self.state.write().await;
+    //         state_lock.expanded_items.insert(id.to_owned());
+    //         state_lock.projects.insert(
+    //             id.to_owned(),
+    //             ProjectItem {
+    //                 id: id.to_owned(),
+    //                 order: Some(params.order.clone()),
+    //                 handle: Arc::new(project),
+    //             },
+    //         );
+    //     }
+    //
+    //     {
+    //         let state_lock = self.state.read().await;
+    //
+    //         let order_key = key_project_order(id);
+    //         let batch_input = vec![
+    //             (order_key.as_str(), serde_json::to_value(params.order)?),
+    //             (
+    //                 KEY_EXPANDED_ITEMS,
+    //                 serde_json::to_value(&state_lock.expanded_items)?,
+    //             ),
+    //         ];
+    //
+    //         if let Err(e) = self
+    //             .storage
+    //             .put_batch(
+    //                 ctx,
+    //                 StorageScope::Workspace(self.workspace_id.inner()),
+    //                 &batch_input,
+    //             )
+    //             .await
+    //         {
+    //             session::warn!(format!(
+    //                 "failed to update database after importing archived project: {}",
+    //                 e
+    //             ));
+    //         }
+    //     }
+    //
+    //     self.on_did_add_project_emitter
+    //         .fire(OnDidAddProject {
+    //             project_id: id.clone(),
+    //         })
+    //         .await;
+    //
+    //     Ok(ProjectItemDescription {
+    //         id: id.to_owned(),
+    //         name,
+    //         order: Some(params.order),
+    //         expanded: true,
+    //         vcs: vcs_summary,
+    //         icon_path,
+    //         internal_abs_path,
+    //         external_path: Some(params.external_path),
+    //         archived: false,
+    //     })
+    // }
 
-    pub(crate) async fn import_external_project<R: AppRuntime>(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        id: &ProjectId,
-        params: ProjectItemImportFromDiskParams,
-    ) -> joinerror::Result<ProjectItemDescription> {
-        let mut rb = self.fs.start_rollback(ctx).await?;
-
-        let id_str = id.to_string();
-        let internal_abs_path: Arc<Path> = self.abs_path.join(&id_str).into();
-        if internal_abs_path.exists() {
-            return Err(Error::new::<()>(format!(
-                "collection directory `{}` already exists",
-                internal_abs_path.display()
-            )));
-        }
-
-        self.fs
-            .create_dir_with_rollback(ctx, &mut rb, &internal_abs_path)
-            .await
-            .join_err_with::<()>(|| {
-                format!(
-                    "failed to create directory `{}`",
-                    internal_abs_path.display()
-                )
-            })?;
-
-        let builder = ProjectBuilder::new(self.fs.clone(), self.storage.clone(), id.clone()).await;
-        let project = match builder
-            .import_external(
-                ctx,
-                ProjectImportExternalParams {
-                    internal_abs_path: internal_abs_path.clone(),
-                    external_abs_path: params.external_path.clone().into(),
-                },
-            )
-            .await
-            .join_err::<()>("failed to import external project")
-        {
-            Ok(project) => project,
-            Err(e) => {
-                let _ = rb.rollback().await.map_err(|e| {
-                    session::warn!(format!("failed to rollback fs changes: {}", e.to_string()))
-                });
-                return Err(e);
-            }
-        };
-
-        let icon_path = project.icon_path();
-        let name = project.details(ctx).await?.name;
-        let vcs_summary = if let Some(vcs) = project.vcs::<R>() {
-            match vcs.summary(ctx).await {
-                Ok(summary) => Some(summary),
-                Err(e) => {
-                    session::error!(format!("failed to get vcs summary: {}", e));
-                    None
-                }
-            }
-        } else {
-            None
-        };
-
-        {
-            let mut state_lock = self.state.write().await;
-            state_lock.expanded_items.insert(id.to_owned());
-            state_lock.projects.insert(
-                id.to_owned(),
-                ProjectItem {
-                    id: id.to_owned(),
-                    order: Some(params.order.clone()),
-                    handle: Arc::new(project),
-                },
-            );
-        }
-
-        {
-            let state_lock = self.state.read().await;
-
-            let order_key = key_project_order(id);
-            let batch_input = vec![
-                (order_key.as_str(), serde_json::to_value(params.order)?),
-                (
-                    KEY_EXPANDED_ITEMS,
-                    serde_json::to_value(&state_lock.expanded_items)?,
-                ),
-            ];
-
-            if let Err(e) = self
-                .storage
-                .put_batch(
-                    ctx,
-                    StorageScope::Workspace(self.workspace_id.inner()),
-                    &batch_input,
-                )
-                .await
-            {
-                session::warn!(format!(
-                    "failed to update database after importing archived project: {}",
-                    e
-                ));
-            }
-        }
-
-        self.on_did_add_project_emitter
-            .fire(OnDidAddProject {
-                project_id: id.clone(),
-            })
-            .await;
-
-        Ok(ProjectItemDescription {
-            id: id.to_owned(),
-            name,
-            order: Some(params.order),
-            expanded: true,
-            vcs: vcs_summary,
-            icon_path,
-            internal_abs_path,
-            external_path: Some(params.external_path),
-            archived: false,
-        })
-    }
-
-    pub(crate) async fn export_collection(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        id: &ProjectId,
-        params: &ExportProjectParams,
-    ) -> joinerror::Result<PathBuf> {
-        let state_lock = self.state.read().await;
-        let item = state_lock.projects.get(&id).ok_or_join_err_with::<()>(|| {
-            format!("failed to find collection with id `{}`", id.to_string())
-        })?;
-
-        item.export_archive(ctx, &params.destination).await
-    }
+    // pub(crate) async fn export_collection(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     id: &ProjectId,
+    //     params: &ExportProjectParams,
+    // ) -> joinerror::Result<PathBuf> {
+    //     let state_lock = self.state.read().await;
+    //     let item = state_lock.projects.get(&id).ok_or_join_err_with::<()>(|| {
+    //         format!("failed to find collection with id `{}`", id.to_string())
+    //     })?;
+    //
+    //     item.export_archive(ctx, &params.destination).await
+    // }
 
     /// List file statuses for all collections that have a repository handle
     pub(crate) async fn list_changes<R: AppRuntime>(

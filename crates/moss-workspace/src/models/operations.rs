@@ -9,31 +9,13 @@ use std::{
     sync::Arc,
 };
 use ts_rs::TS;
-use validator::Validate;
+use validator::{Validate, ValidationError};
 
 use crate::models::types::*;
 
 // ------------------------------ //
 // Project
 // ------------------------------ //
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ExportProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: ExportProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ExportProjectOutput {
-    pub archive_path: PathBuf,
-}
 
 /// @category Operation
 #[derive(Debug, Deserialize, TS)]

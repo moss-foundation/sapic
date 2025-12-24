@@ -497,24 +497,24 @@ impl ProjectBuilder {
     //
     //     Ok(repository)
     // }
-
-    async fn do_import(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        internal_abs_path: Arc<Path>,
-        archive_path: Arc<Path>,
-    ) -> joinerror::Result<()> {
-        if !archive_path.exists() {
-            return Err(Error::new::<ErrorIo>(format!(
-                "archive file {} not found",
-                archive_path.display()
-            ))
-            .into());
-        }
-
-        self.fs
-            .unzip(ctx, archive_path.as_ref(), internal_abs_path.as_ref())
-            .await?;
-        Ok(())
-    }
+    //
+    // async fn do_import(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     internal_abs_path: Arc<Path>,
+    //     archive_path: Arc<Path>,
+    // ) -> joinerror::Result<()> {
+    //     if !archive_path.exists() {
+    //         return Err(Error::new::<ErrorIo>(format!(
+    //             "archive file {} not found",
+    //             archive_path.display()
+    //         ))
+    //         .into());
+    //     }
+    //
+    //     self.fs
+    //         .unzip(ctx, archive_path.as_ref(), internal_abs_path.as_ref())
+    //         .await?;
+    //     Ok(())
+    // }
 }

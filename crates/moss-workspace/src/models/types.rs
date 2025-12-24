@@ -51,24 +51,6 @@ pub type EnvironmentName = String;
 //     pub icon_path: Option<PathBuf>,
 // }
 
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct ExportProjectParams {
-    pub id: ProjectId,
-    /// Path to the folder containing the output archive file
-    #[validate(custom(function = "validate_export_destination"))]
-    pub destination: PathBuf,
-}
-
-fn validate_export_destination(destination: &Path) -> Result<(), ValidationError> {
-    if !destination.is_dir() {
-        return Err(ValidationError::new("destination must be a directory"));
-    }
-    Ok(())
-}
-
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]

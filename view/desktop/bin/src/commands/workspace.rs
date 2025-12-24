@@ -3,8 +3,9 @@ use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
 use sapic_ipc::contracts::main::project::{
     ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
-    DeleteProjectInput, DeleteProjectOutput, ImportProjectInput, ImportProjectOutput,
-    UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput, UpdateProjectOutput,
+    DeleteProjectInput, DeleteProjectOutput, ExportProjectInput, ExportProjectOutput,
+    ImportProjectInput, ImportProjectOutput, UnarchiveProjectInput, UnarchiveProjectOutput,
+    UpdateProjectInput, UpdateProjectOutput,
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
 
@@ -84,16 +85,12 @@ pub async fn export_project<'a, R: tauri::Runtime>(
     input: ExportProjectInput,
     options: Options,
 ) -> joinerror::Result<ExportProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .export_project::<TauriAppRuntime<R>>(&ctx, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.export_project(&ctx, &input).await },
     )
     .await
 }

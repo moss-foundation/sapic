@@ -258,6 +258,45 @@ pub struct ImportProjectOutput {
 }
 
 //
+// Export Project
+//
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportProjectInput {
+    #[serde(flatten)]
+    #[validate(nested)]
+    pub inner: ExportProjectParams,
+}
+
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ExportProjectParams {
+    pub id: ProjectId,
+    /// Path to the folder containing the output archive file
+    #[validate(custom(function = "validate_export_destination"))]
+    pub destination: PathBuf,
+}
+
+fn validate_export_destination(destination: &Path) -> Result<(), ValidationError> {
+    if !destination.is_dir() {
+        return Err(ValidationError::new("destination must be a directory"));
+    }
+    Ok(())
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS, Validate)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ExportProjectOutput {
+    pub archive_path: PathBuf,
+}
+
+//
 // Delete Project
 //
 

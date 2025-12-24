@@ -55,6 +55,11 @@ pub struct CloneProjectParams {
     pub git_params: CloneProjectGitParams,
 }
 
+pub struct ExportArchiveParams {
+    pub project_path: PathBuf,
+    pub archive_path: PathBuf,
+}
+
 #[async_trait]
 pub trait ProjectBackend: Send + Sync {
     async fn read_project_config(
@@ -98,6 +103,12 @@ pub trait ProjectBackend: Send + Sync {
         &self,
         ctx: &dyn AnyAsyncContext,
         params: ImportExternalProjectParams,
+    ) -> joinerror::Result<()>;
+
+    async fn export_archive(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ExportArchiveParams,
     ) -> joinerror::Result<()>;
 
     async fn delete_project(

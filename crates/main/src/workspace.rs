@@ -22,7 +22,8 @@ use sapic_base::{
 };
 use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::project::{
-    CreateProjectParams, ImportArchiveParams, ImportDiskParams, UpdateProjectParams,
+    CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportDiskParams,
+    UpdateProjectParams,
 };
 use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
 use sapic_system::{
@@ -109,6 +110,12 @@ pub trait Workspace: Send + Sync {
         ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<()>;
+
+    async fn export_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ExportProjectParams,
+    ) -> joinerror::Result<PathBuf>;
 
     async fn project(
         &self,
@@ -670,6 +677,19 @@ impl Workspace for RuntimeWorkspace {
             .await?;
 
         Ok(())
+    }
+
+    async fn export_project(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ExportProjectParams,
+    ) -> joinerror::Result<PathBuf> {
+        let archive_path = self
+            .project_service
+            .export_archive(ctx, &params.id, &params.destination)
+            .await?;
+
+        Ok(archive_path)
     }
 
     async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<RuntimeProject>> {

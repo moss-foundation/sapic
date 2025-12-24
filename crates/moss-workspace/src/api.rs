@@ -4,8 +4,6 @@ pub mod batch_update_environment_group;
 pub mod create_environment;
 pub mod delete_environment;
 pub mod describe_project;
-pub mod export_project;
-pub mod import_project;
 pub mod list_changes;
 pub mod stream_environments;
 pub mod stream_projects;

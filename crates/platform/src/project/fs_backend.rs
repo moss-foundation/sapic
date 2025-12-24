@@ -13,8 +13,8 @@ use sapic_base::{
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
     project::{
-        CloneProjectParams, CreateConfigParams, CreateProjectParams, ImportArchivedProjectParams,
-        ImportExternalProjectParams, ProjectBackend,
+        CloneProjectParams, CreateConfigParams, CreateProjectParams, ExportArchiveParams,
+        ImportArchivedProjectParams, ImportExternalProjectParams, ProjectBackend,
     },
     user::account::Account,
 };
@@ -71,6 +71,15 @@ const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
         },
     ]
 });
+
+const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 6] = [
+    "config.json",
+    "state.bak",
+    "state.sqlite3",
+    "state.sqlite3-shm",
+    "state.sqlite3-wal",
+    ".git",
+];
 
 struct PredefinedFile {
     path: PathBuf,
@@ -521,6 +530,23 @@ impl ProjectBackend for FsProjectBackend {
             });
             return Err(e);
         }
+
+        Ok(())
+    }
+
+    async fn export_archive(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: ExportArchiveParams,
+    ) -> joinerror::Result<()> {
+        self.fs
+            .zip(
+                ctx,
+                &params.project_path,
+                &params.archive_path,
+                &ARCHIVE_EXCLUDED_ENTRIES,
+            )
+            .await?;
 
         Ok(())
     }

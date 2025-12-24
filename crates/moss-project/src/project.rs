@@ -41,8 +41,6 @@ use crate::{
     worktree::Worktree,
 };
 
-const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 3] = ["config.json", "state.db", ".git"];
-
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
     Toggled(bool),
@@ -467,32 +465,5 @@ impl Project {
         // TODO: Read account info from config and reload vcs
 
         Ok(())
-    }
-
-    /// Export the project to {destination}/{project_name}.zip
-    /// Returns the path to the output archive file
-    pub async fn export_archive(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        destination: &Path,
-    ) -> joinerror::Result<PathBuf> {
-        // If the output is inside the collection folder, it will also be bundled, which we don't want
-        let abs_path = self.abs_path();
-
-        if destination.starts_with(&abs_path) {
-            return Err(Error::new::<()>(
-                "cannot export archive file into the project folder",
-            ));
-        }
-        // Project name can contain special chars that need sanitizing
-        let raw_name = format!("{}", self.details(ctx).await?.name);
-        let sanitized_name = sanitize(&raw_name);
-        let archive_path = destination.join(format!("{}.zip", sanitized_name));
-
-        self.fs
-            .zip(ctx, &abs_path, &archive_path, &ARCHIVE_EXCLUDED_ENTRIES)
-            .await?;
-
-        Ok(archive_path)
     }
 }

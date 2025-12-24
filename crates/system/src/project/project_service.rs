@@ -1,7 +1,8 @@
-use joinerror::{Error, ResultExt};
+use joinerror::{Error, ResultExt, bail};
 use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_text::sanitized::sanitize;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     other::GitProviderKind,
@@ -18,7 +19,8 @@ use std::{
 use crate::{
     project::{
         CloneProjectGitParams, CloneProjectParams, CreateProjectGitParams, CreateProjectParams,
-        ImportArchivedProjectParams, ImportExternalProjectParams, ProjectBackend,
+        ExportArchiveParams, ImportArchivedProjectParams, ImportExternalProjectParams,
+        ProjectBackend,
     },
     user::account::Account,
 };
@@ -242,20 +244,30 @@ impl ProjectService {
         }
     }
 
-    pub async fn archive_project(&self, id: &ProjectId) -> joinerror::Result<()> {
-        todo!()
-    }
+    pub async fn export_archive(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
+        destination: &Path,
+    ) -> joinerror::Result<PathBuf> {
+        let project_path = self.abs_path.join(id.to_string());
 
-    pub async fn unarchive_project(&self, id: &ProjectId) -> joinerror::Result<()> {
-        todo!()
-    }
+        if destination.starts_with(&project_path) {
+            bail!("cannot export archive file into the project folder");
+        }
 
-    pub async fn import_project(&self) -> joinerror::Result<()> {
-        todo!()
-    }
+        let archive_path = destination.join(format!("{}.zip", id.to_string()));
+        self.backend
+            .export_archive(
+                ctx,
+                ExportArchiveParams {
+                    project_path,
+                    archive_path: archive_path.clone(),
+                },
+            )
+            .await?;
 
-    pub async fn export_project(&self, id: &ProjectId) -> joinerror::Result<()> {
-        todo!()
+        Ok(archive_path)
     }
 
     pub async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<ProjectItem>> {
