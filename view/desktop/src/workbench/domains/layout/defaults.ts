@@ -14,7 +14,7 @@ export const defaultSidebarPanelState = {
 export const defaultBottomPanePanelState = {
   height: 333,
   minHeight: 100,
-  maxHeight: Infinity,
+  maxHeight: Number.MAX_SAFE_INTEGER,
   visible: false,
 } as const;
 

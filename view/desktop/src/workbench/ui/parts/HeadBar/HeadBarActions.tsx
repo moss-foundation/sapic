@@ -168,10 +168,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
           if (workspaceId === activeWorkspaceId) {
             addOrFocusPanel({
               id: "WorkspaceSettings",
-              component: "WorkspaceSettings",
               title: activeWorkspace?.name || "Workspace Settings",
+              component: "WorkspaceSettingsView",
               params: {
-                iconType: "Workspace",
+                tabIcon: "Workspace",
                 workspace: true,
               },
             });
@@ -186,11 +186,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
                 onSuccess: () => {
                   addOrFocusPanel({
                     id: "WorkspaceSettings",
-                    component: "WorkspaceSettings",
                     title: workspace.name,
+                    component: "WorkspaceSettingsView",
                     params: {
-                      iconType: "Workspace",
-                      workspace: true,
+                      tabIcon: "Workspace",
                     },
                   });
                 },
@@ -229,11 +228,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         if (activeWorkspace) {
           addOrFocusPanel({
             id: "WorkspaceSettings",
-            component: "WorkspaceSettings",
             title: activeWorkspace.name,
+            component: "WorkspaceSettingsView",
             params: {
-              iconType: "Workspace",
-              workspace: true,
+              tabIcon: "Workspace",
             },
           });
         }

@@ -1,10 +1,9 @@
 import { FormEvent, useState } from "react";
 
-import { useUpdateProfile } from "@/adapters";
+import { useAddUserAccount } from "@/adapters/tanstackQuery/user";
 import { Modal, PillTabs, Scrollbar } from "@/lib/ui";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { AccountKind } from "@repo/base";
-import { AddAccountParams, UpdateProfileInput } from "@repo/window";
 
 import { ModalWrapperProps } from "../../types";
 import { getProviderHost } from "../accountUtils";
@@ -15,7 +14,7 @@ interface NewAccountModalProps extends ModalWrapperProps {
 }
 
 export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAccountModalProps) => {
-  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutateAsync: addUserAccount, isPending: isAddingAccount } = useAddUserAccount();
 
   const [provider, setProvider] = useState<AccountKind>("GITHUB");
   const [method, setMethod] = useState<"OAUTH" | "PAT">("OAUTH");
@@ -26,19 +25,11 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
     e.preventDefault();
 
     try {
-      const accountParams: AddAccountParams = {
+      await addUserAccount({
         host: getProviderHost(provider),
         kind: provider,
         pat: method === "PAT" && token ? token : undefined,
-      };
-
-      const input: UpdateProfileInput = {
-        accountsToAdd: [accountParams],
-        accountsToRemove: [],
-        accountsToUpdate: [],
-      };
-
-      await updateProfile(input);
+      });
 
       handleClose();
       onAccountAdded?.();
@@ -62,7 +53,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
     }, 200);
   };
 
-  const isSubmitDisabled = isUpdatingProfile || (method === "PAT" && !token);
+  const isSubmitDisabled = isAddingAccount || (method === "PAT" && !token);
 
   return (
     <Modal onBackdropClick={handleClose} showModal={showModal} className="max-w-136 w-full">
@@ -106,7 +97,7 @@ export const NewAccountModal = ({ showModal, closeModal, onAccountAdded }: NewAc
           setUseAsDefault={setUseAsDefault}
           handleCancel={handleClose}
           isSubmitDisabled={isSubmitDisabled}
-          isSubmitting={isUpdatingProfile}
+          isSubmitting={isAddingAccount}
         />
       </form>
     </Modal>

@@ -9,7 +9,7 @@ export const useResetGridStateOnWorkspaceChange = () => {
   const { api, addOrFocusPanel } = useTabbedPaneStore();
   const { data: layout, isFetching: isFetchingLayout } = useGetLayout();
 
-  const updateGridState = useEffectEvent((activeWorkspaceId) => {
+  const updateGridState = useEffectEvent(() => {
     if (!api || !layout?.tabbedPaneState.gridState) return;
 
     try {
@@ -17,8 +17,8 @@ export const useResetGridStateOnWorkspaceChange = () => {
       if (!activeWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
-          component: "Welcome",
           title: "Welcome",
+          component: "WelcomeView",
         });
       } else {
         api.fromJSON(layout?.tabbedPaneState.gridState);
@@ -30,7 +30,7 @@ export const useResetGridStateOnWorkspaceChange = () => {
 
   useEffect(() => {
     if (isFetchingLayout) return;
-    updateGridState(activeWorkspaceId);
+    updateGridState();
 
     //we only want to run this effect when the workspace changes
     //but there is a race condition where the workspace changes before the layout is fetched

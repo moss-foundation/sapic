@@ -1,8 +1,8 @@
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
 import { startStreamingProjectResources } from "../queries/startStreamingProjectResources";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../useStreamProjectResources";
 
 export const useFetchResourcesForPath = () => {
   const queryClient = useQueryClient();

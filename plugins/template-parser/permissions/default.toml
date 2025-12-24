@@ -1,0 +1,9 @@
+[default]
+description = "Default permissions for the template-parser plugin"
+permissions = [
+    "allow-parse-url"
+]
+
+[allow-parse-url]
+description = "Enables the parse_url command"
+commands.allow = ["parse_url"]

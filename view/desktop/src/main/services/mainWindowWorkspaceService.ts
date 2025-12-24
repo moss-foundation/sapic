@@ -1,5 +1,5 @@
 import { IWorkspaceService, workspaceService } from "@/domains/workspace/workspaceService";
-import { workspaceIpc } from "@/infra/ipc/workspace";
+import { workspaceIpc } from "@/infra/ipc/workspaceIpc";
 import {
   MainWindow_CreateWorkspaceInput,
   MainWindow_CreateWorkspaceOutput,

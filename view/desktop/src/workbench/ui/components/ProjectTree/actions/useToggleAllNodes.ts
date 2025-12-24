@@ -1,7 +1,10 @@
 import { useContext } from "react";
 
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, useStreamProjectResources } from "@/adapters/tanstackQuery/project";
-import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/project/useBatchUpdateProjectResource";
+import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
+import {
+  USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
+  useStreamProjectResources,
+} from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
 import { BatchUpdateResourceKind, StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 

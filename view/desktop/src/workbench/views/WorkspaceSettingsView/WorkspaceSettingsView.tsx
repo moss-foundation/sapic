@@ -1,4 +1,3 @@
-import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace/useDeleteWorkspace";
@@ -8,13 +7,16 @@ import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace
 import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
 import { PageHeader } from "@/workbench/ui/components/PageView/PageHeader";
 import { PageView } from "@/workbench/ui/components/PageView/PageView";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 import { WorkspaceDataSection } from "./WorkspaceDataSection";
 import { WorkspaceNameSection } from "./WorkspaceNameSection";
 import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
-export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
+export type WorkspaceSettingsViewProps = DefaultViewProps;
+
+export const WorkspaceSettingsView = ({ ...props }: WorkspaceSettingsViewProps) => {
   const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
 
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();

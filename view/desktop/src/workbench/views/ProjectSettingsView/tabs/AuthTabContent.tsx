@@ -1,6 +1,6 @@
-import { IDockviewPanelProps } from "moss-tabs";
+import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 
-export const AuthTabContent = ({}: IDockviewPanelProps<{ projectId: string }>) => {
+export const AuthTabContent = ({}: ProjectSettingsViewProps) => {
   return (
     <div className="flex h-full min-h-[400px] items-center justify-center">
       <div className="text-center opacity-60">

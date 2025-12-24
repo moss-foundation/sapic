@@ -1,5 +1,6 @@
 import { useContext, useMemo, useState } from "react";
 
+import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
 import { FolderTabs, TabItemProps } from "@/lib/ui";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 
@@ -13,16 +14,18 @@ import {
 } from "./tabs";
 
 export const InputView = () => {
-  const { resourceDescription } = useContext(EndpointViewContext);
+  const { resourceId } = useContext(EndpointViewContext);
+
+  const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const [activeEndpointTabId, setActiveEndpointTabId] = useState("params");
 
   const numberOfActiveParams = useMemo(() => {
-    const queryParamsCount = resourceDescription?.queryParams.filter((param) => !param.disabled).length ?? 0;
-    const pathParamsCount = resourceDescription?.pathParams.filter((param) => !param.disabled).length ?? 0;
+    const queryParamsCount = localResourceDetails?.queryParams.filter((param) => !param.disabled).length ?? 0;
+    const pathParamsCount = localResourceDetails?.pathParams.filter((param) => !param.disabled).length ?? 0;
 
     return queryParamsCount + pathParamsCount;
-  }, [resourceDescription?.queryParams, resourceDescription?.pathParams]);
+  }, [localResourceDetails?.queryParams, localResourceDetails?.pathParams]);
 
   const endpointTabs: TabItemProps[] = [
     {

@@ -1,6 +1,4 @@
-import { IDockviewPanelProps } from "moss-tabs";
-
-import { useUpdateProfile } from "@/adapters/tanstackQuery/user";
+import { useRemoveUserAccount } from "@/adapters/tanstackQuery/user";
 import { useDescribeApp, useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
 import { cn } from "@/utils";
@@ -9,12 +7,12 @@ import { EditAccountModal } from "@/workbench/ui/components/Modals/Account/EditA
 import { NewAccountModal } from "@/workbench/ui/components/Modals/Account/NewAccountModal";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 import { AccountInfo } from "@repo/base";
-import { UpdateProfileInput } from "@repo/window";
 
-export type AccountsViewProps = Record<string, never>;
+export type AccountsViewProps = DefaultViewProps;
 
-export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
+export const AccountsView = ({}: AccountsViewProps) => {
   const { data: appState, isLoading, error } = useDescribeApp();
   const profile = appState?.profile;
 
@@ -104,20 +102,14 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
 
 const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean }) => {
   const { isFetching: isFetchingDescribeApp } = useDescribeApp();
-  const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { mutateAsync: removeUserAccount } = useRemoveUserAccount();
 
   const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
   const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
 
   const handleRemoveAccount = async () => {
     try {
-      const input: UpdateProfileInput = {
-        accountsToAdd: [],
-        accountsToRemove: [account.id],
-        accountsToUpdate: [],
-      };
-
-      await updateProfile(input);
+      await removeUserAccount({ id: account.id });
 
       closeRevokeModal();
     } catch (error) {

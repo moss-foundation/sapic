@@ -1,0 +1,55 @@
+// A simplified version of RFC-3986
+// Support unicode characters in non-scheme parts
+unreserved = {LETTER | NUMBER | MARK | SYMBOL | SEPARATOR | "-" | "." | "_" | "~" }
+sub_delims = { "!" | "$" | "&" | "'" | "(" | ")" | "*" | "+" | "," | ";" | "=" }
+
+// Technically, the specification allows colon to be used in path part
+// However we reserved it for path variables
+// The user can still bypass this constraint by storing the colon literal in the path variable
+p_char = {unreserved | sub_delims | "%" | "@"}
+
+
+ident = @{ (LETTER | NUMBER | "_" )+ }
+var = { "{{" ~ ident ~ "}}" }
+path_var = { ":" ~ ident }
+
+url = {
+    SOI ~
+    scheme_part? ~
+    host_part ~
+    path_part? ~
+    query_part? ~
+    fragment_part? ~
+    EOI
+}
+
+// I think it makes sense to only allow ascii characters in scheme
+scheme_part = { (var | scheme_literal)+ ~ "://" }
+scheme_literal = @{
+    ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "+" | "-" | ".")*
+}
+
+// HOST
+host_part  = { (var | host_raw)+ ~ "/"? }
+host_raw   = @{ (unreserved | sub_delims | "%")+ }
+
+// PATH
+path_part  = {  (path_var | path_raw)+ }
+path_raw   = @{ (p_char | "/")+ }
+
+// QUERY
+query_part = {
+    "?" ~ query_param ~ ("&" ~ query_param)*
+}
+query_param = { query_key ~ ("=" ~ query_value)?}
+query_key = { (var | query_raw)+}
+// Allow for empty string as value
+query_value = { (var | query_raw)*}
+query_raw = @{ (!("&" | "=") ~ p_char | ":" | "/" | "?")+ }
+
+
+fragment_part = { "#" ~ (var | fragment_raw)* }
+fragment_raw = @{ (p_char | ":" | "/" | "?")+ }
+
+// Variable rule -> parser used by either url or body parser
+// Find out if it supports import?

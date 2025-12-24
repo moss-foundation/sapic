@@ -1,19 +1,10 @@
-import { IDockviewPanelProps } from "moss-tabs";
-
 import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { PageContent } from "@/workbench/ui/components";
-import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
-import { ResourceKind } from "@repo/moss-project";
 
+import { FolderSettingsViewProps } from "../FolderSettingsView";
 import { findNodeInProject } from "../utils";
 
-export interface FolderSettingsParams {
-  projectId: string;
-  node: ProjectTreeNode;
-  iconType: ResourceKind;
-}
-
-export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSettingsParams>) => {
+export const OverviewTabContent = ({ params }: FolderSettingsViewProps) => {
   const { projectsTrees } = useProjectsTrees();
   const project = projectsTrees?.find((col) => col.id === params?.projectId);
   const node = project ? findNodeInProject(project, params?.node?.id) : undefined;
@@ -115,7 +106,7 @@ export const OverviewTabContent = ({ params }: IDockviewPanelProps<FolderSetting
 
         <div className="background-(--moss-secondary-background) border-(--moss-border) rounded border p-3">
           <pre className="text-(--moss-secondary-foreground) overflow-auto text-sm">
-            {JSON.stringify({ node, projectId: params?.projectId, iconType: params?.iconType }, null, 2)}
+            {JSON.stringify({ node, projectId: params?.projectId, tabIcon: params?.tabIcon }, null, 2)}
           </pre>
         </div>
       </div>

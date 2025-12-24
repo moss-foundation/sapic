@@ -1,0 +1,33 @@
+@top Input { element* }
+
+element {
+  Raw |    // Handled by External Tokenizer
+  Variable |
+  PathParam
+}
+
+// {{var}}
+Variable {
+  VarStart Identifier VarEnd
+}
+
+// /:path
+PathParam {
+  Slash PathMarker Identifier
+}
+
+// Import the JS tokenizer
+@external tokens rawTokenizer from "./tokens" {
+  Raw
+}
+
+@external propSource highlight from "./highlight"
+
+@tokens {
+  // We only strictly define what the internal parser needs
+  VarStart { "{{" }
+  VarEnd { "}}" }
+  PathMarker { ":" }
+  Identifier { $[a-zA-Z0-9_\u0080-\uFFFF]+ }
+  Slash {"/"}
+}

@@ -32,7 +32,7 @@ export const ActivityBarLastItems = () => {
               onClick={() => {
                 addOrFocusPanel({
                   id: "Settings",
-                  component: "Settings",
+                  component: "SettingsView",
                 });
               }}
             >
@@ -46,7 +46,10 @@ export const ActivityBarLastItems = () => {
               onClick={() => {
                 addOrFocusPanel({
                   id: "Accounts",
-                  component: "Accounts",
+                  component: "AccountsView",
+                  params: {
+                    tabIcon: "Accounts",
+                  },
                 });
               }}
             >
