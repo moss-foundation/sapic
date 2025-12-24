@@ -9,12 +9,47 @@ import {
   languageInfoSchema,
   themeIdSchema,
 } from "@repo/base";
-import { jsonValueSchema } from "@repo/moss-bindingutils";
+import { changePathSchema, changeStringSchema, jsonValueSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
-import { workspaceInfoSchema } from "./types.zod";
+import {
+  contributorSchema,
+  createProjectGitParamsSchema,
+  importProjectSourceSchema,
+  updateProjectParamsSchema,
+  vcsInfoSchema,
+  workspaceInfoSchema,
+} from "./types.zod";
+
+export const archiveProjectInputSchema = z.object({
+  id: z.string(),
+});
+
+export const archiveProjectOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const batchUpdateProjectOutputSchema = z.object({
+  ids: z.array(z.string()),
+});
 
 export const cancelRequestInputSchema = z.object({
   request_id: z.string(),
+});
+
+export const createProjectOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  order: z.number().optional(),
+  expanded: z.boolean(),
+  iconPath: z.string().optional(),
+});
+
+export const deleteProjectInputSchema = z.object({
+  id: z.string(),
+});
+
+export const deleteProjectOutputSchema = z.object({
+  id: z.string(),
 });
 
 export const deleteWorkspaceInputSchema = z.object({
@@ -25,9 +60,22 @@ export const deleteWorkspaceOutputSchema = z.object({
   id: z.string(),
 });
 
+export const describeProjectInputSchema = z.object({
+  id: z.string(),
+});
+
 export const downloadExtensionInputSchema = z.object({
-  extension_id: z.string(),
+  extensionId: z.string(),
   version: z.string(),
+});
+
+export const exportProjectInputSchema = z.object({
+  id: z.string(),
+  destination: z.string(),
+});
+
+export const exportProjectOutputSchema = z.object({
+  archivePath: z.string(),
 });
 
 export const getColorThemeOutputSchema = z.object({
@@ -39,7 +87,29 @@ export const getTranslationNamespaceInputSchema = z.object({
   namespace: z.string(),
 });
 
+export const importProjectOutputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  order: z.number().optional(),
+  expanded: z.boolean(),
+  iconPath: z.string().optional(),
+});
+
 export const removeUserAccountInputSchema = z.object({
+  id: z.string(),
+});
+
+export const streamProjectsOutputSchema = z.object({});
+
+export const unarchiveProjectInputSchema = z.object({
+  id: z.string(),
+});
+
+export const unarchiveProjectOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const updateProjectOutputSchema = z.object({
   id: z.string(),
 });
 
@@ -53,12 +123,38 @@ export const addUserAccountInputSchema = z.object({
   pat: z.string().optional(),
 });
 
+export const batchUpdateProjectInputSchema = z.object({
+  items: z.array(updateProjectParamsSchema),
+});
+
+export const createProjectInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  externalPath: z.string().optional(),
+  gitParams: createProjectGitParamsSchema.optional(),
+  iconPath: z.string().optional(),
+});
+
+export const describeProjectOutputSchema = z.object({
+  name: z.string(),
+  vcs: vcsInfoSchema.optional(),
+  contributors: z.array(contributorSchema),
+  createdAt: z.string(),
+});
+
 export const getColorThemeInputSchema = z.object({
   id: themeIdSchema,
 });
 
 export const getTranslationNamespaceOutputSchema = z.object({
   contents: jsonValueSchema,
+});
+
+export const importProjectInputSchema = z.object({
+  name: z.string(),
+  order: z.number(),
+  source: importProjectSourceSchema,
+  iconPath: z.string().optional(),
 });
 
 export const listColorThemesOutputSchema = z.array(colorThemeInfoSchema);
@@ -76,3 +172,12 @@ export const listUserAccountsOutputSchema = z.object({
 });
 
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
+
+export const updateProjectInputSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  repository: changeStringSchema.optional(),
+  iconPath: changePathSchema.optional(),
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
+});

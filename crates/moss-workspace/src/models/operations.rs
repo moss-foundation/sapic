@@ -31,16 +31,6 @@ pub struct DescribeEnvironmentOutput {
     pub variables: Vec<VariableInfo>,
 }
 
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectsOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
-}
-
 // ------------------------------ //
 // Environment
 // ------------------------------ //
