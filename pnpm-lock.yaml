@@ -395,14 +395,14 @@ importers:
         specifier: ^6.39.4
         version: 6.39.4
       '@langchain/core':
-        specifier: 1.0.2
-        version: 1.0.2
+        specifier: 1.1.8
+        version: 1.1.8
       '@langchain/langgraph':
         specifier: 1.0.1
-        version: 1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.0(zod@3.25.32))(zod@3.25.32)
+        version: 1.0.1(@langchain/core@1.1.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.0(zod@3.25.32))(zod@3.25.32)
       '@langchain/mistralai':
         specifier: 1.0.0
-        version: 1.0.0(@langchain/core@1.0.2)
+        version: 1.0.0(@langchain/core@1.1.8)
       '@lezer/common':
         specifier: ^1.4.0
         version: 1.4.0
@@ -1217,8 +1217,8 @@ packages:
   '@juggle/resize-observer@3.4.0':
     resolution: {integrity: sha512-dfLbk+PwWvFzSxwk3n5ySL0hfBog779o8h68wK/7/APo/7cgyWp5jcXockbxdk5kFRkbeXWm4Fbi9FrdN381sA==}
 
-  '@langchain/core@1.0.2':
-    resolution: {integrity: sha512-6mOn4bZyO6XT0GGrEijRtMVrmYJGZ8y1BcwyTPDptFz38lP0CEzrKEYB++h+u3TEcAd3eO25l1aGw/zVlVgw2Q==}
+  '@langchain/core@1.1.8':
+    resolution: {integrity: sha512-kIUidOgc0ZdyXo4Ahn9Zas+OayqOfk4ZoKPi7XaDipNSWSApc2+QK5BVcjvwtzxstsNOrmXJiJWEN6WPF/MvAw==}
     engines: {node: '>=20'}
 
   '@langchain/langgraph-checkpoint@1.0.0':
@@ -3755,8 +3755,8 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  langsmith@0.3.87:
-    resolution: {integrity: sha512-XXR1+9INH8YX96FKWc5tie0QixWz6tOqAsAKfcJyPkE0xPep+NDz0IQLR32q4bn10QK3LqD2HN6T3n6z1YLW7Q==}
+  langsmith@0.4.2:
+    resolution: {integrity: sha512-BvBeFgSmR9esl8x5wsiDlALiHKKPybw2wE2Hh6x1tgSZki46H9c9KI9/06LARbPhyyDu/TZU7exfg6fnhdj1Qg==}
     peerDependencies:
       '@opentelemetry/api': '*'
       '@opentelemetry/exporter-trace-otlp-proto': '*'
@@ -5693,17 +5693,16 @@ snapshots:
 
   '@juggle/resize-observer@3.4.0': {}
 
-  '@langchain/core@1.0.2':
+  '@langchain/core@1.1.8':
     dependencies:
       '@cfworker/json-schema': 4.1.1
       ansi-styles: 5.2.0
       camelcase: 6.3.0
       decamelize: 1.2.0
       js-tiktoken: 1.0.21
-      langsmith: 0.3.87
+      langsmith: 0.4.2
       mustache: 4.2.0
       p-queue: 6.6.2
-      p-retry: 4.6.2
       uuid: 10.0.0
       zod: 4.2.1
     transitivePeerDependencies:
@@ -5712,26 +5711,26 @@ snapshots:
       - '@opentelemetry/sdk-trace-base'
       - openai
 
-  '@langchain/langgraph-checkpoint@1.0.0(@langchain/core@1.0.2)':
+  '@langchain/langgraph-checkpoint@1.0.0(@langchain/core@1.1.8)':
     dependencies:
-      '@langchain/core': 1.0.2
+      '@langchain/core': 1.1.8
       uuid: 10.0.0
 
-  '@langchain/langgraph-sdk@1.0.3(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
+  '@langchain/langgraph-sdk@1.0.3(@langchain/core@1.1.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)':
     dependencies:
       p-queue: 6.6.2
       p-retry: 4.6.2
       uuid: 9.0.1
     optionalDependencies:
-      '@langchain/core': 1.0.2
+      '@langchain/core': 1.1.8
       react: 19.2.0
       react-dom: 19.2.0(react@19.2.0)
 
-  '@langchain/langgraph@1.0.1(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.0(zod@3.25.32))(zod@3.25.32)':
+  '@langchain/langgraph@1.0.1(@langchain/core@1.1.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)(zod-to-json-schema@3.25.0(zod@3.25.32))(zod@3.25.32)':
     dependencies:
-      '@langchain/core': 1.0.2
-      '@langchain/langgraph-checkpoint': 1.0.0(@langchain/core@1.0.2)
-      '@langchain/langgraph-sdk': 1.0.3(@langchain/core@1.0.2)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
+      '@langchain/core': 1.1.8
+      '@langchain/langgraph-checkpoint': 1.0.0(@langchain/core@1.1.8)
+      '@langchain/langgraph-sdk': 1.0.3(@langchain/core@1.1.8)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       uuid: 10.0.0
       zod: 3.25.32
     optionalDependencies:
@@ -5740,9 +5739,9 @@ snapshots:
       - react
       - react-dom
 
-  '@langchain/mistralai@1.0.0(@langchain/core@1.0.2)':
+  '@langchain/mistralai@1.0.0(@langchain/core@1.1.8)':
     dependencies:
-      '@langchain/core': 1.0.2
+      '@langchain/core': 1.1.8
       '@mistralai/mistralai': 1.10.0
       uuid: 10.0.0
 
@@ -8209,7 +8208,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  langsmith@0.3.87:
+  langsmith@0.4.2:
     dependencies:
       '@types/uuid': 10.0.0
       chalk: 4.1.2
