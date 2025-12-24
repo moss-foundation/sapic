@@ -2,8 +2,6 @@
 
 use sapic_base::workspace::types::primitives::WorkspaceId;
 
-pub static KEY_LAST_ACTIVE_WORKSPACE: &'static str = "lastActiveWorkspace";
-
 pub static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
 pub fn key_workspace_last_opened_at(id: &WorkspaceId) -> String {

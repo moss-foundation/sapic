@@ -1,5 +1,5 @@
 use joinerror::{Error, ResultExt};
-use moss_fs::{CreateOptions, FileSystem};
+use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_logging::session;
 use moss_storage2::KvStorage;
@@ -7,71 +7,23 @@ use sapic_base::{
     other::GitProviderKind,
     project::{
         config::{CONFIG_FILE_NAME, ProjectConfig},
-        manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
+        manifest::MANIFEST_FILE_NAME,
         types::primitives::ProjectId,
     },
-    user::types::primitives::AccountId,
 };
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use std::{
-    cell::LazyCell,
     path::{Path, PathBuf},
     sync::Arc,
 };
 use tokio::sync::OnceCell;
 
 use crate::{
-    Project, defaults, dirs, edit::ProjectEdit, errors::ErrorIo, git::GitClient,
-    set_icon::SetIconService, vcs::Vcs, worktree::Worktree,
+    Project, edit::ProjectEdit, git::GitClient, set_icon::SetIconService, vcs::Vcs,
+    worktree::Worktree,
 };
 
 const PROJECT_ICON_SIZE: u32 = 128;
-const OTHER_DIRS: [&str; 3] = [
-    dirs::ASSETS_DIR,
-    dirs::ENVIRONMENTS_DIR,
-    dirs::RESOURCES_DIR,
-];
-
-struct PredefinedFile {
-    path: PathBuf,
-    content: Option<Vec<u8>>,
-}
-
-/// List of files that are always created when a project is created.
-/// This list should include only files whose content is fixed and doesn't
-/// depend on any parameters or conditions.
-///
-/// Example:
-/// * .gitignore — This file is always created with the exact same content, regardless of context.
-/// * config.json — While it's always created, its content depends on the specific parameters of the
-/// project being created, so it is **not included** in the list of predefined files.
-const PREDEFINED_FILES: LazyCell<Vec<PredefinedFile>> = LazyCell::new(|| {
-    vec![
-        PredefinedFile {
-            path: PathBuf::from(".gitignore"),
-            content: Some("config.json\n**/state.db".as_bytes().to_vec()),
-        },
-        // ---------------------------------------------------------------------------
-        // We need to create `.gitkeep` files; otherwise, when committing the project
-        // to the repository, that folder won't be included in the commit.
-        //
-        // This will cause errors when cloning the project, since we expect that folder
-        // to always exist.
-        // ---------------------------------------------------------------------------
-        PredefinedFile {
-            path: PathBuf::from(format!("{}/.gitkeep", dirs::ENVIRONMENTS_DIR)),
-            content: None,
-        },
-        PredefinedFile {
-            path: PathBuf::from(format!("{}/.gitkeep", dirs::ASSETS_DIR)),
-            content: None,
-        },
-        PredefinedFile {
-            path: PathBuf::from(format!("{}/.gitkeep", dirs::RESOURCES_DIR)),
-            content: None,
-        },
-    ]
-});
 
 pub struct ProjectCreateParams {
     pub name: Option<String>,
@@ -194,7 +146,7 @@ impl ProjectBuilder {
 
     pub async fn create(
         self,
-        ctx: &dyn AnyAsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         params: ProjectCreateParams,
     ) -> joinerror::Result<Project> {
         // debug_assert!(params.internal_abs_path.is_absolute());
@@ -385,7 +337,7 @@ impl ProjectBuilder {
 
     pub async fn import_archive(
         self,
-        ctx: &dyn AnyAsyncContext,
+        _ctx: &dyn AnyAsyncContext,
         params: ProjectImportArchiveParams,
     ) -> joinerror::Result<Project> {
         debug_assert!(params.internal_abs_path.is_absolute());

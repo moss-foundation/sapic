@@ -8,7 +8,7 @@ use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
-use moss_text::sanitized::sanitize;
+
 use sapic_base::{
     other::GitProviderKind,
     project::{
@@ -421,7 +421,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn archive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+    pub async fn archive(&self, _ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
@@ -439,7 +439,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn unarchive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+    pub async fn unarchive(&self, _ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {

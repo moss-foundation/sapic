@@ -1,21 +1,14 @@
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
+use moss_bindingutils::primitives::ChangeString;
 use moss_environment::models::types::{AddVariableParams, UpdateVariableParams};
-use moss_git::{
-    models::{primitives::FileStatus, types::BranchInfo},
-    url::GIT_URL_REGEX,
-};
+use moss_git::models::primitives::FileStatus;
 use sapic_base::{
     environment::types::primitives::{EnvironmentId, VariableId},
     project::types::primitives::ProjectId,
-    user::types::primitives::AccountId,
 };
 use serde::{Deserialize, Serialize};
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::{path::PathBuf, sync::Arc};
 use ts_rs::TS;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 pub type EnvironmentName = String;
 
 // ------------------------------ //

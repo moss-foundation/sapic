@@ -33,10 +33,6 @@ pub mod constants {
     pub const DIR_CONFIG_FILENAME: &str = "config-folder.sap";
 }
 
-mod defaults {
-    pub(crate) const DEFAULT_PROJECT_NAME: &str = "New Project";
-}
-
 pub mod dirs {
     pub const RESOURCES_DIR: &str = "resources";
     pub const ENVIRONMENTS_DIR: &str = "environments";

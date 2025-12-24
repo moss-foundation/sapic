@@ -199,7 +199,7 @@ impl WorkspaceBuilder {
             edit,
             project_service: collection_service,
             environment_service,
-            active_profile: self.active_profile,
+            _active_profile: self.active_profile,
             _on_did_add_project: on_did_add_collection,
             _on_did_delete_project: on_did_delete_collection,
         })
@@ -282,7 +282,7 @@ impl WorkspaceBuilder {
             edit,
             project_service,
             environment_service,
-            active_profile: self.active_profile,
+            _active_profile: self.active_profile,
             _on_did_add_project: on_did_add_collection,
             _on_did_delete_project: on_did_delete_collection,
         })

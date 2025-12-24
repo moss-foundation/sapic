@@ -1,38 +1,27 @@
 use derive_more::{Deref, DerefMut};
-use futures::Stream;
-use joinerror::{Error, OptionExt, ResultExt};
+use joinerror::ResultExt;
 use moss_app_delegate::{AppDelegate, broadcast::ToLocation};
 use moss_applib::AppRuntime;
-use moss_common::{continue_if_err, continue_if_none};
-use moss_fs::{FileSystem, RemoveOptions};
-use moss_git::url::GitUrl;
+use moss_common::continue_if_none;
+use moss_fs::FileSystem;
 use moss_logging::session;
 use moss_project::{
-    Project as ProjectHandle, ProjectBuilder, ProjectModifyParams,
-    builder::{
-        ProjectCloneParams, ProjectCreateGitParams, ProjectCreateParams,
-        ProjectImportArchiveParams, ProjectImportExternalParams, ProjectLoadParams,
-    },
-    git::GitClient,
-    vcs::VcsSummary,
+    Project as ProjectHandle, ProjectBuilder, builder::ProjectLoadParams, git::GitClient,
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::{
     language::i18n::NO_TRANSLATE_KEY, localize, other::GitProviderKind,
-    project::types::primitives::ProjectId, user::types::primitives::AccountId,
-    workspace::types::primitives::WorkspaceId,
+    project::types::primitives::ProjectId, workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::{context::AnyAsyncContext, subscription::EventEmitter};
 use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
-    user::{account::Account, profile::Profile},
+    user::profile::Profile,
 };
-use serde_json::Value as JsonValue;
 use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
-    pin::Pin,
     sync::Arc,
 };
 use tokio::sync::RwLock;
@@ -41,71 +30,38 @@ use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     dirs,
     models::types::EntryChange,
-    storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project, key_project_order},
+    storage::{KEY_EXPANDED_ITEMS, KEY_PROJECT_PREFIX, key_project_order},
 };
-
-pub(crate) struct ProjectItemCloneParams {
-    pub order: isize,
-    pub account_id: AccountId,
-    pub repository: String,
-    pub git_provider_type: GitProviderKind,
-    pub branch: Option<String>,
-}
-
-pub(crate) struct ProjectItemImportFromArchiveParams {
-    pub name: String,
-    pub order: isize,
-    pub archive_path: PathBuf,
-}
-
-pub(crate) struct ProjectItemImportFromDiskParams {
-    pub order: isize,
-    pub external_path: PathBuf,
-}
 
 #[derive(Deref, DerefMut)]
 struct ProjectItem {
-    pub id: ProjectId,
-    pub order: Option<isize>,
+    pub _id: ProjectId,
+    pub _order: Option<isize>,
 
     #[deref]
     #[deref_mut]
     pub handle: Arc<ProjectHandle>,
 }
 
-pub(crate) struct ProjectItemDescription {
-    pub id: ProjectId,
-    pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
-    pub vcs: Option<VcsSummary>,
-
-    // FIXME: Do we need this field?
-    pub icon_path: Option<PathBuf>,
-    pub internal_abs_path: Arc<Path>,
-    pub external_path: Option<PathBuf>,
-    pub archived: bool,
-}
-
 #[derive(Default)]
 struct ServiceState {
     // This is a deprecated registry, we use RuntimeWorkspace projects instead
     projects: HashMap<ProjectId, ProjectItem>,
-    expanded_items: HashSet<ProjectId>,
+    _expanded_items: HashSet<ProjectId>,
 }
 
 // Get rid of this service
 pub struct ProjectService {
-    abs_path: PathBuf,
-    fs: Arc<dyn FileSystem>,
-    storage: Arc<dyn KvStorage>,
-    workspace_id: WorkspaceId,
+    _abs_path: PathBuf,
+    _fs: Arc<dyn FileSystem>,
+    _storage: Arc<dyn KvStorage>,
+    _workspace_id: WorkspaceId,
     state: Arc<RwLock<ServiceState>>,
 
-    global_github_api: Arc<dyn GitHubApiClient>,
-    global_gitlab_api: Arc<dyn GitLabApiClient>,
-    on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
-    on_did_add_project_emitter: EventEmitter<OnDidAddProject>,
+    _global_github_api: Arc<dyn GitHubApiClient>,
+    _global_gitlab_api: Arc<dyn GitLabApiClient>,
+    _on_did_delete_project_emitter: EventEmitter<OnDidDeleteProject>,
+    _on_did_add_project_emitter: EventEmitter<OnDidAddProject>,
 }
 
 impl ProjectService {
@@ -168,18 +124,18 @@ impl ProjectService {
         }
 
         Ok(Self {
-            abs_path,
-            fs,
-            storage,
-            workspace_id,
+            _abs_path: abs_path,
+            _fs: fs,
+            _storage: storage,
+            _workspace_id: workspace_id,
             state: Arc::new(RwLock::new(ServiceState {
                 projects,
-                expanded_items,
+                _expanded_items: expanded_items,
             })),
-            global_github_api,
-            global_gitlab_api,
-            on_did_delete_project_emitter: on_project_did_delete_emitter,
-            on_did_add_project_emitter: on_project_did_add_emitter,
+            _global_github_api: global_github_api,
+            _global_gitlab_api: global_gitlab_api,
+            _on_did_delete_project_emitter: on_project_did_delete_emitter,
+            _on_did_add_project_emitter: on_project_did_add_emitter,
         })
     }
 
@@ -712,47 +668,47 @@ impl ProjectService {
     //     Ok(())
     // }
 
-    pub(crate) async fn list_projects<R: AppRuntime>(
-        &self,
-        ctx: &R::AsyncContext,
-    ) -> Pin<Box<dyn Stream<Item = ProjectItemDescription> + Send + '_>> {
-        let state_clone = self.state.clone();
-        let ctx_clone = Arc::new(ctx.clone());
-
-        Box::pin(async_stream::stream! {
-            let state_lock = state_clone.read().await;
-            for (id, item) in state_lock.projects.iter() {
-                let details = continue_if_err!(item.details(ctx_clone.as_ref()).await, |e: Error| {
-                    session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
-                });
-
-                let vcs = if let Some(vcs) = item.vcs::<R>() {
-                    match vcs.summary(ctx_clone.as_ref()).await {
-                        Ok(summary) => Some(summary),
-                        Err(e) => {
-                            session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
-                            None
-                        }
-                    }
-                } else { None };
-
-                let expanded = state_lock.expanded_items.contains(id);
-                let icon_path = item.icon_path();
-
-                yield ProjectItemDescription {
-                    id: item.id.clone(),
-                    name: details.name,
-                    order: item.order,
-                    expanded,
-                    vcs,
-                    icon_path,
-                    internal_abs_path: item.handle.internal_abs_path().clone(),
-                    external_path: item.handle.external_abs_path().map(|p| p.to_path_buf()),
-                    archived: item.is_archived(),
-                };
-            }
-        })
-    }
+    // pub(crate) async fn list_projects<R: AppRuntime>(
+    //     &self,
+    //     ctx: &R::AsyncContext,
+    // ) -> Pin<Box<dyn Stream<Item = ProjectItemDescription> + Send + '_>> {
+    //     let state_clone = self.state.clone();
+    //     let ctx_clone = Arc::new(ctx.clone());
+    //
+    //     Box::pin(async_stream::stream! {
+    //         let state_lock = state_clone.read().await;
+    //         for (id, item) in state_lock.projects.iter() {
+    //             let details = continue_if_err!(item.details(ctx_clone.as_ref()).await, |e: Error| {
+    //                 session::error!(format!("failed to describe collection `{}`: {}", id.to_string(), e.to_string()));
+    //             });
+    //
+    //             let vcs = if let Some(vcs) = item.vcs::<R>() {
+    //                 match vcs.summary(ctx_clone.as_ref()).await {
+    //                     Ok(summary) => Some(summary),
+    //                     Err(e) => {
+    //                         session::warn!(format!("failed to get VCS summary for collection `{}`: {}", id.to_string(), e.to_string()));
+    //                         None
+    //                     }
+    //                 }
+    //             } else { None };
+    //
+    //             let expanded = state_lock.expanded_items.contains(id);
+    //             let icon_path = item.icon_path();
+    //
+    //             yield ProjectItemDescription {
+    //                 id: item.id.clone(),
+    //                 name: details.name,
+    //                 order: item.order,
+    //                 expanded,
+    //                 vcs,
+    //                 icon_path,
+    //                 internal_abs_path: item.handle.internal_abs_path().clone(),
+    //                 external_path: item.handle.external_abs_path().map(|p| p.to_path_buf()),
+    //                 archived: item.is_archived(),
+    //             };
+    //         }
+    //     })
+    // }
 
     // pub(crate) async fn archive_project(
     //     &self,
@@ -1268,8 +1224,8 @@ async fn restore_projects<R: AppRuntime>(
         result.insert(
             id.clone(),
             ProjectItem {
-                id,
-                order,
+                _id: id,
+                _order: order,
                 handle: Arc::new(collection),
             },
         );

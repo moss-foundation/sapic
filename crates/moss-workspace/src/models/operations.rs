@@ -4,12 +4,9 @@ use sapic_base::{
     project::types::primitives::ProjectId,
 };
 use serde::{Deserialize, Serialize};
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::path::PathBuf;
 use ts_rs::TS;
-use validator::{Validate, ValidationError};
+use validator::Validate;
 
 use crate::models::types::*;
 
@@ -167,28 +164,6 @@ pub struct StreamEnvironmentsOutput {
     #[ts(skip)]
     pub total_returned: usize,
 }
-
-// Describe Project
-//
-// /// @category Operation
-// #[derive(Debug, Deserialize, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct DescribeProjectInput {
-//     pub id: ProjectId,
-// }
-
-// /// @category Operation
-// #[derive(Debug, Deserialize, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "operations.ts")]
-// pub struct DescribeProjectOutput {
-//     pub name: String,
-//     pub vcs: Option<VcsInfo>,
-//     pub contributors: Vec<Contributor>,
-//     pub created_at: String,
-// }
 
 // Get File Statuses
 /// @category Operation

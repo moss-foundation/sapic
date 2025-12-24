@@ -19,7 +19,7 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_project::Project;
 use primitives::Options;
-use sapic_base::{errors::NotFound, project::types::primitives::ProjectId};
+use sapic_base::project::types::primitives::ProjectId;
 use sapic_core::context::{AnyAsyncContext, ArcContext, ContextBuilder};
 use sapic_ipc::constants::DEFAULT_OPERATION_TIMEOUT;
 use sapic_main::MainWindow;

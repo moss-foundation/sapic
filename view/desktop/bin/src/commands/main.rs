@@ -172,7 +172,7 @@ pub async fn stream_projects<'a, R: tauri::Runtime>(
         app,
         window,
         options,
-        |ctx, app, app_delegate, window| async move {
+        |ctx, _, _, window| async move {
             window
                 .stream_projects(&ctx, channel)
                 .await

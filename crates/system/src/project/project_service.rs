@@ -1,13 +1,11 @@
-use joinerror::{Error, ResultExt, bail};
+use joinerror::{ResultExt, bail};
 use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
-use moss_text::sanitized::sanitize;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     other::GitProviderKind,
     project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
-    user::types::primitives::AccountId,
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
