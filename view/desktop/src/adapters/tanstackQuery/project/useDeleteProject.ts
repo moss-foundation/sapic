@@ -1,6 +1,6 @@
 import { projectService } from "@/domains/project/projectService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/moss-workspace";
+import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useStreamedProjectsWithResources } from "./derivedHooks/useStreamedProjectsWithResources";

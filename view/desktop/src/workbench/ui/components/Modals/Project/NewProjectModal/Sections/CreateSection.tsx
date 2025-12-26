@@ -5,7 +5,7 @@ import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { CheckedState } from "@radix-ui/react-checkbox";
-import { CreateProjectGitParams } from "@repo/moss-workspace";
+import { CreateProjectGitParams } from "@repo/ipc";
 
 import { AccountSelect } from "../components/AccountSelect";
 import { BranchInput } from "../components/BranchInput";
@@ -14,11 +14,7 @@ import { RepositoryInput } from "../components/RepositoryInput";
 import { DEFAULT_BRANCH, DEFAULT_NAME, DEFAULT_PROVIDER, DEFAULT_REPOSITORY, DEFAULT_VCS } from "../defaults";
 
 interface CreateSectionProps {
-  onValuesUpdate: (values: {
-    name: string;
-    gitParams: CreateProjectGitParams | undefined;
-    accountId: string | undefined;
-  }) => void;
+  onValuesUpdate: (values: { name: string; gitParams: CreateProjectGitParams | undefined }) => void;
 }
 
 export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
@@ -31,25 +27,25 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const [repository, setRepository] = useState(DEFAULT_REPOSITORY);
   const [branch, setBranch] = useState(DEFAULT_BRANCH);
   const [vcs, setVCS] = useState(DEFAULT_VCS);
-  const [accountId, setAccountId] = useState<string | undefined>(undefined);
+  const [accountId, setAccountId] = useState("");
 
   useFocusInputOnMount({ inputRef });
 
   const gitParams = useMemo(() => {
     if (!vcs) return undefined;
 
-    const params = { repository, branch };
+    const params = { repository, branch, accountId };
     const providerMap = {
       github: { gitHub: params },
       gitlab: { gitLab: params },
     } as const;
 
     return providerMap[provider] ?? undefined;
-  }, [vcs, provider, repository, branch]);
+  }, [vcs, provider, repository, branch, accountId]);
 
   useEffect(() => {
-    onValuesUpdate({ name, gitParams, accountId });
-  }, [name, gitParams, onValuesUpdate, accountId]);
+    onValuesUpdate({ name, gitParams });
+  }, [name, gitParams, onValuesUpdate]);
 
   const githubAccounts = useMemo(
     () => appState?.profile?.accounts.filter((account) => account.kind === "GITHUB") ?? [],

@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Input from "@/lib/ui/Input";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
-import { ImportProjectSource } from "@repo/moss-workspace";
+import { ImportProjectSource } from "@repo/ipc";
 
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
@@ -26,28 +26,19 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
   const [accountId, setAccountId] = useState("");
 
+  const importParams = useMemo(() => {
+    const params = { repository, branch, accountId };
+    const providerMap = {
+      github: { gitHub: params },
+      gitlab: { gitLab: params },
+    } as const;
+
+    return providerMap[provider] ?? undefined;
+  }, [repository, branch, accountId, provider]);
+
   useEffect(() => {
-    const deriveGitParams = () => {
-      if (provider === "github") {
-        return {
-          gitHub: { accountId, repository, branch },
-        };
-      }
-
-      if (provider === "gitlab") {
-        return {
-          gitLab: { accountId, repository, branch },
-        };
-      }
-
-      return undefined;
-    };
-
-    onValuesUpdate({
-      name,
-      importParams: deriveGitParams(),
-    });
-  }, [name, onValuesUpdate, repository, branch, provider, accountId]);
+    onValuesUpdate({ name, importParams });
+  }, [name, importParams, onValuesUpdate]);
 
   const handleAddAccount = () => {};
 
