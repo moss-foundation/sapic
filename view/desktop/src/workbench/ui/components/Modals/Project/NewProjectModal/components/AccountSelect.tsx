@@ -14,7 +14,7 @@ export const AccountSelect = ({ accounts, onValueChange }: AccountSelectProps) =
       <div>Account:</div>
 
       <SelectOutlined.Root onValueChange={onValueChange}>
-        <SelectOutlined.Trigger disabled={isDisabled} />
+        <SelectOutlined.Trigger disabled={isDisabled} className="w-full max-w-72" />
         <SelectOutlined.Content>
           {accounts.map((account) => (
             <SelectOutlined.Item key={account.id} value={account.id}>
