@@ -117,6 +117,7 @@ impl Project {
                 ModifyParams {
                     name: input.name,
                     protocol: input.protocol,
+                    url: input.url,
                     expanded: input.expanded,
                     order: input.order,
                     path: input.path,
@@ -161,6 +162,7 @@ impl Project {
                     order: input.order,
                     expanded: input.expanded,
                     protocol: None,
+                    url: None,
                     path: input.path,
 
                     headers_to_add: vec![],
@@ -285,7 +287,7 @@ impl Project {
             }),
             url: Some(Block::new(UrlDetails {
                 protocol: input.protocol.clone().unwrap_or(ResourceProtocol::Get),
-                raw: "Hardcoded Value".to_string(),
+                raw: input.url.unwrap_or_default(),
             })),
             headers: if header_map.is_empty() {
                 None

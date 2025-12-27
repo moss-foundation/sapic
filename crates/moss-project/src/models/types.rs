@@ -29,6 +29,7 @@ pub struct CreateItemResourceParams {
 
     // TODO: url
     pub protocol: Option<ResourceProtocol>,
+    pub url: Option<String>,
 
     pub headers: Vec<AddHeaderParams>,
     pub path_params: Vec<AddPathParamParams>,
@@ -70,6 +71,7 @@ pub struct UpdateItemResourceParams {
     pub expanded: Option<bool>,
 
     pub protocol: Option<ResourceProtocol>,
+    pub url: Option<String>,
 
     pub headers_to_add: Vec<AddHeaderParams>,
     pub headers_to_update: Vec<UpdateHeaderParams>,
