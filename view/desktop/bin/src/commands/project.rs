@@ -130,32 +130,6 @@ pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_project_resources<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    project_id: ProjectId,
-    input: StreamResourcesInput,
-    channel: TauriChannel<StreamResourcesEvent>,
-    options: Options,
-) -> joinerror::Result<StreamResourcesOutput> {
-    super::with_project_timeout(
-        ctx.inner(),
-        app,
-        window,
-        project_id,
-        options,
-        |ctx, app_delegate, project| async move {
-            project
-                .stream_resources(&ctx, &app_delegate, channel, input)
-                .await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_project_resource<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,

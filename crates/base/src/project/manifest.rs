@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+// FIXME: Should this be moved to platform crate?
 pub const MANIFEST_FILE_NAME: &str = "Sapic.json";
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

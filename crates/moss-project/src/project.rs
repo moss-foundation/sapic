@@ -8,9 +8,11 @@ use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
-use moss_text::sanitized::sanitize;
+
 use sapic_base::{
+    other::GitProviderKind,
     project::{
+        config::{CONFIG_FILE_NAME, ProjectConfig},
         manifest::{MANIFEST_FILE_NAME, ManifestVcs, ProjectManifest},
         types::primitives::ProjectId,
     },
@@ -20,7 +22,6 @@ use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
 };
-use sapic_system::ports::GitProviderKind;
 use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
@@ -32,7 +33,6 @@ use std::{
 use tokio::sync::OnceCell;
 
 use crate::{
-    config::{CONFIG_FILE_NAME, ConfigFile},
     dirs,
     edit::ProjectEdit,
     git::GitClient,
@@ -40,8 +40,6 @@ use crate::{
     vcs::{ProjectVcs, Vcs},
     worktree::Worktree,
 };
-
-const ARCHIVE_EXCLUDED_ENTRIES: [&'static str; 3] = ["config.json", "state.db", ".git"];
 
 #[derive(Debug, Clone)]
 pub enum OnDidChangeEvent {
@@ -65,6 +63,7 @@ pub struct ProjectDetails {
     pub name: String,
     pub created_at: String, // File created time
     pub vcs: Option<VcsDetails>,
+    pub archived: bool,
     pub account_id: Option<AccountId>,
 }
 
@@ -316,7 +315,7 @@ impl Project {
                 format!("failed to open config file: {}", config_path.display())
             })?;
 
-        let config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let config: ProjectConfig = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse config file: {}", config_path.display())
         })?;
 
@@ -326,6 +325,7 @@ impl Project {
             name: manifest.name,
             created_at: created_at.to_rfc3339(),
             vcs: manifest.vcs.map(|vcs| vcs.into()),
+            archived: config.archived,
             account_id: config.account_id,
         })
     }
@@ -381,7 +381,7 @@ impl Project {
                 format!("failed to open config file: {}", config_path.display())
             })?;
 
-        let mut config: ConfigFile = serde_json::from_reader(rdr).join_err_with::<()>(|| {
+        let mut config: ProjectConfig = serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!("failed to parse config file: {}", config_path.display())
         })?;
 
@@ -421,7 +421,7 @@ impl Project {
         Ok(())
     }
 
-    pub async fn archive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+    pub async fn archive(&self, _ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
@@ -433,22 +433,13 @@ impl Project {
             return Ok(());
         }
         self.archived.store(true, Ordering::Relaxed);
-
-        self.modify_config(
-            ctx,
-            ProjectConfigModifyParams {
-                archived: Some(true),
-                account_id: None,
-            },
-        )
-        .await?;
         // TODO: Dropping worktree and vcs?
         // Right now it's impossible since OnceCell requires &mut self
 
         Ok(())
     }
 
-    pub async fn unarchive(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
+    pub async fn unarchive(&self, _ctx: &dyn AnyAsyncContext) -> joinerror::Result<()> {
         let updated = self
             .archived
             .fetch_update(Ordering::SeqCst, Ordering::SeqCst, |archived| {
@@ -459,16 +450,6 @@ impl Project {
         if !updated {
             return Ok(());
         }
-
-        self.modify_config(
-            ctx,
-            ProjectConfigModifyParams {
-                archived: Some(false),
-                account_id: None,
-            },
-        )
-        .await?;
-
         let _ = self
             .worktree
             .get_or_init(|| async {
@@ -484,32 +465,5 @@ impl Project {
         // TODO: Read account info from config and reload vcs
 
         Ok(())
-    }
-
-    /// Export the project to {destination}/{project_name}.zip
-    /// Returns the path to the output archive file
-    pub async fn export_archive(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        destination: &Path,
-    ) -> joinerror::Result<PathBuf> {
-        // If the output is inside the collection folder, it will also be bundled, which we don't want
-        let abs_path = self.abs_path();
-
-        if destination.starts_with(&abs_path) {
-            return Err(Error::new::<()>(
-                "cannot export archive file into the project folder",
-            ));
-        }
-        // Project name can contain special chars that need sanitizing
-        let raw_name = format!("{}", self.details(ctx).await?.name);
-        let sanitized_name = sanitize(&raw_name);
-        let archive_path = destination.join(format!("{}.zip", sanitized_name));
-
-        self.fs
-            .zip(ctx, &abs_path, &archive_path, &ARCHIVE_EXCLUDED_ENTRIES)
-            .await?;
-
-        Ok(archive_path)
     }
 }

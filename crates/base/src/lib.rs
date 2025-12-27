@@ -4,6 +4,7 @@ pub mod errors;
 pub mod extension;
 pub mod language;
 pub mod notification;
+pub mod other;
 pub mod project;
 pub mod resource;
 pub mod theme;

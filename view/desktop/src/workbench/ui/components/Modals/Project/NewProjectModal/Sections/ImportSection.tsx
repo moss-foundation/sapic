@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import Input from "@/lib/ui/Input";
+import { useDescribeApp } from "@/hooks";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
-import { ImportProjectSource } from "@repo/moss-workspace";
+import { ImportProjectSource } from "@repo/ipc";
 
+import { AccountSelect } from "../components/AccountSelect";
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
 import { RepositoryInput } from "../components/RepositoryInput";
@@ -17,6 +18,7 @@ interface ImportSectionProps {
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
+  const { data: appState } = useDescribeApp();
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState(DEFAULT_NAME);
@@ -26,30 +28,28 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const [provider, setProvider] = useState<"github" | "gitlab">(DEFAULT_PROVIDER);
   const [accountId, setAccountId] = useState("");
 
+  const importParams = useMemo(() => {
+    const params = { repository, branch, accountId };
+    const providerMap = {
+      github: { gitHub: params },
+      gitlab: { gitLab: params },
+    } as const;
+
+    return providerMap[provider] ?? undefined;
+  }, [repository, branch, accountId, provider]);
+
   useEffect(() => {
-    const deriveGitParams = () => {
-      if (provider === "github") {
-        return {
-          gitHub: { accountId, repository, branch },
-        };
-      }
+    onValuesUpdate({ name, importParams });
+  }, [name, importParams, onValuesUpdate]);
 
-      if (provider === "gitlab") {
-        return {
-          gitLab: { accountId, repository, branch },
-        };
-      }
+  const handleSetAccount = (accountId: string) => {
+    setAccountId(accountId);
+  };
 
-      return undefined;
-    };
-
-    onValuesUpdate({
-      name,
-      importParams: deriveGitParams(),
-    });
-  }, [name, onValuesUpdate, repository, branch, provider, accountId]);
-
-  const handleAddAccount = () => {};
+  const accounts = useMemo(() => {
+    const accountKind = provider === "github" ? "GITHUB" : "GITLAB";
+    return appState?.profile?.accounts.filter((account) => account.kind === accountKind) ?? [];
+  }, [provider, appState?.profile?.accounts]);
 
   return (
     <div className="flex flex-col gap-2">
@@ -76,7 +76,7 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           {gitProvider === null && (
             <button
               className="text-(--moss-primary) cursor-pointer whitespace-nowrap hover:underline"
-              onClick={handleAddAccount}
+              onClick={() => {}}
               type="button"
             >
               Log In via GitHub
@@ -89,21 +89,11 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         </span>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2 pl-5 pt-3">
+          <AccountSelect accounts={accounts} onValueChange={handleSetAccount} />
+
           <RepositoryInput repository={repository} setRepository={setRepository} />
 
           <BranchInput branch={branch} setBranch={setBranch} />
-
-          <div className="col-span-2 grid grid-cols-subgrid items-center">
-            <div>Account:</div>
-            <Input
-              className="max-w-72"
-              value={accountId}
-              onChange={(e) => setAccountId(e.target.value)}
-              placeholder="Account"
-              required
-              intent="outlined"
-            />
-          </div>
         </div>
       </div>
     </div>

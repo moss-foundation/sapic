@@ -73,7 +73,7 @@ pub struct Workspace {
     pub(super) id: WorkspaceId,
     pub(super) abs_path: Arc<Path>,
     pub(super) edit: WorkspaceEdit,
-    pub(super) active_profile: Arc<Profile>,
+    pub(super) _active_profile: Arc<Profile>,
     pub(super) project_service: Arc<ProjectService>,
     pub(super) environment_service: Arc<EnvironmentService>,
     pub(super) _on_did_delete_project: Subscription<OnDidDeleteProject>,

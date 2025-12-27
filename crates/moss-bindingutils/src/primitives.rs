@@ -44,7 +44,7 @@ pub enum ChangeBool {
 }
 
 /// @category Primitive
-#[derive(Debug, Serialize, Deserialize, TS)]
+#[derive(Clone, Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]
 #[ts(export, export_to = "primitives.ts")]
 pub enum ChangePath {

@@ -1,7 +1,7 @@
-import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
 import { AddAccountParams } from "@repo/window";
 
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
+import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
 interface CalculateIsSubmitDisabledProps {
   name: string;

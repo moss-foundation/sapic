@@ -7,7 +7,7 @@ import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { CreateProjectGitParams, ImportProjectSource } from "@repo/moss-workspace";
+import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
 import { ModalWrapperProps } from "../../types";
 import { Divider } from "./components/Divider";

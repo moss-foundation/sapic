@@ -5,12 +5,6 @@ pub mod server_api;
 use async_trait::async_trait;
 use sapic_core::context::AnyAsyncContext;
 
-#[derive(Debug, Clone)]
-pub enum GitProviderKind {
-    GitHub,
-    GitLab,
-}
-
 #[async_trait]
 pub trait GitAuthAdapter: Send + Sync {
     type PkceToken;

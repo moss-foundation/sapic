@@ -209,37 +209,37 @@ pub fn generate_random_icon(output_path: &Path) {
     img.save(output_path).unwrap();
 }
 
-#[allow(unused)]
-pub async fn test_stream_projects<R: AppRuntime>(
-    ctx: &R::AsyncContext,
-    workspace: &Workspace,
-) -> (
-    HashMap<ProjectId, StreamProjectsEvent>,
-    StreamProjectsOutput,
-) {
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
-
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = workspace
-        .stream_projects::<R>(ctx, channel.clone())
-        .await
-        .unwrap();
-    (
-        received_events
-            .lock()
-            .unwrap()
-            .iter()
-            .map(|event| (event.id.clone(), event.clone()))
-            .collect(),
-        output,
-    )
-}
+// #[allow(unused)]
+// pub async fn test_stream_projects<R: AppRuntime>(
+//     ctx: &R::AsyncContext,
+//     workspace: &Workspace,
+// ) -> (
+//     HashMap<ProjectId, StreamProjectsEvent>,
+//     StreamProjectsOutput,
+// ) {
+//     let received_events = Arc::new(Mutex::new(Vec::new()));
+//     let received_events_clone = received_events.clone();
+//
+//     let channel = Channel::new(move |body: InvokeResponseBody| {
+//         if let InvokeResponseBody::Json(json_str) = body {
+//             if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
+//                 received_events_clone.lock().unwrap().push(event);
+//             }
+//         }
+//         Ok(())
+//     });
+//
+//     let output = workspace
+//         .stream_projects::<R>(ctx, channel.clone())
+//         .await
+//         .unwrap();
+//     (
+//         received_events
+//             .lock()
+//             .unwrap()
+//             .iter()
+//             .map(|event| (event.id.clone(), event.clone()))
+//             .collect(),
+//         output,
+//     )
+// }

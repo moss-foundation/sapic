@@ -16,6 +16,7 @@ moss_git = { workspace = true }
 moss_common = { workspace = true }
 moss_environment = { workspace = true }
 moss_storage2 = { workspace = true }
+moss_bindingutils = { workspace = true }
 
 ts-rs = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
@@ -37,6 +38,8 @@ jsonptr = { workspace = true }
 tar.workspace = true
 flate2.workspace = true
 nanoid.workspace = true
+atomic_fs.workspace = true
+git2.workspace = true
 
 [dev-dependencies]
 moss_testutils = { workspace = true }

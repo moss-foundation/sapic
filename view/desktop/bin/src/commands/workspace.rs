@@ -1,5 +1,12 @@
+use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::{events::*, operations::*};
+use sapic_ipc::contracts::main::project::{
+    ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
+    DeleteProjectInput, DeleteProjectOutput, DescribeProjectInput, DescribeProjectOutput,
+    ExportProjectInput, ExportProjectOutput, ImportProjectInput, ImportProjectOutput,
+    UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput, UpdateProjectOutput,
+};
 use tauri::{Window, ipc::Channel as TauriChannel};
 
 use crate::commands::primitives::*;
@@ -28,29 +35,6 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_projects<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    channel: TauriChannel<StreamProjectsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamProjectsOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move {
-            workspace
-                .stream_projects::<TauriAppRuntime<R>>(&ctx, channel)
-                .await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
@@ -59,39 +43,12 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
     input: DescribeProjectInput,
     options: Options,
 ) -> joinerror::Result<DescribeProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .describe_project::<TauriAppRuntime<R>>(&ctx, &input)
-                .await
-        },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
-pub async fn create_project<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: CreateProjectInput,
-    options: Options,
-) -> joinerror::Result<CreateProjectOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .create_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.describe_project(&ctx, &input).await },
     )
     .await
 }
@@ -105,16 +62,12 @@ pub async fn import_project<'a, R: tauri::Runtime>(
     input: ImportProjectInput,
     options: Options,
 ) -> joinerror::Result<ImportProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .import_project::<TauriAppRuntime<R>>(&ctx, &app_delegate, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.import_project(&ctx, &input).await },
     )
     .await
 }
@@ -128,16 +81,12 @@ pub async fn export_project<'a, R: tauri::Runtime>(
     input: ExportProjectInput,
     options: Options,
 ) -> joinerror::Result<ExportProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .export_project::<TauriAppRuntime<R>>(&ctx, &input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.export_project(&ctx, &input).await },
     )
     .await
 }
@@ -151,15 +100,16 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
     input: DeleteProjectInput,
     options: Options,
 ) -> joinerror::Result<DeleteProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .delete_project::<TauriAppRuntime<R>>(&ctx, &input)
+        |ctx, _, _, window| async move {
+            window
+                .delete_project(&ctx, &input)
                 .await
+                .join_err::<()>("failed to delete project")
         },
     )
     .await
@@ -174,15 +124,16 @@ pub async fn update_project<'a, R: tauri::Runtime>(
     input: UpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<UpdateProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .update_project::<TauriAppRuntime<R>>(&ctx, input)
+        |ctx, _, _, window| async move {
+            window
+                .update_project(&ctx, &input)
                 .await
+                .join_err::<()>("failed to update project")
         },
     )
     .await
@@ -197,16 +148,12 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
     input: ArchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<ArchiveProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .archive_project::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.archive_project(&ctx, input).await },
     )
     .await
 }
@@ -220,16 +167,12 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
     input: UnarchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<UnarchiveProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .unarchive_project::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.unarchive_project(&ctx, input).await },
     )
     .await
 }
@@ -243,15 +186,16 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
     input: BatchUpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<BatchUpdateProjectOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .batch_update_project::<TauriAppRuntime<R>>(&ctx, input)
+        |ctx, _, _, window| async move {
+            window
+                .batch_update_project(&ctx, input)
                 .await
+                .join_err::<()>("failed to batch update project")
         },
     )
     .await

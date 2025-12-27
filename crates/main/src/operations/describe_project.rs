@@ -1,30 +1,19 @@
-use joinerror::OptionExt;
 use moss_applib::AppRuntime;
 use moss_logging::session;
-use sapic_system::ports::GitProviderKind;
-
-use crate::{
-    Workspace,
-    errors::ErrorNotFound,
-    models::{
-        operations::{DescribeProjectInput, DescribeProjectOutput},
-        types::{Contributor, GitHubVcsInfo, GitLabVcsInfo, VcsInfo},
-    },
+use sapic_base::other::GitProviderKind;
+use sapic_ipc::contracts::main::project::{
+    Contributor, DescribeProjectInput, DescribeProjectOutput, GitHubVcsInfo, GitLabVcsInfo, VcsInfo,
 };
 
-impl Workspace {
-    pub async fn describe_project<R: AppRuntime>(
+use crate::MainWindow;
+
+impl<R: AppRuntime> MainWindow<R> {
+    pub async fn describe_project(
         &self,
         ctx: &R::AsyncContext,
         input: &DescribeProjectInput,
     ) -> joinerror::Result<DescribeProjectOutput> {
-        let project = self
-            .project_service
-            .project(&input.id)
-            .await
-            .ok_or_join_err_with::<ErrorNotFound>(|| {
-                format!("project `{}` not found", input.id.as_str())
-            })?;
+        let project = self.workspace.load().project(ctx, &input.id).await?.handle;
 
         let details = project.details(ctx).await?;
         let (vcs_summary, contributors) = if let Some(vcs) = project.vcs::<R>() {
