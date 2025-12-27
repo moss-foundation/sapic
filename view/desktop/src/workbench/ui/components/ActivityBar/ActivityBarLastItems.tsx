@@ -1,6 +1,6 @@
-import { useDescribeApp } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
+import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
@@ -10,8 +10,8 @@ import { ActivityBarButton } from "./ActivityBarButton";
 export const ActivityBarLastItems = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { data: appState } = useDescribeApp();
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const { data: layout } = useGetLayout();
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
   return (
     <div

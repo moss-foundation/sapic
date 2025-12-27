@@ -188,7 +188,6 @@ impl<R: AppRuntime> App<R> {
             self.services.workspace_edit_service.clone(),
         ));
         let old_window = OldSapicWindowBuilder::new(
-            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),
@@ -196,7 +195,6 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             workspace_id.clone(),
-            self.services.workspace_service.clone(),
         )
         .build(ctx, delegate)
         .await?;
@@ -244,7 +242,6 @@ impl<R: AppRuntime> App<R> {
         ));
 
         let old_window = OldSapicWindowBuilder::new(
-            self.user.clone(),
             self.fs.clone(),
             self.storage.clone(),
             self.keyring.clone(),
@@ -252,7 +249,6 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             workspace_id.clone(),
-            self.services.workspace_service.clone(),
         )
         .build(ctx, delegate)
         .await?;

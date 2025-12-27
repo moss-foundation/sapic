@@ -12,24 +12,14 @@ import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
 import { EditorState } from "@codemirror/state";
 import { tags } from "@lezer/highlight";
-import { AccountKind, ExtensionInfo } from "@repo/base";
+import { ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
 import { parser } from "@repo/lezer-grammar";
-import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
+import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
 import { ParsedUrl } from "../EndpointView/utils";
-
-interface CreateProfileData {
-  name: string;
-}
-
-interface LoginData {
-  profileId: string;
-  accountId: string;
-  provider: string;
-}
 
 export type LogsViewProps = DefaultViewProps;
 
@@ -37,21 +27,6 @@ export const LogsView = ({}: LogsViewProps) => {
   const { t } = useTranslation(["main", "bootstrap"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { windowEvents } = useActivityRouter();
-
-  const [profileForm, setProfileForm] = useState<CreateProfileData>({
-    name: "",
-  });
-
-  const [accountForm, setAccountForm] = useState<AddAccountParams>({
-    host: "github.com",
-    kind: "GITHUB",
-  });
-
-  const [loginForm, setLoginForm] = useState<LoginData>({
-    profileId: "",
-    accountId: "",
-    provider: "GitHub",
-  });
 
   const [getItemForm, setGetItemForm] = useState({
     key: "",
@@ -85,53 +60,6 @@ export const LogsView = ({}: LogsViewProps) => {
       console.log("Indexing started");
     } catch (error) {
       console.error("Error starting indexing:", error);
-    }
-  };
-
-  const handleCreateProfile = async () => {
-    try {
-      await invoke("create_profile", {
-        input: {
-          name: profileForm.name,
-        },
-      });
-      console.log("Profile created:", profileForm);
-    } catch (error) {
-      console.error("Error creating profile:", error);
-    }
-  };
-
-  const handleAddAccount = async () => {
-    try {
-      await invoke("add_user_account", {
-        host: accountForm.host,
-        kind: accountForm.kind,
-        pat: accountForm.pat ? accountForm.pat : undefined,
-      });
-      console.log("Account added:", accountForm);
-    } catch (error) {
-      console.error("Error adding account:", error);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      await invoke("user_login", {
-        profileId: loginForm.profileId,
-        provider: loginForm.provider,
-      });
-      console.log("Login successful:", loginForm);
-    } catch (error) {
-      console.error("Error logging in:", error);
-    }
-  };
-
-  const handleDescribeApp = async () => {
-    try {
-      const result = await invoke("describe_app");
-      console.log(result);
-    } catch (error) {
-      console.error("Error describing app:", error);
     }
   };
 
@@ -217,15 +145,6 @@ export const LogsView = ({}: LogsViewProps) => {
       </section>
 
       <section className="mb-6">
-        <h2 className="mb-2 text-xl">App</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <button onClick={handleDescribeApp} className="w-full rounded bg-blue-500 p-2 text-white">
-            Describe App
-          </button>
-        </div>
-      </section>
-
-      <section className="mb-6">
         <h2 className="mb-2 text-xl">Shared Storage</h2>
         <div className="grid grid-cols-3 gap-4">
           <div className="flex flex-col gap-2 rounded bg-gray-50 p-4">
@@ -296,78 +215,6 @@ export const LogsView = ({}: LogsViewProps) => {
             <button onClick={handleRemoveItem} className="w-full rounded bg-blue-500 p-2 text-white">
               Remove
             </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 text-xl">Profile</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">Create profile</h3>
-              <input
-                type="text"
-                placeholder="Profile name"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <button onClick={handleCreateProfile} className="w-full rounded bg-blue-500 p-2 text-white">
-                Create
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">Add account</h3>
-              <input
-                type="text"
-                placeholder="Host"
-                value={accountForm.host}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <select
-                value={accountForm.kind}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, kind: e.target.value as AccountKind }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              >
-                <option value="github">GitHub</option>
-                <option value="gitlab">GitLab</option>
-              </select>
-              <button onClick={handleAddAccount} className="w-full rounded bg-blue-500 p-2 text-white">
-                Add
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">VCS Operations</h3>
-              <input
-                type="text"
-                placeholder="Profile Id"
-                value={loginForm.profileId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, profileId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
-                placeholder="Account Id"
-                value={loginForm.accountId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
-                placeholder="Account Id"
-                value={loginForm.accountId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-
-              <button onClick={handleLogin} className="w-full rounded bg-blue-500 p-2 text-white">
-                Login
-              </button>
-            </div>
           </div>
         </div>
       </section>

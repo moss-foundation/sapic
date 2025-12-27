@@ -1,5 +1,5 @@
-import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/workbench/layout";
+import { useCurrentWorkspace } from "@/hooks";
+import { useGetLayout } from "@/workbench/adapters";
 import { ProjectTreesView } from "@/workbench/ui/parts/ProjectTreesView/ProjectTreesView";
 import { SidebarHeader } from "@/workbench/ui/parts/Sidebar/SidebarHeader";
 import {
@@ -12,39 +12,16 @@ import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListVi
 import { SourceControlView } from "../SourceControlView/SourceControlView";
 
 export const SidebarWorkspaceContent = () => {
-  const { data: appState, isFetching: isFetchingApp, error: appError } = useDescribeApp();
-  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
-
+  const { currentWorkspace } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
 
-  const workspace = appState?.workspace;
   const activeContainerId = layout?.activitybarState.activeContainerId;
 
-  if (isFetchingApp) {
-    return <div className="flex h-full w-full items-center justify-center p-4">Loading...</div>;
-  }
-
-  if (!hasActiveWorkspace) {
-    return <div className="flex h-full w-full items-center justify-center p-4">No workspace selected</div>;
-  }
-
-  if (appError) {
+  if (!currentWorkspace) {
     return (
       <div className="flex h-full w-full items-center justify-center p-4">
         <div className="text-center">
-          <p className="text-red-600">Error loading workspace: {activeWorkspace?.name}</p>
-          <p className="mt-2 text-sm text-gray-500">{appError?.message || "Unknown error"}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!workspace) {
-    return (
-      <div className="flex h-full w-full items-center justify-center p-4">
-        <div className="text-center">
-          <p>Workspace "{activeWorkspace?.name}" not found</p>
-          <p className="text-sm text-gray-500">The workspace may have been moved or deleted</p>
+          <p className="text-sm text-gray-500">The workspace is not found</p>
         </div>
       </div>
     );

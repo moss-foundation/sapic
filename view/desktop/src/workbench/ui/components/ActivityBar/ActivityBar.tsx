@@ -1,16 +1,16 @@
-import { useDescribeApp } from "@/hooks/app/useDescribeApp";
 import { cn } from "@/utils";
+import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 
 import { ActivityBarFirstItems } from "./ActivityBarFirstItems";
 import { ActivityBarLastItems } from "./ActivityBarLastItems";
 
 export const ActivityBar = () => {
-  const { data: appState } = useDescribeApp();
+  const { data: layout } = useGetLayout();
 
   //TODO later we should handle the JsonValue differently
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
-  const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
+  const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   return (
     <div
