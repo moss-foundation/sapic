@@ -5,30 +5,19 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use moss_workspace::builder::{LoadWorkspaceParams, WorkspaceBuilder};
-// use moss_theme::registry::ThemeRegistry;
 use sapic_base::workspace::types::primitives::WorkspaceId;
-use sapic_system::{
-    ports::{
-        github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
-    },
-    user::User,
-    workspace::workspace_service::WorkspaceService,
+use sapic_system::ports::{
+    github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
 };
 use std::{path::PathBuf, sync::Arc};
 use tauri::Manager;
 
 use crate::{
-    dirs,
-    logging::LogService,
-    profile::ProfileService,
-    session::SessionService,
-    // theme::ThemeService,
-    window::OldSapicWindow,
-    workspace::OldWorkspaceService,
+    dirs, logging::LogService, profile::ProfileService, session::SessionService,
+    window::OldSapicWindow, workspace::OldWorkspaceService,
 };
 
 pub struct OldSapicWindowBuilder {
-    user: Arc<dyn User>,
     workspace_id: WorkspaceId,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
@@ -36,12 +25,10 @@ pub struct OldSapicWindowBuilder {
     server_api_client: Arc<dyn ServerApiClient>,
     github_api_client: Arc<dyn GitHubApiClient>,
     gitlab_api_client: Arc<dyn GitLabApiClient>,
-    workspace_service: Arc<WorkspaceService>,
 }
 
 impl OldSapicWindowBuilder {
     pub fn new(
-        user: Arc<dyn User>,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,
         keyring: Arc<dyn KeyringClient>,
@@ -49,10 +36,8 @@ impl OldSapicWindowBuilder {
         github_api_client: Arc<dyn GitHubApiClient>,
         gitlab_api_client: Arc<dyn GitLabApiClient>,
         workspace_id: WorkspaceId,
-        workspace_service: Arc<WorkspaceService>,
     ) -> Self {
         Self {
-            user,
             workspace_id,
             fs,
             storage,
@@ -60,7 +45,6 @@ impl OldSapicWindowBuilder {
             server_api_client,
             github_api_client,
             gitlab_api_client,
-            workspace_service,
         }
     }
 
@@ -72,7 +56,8 @@ impl OldSapicWindowBuilder {
         let tao_handle = delegate.app_handle();
         let user_dir = delegate.user_dir();
 
-        self.create_user_dirs_if_not_exists(user_dir.clone()).await;
+        self.create_user_dirs_if_not_exists::<R>(ctx, user_dir.clone())
+            .await;
 
         // let on_did_change_profile_emitter = EventEmitter::<OnDidChangeProfile>::new();
         // let on_did_change_profile_event = on_did_change_profile_emitter.event();
@@ -111,6 +96,7 @@ impl OldSapicWindowBuilder {
         )
         .expect("Failed to create log service");
         let profile_service = ProfileService::new(
+            ctx,
             &user_dir.join(dirs::PROFILES_DIR),
             self.fs.clone(),
             self.server_api_client.clone(),
@@ -144,7 +130,7 @@ impl OldSapicWindowBuilder {
         .await
         .join_err::<()>("failed to load the workspace")?;
 
-        let workspace_service = OldWorkspaceService::new(workspace, self.workspace_service)
+        let workspace_service = OldWorkspaceService::new(workspace)
             .await
             .expect("Failed to create workspace service");
 
@@ -161,18 +147,22 @@ impl OldSapicWindowBuilder {
 
         Ok(OldSapicWindow {
             app_handle: tao_handle.clone(),
-            user: self.user,
+            // user: self.user,
             session_service,
             log_service,
             workspace_service,
             // theme_service,
-            profile_service,
+            // profile_service,
             // configuration_service,
             // tracked_cancellations: Default::default(),
         })
     }
 
-    async fn create_user_dirs_if_not_exists(&self, user_dir: PathBuf) {
+    async fn create_user_dirs_if_not_exists<R: AppRuntime>(
+        &self,
+        ctx: &R::AsyncContext,
+        user_dir: PathBuf,
+    ) {
         for dir in &[
             dirs::WORKSPACES_DIR,
             dirs::GLOBALS_DIR,
@@ -185,7 +175,7 @@ impl OldSapicWindowBuilder {
             }
 
             self.fs
-                .create_dir(&dir_path)
+                .create_dir(ctx, &dir_path)
                 .await
                 .expect("Failed to create app directories");
         }

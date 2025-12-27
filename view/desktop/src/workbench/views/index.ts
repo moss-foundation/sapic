@@ -1,4 +1,5 @@
 export * from "./AccountsView/AccountsView";
+export * from "./DefaultView/DefaultView";
 export * from "./EndpointView/EndpointView";
 export * from "./FolderSettingsView/FolderSettingsView";
 export * from "./KitchenSinkView/KitchenSinkView";

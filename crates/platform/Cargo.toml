@@ -34,6 +34,12 @@ url = { workspace = true }
 urlencoding = { workspace = true }
 webbrowser = { workspace = true }
 jsonptr = { workspace = true }
+tar.workspace = true
+flate2.workspace = true
+nanoid.workspace = true
+
+[dev-dependencies]
+moss_testutils = { workspace = true }
 
 # Making SSH work on Windows
 [target.'cfg(windows)'.dependencies]

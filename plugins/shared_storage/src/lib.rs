@@ -12,12 +12,14 @@ use std::{
     time::Duration,
 };
 use tauri::{
-    AppHandle, Manager, RunEvent, Runtime, WindowEvent,
+    AppHandle, Manager, RunEvent, Runtime, State, WindowEvent,
     plugin::{Builder, TauriPlugin},
 };
 use tracing::instrument;
 
 use crate::models::operations::*;
+
+type AsyncContext<'a> = State<'a, sapic_core::context::ArcContext>;
 
 pub(crate) type ProviderCallback =
     Arc<dyn Fn(&GenericAppHandle) -> joinerror::Result<Arc<dyn KvStorage>> + Send + Sync>;
@@ -150,8 +152,9 @@ async fn on_event_window_focused<R: Runtime>(app_handle: AppHandle<R>) -> joiner
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn get_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: GetItemInput,
 ) -> joinerror::Result<GetItemOutput> {
@@ -161,20 +164,20 @@ async fn get_item<'a, R: tauri::Runtime>(
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let value = storage
-        .get(input.scope.clone().into(), &input.key)
-        .await?
-        .ok_or_join_err::<()>("item not found")?;
+        .get(ctx.inner(), input.scope.clone().into(), &input.key)
+        .await?;
 
     Ok(GetItemOutput {
         key: input.key.clone(),
-        value,
+        value: value.into(),
         scope: input.scope,
     })
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn put_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: PutItemInput,
 ) -> joinerror::Result<PutItemOutput> {
@@ -184,7 +187,7 @@ async fn put_item<'a, R: tauri::Runtime>(
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     storage
-        .put(input.scope.into(), &input.key, input.value)
+        .put(ctx.inner(), input.scope.into(), &input.key, input.value)
         .await
         .join_err::<()>("failed to put item")?;
 
@@ -192,8 +195,9 @@ async fn put_item<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn remove_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: RemoveItemInput,
 ) -> joinerror::Result<RemoveItemOutput> {
@@ -203,7 +207,7 @@ async fn remove_item<'a, R: tauri::Runtime>(
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let value = storage
-        .remove(input.scope.clone().into(), &input.key)
+        .remove(ctx.inner(), input.scope.clone().into(), &input.key)
         .await
         .join_err::<()>("failed to remove item")?;
 
@@ -214,8 +218,9 @@ async fn remove_item<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn batch_put_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: BatchPutItemInput,
 ) -> joinerror::Result<BatchPutItemOutput> {
@@ -230,7 +235,7 @@ async fn batch_put_item<'a, R: tauri::Runtime>(
         .map(|(k, v)| (k.as_str(), v.clone()))
         .collect();
     storage
-        .put_batch(input.scope.into(), &items)
+        .put_batch(ctx.inner(), input.scope.into(), &items)
         .await
         .join_err::<()>("failed to batch put items")?;
 
@@ -238,8 +243,9 @@ async fn batch_put_item<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn batch_remove_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: BatchRemoveItemInput,
 ) -> joinerror::Result<BatchRemoveItemOutput> {
@@ -250,6 +256,7 @@ async fn batch_remove_item<'a, R: tauri::Runtime>(
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .remove_batch(
+            ctx.inner(),
             input.scope.clone().into(),
             &input.keys.iter().map(|k| k.as_str()).collect::<Vec<&str>>(),
         )
@@ -265,8 +272,9 @@ async fn batch_remove_item<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn batch_get_item<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: BatchGetItemInput,
 ) -> joinerror::Result<BatchGetItemOutput> {
@@ -277,6 +285,7 @@ async fn batch_get_item<'a, R: tauri::Runtime>(
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
         .get_batch(
+            ctx.inner(),
             input.scope.clone().into(),
             &input.keys.iter().map(|k| k.as_str()).collect::<Vec<&str>>(),
         )
@@ -292,8 +301,9 @@ async fn batch_get_item<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: BatchGetItemByPrefixInput,
 ) -> joinerror::Result<BatchGetItemByPrefixOutput> {
@@ -303,7 +313,7 @@ async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
-        .get_batch_by_prefix(input.scope.clone().into(), &input.prefix)
+        .get_batch_by_prefix(ctx.inner(), input.scope.clone().into(), &input.prefix)
         .await
         .join_err::<()>("failed to batch get item by prefix")?;
 
@@ -315,8 +325,9 @@ async fn batch_get_item_by_prefix<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app_handle))]
+#[instrument(level = "trace", skip(ctx, app_handle))]
 async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
     app_handle: AppHandle<R>,
     input: BatchRemoveItemByPrefixInput,
 ) -> joinerror::Result<BatchRemoveItemByPrefixOutput> {
@@ -326,7 +337,7 @@ async fn batch_remove_item_by_prefix<'a, R: tauri::Runtime>(
 
     let storage: Arc<dyn KvStorage> = provider(&GenericAppHandle::new(app_handle))?;
     let items = storage
-        .remove_batch_by_prefix(input.scope.clone().into(), &input.prefix)
+        .remove_batch_by_prefix(ctx.inner(), input.scope.clone().into(), &input.prefix)
         .await
         .join_err::<()>("failed to batch remove item by prefix")?;
 

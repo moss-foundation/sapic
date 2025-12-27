@@ -12,6 +12,7 @@ members = [
     #
     "crates/app",
     "crates/window",
+    "crates/onboarding",
     "crates/welcome",
     "crates/main",
     "crates/system",
@@ -48,6 +49,7 @@ members = [
     #
     "plugins/shared_storage",
     "plugins/settings-storage",
+    "plugins/template-parser",
     #
     # Apps
     #
@@ -71,6 +73,7 @@ static_json = { path = "libs/static-json" }
 #
 sapic-app = { path = "crates/app", package = "app" }
 sapic-system = { path = "crates/system", package = "system" }
+sapic-onboarding = { path = "crates/onboarding", package = "onboarding" }
 sapic-welcome = { path = "crates/welcome", package = "welcome" }
 sapic-runtime = { path = "crates/runtime", package = "runtime" }
 sapic-main = { path = "crates/main", package = "main" }
@@ -111,6 +114,7 @@ moss_storage2 = { path = "crates/moss-storage2" }
 #
 shared-storage = { path = "plugins/shared_storage" }
 settings-storage = { path = "plugins/settings-storage" }
+template-parser = { path = "plugins/template-parser" }
 #
 # External crates
 #
@@ -174,6 +178,10 @@ async_zip = {version = "0.0.18", default-features = false}
 regorus = {version = "0.5.0", default-features = false}
 inventory = "0.3.21"
 arc-swap = "1.7.1"
+pest = "2.8.3"
+pest_derive = "2.8.3"
+tar = {version = "0.4.44", default-features = false}
+flate2 = {version = "1.1.5", default-features = false}
 
 
 [profile.release]

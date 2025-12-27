@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useEffectEvent, useState } from "react";
 
 import { Icon, Icons } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
@@ -6,42 +6,45 @@ import Input from "@/lib/ui/Input";
 interface EditableHeaderProps {
   icon: Icons;
   title: string;
-  isRenamingResource: boolean;
-  setIsRenamingResource: (isRenamingResource: boolean) => void;
-  handleRenamingResourceSubmit: (newName: string) => void;
-  handleRenamingResourceCancel: () => void;
-  editable: boolean;
+  isRenamingResourceDetails: boolean;
+  setIsRenamingResourceDetails: (isRenamingResource: boolean) => void;
+  handleRenamingResourceDetailsSubmit: (newName: string) => void;
+  handleRenamingResourceDetailsCancel: () => void;
 }
 
 export const EditableHeader = ({
   icon,
-  title: initialTitle,
-  isRenamingResource,
-  setIsRenamingResource,
-  handleRenamingResourceSubmit,
-  handleRenamingResourceCancel,
-  editable = false,
+  title,
+  isRenamingResourceDetails,
+  setIsRenamingResourceDetails,
+  handleRenamingResourceDetailsSubmit,
+  handleRenamingResourceDetailsCancel,
 }: EditableHeaderProps) => {
-  const [newTitle, setNewTitle] = useState(initialTitle);
+  const [newTitle, setNewTitle] = useState(title);
+
+  // Reset the title when the renaming resource details is finished
+  // It's needed in case the renaming has failed
+  const resetTitle = useEffectEvent(() => setNewTitle(title));
+  useEffect(() => resetTitle, [isRenamingResourceDetails]);
 
   const handleBlur = () => {
-    handleRenamingResourceSubmit(newTitle);
-    setIsRenamingResource(false);
+    handleRenamingResourceDetailsSubmit(newTitle);
+    setIsRenamingResourceDetails(false);
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleRenamingResourceSubmit(newTitle);
-    setIsRenamingResource(false);
+    handleRenamingResourceDetailsSubmit(newTitle);
+    setIsRenamingResourceDetails(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") {
-      handleRenamingResourceCancel();
+      handleRenamingResourceDetailsCancel();
     }
     if (e.key === "Enter") {
-      handleRenamingResourceSubmit(newTitle);
-      setIsRenamingResource(false);
+      handleRenamingResourceDetailsSubmit(newTitle);
+      setIsRenamingResourceDetails(false);
     }
   };
 
@@ -51,7 +54,7 @@ export const EditableHeader = ({
         <Icon icon={icon} className="size-[18px]" />
       </div>
 
-      {isRenamingResource ? (
+      {isRenamingResourceDetails ? (
         <form onSubmit={handleSubmit} className="-mx-1 w-full max-w-[200px] px-1">
           <Input
             intent="plain"
@@ -66,10 +69,10 @@ export const EditableHeader = ({
         </form>
       ) : (
         <h2
-          onClick={editable ? () => setIsRenamingResource(true) : undefined}
+          onClick={() => setIsRenamingResourceDetails(true)}
           className="hover:background-(--moss-secondary-background-hover) text-(--moss-primary-foreground) -mx-1 w-full max-w-[200px] cursor-text truncate rounded-md px-1 py-0.5 text-lg font-bold leading-6 transition-colors"
         >
-          {newTitle}
+          {title}
         </h2>
       )}
     </div>

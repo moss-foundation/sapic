@@ -18,6 +18,7 @@ use moss_storage2::{
     project_storage::ProjectStorageBackend,
     workspace_storage::WorkspaceStorageBackend,
 };
+use sapic_core::context::AnyAsyncContext;
 
 #[derive(Debug, Clone)]
 pub struct AppStorageOptions {
@@ -202,14 +203,23 @@ impl SubstoreManager for AppStorage {
 
 #[async_trait]
 impl KvStorage for AppStorage {
-    async fn put(&self, scope: StorageScope, key: &str, value: JsonValue) -> joinerror::Result<()> {
+    async fn put(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+        value: JsonValue,
+    ) -> joinerror::Result<()> {
         match scope.clone() {
-            StorageScope::Application => self.application().await?.put(key, value).await,
+            StorageScope::Application => self.application().await?.put(ctx, key, value).await,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.put(key, value).await
+                self.workspace(workspace_id)
+                    .await?
+                    .put(ctx, key, value)
+                    .await
             }
             StorageScope::Project(project_id) => {
-                self.project(project_id).await?.put(key, value).await
+                self.project(project_id).await?.put(ctx, key, value).await
             }
         }?;
 
@@ -224,24 +234,36 @@ impl KvStorage for AppStorage {
         Ok(())
     }
 
-    async fn get(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>> {
+    async fn get(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>> {
         match scope {
-            StorageScope::Application => self.application().await?.get(key).await,
+            StorageScope::Application => self.application().await?.get(ctx, key).await,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.get(key).await
+                self.workspace(workspace_id).await?.get(ctx, key).await
             }
-            StorageScope::Project(project_id) => self.project(project_id).await?.get(key).await,
+            StorageScope::Project(project_id) => {
+                self.project(project_id).await?.get(ctx, key).await
+            }
         }
     }
 
-    async fn remove(&self, scope: StorageScope, key: &str) -> joinerror::Result<Option<JsonValue>> {
+    async fn remove(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        key: &str,
+    ) -> joinerror::Result<Option<JsonValue>> {
         let value = match scope.clone() {
-            StorageScope::Application => self.application().await?.remove(key).await?,
+            StorageScope::Application => self.application().await?.remove(ctx, key).await?,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.remove(key).await?
+                self.workspace(workspace_id).await?.remove(ctx, key).await?
             }
             StorageScope::Project(project_id) => {
-                self.project(project_id).await?.remove(key).await?
+                self.project(project_id).await?.remove(ctx, key).await?
             }
         };
 
@@ -258,78 +280,70 @@ impl KvStorage for AppStorage {
 
     async fn put_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         items: &[(&str, JsonValue)],
     ) -> joinerror::Result<()> {
         match scope.clone() {
-            StorageScope::Application => self.application().await?.put_batch(items).await,
+            StorageScope::Application => self.application().await?.put_batch(ctx, items).await,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.put_batch(items).await
+                self.workspace(workspace_id)
+                    .await?
+                    .put_batch(ctx, items)
+                    .await
             }
             StorageScope::Project(project_id) => {
-                self.project(project_id).await?.put_batch(items).await
+                self.project(project_id).await?.put_batch(ctx, items).await
             }
         }
     }
 
     async fn get_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
         match scope.clone() {
-            StorageScope::Application => self.application().await?.get_batch(keys).await,
+            StorageScope::Application => self.application().await?.get_batch(ctx, keys).await,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.get_batch(keys).await
+                self.workspace(workspace_id)
+                    .await?
+                    .get_batch(ctx, keys)
+                    .await
             }
             StorageScope::Project(project_id) => {
-                self.project(project_id).await?.get_batch(keys).await
+                self.project(project_id).await?.get_batch(ctx, keys).await
             }
         }
     }
 
     async fn remove_batch(
         &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         keys: &[&str],
     ) -> joinerror::Result<Vec<(String, Option<JsonValue>)>> {
         match scope.clone() {
-            StorageScope::Application => self.application().await?.remove_batch(keys).await,
+            StorageScope::Application => self.application().await?.remove_batch(ctx, keys).await,
             StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id).await?.remove_batch(keys).await
+                self.workspace(workspace_id)
+                    .await?
+                    .remove_batch(ctx, keys)
+                    .await
             }
             StorageScope::Project(project_id) => {
-                self.project(project_id).await?.remove_batch(keys).await
+                self.project(project_id)
+                    .await?
+                    .remove_batch(ctx, keys)
+                    .await
             }
         }
     }
 
     async fn get_batch_by_prefix(
         &self,
-        scope: StorageScope,
-        prefix: &str,
-    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
-        match scope.clone() {
-            StorageScope::Application => {
-                self.application().await?.get_batch_by_prefix(prefix).await
-            }
-            StorageScope::Workspace(workspace_id) => {
-                self.workspace(workspace_id)
-                    .await?
-                    .get_batch_by_prefix(prefix)
-                    .await
-            }
-            StorageScope::Project(project_id) => {
-                self.project(project_id)
-                    .await?
-                    .get_batch_by_prefix(prefix)
-                    .await
-            }
-        }
-    }
-
-    async fn remove_batch_by_prefix(
-        &self,
+        ctx: &dyn AnyAsyncContext,
         scope: StorageScope,
         prefix: &str,
     ) -> joinerror::Result<Vec<(String, JsonValue)>> {
@@ -337,19 +351,47 @@ impl KvStorage for AppStorage {
             StorageScope::Application => {
                 self.application()
                     .await?
-                    .remove_batch_by_prefix(prefix)
+                    .get_batch_by_prefix(ctx, prefix)
                     .await
             }
             StorageScope::Workspace(workspace_id) => {
                 self.workspace(workspace_id)
                     .await?
-                    .remove_batch_by_prefix(prefix)
+                    .get_batch_by_prefix(ctx, prefix)
                     .await
             }
             StorageScope::Project(project_id) => {
                 self.project(project_id)
                     .await?
-                    .remove_batch_by_prefix(prefix)
+                    .get_batch_by_prefix(ctx, prefix)
+                    .await
+            }
+        }
+    }
+
+    async fn remove_batch_by_prefix(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        scope: StorageScope,
+        prefix: &str,
+    ) -> joinerror::Result<Vec<(String, JsonValue)>> {
+        match scope.clone() {
+            StorageScope::Application => {
+                self.application()
+                    .await?
+                    .remove_batch_by_prefix(ctx, prefix)
+                    .await
+            }
+            StorageScope::Workspace(workspace_id) => {
+                self.workspace(workspace_id)
+                    .await?
+                    .remove_batch_by_prefix(ctx, prefix)
+                    .await
+            }
+            StorageScope::Project(project_id) => {
+                self.project(project_id)
+                    .await?
+                    .remove_batch_by_prefix(ctx, prefix)
                     .await
             }
         }

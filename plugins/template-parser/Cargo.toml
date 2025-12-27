@@ -1,0 +1,29 @@
+[package]
+name = "template-parser"
+version = "0.1.0"
+edition = "2024"
+links = "template-parser"
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-plugin.workspace = true
+
+[dependencies]
+sapic-runtime.workspace = true
+sapic-ipc = { workspace = true }
+
+moss_applib.workspace = true
+
+pest.workspace = true
+pest_derive.workspace = true
+
+joinerror = { workspace = true, features = ["tauri"] }
+tauri = { workspace = true, features = ["wry"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+validator = { workspace = true, features = ["derive"] }
+ts-rs = { workspace = true }
+async-trait.workspace = true
+tracing.workspace = true

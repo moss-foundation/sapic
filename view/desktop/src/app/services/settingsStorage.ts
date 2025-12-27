@@ -1,4 +1,4 @@
-import { settingsStorageIpc } from "@/infra/ipc/settingsStorage";
+import { settingsStorageIpc } from "@/infra/ipc/settingsStorageIpc";
 import { SettingScopeEnum } from "@/shared/settingsStorage/types";
 import { JsonValue } from "@repo/moss-bindingutils";
 

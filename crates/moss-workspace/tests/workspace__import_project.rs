@@ -76,6 +76,7 @@ async fn clone_project_success() {
     // Check order was stored
     let order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_project_order(&id),
         )
@@ -88,6 +89,7 @@ async fn clone_project_success() {
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )
@@ -145,6 +147,7 @@ async fn import_external_project_success() {
     // Check order was stored
     let order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_project_order(&id),
         )
@@ -157,6 +160,7 @@ async fn import_external_project_success() {
     // Check expanded_items contains the project id
     let expanded_items_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             KEY_EXPANDED_ITEMS,
         )

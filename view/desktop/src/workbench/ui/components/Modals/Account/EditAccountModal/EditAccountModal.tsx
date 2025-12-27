@@ -1,9 +1,8 @@
 import { FormEvent, useState } from "react";
 
-import { useUpdateProfile } from "@/adapters";
+import { useUpdateUserAccount } from "@/adapters/tanstackQuery/user/useUpdateUserAccount";
 import { Button, Link, Modal } from "@/lib/ui";
 import { AccountInfo } from "@repo/base";
-import { UpdateAccountParams, UpdateProfileInput } from "@repo/window";
 
 import { ModalWrapperProps } from "../../types";
 import { getPatPlaceholder, getProviderName, getProviderSettingsUrl } from "../accountUtils";
@@ -15,7 +14,7 @@ interface EditAccountModalProps extends ModalWrapperProps {
 
 export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpdated }: EditAccountModalProps) => {
   const [token, setToken] = useState("");
-  const { mutateAsync: updateProfile, isPending: isUpdatingProfile } = useUpdateProfile();
+  const { mutateAsync: updateUserAccount, isPending: isUpdatingProfile } = useUpdateUserAccount();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,18 +22,7 @@ export const EditAccountModal = ({ showModal, closeModal, account, onAccountUpda
     if (!account || !token) return;
 
     try {
-      const accountParams: UpdateAccountParams = {
-        id: account.id,
-        pat: token,
-      };
-
-      const input: UpdateProfileInput = {
-        accountsToAdd: [],
-        accountsToRemove: [],
-        accountsToUpdate: [accountParams],
-      };
-
-      await updateProfile(input);
+      await updateUserAccount({ id: account.id, pat: token });
 
       handleClose();
       onAccountUpdated?.();

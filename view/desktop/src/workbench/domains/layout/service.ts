@@ -1,4 +1,4 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorage";
+import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { JsonValue } from "@repo/moss-bindingutils";
 
@@ -14,15 +14,15 @@ interface ILayoutService {
 
 export const layoutService: ILayoutService = {
   getLayout: async (workspaceId: string) => {
-    try {
-      const { value } = await sharedStorageIpc.getItem(SHARED_STORAGE_LAYOUT_KEY, {
-        workspace: workspaceId ?? "application",
-      });
-      return value as unknown as LayoutStateOutput;
-    } catch (error) {
-      console.error("Failed to get layout", error);
-      return defaultLayoutState;
+    const { value: output } = await sharedStorageIpc.getItem(SHARED_STORAGE_LAYOUT_KEY, {
+      workspace: workspaceId ?? "application",
+    });
+
+    if (output !== "none") {
+      return output.value as unknown as LayoutStateOutput;
     }
+
+    return defaultLayoutState;
   },
   updateLayout: async (input, workspaceId) => {
     await sharedStorageIpc.putItem(SHARED_STORAGE_LAYOUT_KEY, input as unknown as JsonValue, {

@@ -1,4 +1,4 @@
-import { environmentIpc } from "@/infra/ipc/environment";
+import { environmentIpc } from "@/infra/ipc/environmentIpc";
 import {
   ActivateEnvironmentInput,
   ActivateEnvironmentOutput,

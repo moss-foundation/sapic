@@ -3,11 +3,21 @@ use moss_text::{ReadOnlyStr, quote};
 use sapic_app::command::CommandContext;
 use sapic_base::errors::NotFound;
 use sapic_ipc::contracts::{
-    configuration::*, extension::*, language::*, theme::*, user::*, workspace::*,
+    configuration::*,
+    extension::*,
+    language::*,
+    theme::*,
+    user::{
+        AddUserAccountInput, ListUserAccountsOutput, RemoveUserAccountInput, UpdateUserAccountInput,
+    },
+    workspace::*,
+};
+use sapic_window::{
+    constants::ON_DID_ADD_EXTENSION_CHANNEL, models::events::OnDidAddExtensionForFrontend,
 };
 use serde_json::Value as JsonValue;
-use std::collections::HashMap;
-use tauri::Window as TauriWindow;
+use std::{collections::HashMap, io::ErrorKind};
+use tauri::{Emitter, Window as TauriWindow};
 
 use crate::commands::primitives::*;
 
@@ -61,6 +71,41 @@ pub async fn list_extensions<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, _| async move { app.list_extensions(&ctx).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn download_extension<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+    input: DownloadExtensionInput,
+) -> joinerror::Result<()> {
+    super::with_app_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, app, _| async move {
+            let id = app
+                .download_extension(&ctx, &input.extension_id, &input.version)
+                .await?;
+            // Is this the right place to emit event?
+            app.emit(
+                ON_DID_ADD_EXTENSION_CHANNEL,
+                OnDidAddExtensionForFrontend { id },
+            )
+            .map_err(|e| {
+                std::io::Error::new(
+                    ErrorKind::Other,
+                    format!("Unable to emit a tauri event: {}", e),
+                )
+            })?;
+            Ok(())
+        },
     )
     .await
 }
@@ -135,10 +180,10 @@ pub async fn delete_workspace<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, app, app_delegate| async move {
-            let output = app.delete_workspace(&ctx, &input).await?;
-
+            // We need to open welcome window first, otherwise the app will close
+            // This is in line with `commands::main__close_workspace`
             app.ensure_welcome(&app_delegate).await?;
-
+            let output = app.delete_workspace(&ctx, &input).await?;
             Ok(output)
         },
     )
@@ -255,4 +300,15 @@ pub async fn remove_user_account<'a, R: tauri::Runtime>(
         |ctx, app, _| async move { app.remove_user_account(&ctx, &input).await },
     )
     .await
+}
+
+// TODO: Replace this with fetching the api key from the server
+#[tauri::command(async)]
+#[instrument(level = "trace", fields(window = window.label()))]
+pub async fn get_mistral_api_key<'a, R: tauri::Runtime>(
+    window: TauriWindow<R>,
+) -> joinerror::Result<String> {
+    let api_key =
+        dotenvy::var("MISTRAL_API_KEY").map_err(|_| anyhow::anyhow!("MISTRAL_API_KEY not set"))?;
+    Ok(api_key)
 }

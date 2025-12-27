@@ -1,14 +1,14 @@
+use crate::workspace::{
+    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
+};
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{path::PathBuf, sync::Arc};
-
-use crate::workspace::{
-    CreatedWorkspace, WorkspaceCreateOp, WorkspaceServiceFs, types::WorkspaceItem,
-};
 
 static KEY_WORKSPACE_PREFIX: &'static str = "workspace";
 
@@ -30,13 +30,16 @@ impl WorkspaceService {
         Self { fs, storage }
     }
 
-    pub async fn delete_workspace(&self, id: &WorkspaceId) -> joinerror::Result<Option<PathBuf>> {
+    pub async fn delete_workspace(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &WorkspaceId,
+    ) -> joinerror::Result<Option<PathBuf>> {
         // TODO: schedule deletion of the workspace directory on a background if we fail to delete it
-        let deleted_path = self.fs.delete_workspace(id).await?;
-
+        // Remove storage entry first since files might not have been properly deleted yet
         if let Err(e) = self
             .storage
-            .remove_batch_by_prefix(StorageScope::Application, &key_workspace(id))
+            .remove_batch_by_prefix(ctx, StorageScope::Application, &key_workspace(id))
             .await
         {
             tracing::warn!(
@@ -46,13 +49,18 @@ impl WorkspaceService {
             );
         }
 
+        let deleted_path = self.fs.delete_workspace(ctx, id).await?;
+
         Ok(deleted_path)
     }
 
-    pub async fn workspaces(&self) -> joinerror::Result<Vec<WorkspaceItem>> {
+    pub async fn workspaces(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<WorkspaceItem>> {
         let restored_items: FxHashMap<String, JsonValue> = if let Ok(items) = self
             .storage
-            .get_batch_by_prefix(StorageScope::Application, KEY_WORKSPACE_PREFIX)
+            .get_batch_by_prefix(ctx, StorageScope::Application, KEY_WORKSPACE_PREFIX)
             .await
         {
             items.into_iter().collect()
@@ -62,7 +70,7 @@ impl WorkspaceService {
 
         let discovered_workspaces = self
             .fs
-            .lookup_workspaces()
+            .lookup_workspaces(ctx)
             .await
             .join_err::<()>("failed to lookup workspaces")?;
 
@@ -93,11 +101,15 @@ impl WorkspaceService {
 
 #[async_trait]
 impl WorkspaceCreateOp for WorkspaceService {
-    async fn create(&self, name: String) -> joinerror::Result<CreatedWorkspace> {
+    async fn create(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        name: String,
+    ) -> joinerror::Result<CreatedWorkspace> {
         let id = WorkspaceId::new();
         let abs_path = self
             .fs
-            .create_workspace(&id, &name, self.storage.clone())
+            .create_workspace(ctx, &id, &name, self.storage.clone())
             .await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })

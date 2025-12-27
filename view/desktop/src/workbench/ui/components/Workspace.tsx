@@ -1,5 +1,5 @@
 import { useStreamProjects } from "@/adapters/tanstackQuery/project";
-import { useGetLayout } from "@/hooks/workbench/layout";
+import { useGetLayout } from "@/workbench/adapters";
 import { TabbedPane } from "@/workbench/ui/parts";
 
 interface WorkspaceProps {

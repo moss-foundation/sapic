@@ -26,6 +26,7 @@ pub struct AppUser {
 
 impl AppUser {
     pub async fn new(
+        ctx: &dyn AnyAsyncContext,
         abs_path: PathBuf,
         fs: Arc<dyn FileSystem>,
         server_api_client: Arc<dyn ServerApiClient>,
@@ -38,10 +39,11 @@ impl AppUser {
         let user_abs_path = abs_path.join("user");
 
         Ok(Self {
-            settings: UserSettingsService::new(user_abs_path.clone(), fs.clone())
+            settings: UserSettingsService::new(ctx, user_abs_path.clone(), fs.clone())
                 .await?
                 .into(),
             accounts: UserAccountsService::new(
+                ctx,
                 user_abs_path,
                 fs,
                 server_api_client,

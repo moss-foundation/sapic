@@ -54,6 +54,7 @@ pub struct UserAccountsService {
 
 impl UserAccountsService {
     pub async fn new(
+        ctx: &dyn AnyAsyncContext,
         abs_path: PathBuf,
         fs: Arc<dyn FileSystem>,
         server_api_client: Arc<dyn ServerApiClient>,
@@ -64,6 +65,7 @@ impl UserAccountsService {
         keyring: Arc<dyn KeyringClient>,
     ) -> joinerror::Result<Self> {
         let accounts = load_or_init_accounts(
+            ctx,
             server_api_client.clone(),
             keyring.clone(),
             fs.as_ref(),
@@ -109,7 +111,7 @@ impl UserAccountsService {
 
         accounts.retain(|account| account.id != *account_id);
 
-        self.sync_accounts_file(accounts)
+        self.sync_accounts_file(ctx, accounts)
             .await
             .join_err_with::<()>(|| {
                 format!(
@@ -259,7 +261,7 @@ impl UserAccountsService {
         );
 
         let accounts = self.accounts().await;
-        self.sync_accounts_file(accounts)
+        self.sync_accounts_file(ctx, accounts)
             .await
             .join_err_with::<()>(|| {
                 format!(
@@ -308,13 +310,18 @@ impl UserAccountsService {
         Ok(())
     }
 
-    async fn sync_accounts_file(&self, accounts: Vec<AccountInfo>) -> joinerror::Result<()> {
+    async fn sync_accounts_file(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        accounts: Vec<AccountInfo>,
+    ) -> joinerror::Result<()> {
         let accounts: Vec<AccountsManifestItem> =
             accounts.into_iter().map(|account| account.into()).collect();
         let content = serde_json::to_string_pretty(&UserAccountsManifest(accounts))?;
 
         self.fs
             .create_file_with(
+                ctx,
                 &self.abs_path.join(ACCOUNTS_FILE),
                 content.as_bytes(),
                 CreateOptions {
@@ -329,6 +336,7 @@ impl UserAccountsService {
 }
 
 async fn load_or_init_accounts(
+    ctx: &dyn AnyAsyncContext,
     server_api_client: Arc<dyn ServerApiClient>,
     keyring: Arc<dyn KeyringClient>,
     fs: &dyn FileSystem,
@@ -339,7 +347,7 @@ async fn load_or_init_accounts(
         return Ok(HashMap::new());
     }
 
-    let rdr = fs.open_file(&accounts_path).await?;
+    let rdr = fs.open_file(ctx, &accounts_path).await?;
     let accounts: UserAccountsManifest =
         serde_json::from_reader(rdr).join_err_with::<()>(|| {
             format!(

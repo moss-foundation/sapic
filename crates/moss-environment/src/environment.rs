@@ -6,7 +6,7 @@ use json_patch::{
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_common::continue_if_err;
 use moss_edit::json::EditOptions;
-use moss_fs::{FileSystem, FsResultExt};
+use moss_fs::FileSystem;
 use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -83,11 +83,11 @@ impl AnyEnvironment for Environment {
     // TODO: add variables()
 
     // TODO: rename to details
-    async fn describe(&self) -> joinerror::Result<DescribeEnvironment> {
+    async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment> {
         let abs_path = self.abs_path().await;
         let rdr = self
             .fs
-            .open_file(&abs_path)
+            .open_file(ctx, &abs_path)
             .await
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
@@ -107,7 +107,7 @@ impl AnyEnvironment for Environment {
 
                 let local_value: Option<JsonValue> = match self
                     .storage
-                    .get(storage_scope.clone(), &key_variable_local_value(id))
+                    .get(ctx, storage_scope.clone(), &key_variable_local_value(id))
                     .await
                 {
                     Ok(value) => value,
@@ -122,7 +122,7 @@ impl AnyEnvironment for Environment {
 
                 let order: Option<isize> = match self
                     .storage
-                    .get(storage_scope.clone(), &key_variable_order(&id))
+                    .get(ctx, storage_scope.clone(), &key_variable_order(&id))
                     .await
                 {
                     Ok(value) => value.and_then(|value| serde_json::from_value(value).ok()),
@@ -161,11 +161,11 @@ impl AnyEnvironment for Environment {
 
     async fn modify(
         &self,
-        _ctx: &dyn AnyAsyncContext,
+        ctx: &dyn AnyAsyncContext,
         params: ModifyEnvironmentParams,
     ) -> joinerror::Result<()> {
         if let Some(new_name) = params.name {
-            self.edit.rename(&new_name).await?;
+            self.edit.rename(ctx, &new_name).await?;
         }
 
         let mut patches = Vec::new();
@@ -238,7 +238,7 @@ impl AnyEnvironment for Environment {
 
             if let Err(e) = self
                 .storage
-                .put_batch(storage_scope.clone(), &batch_input)
+                .put_batch(ctx, storage_scope.clone(), &batch_input)
                 .await
             {
                 session::warn!(format!(
@@ -374,7 +374,7 @@ impl AnyEnvironment for Environment {
                 Some(ChangeJsonValue::Update(value)) => {
                     if let Err(e) = self
                         .storage
-                        .put(storage_scope.clone(), &local_value_key, value)
+                        .put(ctx, storage_scope.clone(), &local_value_key, value)
                         .await
                     {
                         session::warn!(format!("failed to update variable localValue: {}", e));
@@ -383,7 +383,7 @@ impl AnyEnvironment for Environment {
                 Some(ChangeJsonValue::Remove) => {
                     if let Err(e) = self
                         .storage
-                        .remove(storage_scope.clone(), &local_value_key)
+                        .remove(ctx, storage_scope.clone(), &local_value_key)
                         .await
                     {
                         session::warn!(format!("failed to remove variable localValue: {}", e));
@@ -398,6 +398,7 @@ impl AnyEnvironment for Environment {
                     if let Err(e) = self
                         .storage
                         .put(
+                            ctx,
                             storage_scope.clone(),
                             &order_key,
                             serde_json::to_value(&order)?,
@@ -426,7 +427,7 @@ impl AnyEnvironment for Environment {
 
             if let Err(e) = self
                 .storage
-                .remove_batch_by_prefix(storage_scope.clone(), &key_variable(&id))
+                .remove_batch_by_prefix(ctx, storage_scope.clone(), &key_variable(&id))
                 .await
             {
                 session::warn!(format!(
@@ -437,7 +438,7 @@ impl AnyEnvironment for Environment {
         }
 
         self.edit
-            .edit(&patches)
+            .edit(ctx, &patches)
             .await
             .join_err::<()>("failed to edit environment")?;
 

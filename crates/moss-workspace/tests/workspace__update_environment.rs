@@ -76,7 +76,7 @@ async fn update_environment_success() {
         .await
         .unwrap();
 
-    let env_description = environment.describe().await.unwrap();
+    let env_description = environment.describe(&ctx).await.unwrap();
 
     assert_eq!(env_description.name, new_environment_name);
 
@@ -86,6 +86,7 @@ async fn update_environment_success() {
     // Check environment cache is updated with new order and expanded
     let stored_env_order_value = storage
         .get(
+            &ctx,
             StorageScope::Workspace(workspace.id().inner()),
             &key_environment_order(&id),
         )
@@ -163,7 +164,7 @@ async fn update_environment_add_variables() {
     let environment = workspace.environment(&id).await.unwrap();
 
     // Check that the variables are correctly added
-    let env_description = environment.describe().await.unwrap();
+    let env_description = environment.describe(&ctx).await.unwrap();
 
     let variables = env_description.variables;
 
@@ -244,7 +245,7 @@ async fn update_environment_update_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe()
+        .describe(&ctx)
         .await
         .unwrap();
 
@@ -292,7 +293,7 @@ async fn update_environment_update_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe()
+        .describe(&ctx)
         .await
         .unwrap();
 
@@ -419,7 +420,7 @@ async fn update_environment_delete_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe()
+        .describe(&ctx)
         .await
         .unwrap();
 
@@ -451,7 +452,7 @@ async fn update_environment_delete_variables() {
         .environment(&environment_id)
         .await
         .unwrap()
-        .describe()
+        .describe(&ctx)
         .await
         .unwrap();
     let variables = env_description.variables;

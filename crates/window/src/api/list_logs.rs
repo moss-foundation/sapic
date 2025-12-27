@@ -10,7 +10,7 @@ use crate::{
 impl<R: AppRuntime> OldSapicWindow<R> {
     pub async fn list_logs(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &ListLogsInput,
     ) -> joinerror::Result<ListLogsOutput> {
         let filter = LogFilter {
@@ -24,7 +24,7 @@ impl<R: AppRuntime> OldSapicWindow<R> {
             resource: input.resource.clone(),
         };
 
-        let contents = self.log_service.list_logs_with_filter(&filter).await?;
+        let contents = self.log_service.list_logs_with_filter(ctx, &filter).await?;
         Ok(ListLogsOutput { contents })
     }
 }

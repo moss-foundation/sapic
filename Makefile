@@ -54,6 +54,7 @@ WORKSPACE_MODELS_DIR := crates/moss-workspace
 GIT_MODELS_DIR := crates/moss-git
 SHARED_STORAGE_MODELS_DIR := plugins/shared_storage
 SETTINGS_STORAGE_MODELS_DIR := plugins/settings-storage
+TEMPLATE_PARSER_MODELS_DIR := plugins/template-parser
 
 # ---- Command Executables ----
 PNPM := pnpm
@@ -71,6 +72,9 @@ UV := uv
 run-desktop:
 	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools
 
+.PHONY: run-desktop-release
+run-desktop-release:
+	@cd $(DESKTOP_DIR) && $(PNPM) tauri dev --features devtools -- --release
 
 # ======================================================
 # Setup Commands
@@ -150,6 +154,7 @@ $(eval $(call gen_bindings,activity-broadcaster,ACTIVITY_BROADCASTER_MODELS_DIR)
 
 $(eval $(call gen_bindings,shared-storage,SHARED_STORAGE_MODELS_DIR))
 $(eval $(call gen_bindings,settings-storage,SETTINGS_STORAGE_MODELS_DIR))
+$(eval $(call gen_bindings,template-parser,TEMPLATE_PARSER_MODELS_DIR))
 
 gen-window-bindings:
 gen-project-bindings:
@@ -160,6 +165,7 @@ gen-ipc-bindings:
 gen-git-bindings:
 gen-shared-storage-bindings:
 gen-settings-storage-bindings:
+gen-template-parser-bindings:
 gen-base-bindings:
 gen-activity-broadcaster-bindings:
 
@@ -177,6 +183,7 @@ gen-bindings: \
 	gen-shared-storage-bindings \
 	gen-settings-storage-bindings \
 	gen-base-bindings \
+	gen-template-parser-bindings \
 
 
 # ======================================================
@@ -278,3 +285,9 @@ tidy: gen-license rust-audit check-unused-deps
 build:
 	@echo "Building with compression feature for reducing binary size..."
 	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features compression
+
+## Create a debug build
+.PHONY: build-debug
+build-debug:
+	@echo "Building with devtools..."
+	@cd $(DESKTOP_DIR) && $(PNPM) run tauri build --features devtools

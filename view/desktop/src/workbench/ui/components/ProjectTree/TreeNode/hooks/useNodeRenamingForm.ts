@@ -1,7 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
+import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
@@ -26,7 +25,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       if (node.kind === "Dir") {
         await updateProjectResource({
           projectId: id,
-          updatedResource: {
+          updateResourceInput: {
             DIR: {
               id: node.id,
               name: trimmedNewName,
@@ -39,7 +38,7 @@ export const useNodeRenamingForm = (node: ProjectTreeNode) => {
       } else {
         await updateProjectResource({
           projectId: id,
-          updatedResource: {
+          updateResourceInput: {
             ITEM: {
               id: node.id,
               name: trimmedNewName,

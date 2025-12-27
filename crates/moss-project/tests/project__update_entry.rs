@@ -208,7 +208,7 @@ async fn update_dir_entry_order() {
 
     // Check order was updated
     let order_value = storage
-        .get(storage_scope, &key_resource_order(&id))
+        .get(&ctx, storage_scope, &key_resource_order(&id))
         .await
         .unwrap()
         .unwrap();
@@ -250,7 +250,7 @@ async fn expand_and_collapse_dir_entry() {
 
     // Check expanded_items contains the entry id
     let expanded_items_value = storage
-        .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+        .get(&ctx, storage_scope.clone(), KEY_EXPANDED_ENTRIES)
         .await
         .unwrap()
         .unwrap();
@@ -275,7 +275,7 @@ async fn expand_and_collapse_dir_entry() {
 
     // Check expanded_items no longer contains the entry id
     let expanded_items_value = storage
-        .get(storage_scope.clone(), KEY_EXPANDED_ENTRIES)
+        .get(&ctx, storage_scope.clone(), KEY_EXPANDED_ENTRIES)
         .await
         .unwrap()
         .unwrap();

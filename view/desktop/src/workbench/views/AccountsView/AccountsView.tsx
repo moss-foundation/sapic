@@ -1,7 +1,5 @@
-import { IDockviewPanelProps } from "moss-tabs";
-
-import { useUpdateProfile } from "@/adapters/tanstackQuery/user";
-import { useDescribeApp, useModal } from "@/hooks";
+import { useListUserAccounts, useRemoveUserAccount } from "@/adapters/tanstackQuery/user";
+import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
 import { cn } from "@/utils";
 import { ConfirmationModal, PageView } from "@/workbench/ui/components";
@@ -9,14 +7,14 @@ import { EditAccountModal } from "@/workbench/ui/components/Modals/Account/EditA
 import { NewAccountModal } from "@/workbench/ui/components/Modals/Account/NewAccountModal";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { ProviderIcon } from "@/workbench/ui/components/ProviderIcon";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 import { AccountInfo } from "@repo/base";
-import { UpdateProfileInput } from "@repo/window";
 
-export type AccountsViewProps = Record<string, never>;
+export type AccountsViewProps = DefaultViewProps;
 
-export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
-  const { data: appState, isLoading, error } = useDescribeApp();
-  const profile = appState?.profile;
+export const AccountsView = ({}: AccountsViewProps) => {
+  const { data, isLoading, error } = useListUserAccounts();
+  const accounts = data?.accounts;
 
   const {
     openModal: openNewAccountModal,
@@ -42,7 +40,7 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
     );
   }
 
-  if (!profile) {
+  if (!accounts) {
     return (
       <PageView>
         <PageWrapper>
@@ -80,14 +78,14 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
 
               {/* Accounts List */}
               <div className="mt-2.5">
-                {profile.accounts.length === 0 ? (
+                {accounts.length === 0 ? (
                   <div className="border-(--moss-border) text-(--moss-secondary-foreground) rounded-sm border p-6 text-center text-sm">
                     <p>No accounts connected yet</p>
                   </div>
                 ) : (
                   <div className="border-(--moss-border) overflow-hidden rounded-md border">
-                    {profile.accounts.map((account: AccountInfo, index: number) => (
-                      <AccountRow key={account.id} account={account} isLast={index === profile.accounts.length - 1} />
+                    {accounts.map((account: AccountInfo, index: number) => (
+                      <AccountRow key={account.id} account={account} isLast={index === accounts.length - 1} />
                     ))}
                   </div>
                 )}
@@ -103,21 +101,15 @@ export const AccountsView = ({}: IDockviewPanelProps<AccountsViewProps>) => {
 };
 
 const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean }) => {
-  const { isFetching: isFetchingDescribeApp } = useDescribeApp();
-  const { mutateAsync: updateProfile } = useUpdateProfile();
+  const { isLoading: isLoadingUserAccounts } = useListUserAccounts();
+  const { mutateAsync: removeUserAccount } = useRemoveUserAccount();
 
   const { openModal: openEditModal, closeModal: closeEditModal, showModal: isEditModalOpen } = useModal();
   const { openModal: openRevokeModal, closeModal: closeRevokeModal, showModal: isRevokeModalOpen } = useModal();
 
   const handleRemoveAccount = async () => {
     try {
-      const input: UpdateProfileInput = {
-        accountsToAdd: [],
-        accountsToRemove: [account.id],
-        accountsToUpdate: [],
-      };
-
-      await updateProfile(input);
+      await removeUserAccount({ id: account.id });
 
       closeRevokeModal();
     } catch (error) {
@@ -159,7 +151,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
               Edit details
             </Button>
           )}
-          <Button intent="danger" onClick={openRevokeModal} disabled={isFetchingDescribeApp}>
+          <Button intent="danger" onClick={openRevokeModal} disabled={isLoadingUserAccounts}>
             Revoke
           </Button>
         </div>
@@ -182,7 +174,7 @@ const AccountRow = ({ account, isLast }: { account: AccountInfo; isLast: boolean
           cancelLabel="Cancel"
           onConfirm={handleRemoveAccount}
           variant="danger"
-          loading={isFetchingDescribeApp}
+          loading={isLoadingUserAccounts}
         />
       )}
     </>

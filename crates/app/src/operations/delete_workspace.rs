@@ -12,20 +12,19 @@ use crate::App;
 impl<R: AppRuntime> App<R> {
     pub async fn delete_workspace(
         &self,
-        _ctx: &R::AsyncContext,
+        ctx: &R::AsyncContext,
         input: &DeleteWorkspaceInput,
     ) -> joinerror::Result<DeleteWorkspaceOutput> {
         input.validate().join_err_bare()?;
-
         let maybe_window = self.windows.main_window_by_workspace_id(&input.id).await;
         if let Some(window) = maybe_window {
-            self.windows.close_main_window(window.label()).await?;
+            self.close_main_window(ctx, window.label()).await?;
         }
 
         let maybe_abs_path = self
             .services
             .workspace_service
-            .delete_workspace(&input.id)
+            .delete_workspace(ctx, &input.id)
             .await
             .join_err_with::<()>(|| format!("failed to delete workspace `{}`", input.id))?;
 

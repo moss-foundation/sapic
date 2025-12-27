@@ -1,5 +1,5 @@
-use crate::FsResult;
 use anyhow::Result;
+use joinerror::bail;
 use notify::Watcher;
 use std::{
     path::PathBuf,
@@ -36,7 +36,7 @@ impl FsWatcher {
         }
     }
 
-    pub fn add(&self, path: &PathBuf) -> FsResult<()> {
+    pub fn add(&self, path: &PathBuf) -> joinerror::Result<()> {
         let tx = self.tx.clone();
         let pending_path_events = self.pending_path_events.clone();
         let path_owned = path.clone();
@@ -70,11 +70,12 @@ impl FsWatcher {
                 }
             });
         })?;
-
-        global(|global_watcher| {
+        if let Err(e) = global(|global_watcher| {
             let mut watcher = global_watcher.watcher.lock()?;
             watcher.watch(path, notify::RecursiveMode::NonRecursive)
-        })??;
+        })? {
+            bail!("failed to register global file watcher: {}", e);
+        }
 
         Ok(())
     }

@@ -1,6 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../useStreamProjectResources";
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
 
 export const useClearAllProjectResources = () => {
   const queryClient = useQueryClient();

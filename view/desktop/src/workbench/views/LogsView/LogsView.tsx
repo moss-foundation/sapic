@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { EditorView, minimalSetup } from "codemirror";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
@@ -7,42 +8,25 @@ import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
 import GitTest from "@/workbench/ui/components/GitTest";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
+import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
+import { EditorState } from "@codemirror/state";
+import { tags } from "@lezer/highlight";
 import { ExtensionInfo } from "@repo/base";
-import { AccountKind } from "@repo/base";
-import { AddAccountParams, LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL, UpdateProfileInput } from "@repo/window";
 import { ListExtensionsOutput } from "@repo/ipc";
+import { parser } from "@repo/lezer-grammar";
+import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 
-interface CreateProfileData {
-  name: string;
-}
+import { ParsedUrl } from "../EndpointView/utils";
 
-interface LoginData {
-  profileId: string;
-  accountId: string;
-  provider: string;
-}
+export type LogsViewProps = DefaultViewProps;
 
-export const LogsView = () => {
+export const LogsView = ({}: LogsViewProps) => {
   const { t } = useTranslation(["main", "bootstrap"]);
   const [logs, setLogs] = useState<LogEntryInfo[]>([]);
   const { windowEvents } = useActivityRouter();
-
-  const [profileForm, setProfileForm] = useState<CreateProfileData>({
-    name: "",
-  });
-
-  const [accountForm, setAccountForm] = useState<AddAccountParams>({
-    host: "github.com",
-    kind: "GITHUB",
-  });
-
-  const [loginForm, setLoginForm] = useState<LoginData>({
-    profileId: "",
-    accountId: "",
-    provider: "GitHub",
-  });
 
   const [getItemForm, setGetItemForm] = useState({
     key: "",
@@ -76,54 +60,6 @@ export const LogsView = () => {
       console.log("Indexing started");
     } catch (error) {
       console.error("Error starting indexing:", error);
-    }
-  };
-
-  const handleCreateProfile = async () => {
-    try {
-      await invoke("create_profile", {
-        input: {
-          name: profileForm.name,
-        },
-      });
-      console.log("Profile created:", profileForm);
-    } catch (error) {
-      console.error("Error creating profile:", error);
-    }
-  };
-
-  const handleAddAccount = async () => {
-    try {
-      const input: UpdateProfileInput = {
-        accountsToAdd: [accountForm],
-        accountsToRemove: [],
-        accountsToUpdate: [],
-      };
-      await invoke("update_profile", { input });
-      console.log("Account added:", accountForm);
-    } catch (error) {
-      console.error("Error adding account:", error);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      await invoke("user_login", {
-        profileId: loginForm.profileId,
-        provider: loginForm.provider,
-      });
-      console.log("Login successful:", loginForm);
-    } catch (error) {
-      console.error("Error logging in:", error);
-    }
-  };
-
-  const handleDescribeApp = async () => {
-    try {
-      const result = await invoke("describe_app");
-      console.log(result);
-    } catch (error) {
-      console.error("Error describing app:", error);
     }
   };
 
@@ -182,6 +118,13 @@ export const LogsView = () => {
   return (
     <PageContent className="space-y-6">
       <section className="mb-6">
+        <h2 className="mb-2 text-xl">Url Parser</h2>
+        <div className="rounded bg-gray-50 p-4">
+          <UrlParserTest />
+        </div>
+      </section>
+
+      <section className="mb-6">
         <h2 className="mb-2 text-xl">Extension Registry</h2>
         <div className="rounded bg-gray-50 p-4">
           <ExtensionRegistryTest />
@@ -198,15 +141,6 @@ export const LogsView = () => {
         <h2 className="mb-2 text-xl">AI Assistant</h2>
         <div className="rounded bg-gray-50 p-4">
           <AIDemo />
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 text-xl">App</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <button onClick={handleDescribeApp} className="w-full rounded bg-blue-500 p-2 text-white">
-            Describe App
-          </button>
         </div>
       </section>
 
@@ -281,78 +215,6 @@ export const LogsView = () => {
             <button onClick={handleRemoveItem} className="w-full rounded bg-blue-500 p-2 text-white">
               Remove
             </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="mb-6">
-        <h2 className="mb-2 text-xl">Profile</h2>
-        <div className="rounded bg-gray-50 p-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">Create profile</h3>
-              <input
-                type="text"
-                placeholder="Profile name"
-                value={profileForm.name}
-                onChange={(e) => setProfileForm((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <button onClick={handleCreateProfile} className="w-full rounded bg-blue-500 p-2 text-white">
-                Create
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">Add account</h3>
-              <input
-                type="text"
-                placeholder="Host"
-                value={accountForm.host}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, host: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <select
-                value={accountForm.kind}
-                onChange={(e) => setAccountForm((prev) => ({ ...prev, kind: e.target.value as AccountKind }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              >
-                <option value="github">GitHub</option>
-                <option value="gitlab">GitLab</option>
-              </select>
-              <button onClick={handleAddAccount} className="w-full rounded bg-blue-500 p-2 text-white">
-                Add
-              </button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-lg font-medium">VCS Operations</h3>
-              <input
-                type="text"
-                placeholder="Profile Id"
-                value={loginForm.profileId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, profileId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
-                placeholder="Account Id"
-                value={loginForm.accountId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-              <input
-                type="text"
-                placeholder="Account Id"
-                value={loginForm.accountId}
-                onChange={(e) => setLoginForm((prev) => ({ ...prev, accountId: e.target.value }))}
-                className="w-full rounded-md border border-gray-300 bg-white p-2"
-              />
-
-              <button onClick={handleLogin} className="w-full rounded bg-blue-500 p-2 text-white">
-                Login
-              </button>
-            </div>
           </div>
         </div>
       </section>
@@ -465,6 +327,7 @@ const ExtensionRegistryTest = () => {
             <th className={"p-1"}>Created At</th>
             <th className={"p-1"}>Updated At</th>
             <th className={"p-1"}>Latest Version</th>
+            <th className={"p-1"}>Download Latest Version</th>
           </tr>
         </thead>
         <tbody>
@@ -481,6 +344,24 @@ const ExtensionRegistryTest = () => {
                 <td className={"p-1"}>{info.createdAt}</td>
                 <td className={"p-1"}>{info.updatedAt}</td>
                 <td className={"p-1"}>{info.latestVersion}</td>
+                <td className={"p-1"}>
+                  <button
+                    className="cursor-pointer rounded bg-blue-500 p-2 text-white"
+                    onClick={async () => {
+                      const result = await invokeTauriIpc("download_extension", {
+                        input: {
+                          extensionId: info.id,
+                          version: info.latestVersion,
+                        },
+                      });
+                      if (result.status === "error") {
+                        throw new Error(String(result.status));
+                      }
+                    }}
+                  >
+                    Download
+                  </button>
+                </td>
               </tr>
             );
           })}
@@ -491,6 +372,90 @@ const ExtensionRegistryTest = () => {
         onClick={handleListExtensionsButton}
       >
         List Available Extensions From the Extension Registry
+      </button>
+    </div>
+  );
+};
+
+const UrlParserTest = () => {
+  const editorRef = useRef<HTMLDivElement>(null);
+  const viewRef = useRef<EditorView | null>(null);
+  const [url, setUrl] = useState<string>();
+  const [parsedUrl, setParsedUrl] = useState<ParsedUrl>();
+
+  async function handleParseUrlButton() {
+    try {
+      const result = await invoke<ParsedUrl>("plugin:template-parser|parse_url", {
+        input: {
+          url: url,
+        },
+      });
+      setParsedUrl(result);
+    } catch (e) {
+      alert(`Failed to parse url: ${e}`);
+    }
+  }
+
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const language = LRLanguage.define({ parser });
+    const languageSupport = new LanguageSupport(language);
+
+    const highlightStyle = HighlightStyle.define([
+      { tag: tags.punctuation, color: "black" },
+      {
+        tag: tags.variableName,
+        color: "var(--moss-accent)",
+        backgroundColor: "var(--moss-accent-secondary)",
+        padding: "1px 2px",
+        borderRadius: "4px",
+        fontWeight: "bold",
+      },
+      { tag: tags.content, color: "black" },
+      { tag: tags.keyword, color: "black" },
+    ]);
+
+    const startState = EditorState.create({
+      doc: "",
+      extensions: [
+        minimalSetup,
+        languageSupport,
+        syntaxHighlighting(highlightStyle),
+
+        EditorView.updateListener.of((update) => {
+          setUrl(update.state.doc.toString());
+        }),
+
+        EditorView.theme({
+          "&.cm-focused": {
+            outline: "none",
+          },
+        }),
+      ],
+    });
+
+    const view = new EditorView({
+      state: startState,
+      parent: editorRef.current,
+    });
+
+    viewRef.current = view;
+
+    return () => view.destroy();
+    // we create the editor only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div className={"overflow-x-auto rounded-md"}>
+      <div ref={editorRef} className="bg-white" />
+      <textarea value={JSON.stringify(parsedUrl, null, 2)} readOnly className="h-50 mt-4 w-full bg-white" />
+      <button
+        className="cursor-pointer rounded bg-purple-500 p-2 text-white hover:bg-purple-600"
+        onClick={handleParseUrlButton}
+      >
+        Parse Url
       </button>
     </div>
   );

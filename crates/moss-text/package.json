@@ -10,7 +10,6 @@
     "@repo/typescript-config": "workspace:*"
   },
   "dependencies": {
-    "typescript": "5.9.2",
-    "zod": "3.25.32"
+    "typescript": "5.9.2"
   }
 }

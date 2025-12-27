@@ -1,8 +1,8 @@
 import { workspaceService } from "@/domains/workspace/workspaceService";
+import { useRemoveLayout } from "@/workbench/adapters";
 import { DeleteWorkspaceInput, DeleteWorkspaceOutput, ListWorkspacesOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useRemoveLayout } from "../../../hooks/workbench/layout";
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "./useListWorkspaces";
 
 export const USE_DELETE_WORKSPACE_MUTATION_KEY = "deleteWorkspace";
@@ -20,7 +20,7 @@ export const useDeleteWorkspace = () => {
         return oldData.filter((workspace) => workspace.id !== variables.id);
       });
 
-      await removeLayout({ workspaceId: variables.id });
+      await removeLayout(variables.id);
     },
   });
 };

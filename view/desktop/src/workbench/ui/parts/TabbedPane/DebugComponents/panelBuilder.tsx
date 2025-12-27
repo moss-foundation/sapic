@@ -94,7 +94,7 @@ export const PanelBuilder = (props: { api: DockviewApi; done: () => void }) => {
           onClick={() => {
             props.api?.addPanel({
               id: `id_${Date.now().toString()}`,
-              component: "Default",
+              component: "DefaultView",
               title: `Tab ${nextId()}`,
               renderer: "onlyWhenVisible",
               ...parameters,

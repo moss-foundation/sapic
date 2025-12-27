@@ -13,3 +13,16 @@ export const extensionInfoSchema = z.object({
   updatedAt: z.string(),
   latestVersion: z.string(),
 });
+
+export const extensionVersionInfoSchema = z.object({
+  id: z.string(),
+  externalId: z.string(),
+  name: z.string(),
+  authors: z.array(z.string()),
+  description: z.string(),
+  repository: z.string(),
+  downloads: z.bigint(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  version: z.string(),
+});

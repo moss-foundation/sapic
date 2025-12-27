@@ -96,13 +96,16 @@ pub async fn create_test_project() -> (
     let storage = GlobalKvStorage::get(&app_delegate);
     let project = ProjectBuilder::new(fs, storage, project_id.clone())
         .await
-        .create(ProjectCreateParams {
-            name: Some(random_project_name()),
-            external_abs_path: None,
-            internal_abs_path: project_path.clone().into(),
-            git_params: None,
-            icon_path: None,
-        })
+        .create(
+            &ctx,
+            ProjectCreateParams {
+                name: Some(random_project_name()),
+                external_abs_path: None,
+                internal_abs_path: project_path.clone().into(),
+                git_params: None,
+                icon_path: None,
+            },
+        )
         .await
         .unwrap();
 

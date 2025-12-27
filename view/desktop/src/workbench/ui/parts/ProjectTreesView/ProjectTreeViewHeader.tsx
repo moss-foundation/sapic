@@ -1,13 +1,13 @@
 import { useState } from "react";
 
 import {
-  USE_STREAM_PROJECT_RESOURCES_QUERY_KEY,
   useClearAllProjectResources,
   useStreamedProjectsWithResources,
   useStreamProjects,
 } from "@/adapters/tanstackQuery/project";
 import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
-import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/project/useBatchUpdateProjectResource";
+import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
+import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
 import { useModal } from "@/hooks";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constansts";

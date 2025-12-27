@@ -1,87 +1,9 @@
 use moss_logging::models::primitives::LogEntryId;
-use sapic_base::{
-    configuration::types::primitives::ConfigurationTarget,
-    user::types::primitives::{AccountId, AccountKind},
-};
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
-use std::{collections::HashMap, path::PathBuf};
+use std::path::PathBuf;
 use ts_rs::TS;
 
 use crate::models::primitives::*;
-
-/// DEPRECATED
-/// @category Type
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct UpdateConfigurationParams {
-    pub key: String,
-    #[ts(type = "JsonValue")]
-    pub value: JsonValue,
-    #[ts(type = "ConfigurationTarget")]
-    pub target: ConfigurationTarget,
-}
-
-/// DEPRECATED
-/// @category Type
-#[derive(Debug, Serialize, Clone, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct Configuration {
-    pub keys: Vec<String>,
-    #[ts(type = "{ [key: string]: JsonValue }")]
-    pub contents: HashMap<String, JsonValue>,
-}
-
-// ########################################################
-// ###                      Profile                     ###
-// ########################################################
-
-/// @category Type
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct AddAccountParams {
-    pub host: String,
-    #[ts(type = "AccountKind")]
-    pub kind: AccountKind,
-    /// If a PAT is not provided, we will use OAuth
-    pub pat: Option<String>,
-}
-
-/// @category Type
-#[derive(Debug, Clone, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct UpdateAccountParams {
-    pub id: AccountId,
-    pub pat: Option<String>,
-}
-
-// ########################################################
-// ###                    Theme                         ###
-// ########################################################
-
-// /// @category Type
-// #[derive(Debug, Deserialize, Serialize, Clone, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "types.ts")]
-// pub struct ColorThemeInfo {
-//     #[ts(type = "ThemeId")]
-//     pub identifier: ThemeId,
-//     pub display_name: String,
-//     #[ts(type = "ThemeMode")]
-//     pub mode: ThemeMode,
-//     pub order: Option<isize>, // DEPRECATED
-//     pub source: PathBuf,
-//     pub is_default: Option<bool>, // DEPRECATED
-// }
 
 // #########################################################
 // ###                      Log                          ###
@@ -123,22 +45,3 @@ pub struct LogEntryInfo {
     pub resource: Option<String>,
     pub message: String,
 }
-
-// #########################################################
-// ###                    Workspace                      ###
-// #########################################################
-
-// /// @category Type
-// #[derive(Debug, Clone, Eq, PartialEq, Hash, Serialize, TS)]
-// #[serde(rename_all = "camelCase")]
-// #[ts(optional_fields)]
-// #[ts(export, export_to = "types.ts")]
-// pub struct WorkspaceInfo {
-//     pub id: WorkspaceId,
-//     pub name: String,
-//     pub last_opened_at: Option<i64>,
-
-//     #[serde(skip)]
-//     #[ts(skip)]
-//     pub abs_path: Arc<Path>,
-// }

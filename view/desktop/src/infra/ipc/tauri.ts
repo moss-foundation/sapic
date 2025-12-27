@@ -13,12 +13,10 @@ export type TauriIpcCommand =
   // App
   //
   | "list_workspaces"
-  | "describe_app" // DEPRECATED
   | "list_user_accounts"
   | "add_user_account"
   | "update_user_account"
   | "remove_user_account"
-  | "update_configuration"
   | "list_configuration_schemas"
   | "execute_command"
   | "get_translation_namespace"
@@ -26,9 +24,9 @@ export type TauriIpcCommand =
   | "list_languages"
   | "list_color_themes"
   | "list_extensions"
+  | "download_extension"
   | "delete_workspace"
   | "update_workspace"
-  | "update_profile" // DEPRECATED
   | "get_mistral_api_key"
   //
   // Main
@@ -38,6 +36,10 @@ export type TauriIpcCommand =
   | "main__close_workspace"
   | "main__open_workspace"
   | "main__create_workspace"
+  //
+  // Onboarding
+  //
+  | "onboarding__complete_onboarding"
   //
   // Welcome
   //

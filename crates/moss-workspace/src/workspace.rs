@@ -1,21 +1,3 @@
-use anyhow::Result;
-use joinerror::ResultExt;
-use json_patch::{PatchOperation, ReplaceOperation};
-use jsonptr::PointerBuf;
-use moss_edit::json::EditOptions;
-use moss_environment::{AnyEnvironment, Environment};
-use moss_fs::{FileSystem, FsResultExt};
-use moss_project::Project;
-use sapic_base::{
-    environment::types::primitives::EnvironmentId,
-    project::types::primitives::ProjectId,
-    workspace::{manifest::WorkspaceManifest, types::primitives::WorkspaceId},
-};
-use sapic_core::subscription::{Event, Subscription};
-use sapic_system::user::profile::Profile;
-use serde_json::Value as JsonValue;
-use std::{path::Path, sync::Arc};
-
 use crate::{
     builder::{OnDidAddProject, OnDidDeleteProject},
     edit::WorkspaceEdit,
@@ -23,20 +5,47 @@ use crate::{
     manifest::MANIFEST_FILE_NAME,
     project::ProjectService,
 };
+use anyhow::Result;
+use joinerror::ResultExt;
+use json_patch::{PatchOperation, ReplaceOperation};
+use jsonptr::PointerBuf;
+use moss_edit::json::EditOptions;
+use moss_environment::{AnyEnvironment, Environment};
+use moss_fs::FileSystem;
+use moss_project::Project;
+use sapic_base::{
+    environment::types::primitives::EnvironmentId,
+    project::types::primitives::ProjectId,
+    workspace::{manifest::WorkspaceManifest, types::primitives::WorkspaceId},
+};
+use sapic_core::{
+    context::AnyAsyncContext,
+    subscription::{Event, Subscription},
+};
+use sapic_system::user::profile::Profile;
+use serde_json::Value as JsonValue;
+use std::{path::Path, sync::Arc};
 
 pub struct WorkspaceSummary {
     pub name: String,
 }
 
 impl WorkspaceSummary {
-    pub async fn new(fs: &Arc<dyn FileSystem>, abs_path: &Path) -> joinerror::Result<Self> {
+    pub async fn new(
+        ctx: &dyn AnyAsyncContext,
+        fs: &Arc<dyn FileSystem>,
+        abs_path: &Path,
+    ) -> joinerror::Result<Self> {
         debug_assert!(abs_path.is_absolute());
 
         let manifest_path = abs_path.join(MANIFEST_FILE_NAME);
 
-        let rdr = fs.open_file(&manifest_path).await.join_err_with::<()>(|| {
-            format!("failed to open manifest file: {}", manifest_path.display())
-        })?;
+        let rdr = fs
+            .open_file(ctx, &manifest_path)
+            .await
+            .join_err_with::<()>(|| {
+                format!("failed to open manifest file: {}", manifest_path.display())
+            })?;
 
         let manifest: WorkspaceManifest =
             serde_json::from_reader(rdr).join_err_with::<()>(|| {
@@ -134,7 +143,11 @@ impl Workspace {
         self.environment_service.environment(id).await
     }
 
-    pub async fn modify(&self, params: WorkspaceModifyParams) -> Result<()> {
+    pub async fn modify(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: WorkspaceModifyParams,
+    ) -> Result<()> {
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
@@ -151,7 +164,7 @@ impl Workspace {
         }
 
         self.edit
-            .edit(&patches)
+            .edit(ctx, &patches)
             .await
             .join_err::<()>("failed to edit workspace")?;
         Ok(())

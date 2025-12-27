@@ -10,16 +10,6 @@ use super::types::primitives::*;
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "user/types.ts")]
-pub struct ProfileInfo {
-    pub id: ProfileId,
-    pub name: String,
-    pub accounts: Vec<AccountInfo>,
-}
-
-/// @category Type
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "user/types.ts")]
 pub struct AccountInfo {
     pub id: AccountId,
     pub username: String,

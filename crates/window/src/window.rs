@@ -1,13 +1,12 @@
 use derive_more::Deref;
 use moss_applib::AppRuntime;
 use moss_workspace::Workspace;
-use sapic_system::user::User;
 use std::sync::Arc;
 use tauri::AppHandle;
 
 use crate::{
-    logging::LogService, models::primitives::SessionId, profile::ProfileService,
-    session::SessionService, workspace::OldWorkspaceService,
+    logging::LogService, models::primitives::SessionId, session::SessionService,
+    workspace::OldWorkspaceService,
 };
 
 #[derive(Deref)]
@@ -19,8 +18,8 @@ pub struct OldSapicWindow<R: AppRuntime> {
     pub(super) workspace_service: OldWorkspaceService,
     // pub(super) language_service: LanguageService,
     // pub(super) theme_service: ThemeService,
-    pub(super) user: Arc<dyn User>,
-    pub(super) profile_service: ProfileService,
+    // pub(super) user: Arc<dyn User>,
+    // pub(super) profile_service: ProfileService,
     // pub(super) configuration_service: ConfigurationServiceOld,
     // #[allow(unused)]
     // pub(super) extension_service: ExtensionService<R>,
@@ -55,13 +54,13 @@ impl<R: AppRuntime> OldSapicWindow<R> {
     // }
 }
 
-#[cfg(feature = "integration-tests")]
-impl<R: AppRuntime> OldSapicWindow<R> {
-    // pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
-    //     self.tracked_cancellations.clone()
-    // }
+// #[cfg(feature = "integration-tests")]
+// impl<R: AppRuntime> OldSapicWindow<R> {
+//     // pub fn cancellation_map(&self) -> Arc<RwLock<HashMap<String, Canceller>>> {
+//     //     self.tracked_cancellations.clone()
+//     // }
 
-    pub async fn active_profile(&self) -> Option<Arc<sapic_system::user::profile::Profile>> {
-        self.profile_service.active_profile().await
-    }
-}
+//     pub async fn active_profile(&self) -> Option<Arc<sapic_system::user::profile::Profile>> {
+//         self.profile_service.active_profile().await
+//     }
+// }

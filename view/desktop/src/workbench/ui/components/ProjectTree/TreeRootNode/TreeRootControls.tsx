@@ -61,10 +61,10 @@ export const TreeRootControls = ({
     addOrFocusPanel({
       id,
       title: node.name,
-      component: "ProjectSettings",
+      component: "ProjectSettingsView",
       params: {
         projectId: id,
-        iconType: "Project",
+        tabIcon: "Project",
       },
     });
   };

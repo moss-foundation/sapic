@@ -78,7 +78,8 @@
     "tauri",
     "visiblepanel",
     "worktree",
-    "Русский"
+    "Русский",
+    "lezer"
   ],
   "prettier.requireConfig": true,
   "prettier.ignorePath": ".prettierignore",
