@@ -17,7 +17,6 @@ export type TauriIpcCommand =
   | "add_user_account"
   | "update_user_account"
   | "remove_user_account"
-  | "update_configuration"
   | "list_configuration_schemas"
   | "execute_command"
   | "get_translation_namespace"

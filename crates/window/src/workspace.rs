@@ -1,20 +1,12 @@
 use moss_workspace::Workspace;
-use sapic_system::workspace::{types::WorkspaceItem, workspace_service::WorkspaceService};
 use std::sync::Arc;
-
-use sapic_base::workspace::types::primitives::WorkspaceId;
-use sapic_core::context::AnyAsyncContext;
 
 pub struct OldWorkspaceService {
     active_workspace: Arc<Workspace>,
-    workspace_service: Arc<WorkspaceService>,
 }
 
 impl OldWorkspaceService {
-    pub async fn new(
-        workspace: Workspace,
-        workspace_service: Arc<WorkspaceService>,
-    ) -> joinerror::Result<Self> {
+    pub async fn new(workspace: Workspace) -> joinerror::Result<Self> {
         // debug_assert!(abs_path.is_absolute());
         // let abs_path: Arc<Path> = abs_path.join(dirs::WORKSPACES_DIR).into();
         // debug_assert!(abs_path.exists());
@@ -36,41 +28,11 @@ impl OldWorkspaceService {
 
         Ok(Self {
             active_workspace: Arc::new(workspace),
-            workspace_service,
             // state: Arc::new(RwLock::new(ServiceState {
             //     known_workspaces,
             //     active_workspace: None,
             // })),
         })
-    }
-
-    pub(crate) async fn workspace_details(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        id: &WorkspaceId,
-    ) -> joinerror::Result<Option<WorkspaceItem>> {
-        // let state_lock = self.state.read().await;
-        // state_lock
-        //     .known_workspaces
-        //     .get(id)
-        //     .map(|item| WorkspaceDetails {
-        //         id: item.id.clone(),
-        //         name: item.name.clone(),
-        //         abs_path: item.abs_path.clone(),
-        //         last_opened_at: item.last_opened_at,
-        //     })
-
-        let workspaces = self.workspace_service.workspaces(ctx).await?;
-
-        Ok(workspaces
-            .into_iter()
-            .find(|item| item.id == *id)
-            .map(|item| WorkspaceItem {
-                id: item.id.clone(),
-                name: item.name.clone(),
-                abs_path: item.abs_path.clone(),
-                last_opened_at: item.last_opened_at,
-            }))
     }
 
     // pub(crate) async fn update_workspace(
