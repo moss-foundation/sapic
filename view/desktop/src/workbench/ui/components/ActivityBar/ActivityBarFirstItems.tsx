@@ -1,8 +1,7 @@
 import { useEffect } from "react";
 
-import { useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
 import { cn } from "@/utils";
+import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBarItemProps, useActivityBarStore } from "@/workbench/store/activityBar";
 import { swapListById } from "@/workbench/utils/swapListById";
@@ -13,11 +12,10 @@ import { ActivityBarButton } from "./ActivityBarButton";
 import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
-  const { data: appState } = useDescribeApp();
   const { data: layout } = useGetLayout();
   const { items, setItems } = useActivityBarStore();
 
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
   useEffect(() => {
     return monitorForElements({

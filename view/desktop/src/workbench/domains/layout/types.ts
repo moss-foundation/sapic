@@ -1,8 +1,9 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { ACTIVITYBAR_POSITION } from "./index";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "./index";
 
 export interface SidebarState {
+  position: SIDEBAR_POSITION;
   width: number;
   visible: boolean;
   minWidth: number;

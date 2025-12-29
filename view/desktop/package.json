@@ -19,7 +19,7 @@
     "@codemirror/language": "^6.11.3",
     "@codemirror/state": "^6.5.2",
     "@codemirror/view": "^6.39.4",
-    "@langchain/core": "1.0.2",
+    "@langchain/core": "1.1.8",
     "@langchain/langgraph": "1.0.1",
     "@langchain/mistralai": "1.0.0",
     "@lezer/common": "^1.4.0",

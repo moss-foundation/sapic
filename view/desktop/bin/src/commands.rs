@@ -3,7 +3,6 @@ mod main;
 mod onboarding;
 mod project;
 mod welcome;
-mod window;
 mod workspace;
 
 pub use app::*;
@@ -11,7 +10,6 @@ pub use main::*;
 pub use onboarding::*;
 pub use project::*;
 pub use welcome::*;
-pub use window::*;
 pub use workspace::*;
 
 use joinerror::OptionExt;

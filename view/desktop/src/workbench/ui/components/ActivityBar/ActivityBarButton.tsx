@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
-import { useDescribeApp } from "@/hooks/app/useDescribeApp";
-import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
+import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBarItemProps } from "@/workbench/store/activityBar";
 import {
@@ -33,12 +31,11 @@ export const ActivityBarButton = ({
   const [preview, setPreview] = useState<HTMLElement | null>(null);
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null);
 
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
-  const { activeWorkspaceId } = useActiveWorkspace();
-  const { data: appState } = useDescribeApp();
 
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
   const isActive = props.id === layout?.activitybarState.activeContainerId;
 
   useEffect(() => {
@@ -107,6 +104,8 @@ export const ActivityBarButton = ({
   }, [activityBarPosition, icon, props, isDraggable]);
 
   const handleClick = (id: string) => {
+    if (!currentWorkspaceId) return;
+
     if (isActive && layout?.sidebarState.visible) {
       updateLayout({
         layout: {
@@ -114,7 +113,7 @@ export const ActivityBarButton = ({
             visible: false,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     } else {
       updateLayout({
@@ -126,7 +125,7 @@ export const ActivityBarButton = ({
             visible: true,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     }
   };

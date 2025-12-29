@@ -1,9 +1,8 @@
 import { AllotmentHandle, LayoutPriority } from "allotment";
 import { useEffect, useRef } from "react";
 
-import { useActiveWorkspace, useDescribeApp } from "@/hooks";
-import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
-import { useUpdateLayout } from "@/hooks/workbench/layout/useUpdateLayout";
+import { useCurrentWorkspace } from "@/hooks";
+import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { ActivityBar, SidebarEdgeHandler } from "@/workbench/ui/components";
 import { BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
@@ -14,24 +13,25 @@ export const AppLayout = () => {
   const mainResizableRef = useRef<AllotmentHandle>(null);
   const verticalResizableRef = useRef<AllotmentHandle>(null);
 
-  const { data: appState } = useDescribeApp();
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: layout } = useGetLayout();
   const { mutate: updateLayout } = useUpdateLayout();
 
   //TODO later we should handle the JsonValue differently
-  const activityBarPosition = appState?.configuration.contents.activityBarPosition || ACTIVITYBAR_POSITION.DEFAULT;
-  const sideBarPosition = appState?.configuration.contents.sideBarPosition || SIDEBAR_POSITION.LEFT;
+  const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
+  const sideBarPosition = layout?.sidebarState.position || SIDEBAR_POSITION.LEFT;
 
   useEffect(() => {
     verticalResizableRef?.current?.reset();
     mainResizableRef?.current?.reset();
     // We want to run this effect(resetting the layout) when the workspace changes
     // because different workspaces have different layouts.
-  }, [activeWorkspaceId, layout]);
+  }, [currentWorkspaceId, layout]);
 
   const handleSidebarEdgeHandlerClick = () => {
+    if (!currentWorkspaceId) return;
+
     if (!layout?.sidebarState.visible) {
       updateLayout({
         layout: {
@@ -39,12 +39,14 @@ export const AppLayout = () => {
             visible: true,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     }
   };
 
   const handleBottomPaneEdgeHandlerClick = () => {
+    if (!currentWorkspaceId) return;
+
     if (!layout?.bottomPanelState.visible) {
       updateLayout({
         layout: {
@@ -52,10 +54,12 @@ export const AppLayout = () => {
             visible: true,
           },
         },
-        workspaceId: activeWorkspaceId,
+        workspaceId: currentWorkspaceId,
       });
     }
   };
+
+  if (!currentWorkspaceId) return null;
 
   return (
     <div className="flex h-full w-full">
@@ -77,12 +81,12 @@ export const AppLayout = () => {
             if (updatedWidth <= 0) {
               updateLayout({
                 layout: { sidebarState: { visible: false } },
-                workspaceId: activeWorkspaceId,
+                workspaceId: currentWorkspaceId,
               });
             } else {
               updateLayout({
                 layout: { sidebarState: { width: updatedWidth } },
-                workspaceId: activeWorkspaceId,
+                workspaceId: currentWorkspaceId,
               });
             }
           }}
@@ -90,13 +94,13 @@ export const AppLayout = () => {
             if (sideBarPosition === SIDEBAR_POSITION.LEFT && index === 0) {
               updateLayout({
                 layout: { sidebarState: { visible: visible } },
-                workspaceId: activeWorkspaceId,
+                workspaceId: currentWorkspaceId,
               });
             }
             if (sideBarPosition === SIDEBAR_POSITION.RIGHT && index === 1) {
               updateLayout({
                 layout: { sidebarState: { visible: visible } },
-                workspaceId: activeWorkspaceId,
+                workspaceId: currentWorkspaceId,
               });
             }
           }}
@@ -125,12 +129,12 @@ export const AppLayout = () => {
                 if (bottomPaneSize <= 0) {
                   updateLayout({
                     layout: { bottomPanelState: { visible: false } },
-                    workspaceId: activeWorkspaceId,
+                    workspaceId: currentWorkspaceId,
                   });
                 } else {
                   updateLayout({
                     layout: { bottomPanelState: { height: bottomPaneSize } },
-                    workspaceId: activeWorkspaceId,
+                    workspaceId: currentWorkspaceId,
                   });
                 }
               }}
@@ -139,7 +143,7 @@ export const AppLayout = () => {
                   layout: {
                     bottomPanelState: { visible },
                   },
-                  workspaceId: activeWorkspaceId,
+                  workspaceId: currentWorkspaceId,
                 });
               }}
             >
