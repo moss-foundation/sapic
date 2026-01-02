@@ -14,7 +14,8 @@ use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
     project::{
         CloneProjectParams, CreateConfigParams, CreateProjectParams, ExportArchiveParams,
-        ImportArchivedProjectParams, ImportExternalProjectParams, ProjectBackend,
+        ImportArchivedProjectParams, ImportExternalProjectParams,
+        ProjectServiceFs as ProjectServiceFsPort,
     },
     user::account::Account,
 };
@@ -86,11 +87,11 @@ struct PredefinedFile {
     content: Option<Vec<u8>>,
 }
 
-pub struct FsProjectBackend {
+pub struct ProjectServiceFs {
     fs: Arc<dyn FileSystem>,
 }
 
-impl FsProjectBackend {
+impl ProjectServiceFs {
     pub fn new(fs: Arc<dyn FileSystem>) -> Arc<Self> {
         Self { fs }.into()
     }
@@ -355,7 +356,7 @@ impl FsProjectBackend {
 }
 
 #[async_trait]
-impl ProjectBackend for FsProjectBackend {
+impl ProjectServiceFsPort for ProjectServiceFs {
     async fn read_project_config(
         &self,
         ctx: &dyn AnyAsyncContext,

@@ -17,7 +17,7 @@ use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
 use sapic_onboarding::OnboardingWindow;
-use sapic_platform::project::fs_backend::FsProjectBackend;
+use sapic_platform::project::project_service_fs::ProjectServiceFs;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
@@ -183,7 +183,7 @@ impl<R: AppRuntime> App<R> {
 
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            FsProjectBackend::new(self.fs.clone()),
+            ProjectServiceFs::new(self.fs.clone()),
             abs_path.clone().join("projects"),
             self.fs.clone(),
             self.storage.clone(),
@@ -247,7 +247,7 @@ impl<R: AppRuntime> App<R> {
 
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            FsProjectBackend::new(self.fs.clone()),
+            ProjectServiceFs::new(self.fs.clone()),
             abs_path.clone().join("projects"),
             self.fs.clone(),
             self.storage.clone(),

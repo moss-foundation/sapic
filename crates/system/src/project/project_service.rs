@@ -18,7 +18,7 @@ use crate::{
     project::{
         CloneProjectGitParams, CloneProjectParams, CreateProjectGitParams, CreateProjectParams,
         ExportArchiveParams, ImportArchivedProjectParams, ImportExternalProjectParams,
-        ProjectBackend,
+        ProjectServiceFs,
     },
     user::account::Account,
 };
@@ -41,7 +41,7 @@ pub struct ProjectItem {
 
 pub struct ProjectService {
     workspace_id: WorkspaceId,
-    backend: Arc<dyn ProjectBackend>,
+    backend: Arc<dyn ProjectServiceFs>,
     abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
@@ -50,7 +50,7 @@ pub struct ProjectService {
 impl ProjectService {
     pub fn new(
         workspace_id: WorkspaceId,
-        backend: Arc<dyn ProjectBackend>,
+        backend: Arc<dyn ProjectServiceFs>,
         abs_path: PathBuf,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,

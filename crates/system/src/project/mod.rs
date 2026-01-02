@@ -61,7 +61,10 @@ pub struct ExportArchiveParams {
 }
 
 #[async_trait]
-pub trait ProjectBackend: Send + Sync {
+pub trait ProjectServiceFs: Send + Sync {
+    // FIXME: I think this is probably incorrect but I want to prioritize migration
+    // Reading and Creating file-based config and manifest should be platform dependent
+    // So they probably should not be in the system-level interface
     async fn read_project_config(
         &self,
         ctx: &dyn AnyAsyncContext,
