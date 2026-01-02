@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { useDescribeApp } from "@/hooks";
+import { useListUserAccounts } from "@/adapters";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
@@ -18,7 +18,8 @@ interface ImportSectionProps {
 }
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
-  const { data: appState } = useDescribeApp();
+  const { data: userAccounts } = useListUserAccounts();
+
   const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState(DEFAULT_NAME);
@@ -48,8 +49,8 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
 
   const accounts = useMemo(() => {
     const accountKind = provider === "github" ? "GITHUB" : "GITLAB";
-    return appState?.profile?.accounts.filter((account) => account.kind === accountKind) ?? [];
-  }, [provider, appState?.profile?.accounts]);
+    return userAccounts?.accounts.filter((account) => account.kind === accountKind) ?? [];
+  }, [provider, userAccounts?.accounts]);
 
   return (
     <div className="flex flex-col gap-2">

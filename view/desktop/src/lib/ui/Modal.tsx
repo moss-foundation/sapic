@@ -30,8 +30,9 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
 
   return createPortal(
     <div
+      key={showModal ? "show" : "hidden"}
       className={cn(
-        "fixed top-0 left-0 z-[9999] h-full w-full transition-[display,opacity] transition-discrete duration-100 starting:opacity-0",
+        "transition-discrete starting:opacity-0 fixed left-0 top-0 z-[9999] h-full w-full transition-[display,opacity] duration-100",
         {
           "bg-black/70": backdropFilter === "darken",
           "backdrop-blur": backdropFilter === "blur",
@@ -46,7 +47,7 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
       <dialog
         ref={dialogRef}
         className={cn(
-          "mx-auto mt-[clamp(2vh,calc(18vh-50px),18vh)] flex max-h-[80vh] min-h-0 flex-col overflow-hidden rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] transition-discrete duration-100 select-none backdrop:opacity-0 starting:opacity-0",
+          "transition-discrete starting:opacity-0 mx-auto mt-[clamp(2vh,calc(18vh-50px),18vh)] flex max-h-[80vh] min-h-0 select-none flex-col overflow-hidden rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] duration-100 backdrop:opacity-0",
           className
         )}
         //MouseDown is used instead of Click to prevent the modal from closing when the user selects text inside the modal and than drags the cursor out of the dialog onto backdrop
