@@ -15,47 +15,59 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
   const dialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
+    const dialog = dialogRef.current;
+
     if (showModal) {
-      dialogRef.current?.showModal();
+      dialog?.showModal();
     } else {
-      dialogRef.current?.close();
+      dialog?.close();
     }
   }, [showModal]);
 
   const handleDialogClick = (event: React.MouseEvent<HTMLDialogElement>) => {
+    // When using native dialog, clicking the ::backdrop pseudo-element
+    // registers as a click on the dialog element itself.
     if (event.target === dialogRef.current) {
       onBackdropClick?.();
     }
   };
 
   return createPortal(
-    <div
-      key={showModal ? "show" : "hidden"}
+    <dialog
+      ref={dialogRef}
+      onMouseDown={handleDialogClick}
       className={cn(
-        "transition-discrete starting:opacity-0 fixed left-0 top-0 z-[9999] h-full w-full transition-[display,opacity] duration-100",
+        // BASE STYLES
+        "fixed m-auto",
+        "max-h-[80vh] min-h-0 w-full max-w-lg", // Added max-w-lg for standard modal width (adjust as needed)
+        "flex flex-col overflow-hidden rounded-lg",
+        "shadow-[0px_8px_40px_rgba(0,0,0,0.3)]",
+        "bg-white", // Ensure the dialog itself has a background
+
+        // ANIMATION (entry/exit)
+        "allow-discrete transition-[opacity,transform,display] duration-200",
+        "backdrop:allow-discrete backdrop:transition-[opacity,display] backdrop:duration-200",
+
+        // STARTING STATE (Before open)
+        "opacity-0 backdrop:opacity-0",
+        "scale-95", // Optional: slight zoom effect on open
+
+        // OPEN STATE (Target state)
+        "open:opacity-100 open:backdrop:opacity-100",
+        "open:scale-100",
+
+        // BACKDROP STYLING (Native ::backdrop)
         {
-          "bg-black/70": backdropFilter === "darken",
-          "backdrop-blur": backdropFilter === "blur",
-          "hidden opacity-0": !showModal,
-          "block opacity-100": showModal,
-        }
+          "backdrop:bg-black/70": backdropFilter === "darken",
+          "backdrop:backdrop-blur-md": backdropFilter === "blur",
+          "backdrop:bg-transparent": backdropFilter === "none",
+        },
+
+        className
       )}
-      style={{
-        "WebkitBackdropFilter": "blur(8px)", // BackdropFilter doesn't work on Linux without this
-      }}
     >
-      <dialog
-        ref={dialogRef}
-        className={cn(
-          "transition-discrete starting:opacity-0 mx-auto mt-[clamp(2vh,calc(18vh-50px),18vh)] flex max-h-[80vh] min-h-0 select-none flex-col overflow-hidden rounded-lg shadow-[0px_8px_40px_rgba(0,0,0,0.3)] transition-[display,opacity] duration-100 backdrop:opacity-0",
-          className
-        )}
-        //MouseDown is used instead of Click to prevent the modal from closing when the user selects text inside the modal and than drags the cursor out of the dialog onto backdrop
-        onMouseDown={handleDialogClick}
-      >
-        {children}
-      </dialog>
-    </div>,
+      {children}
+    </dialog>,
     document.body
   );
 };
