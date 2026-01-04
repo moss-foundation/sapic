@@ -198,7 +198,7 @@ mod tests {
             .join("data")
             .join(random_string(10));
         let tmp_path = test_path.join("tmp");
-        let workspaces_dir = tmp_path.join("workspaces");
+        let workspaces_dir = test_path.join("workspaces");
 
         tokio::fs::create_dir_all(&tmp_path).await.unwrap();
         tokio::fs::create_dir_all(&workspaces_dir).await.unwrap();

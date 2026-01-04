@@ -188,7 +188,7 @@ impl RuntimeWorkspace {
                         .load(
                             ctx,
                             ProjectLoadParams {
-                                internal_abs_path: project.abs_path.clone().into(),
+                                internal_abs_path: project.internal_abs_path.clone().into(),
                             },
                         )
                         .await?;
@@ -292,7 +292,7 @@ impl Workspace for RuntimeWorkspace {
                 ctx,
                 ProjectCreateParams {
                     name: Some(params.name),
-                    abs_path: project_item.abs_path.clone(),
+                    abs_path: project_item.internal_abs_path.clone(),
                     config: project_item.config.clone(),
                     icon_path: params.icon_path,
                 },
@@ -424,7 +424,7 @@ impl Workspace for RuntimeWorkspace {
                 repository,
                 git_client,
                 ProjectCloneParams {
-                    internal_abs_path: project_item.abs_path.clone().into(),
+                    internal_abs_path: project_item.internal_abs_path.clone().into(),
                     repository: repo_url,
                 },
             )
@@ -482,7 +482,7 @@ impl Workspace for RuntimeWorkspace {
             .import_archive(
                 ctx,
                 ProjectImportArchiveParams {
-                    internal_abs_path: project_item.abs_path.clone().into(),
+                    internal_abs_path: project_item.internal_abs_path.clone().into(),
                 },
             )
             .await?;
@@ -538,7 +538,7 @@ impl Workspace for RuntimeWorkspace {
             .import_external(
                 ctx,
                 ProjectImportExternalParams {
-                    internal_abs_path: project_item.abs_path.clone().into(),
+                    internal_abs_path: project_item.internal_abs_path.clone().into(),
                     external_abs_path: params.external_path.clone().into(),
                 },
             )
@@ -616,16 +616,12 @@ impl Workspace for RuntimeWorkspace {
     ) -> joinerror::Result<()> {
         let project = self.project(ctx, &params.id).await?;
 
+        // TODO: Implement relinking and unlinking remote repo when the user update it
+        // Right now the repository will be updated in the config
+        // But the repo will not be linked to a new repo
         project
             .edit
-            .edit(
-                ctx,
-                &params.id,
-                ProjectEditParams {
-                    name: params.name,
-                    repository: params.repository,
-                },
-            )
+            .edit(ctx, &params.id, ProjectEditParams { name: params.name })
             .await?;
 
         // TODO: Migrate icon update logic or remove it?

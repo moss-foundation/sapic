@@ -404,9 +404,10 @@ pub struct UpdateProjectParams {
     #[validate(length(min = 1))]
     pub name: Option<String>,
 
-    #[validate(custom(function = "validate_change_repository"))]
-    #[ts(optional, type = "ChangeString")]
-    pub repository: Option<ChangeString>,
+    // TODO: Reenable after implementing re-linking of repo
+    // #[validate(custom(function = "validate_change_repository"))]
+    // #[ts(optional, type = "ChangeString")]
+    // pub repository: Option<ChangeString>,
 
     // TODO: add validation
     #[ts(optional, type = "ChangePath")]

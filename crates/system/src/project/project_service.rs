@@ -31,7 +31,7 @@ pub fn key_project_order(id: &ProjectId) -> String {
 
 pub struct ProjectItem {
     pub id: ProjectId,
-    pub abs_path: PathBuf,
+    pub internal_abs_path: PathBuf,
     pub manifest: ProjectManifest,
     pub config: ProjectConfig,
 
@@ -42,7 +42,6 @@ pub struct ProjectItem {
 pub struct ProjectService {
     workspace_id: WorkspaceId,
     backend: Arc<dyn ProjectServiceFs>,
-    abs_path: PathBuf,
     fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
 }
@@ -51,14 +50,12 @@ impl ProjectService {
     pub fn new(
         workspace_id: WorkspaceId,
         backend: Arc<dyn ProjectServiceFs>,
-        abs_path: PathBuf,
         fs: Arc<dyn FileSystem>,
         storage: Arc<dyn KvStorage>,
     ) -> Self {
         Self {
             workspace_id,
             backend,
-            abs_path,
             fs,
             storage,
         }
@@ -74,14 +71,14 @@ impl ProjectService {
         icon_path: Option<PathBuf>,
     ) -> joinerror::Result<ProjectItem> {
         let id = ProjectId::new();
-        let internal_abs_path = self.abs_path.join(id.to_string());
         let external_abs_path = external_path.map(|p| p);
-        self.backend
+        let internal_abs_path = self
+            .backend
             .create_project(
                 ctx,
+                &id,
                 CreateProjectParams {
                     name: Some(name),
-                    internal_abs_path: internal_abs_path.clone(),
                     external_abs_path,
                     git_params,
                     icon_path: icon_path.map(|p| p.into()),
@@ -90,18 +87,12 @@ impl ProjectService {
             .await
             .join_err::<()>("failed to create project")?;
 
-        let manifest = self
-            .backend
-            .create_project_manifest(ctx, &internal_abs_path)
-            .await?;
-        let config = self
-            .backend
-            .read_project_config(ctx, &internal_abs_path)
-            .await?;
+        let manifest = self.backend.create_project_manifest(ctx, &id).await?;
+        let config = self.backend.read_project_config(ctx, &id).await?;
 
         Ok(ProjectItem {
             id,
-            abs_path: internal_abs_path,
+            internal_abs_path: internal_abs_path,
             manifest,
             config,
             order: Some(order),
@@ -121,14 +112,13 @@ impl ProjectService {
         branch: Option<String>,
     ) -> joinerror::Result<(ProjectItem, Repository)> {
         let id = ProjectId::new();
-        let abs_path = self.abs_path.join(id.to_string());
-        let repository = self
+        let (repository, internal_abs_path) = self
             .backend
             .clone_project(
                 ctx,
+                &id,
                 account,
                 CloneProjectParams {
-                    internal_abs_path: abs_path.clone(),
                     git_params: CloneProjectGitParams {
                         provider_kind: git_provider_kind,
                         repository_url: repo_url,
@@ -138,13 +128,13 @@ impl ProjectService {
             )
             .await?;
 
-        let manifest = self.backend.read_project_manifest(ctx, &abs_path).await?;
+        let manifest = self.backend.read_project_manifest(ctx, &id).await?;
 
-        let config = self.backend.read_project_config(ctx, &abs_path).await?;
+        let config = self.backend.read_project_config(ctx, &id).await?;
 
         let project_item = ProjectItem {
             id,
-            abs_path,
+            internal_abs_path: internal_abs_path,
             manifest,
             config,
             order: None,
@@ -160,25 +150,24 @@ impl ProjectService {
     ) -> joinerror::Result<ProjectItem> {
         let id = ProjectId::new();
 
-        let abs_path = self.abs_path.join(id.to_string());
-
-        self.backend
+        let internal_abs_path = self
+            .backend
             .import_archived_project(
                 ctx,
+                &id,
                 ImportArchivedProjectParams {
-                    internal_abs_path: abs_path.to_path_buf(),
                     archive_path: archive_path.to_path_buf(),
                 },
             )
             .await?;
 
-        let manifest = self.backend.read_project_manifest(ctx, &abs_path).await?;
+        let manifest = self.backend.read_project_manifest(ctx, &id).await?;
 
-        let config = self.backend.read_project_config(ctx, &abs_path).await?;
+        let config = self.backend.read_project_config(ctx, &id).await?;
 
         let project_item = ProjectItem {
             id,
-            abs_path,
+            internal_abs_path: internal_abs_path,
             manifest,
             config,
             order: None,
@@ -194,32 +183,24 @@ impl ProjectService {
     ) -> joinerror::Result<ProjectItem> {
         let id = ProjectId::new();
 
-        let internal_abs_path = self.abs_path.join(id.to_string());
-
-        self.backend
+        let internal_abs_path = self
+            .backend
             .import_external_project(
                 ctx,
+                &id,
                 ImportExternalProjectParams {
-                    internal_abs_path: internal_abs_path.clone(),
                     external_abs_path: external_abs_path.to_path_buf(),
                 },
             )
             .await?;
 
-        let manifest = self
-            .backend
-            .read_project_manifest(ctx, &internal_abs_path)
-            .await?;
+        let manifest = self.backend.read_project_manifest(ctx, &id).await?;
 
-        let config = self
-            .backend
-            .read_project_config(ctx, &internal_abs_path)
-            .await?;
+        let config = self.backend.read_project_config(ctx, &id).await?;
 
         let project_item = ProjectItem {
             id,
-            // FIXME: Should this be internal abs path?
-            abs_path: internal_abs_path,
+            internal_abs_path: internal_abs_path,
             manifest,
             config,
             order: None,
@@ -233,13 +214,7 @@ impl ProjectService {
         ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>> {
-        let abs_path = self.abs_path.join(id.to_string());
-        if abs_path.exists() {
-            self.backend.delete_project(ctx, &abs_path).await?;
-            Ok(Some(abs_path))
-        } else {
-            Ok(None)
-        }
+        self.backend.delete_project(ctx, id).await
     }
 
     pub async fn export_archive(
@@ -248,18 +223,12 @@ impl ProjectService {
         id: &ProjectId,
         destination: &Path,
     ) -> joinerror::Result<PathBuf> {
-        let project_path = self.abs_path.join(id.to_string());
-
-        if destination.starts_with(&project_path) {
-            bail!("cannot export archive file into the project folder");
-        }
-
         let archive_path = destination.join(format!("{}.zip", id.to_string()));
         self.backend
             .export_archive(
                 ctx,
+                id,
                 ExportArchiveParams {
-                    project_path,
                     archive_path: archive_path.clone(),
                 },
             )
@@ -268,9 +237,10 @@ impl ProjectService {
         Ok(archive_path)
     }
 
+    // FIXME: I'm not sure why ProjectItem requires Manifest and Config
+    // In WorkspaceService::workspaces we don't need them
+    // I'll keep them for now and if needed we can change it
     pub async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<ProjectItem>> {
-        let mut projects = Vec::new();
-
         let metadata = self
             .storage
             .get_batch_by_prefix(
@@ -289,43 +259,24 @@ impl ProjectService {
             .into_iter()
             .collect::<FxHashMap<_, _>>();
 
-        let mut read_dir = self
-            .fs
-            .read_dir(ctx, &self.abs_path)
+        let discovered_projects = self
+            .backend
+            .lookup_projects(ctx)
             .await
-            .join_err_with::<()>(|| {
-                format!("failed to read directory `{}`", self.abs_path.display())
-            })?;
+            .join_err::<()>("failed to lookup projects")?;
 
-        while let Some(entry) = read_dir.next_entry().await? {
-            if !entry.file_type().await?.is_dir() {
-                continue;
-            }
-
-            let id_str = entry.file_name().to_string_lossy().to_string();
-            let id: ProjectId = id_str.clone().into();
-
-            let manifest = self
-                .backend
-                .create_project_manifest(ctx, &entry.path())
-                .await
-                .join_err::<()>("failed to read manifest")?;
-            let config = self
-                .backend
-                .read_project_config(ctx, &entry.path())
-                .await
-                .join_err::<()>("failed to read project config")?;
-
-            projects.push(ProjectItem {
-                id: id.clone(),
-                abs_path: entry.path().to_owned(),
-                manifest,
-                config,
+        let projects = discovered_projects
+            .into_iter()
+            .map(|discovered| ProjectItem {
+                id: discovered.id.clone(),
+                internal_abs_path: discovered.abs_path,
+                manifest: discovered.manifest,
+                config: discovered.config,
                 order: metadata
-                    .get(&key_project_order(&id))
+                    .get(&key_project_order(&discovered.id))
                     .and_then(|v| serde_json::from_value(v.clone()).ok()),
-            });
-        }
+            })
+            .collect();
 
         Ok(projects)
     }

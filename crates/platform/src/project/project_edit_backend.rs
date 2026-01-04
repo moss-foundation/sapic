@@ -1,7 +1,8 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
-use json_patch::{PatchOperation, ReplaceOperation};
+use json_patch::{PatchOperation, RemoveOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
+use moss_bindingutils::primitives::ChangeString;
 use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem};
 use sapic_base::project::{
@@ -37,10 +38,6 @@ impl ProjectEditBackend for ProjectFsEditBackend {
         id: &ProjectId,
         params: ProjectEditParams,
     ) -> joinerror::Result<()> {
-        // TODO: Implement relinking and unlinking remote repo when the user update it
-        // Right now I can't test git functionality properly since the frontend has not updated the project creation with git logic
-        // So I'll skip repo update for now
-
         let mut patches = Vec::new();
 
         if let Some(new_name) = params.name {
@@ -155,5 +152,99 @@ impl ProjectEditBackend for ProjectFsEditBackend {
             .join_err_with::<()>(|| format!("failed to write file: {}", abs_path.display()))?;
 
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::RealFileSystem;
+    use moss_testutils::random_name::random_string;
+    use sapic_core::context::ArcContext;
+    use sapic_system::project::{CreateProjectParams, ProjectServiceFs as ProjectServiceFsPort};
+
+    use crate::project::project_service_fs::ProjectServiceFs;
+
+    use super::*;
+
+    async fn setup_project_edit_test() -> (
+        ArcContext,
+        Arc<ProjectServiceFs>,
+        Arc<ProjectFsEditBackend>,
+        PathBuf,
+    ) {
+        let ctx = ArcContext::background();
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+        let tmp_path = test_path.join("tmp");
+        let projects_dir = tmp_path.join("projects");
+
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+        tokio::fs::create_dir_all(&projects_dir).await.unwrap();
+
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let project_fs = ProjectServiceFs::new(fs.clone(), projects_dir.clone());
+        let edit = ProjectFsEditBackend::new(fs.clone(), projects_dir.clone());
+        (ctx, project_fs, edit, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_edit_rename() {
+        let (ctx, project_fs, edit, test_path) = setup_project_edit_test().await;
+
+        let id = ProjectId::new();
+        let old_name = random_string(10);
+        let new_name = random_string(10);
+
+        project_fs
+            .create_project(
+                &ctx,
+                &id,
+                CreateProjectParams {
+                    name: Some(old_name.clone()),
+                    external_abs_path: None,
+                    git_params: None,
+                    icon_path: None,
+                },
+            )
+            .await
+            .unwrap();
+
+        edit.edit(
+            &ctx,
+            &id,
+            ProjectEditParams {
+                name: Some(new_name.clone()),
+            },
+        )
+        .await
+        .unwrap();
+
+        let projects = project_fs.lookup_projects(&ctx).await.unwrap();
+        assert_eq!(projects[0].manifest.name, new_name);
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_edit_nonexistent() {
+        let (ctx, _project_fs, edit, test_path) = setup_project_edit_test().await;
+
+        let id = ProjectId::new();
+        let new_name = random_string(10);
+        let result = edit
+            .edit(
+                &ctx,
+                &id,
+                ProjectEditParams {
+                    name: Some(new_name.clone()),
+                },
+            )
+            .await;
+
+        assert!(result.is_err());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
     }
 }

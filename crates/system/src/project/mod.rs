@@ -15,9 +15,9 @@ use std::path::{Path, PathBuf};
 use crate::user::account::Account;
 
 pub struct CreateConfigParams {
-    pub internal_abs_path: PathBuf,
     pub external_abs_path: Option<PathBuf>,
     pub account_id: Option<AccountId>,
+    pub repository: Option<String>,
 }
 
 #[derive(Clone)]
@@ -29,19 +29,16 @@ pub struct CreateProjectGitParams {
 
 pub struct CreateProjectParams {
     pub name: Option<String>,
-    pub internal_abs_path: PathBuf,
     pub external_abs_path: Option<PathBuf>,
     pub git_params: Option<CreateProjectGitParams>,
     pub icon_path: Option<PathBuf>,
 }
 
 pub struct ImportArchivedProjectParams {
-    pub internal_abs_path: PathBuf,
     pub archive_path: PathBuf,
 }
 
 pub struct ImportExternalProjectParams {
-    pub internal_abs_path: PathBuf,
     pub external_abs_path: PathBuf,
 }
 
@@ -51,79 +48,95 @@ pub struct CloneProjectGitParams {
     pub branch_name: Option<String>,
 }
 pub struct CloneProjectParams {
-    pub internal_abs_path: PathBuf,
     pub git_params: CloneProjectGitParams,
 }
 
 pub struct ExportArchiveParams {
-    pub project_path: PathBuf,
     pub archive_path: PathBuf,
+}
+
+pub struct LookedUpProject {
+    pub id: ProjectId,
+    pub abs_path: PathBuf,
+    pub manifest: ProjectManifest,
+    pub config: ProjectConfig,
 }
 
 #[async_trait]
 pub trait ProjectServiceFs: Send + Sync {
+    async fn lookup_projects(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<LookedUpProject>>;
+
     // FIXME: I think this is probably incorrect but I want to prioritize migration
     // Reading and Creating file-based config and manifest should be platform dependent
     // So they probably should not be in the system-level interface
     async fn read_project_config(
         &self,
         ctx: &dyn AnyAsyncContext,
-        abs_path: &Path,
+        id: &ProjectId,
     ) -> joinerror::Result<ProjectConfig>;
 
     async fn read_project_manifest(
         &self,
         ctx: &dyn AnyAsyncContext,
-        abs_path: &Path,
+        id: &ProjectId,
     ) -> joinerror::Result<ProjectManifest>;
 
     async fn create_project_manifest(
         &self,
         ctx: &dyn AnyAsyncContext,
-        abs_path: &Path,
+        id: &ProjectId,
     ) -> joinerror::Result<ProjectManifest>;
 
     async fn create_project(
         &self,
         ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
         params: CreateProjectParams,
-    ) -> joinerror::Result<()>;
+    ) -> joinerror::Result<PathBuf>;
 
     async fn clone_project(
         &self,
         ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
         account: &Account,
         params: CloneProjectParams,
-    ) -> joinerror::Result<Repository>;
+    ) -> joinerror::Result<(Repository, PathBuf)>;
 
     async fn import_archived_project(
         &self,
         ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
         params: ImportArchivedProjectParams,
-    ) -> joinerror::Result<()>;
+    ) -> joinerror::Result<PathBuf>;
 
     async fn import_external_project(
         &self,
         ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
         params: ImportExternalProjectParams,
-    ) -> joinerror::Result<()>;
+    ) -> joinerror::Result<PathBuf>;
 
     async fn export_archive(
         &self,
         ctx: &dyn AnyAsyncContext,
+        id: &ProjectId,
         params: ExportArchiveParams,
     ) -> joinerror::Result<()>;
 
     async fn delete_project(
         &self,
         ctx: &dyn AnyAsyncContext,
-        abs_path: &Path,
+        id: &ProjectId,
     ) -> joinerror::Result<Option<PathBuf>>;
 }
 
 pub struct ProjectEditParams {
     pub name: Option<String>,
-    pub repository: Option<ChangeString>,
+    // TODO: Reenable this once we actually have the ability to relink the remote repo
+    // pub repository: Option<ChangeString>,
 }
 
 pub struct ProjectConfigEditParams {

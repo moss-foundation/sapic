@@ -181,10 +181,10 @@ impl<R: AppRuntime> App<R> {
             "failed to add workspace to storage",
         )?;
 
+        let projects_path = abs_path.join("projects");
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            ProjectServiceFs::new(self.fs.clone()),
-            abs_path.clone().join("projects"),
+            ProjectServiceFs::new(self.fs.clone(), projects_path.clone()),
             self.fs.clone(),
             self.storage.clone(),
         );
@@ -245,10 +245,10 @@ impl<R: AppRuntime> App<R> {
             "failed to add workspace to storage",
         )?;
 
+        let projects_path = abs_path.join("projects");
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            ProjectServiceFs::new(self.fs.clone()),
-            abs_path.clone().join("projects"),
+            ProjectServiceFs::new(self.fs.clone(), projects_path.clone()),
             self.fs.clone(),
             self.storage.clone(),
         );
