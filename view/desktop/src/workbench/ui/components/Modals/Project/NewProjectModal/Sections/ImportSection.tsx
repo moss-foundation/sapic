@@ -1,11 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useState } from "react";
 
 import { useListUserAccounts } from "@/adapters";
+import { useModal } from "@/hooks";
+import { Button } from "@/lib/ui";
 import { PillTabs } from "@/lib/ui/Tabs/index";
 import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { ImportProjectSource } from "@repo/ipc";
 
+import { NewAccountModal } from "../../../Account/NewAccountModal";
 import { AccountSelect } from "../components/AccountSelect";
 import { BranchInput } from "../components/BranchInput";
 import { NameInput } from "../components/NameInput";
@@ -19,6 +22,10 @@ interface ImportSectionProps {
 
 export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const { data: userAccounts } = useListUserAccounts();
+
+  const githubAccounts = userAccounts?.accounts.filter((account) => account.kind === "GITHUB") ?? [];
+  const gitlabAccounts = userAccounts?.accounts.filter((account) => account.kind === "GITLAB") ?? [];
+  const hasNoAccounts = userAccounts?.accounts.length === 0;
 
   const { gitProvider } = useGitProviderStore();
 
@@ -39,6 +46,18 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
     return providerMap[provider] ?? undefined;
   }, [repository, branch, accountId, provider]);
 
+  const setInitialProvider = useEffectEvent(() => {
+    if (githubAccounts.length > 0) {
+      setProvider("github");
+    } else if (gitlabAccounts.length > 0) {
+      setProvider("gitlab");
+    }
+  });
+
+  useEffect(() => {
+    setInitialProvider();
+  }, []);
+
   useEffect(() => {
     onValuesUpdate({ name, importParams });
   }, [name, importParams, onValuesUpdate]);
@@ -47,10 +66,9 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
     setAccountId(accountId);
   };
 
-  const accounts = useMemo(() => {
-    const accountKind = provider === "github" ? "GITHUB" : "GITLAB";
-    return userAccounts?.accounts.filter((account) => account.kind === accountKind) ?? [];
-  }, [provider, userAccounts?.accounts]);
+  if (hasNoAccounts) {
+    return <NoProviderSection />;
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -60,6 +78,8 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           onValueChange={(value) => setProvider(value as "github" | "gitlab")}
           label="From:"
           layout="grid"
+          showGitHub={githubAccounts.length > 0}
+          showGitLab={gitlabAccounts.length > 0}
         >
           <PillTabs.Content value="github" className="contents">
             <NameInput name={name} setName={setName} />
@@ -90,7 +110,11 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         </span>
 
         <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2 pl-5 pt-3">
-          <AccountSelect accounts={accounts} onValueChange={handleSetAccount} />
+          <AccountSelect
+            accounts={provider === "github" ? githubAccounts : gitlabAccounts}
+            onValueChange={handleSetAccount}
+            disabled={hasNoAccounts}
+          />
 
           <RepositoryInput repository={repository} setRepository={setRepository} />
 
@@ -98,5 +122,23 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
         </div>
       </div>
     </div>
+  );
+};
+
+const NoProviderSection = () => {
+  const {
+    openModal: openNewAccountModal,
+    closeModal: closeNewAccountModal,
+    showModal: isNewAccountModalOpen,
+  } = useModal();
+
+  return (
+    <>
+      <Button intent="primary" onClick={openNewAccountModal}>
+        Connect new account
+      </Button>
+
+      <NewAccountModal showModal={isNewAccountModalOpen} closeModal={closeNewAccountModal} />
+    </>
   );
 };

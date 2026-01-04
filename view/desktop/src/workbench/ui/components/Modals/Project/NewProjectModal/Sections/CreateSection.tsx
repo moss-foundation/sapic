@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { useListUserAccounts } from "@/adapters";
 import { useFocusInputOnMount, useModal } from "@/hooks";
@@ -38,6 +38,18 @@ export const CreateSection = ({ onValuesUpdate }: CreateSectionProps) => {
   const [accountId, setAccountId] = useState("");
 
   useFocusInputOnMount({ inputRef });
+
+  const setInitialProvider = useEffectEvent(() => {
+    if (githubAccounts.length > 0) {
+      setProvider("github");
+    } else if (gitlabAccounts.length > 0) {
+      setProvider("gitlab");
+    }
+  });
+
+  useEffect(() => {
+    setInitialProvider();
+  }, []);
 
   const {
     openModal: openNewAccountModal,
