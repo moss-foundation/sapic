@@ -12,6 +12,7 @@ pub struct ProjectConfig {
     pub external_path: Option<PathBuf>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub account_id: Option<AccountId>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub repository: Option<String>,
+    // I believe this field is replaced by VCS field in the manifest
+    // #[serde(skip_serializing_if = "Option::is_none")]
+    // pub repository: Option<String>,
 }

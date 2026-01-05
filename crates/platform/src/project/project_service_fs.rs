@@ -1,7 +1,6 @@
 use async_trait::async_trait;
 use atomic_fs::Rollback;
 use joinerror::{ResultExt, bail};
-use moss_common::continue_if_err;
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions};
 use moss_git::repository::Repository;
 use sapic_base::{
@@ -116,7 +115,6 @@ impl ProjectServiceFs {
                     archived: false,
                     external_path: params.external_abs_path.clone().map(|p| p.to_path_buf()),
                     account_id: params.account_id.clone(),
-                    repository: params.repository.clone(),
                 })?
                 .as_bytes(),
                 CreateOptions {
@@ -226,7 +224,6 @@ impl ProjectServiceFs {
             &CreateConfigParams {
                 external_abs_path: params.external_abs_path.clone(),
                 account_id: None,
-                repository: None,
             },
         )
         .await
@@ -305,7 +302,6 @@ impl ProjectServiceFs {
             &CreateConfigParams {
                 external_abs_path: None,
                 account_id: Some(account.id()),
-                repository: Some(params.git_params.repository_url.to_string()?),
             },
         )
         .await
@@ -348,7 +344,6 @@ impl ProjectServiceFs {
             &CreateConfigParams {
                 external_abs_path: None,
                 account_id: None,
-                repository: None,
             },
         )
         .await
@@ -382,7 +377,6 @@ impl ProjectServiceFs {
             &CreateConfigParams {
                 external_abs_path: Some(params.external_abs_path.clone()),
                 account_id: None,
-                repository: None,
             },
         )
         .await
@@ -766,7 +760,6 @@ mod tests {
     async fn test_create_project_already_exists() {
         let (ctx, service_fs, test_path) = set_test_project_service_fs().await;
         let id = ProjectId::new();
-        let internal_abs_path = test_path.join("projects").join(id.to_string());
 
         service_fs
             .create_project(
@@ -869,7 +862,6 @@ mod tests {
     async fn test_delete_project_nonexistent() {
         let (ctx, service_fs, test_path) = set_test_project_service_fs().await;
         let id = ProjectId::new();
-        let internal_abs_path = test_path.join("projects").join(id.to_string());
 
         let result = service_fs.delete_project(&ctx, &id).await.unwrap();
 
@@ -883,7 +875,6 @@ mod tests {
     async fn test_export_and_import_archive() {
         let (ctx, service_fs, test_path) = set_test_project_service_fs().await;
         let id = ProjectId::new();
-        let internal_abs_path = test_path.join("projects").join(id.to_string());
 
         service_fs
             .create_project(
@@ -917,7 +908,7 @@ mod tests {
         let new_id = ProjectId::new();
         let imported_internal_abs_path = test_path.join("projects").join(new_id.to_string());
         service_fs
-            .import_archived_project(&ctx, &id, ImportArchivedProjectParams { archive_path })
+            .import_archived_project(&ctx, &new_id, ImportArchivedProjectParams { archive_path })
             .await
             .unwrap();
 
@@ -938,7 +929,6 @@ mod tests {
     async fn test_import_project_external() {
         let (ctx, service_fs, test_path) = set_test_project_service_fs().await;
         let id = ProjectId::new();
-        let old_internal_abs_path = test_path.join("projects").join(id.to_string());
 
         let external_abs_path = test_path.join("external");
 
@@ -960,7 +950,11 @@ mod tests {
         let new_internal_abs_path = test_path.join("projects").join(new_id.to_string());
 
         service_fs
-            .import_external_project(&ctx, &id, ImportExternalProjectParams { external_abs_path })
+            .import_external_project(
+                &ctx,
+                &new_id,
+                ImportExternalProjectParams { external_abs_path },
+            )
             .await
             .unwrap();
 

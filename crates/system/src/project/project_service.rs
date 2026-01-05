@@ -1,4 +1,4 @@
-use joinerror::{ResultExt, bail};
+use joinerror::ResultExt;
 use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
@@ -42,7 +42,7 @@ pub struct ProjectItem {
 pub struct ProjectService {
     workspace_id: WorkspaceId,
     backend: Arc<dyn ProjectServiceFs>,
-    fs: Arc<dyn FileSystem>,
+    _fs: Arc<dyn FileSystem>,
     storage: Arc<dyn KvStorage>,
 }
 
@@ -56,7 +56,7 @@ impl ProjectService {
         Self {
             workspace_id,
             backend,
-            fs,
+            _fs: fs,
             storage,
         }
     }

@@ -1,8 +1,7 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
-use json_patch::{PatchOperation, RemoveOperation, ReplaceOperation};
+use json_patch::{PatchOperation, ReplaceOperation};
 use jsonptr::PointerBuf;
-use moss_bindingutils::primitives::ChangeString;
 use moss_edit::json::{EditOptions, JsonEdit};
 use moss_fs::{CreateOptions, FileSystem};
 use sapic_base::project::{

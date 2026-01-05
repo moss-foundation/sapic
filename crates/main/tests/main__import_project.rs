@@ -13,13 +13,12 @@ mod shared;
 // Skip testing cloning git repos for now
 #[tokio::test]
 async fn import_external_project_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, test_path) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, test_path) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let external_path = test_path.join(&project_name);
 
-    let id = main_window
+    let _id = main_window
         .create_project(
             &ctx,
             &CreateProjectInput {
@@ -36,7 +35,7 @@ async fn import_external_project_success() {
         .unwrap()
         .id;
 
-    let new_id = main_window
+    let _new_id = main_window
         .import_project(
             &ctx,
             &ImportProjectInput {

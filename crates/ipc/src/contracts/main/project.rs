@@ -1,4 +1,4 @@
-use moss_bindingutils::primitives::{ChangePath, ChangeString};
+use moss_bindingutils::primitives::ChangePath;
 use moss_git::{models::types::BranchInfo, url::GIT_URL_REGEX};
 use sapic_base::{
     other::GitProviderKind, project::types::primitives::ProjectId,
@@ -498,12 +498,12 @@ pub struct UnarchiveProjectOutput {
     pub id: ProjectId,
 }
 
-fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
-    match repo {
-        ChangeString::Update(repo) => GIT_URL_REGEX
-            .is_match(repo)
-            .then_some(())
-            .ok_or(ValidationError::new("Invalid Git URL format")),
-        ChangeString::Remove => Ok(()),
-    }
-}
+// fn validate_change_repository(repo: &ChangeString) -> Result<(), ValidationError> {
+//     match repo {
+//         ChangeString::Update(repo) => GIT_URL_REGEX
+//             .is_match(repo)
+//             .then_some(())
+//             .ok_or(ValidationError::new("Invalid Git URL format")),
+//         ChangeString::Remove => Ok(()),
+//     }
+// }

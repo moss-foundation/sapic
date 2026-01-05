@@ -2,7 +2,6 @@
 
 use moss_testutils::random_name::random_project_name;
 use sapic_ipc::contracts::main::project::{CreateProjectInput, CreateProjectParams};
-use std::path::Path;
 
 use crate::shared::{set_up_test_main_window, test_stream_projects};
 
@@ -14,8 +13,7 @@ mod shared;
 
 #[tokio::test]
 async fn create_project_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let id = main_window
@@ -44,8 +42,7 @@ async fn create_project_success() {
 
 #[tokio::test]
 async fn create_project_external_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, test_path) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, test_path) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let external_path = test_path.join(&project_name);

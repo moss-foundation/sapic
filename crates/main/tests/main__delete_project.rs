@@ -12,8 +12,7 @@ mod shared;
 
 #[tokio::test]
 async fn delete_project_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let id = main_window
@@ -46,8 +45,7 @@ async fn delete_project_success() {
 // We should gracefully handle this scenario
 #[tokio::test]
 async fn delete_project_nonexistent() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let id = ProjectId::new();
 
@@ -62,8 +60,7 @@ async fn delete_project_nonexistent() {
 
 #[tokio::test]
 async fn delete_project_external() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, test_path) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, test_path) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let external_path = test_path.join(&project_name);

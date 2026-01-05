@@ -12,8 +12,7 @@ mod shared;
 
 #[tokio::test]
 pub async fn archive_project_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let id = main_window
@@ -50,8 +49,7 @@ pub async fn archive_project_success() {
 
 #[tokio::test]
 pub async fn archive_project_already_archived() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let id = main_window
@@ -90,8 +88,7 @@ pub async fn archive_project_already_archived() {
 
 #[tokio::test]
 pub async fn archive_project_nonexistent() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, _) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, _) = set_up_test_main_window().await;
 
     let id = ProjectId::new();
 

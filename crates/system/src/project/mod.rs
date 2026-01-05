@@ -2,7 +2,6 @@ pub mod project_edit_service;
 pub mod project_service;
 
 use async_trait::async_trait;
-use moss_bindingutils::primitives::ChangeString;
 use moss_git::{repository::Repository, url::GitUrl};
 use sapic_base::{
     other::GitProviderKind,
@@ -10,14 +9,13 @@ use sapic_base::{
     user::types::primitives::AccountId,
 };
 use sapic_core::context::AnyAsyncContext;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::user::account::Account;
 
 pub struct CreateConfigParams {
     pub external_abs_path: Option<PathBuf>,
     pub account_id: Option<AccountId>,
-    pub repository: Option<String>,
 }
 
 #[derive(Clone)]
@@ -135,8 +133,6 @@ pub trait ProjectServiceFs: Send + Sync {
 
 pub struct ProjectEditParams {
     pub name: Option<String>,
-    // TODO: Reenable this once we actually have the ability to relink the remote repo
-    // pub repository: Option<ChangeString>,
 }
 
 pub struct ProjectConfigEditParams {

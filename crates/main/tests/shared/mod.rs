@@ -3,7 +3,7 @@
 use main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
 use moss_app_delegate::AppDelegate;
 use moss_applib::mock::MockAppRuntime;
-use moss_fs::{FileSystem, RealFileSystem};
+use moss_fs::RealFileSystem;
 use moss_keyring::KeyringClientImpl;
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::random_string;
@@ -45,12 +45,10 @@ pub fn random_test_dir_path() -> PathBuf {
         .join("data")
         .join(random_string(10))
 }
-pub struct MainWindowServices {}
 
 pub async fn set_up_test_main_window() -> (
     MainWindow<MockAppRuntime>,
     AppDelegate<MockAppRuntime>,
-    MainWindowServices,
     ArcContext,
     CleanupFn,
     PathBuf,
@@ -196,8 +194,6 @@ pub async fn set_up_test_main_window() -> (
     .await
     .unwrap();
 
-    let main_window_services = MainWindowServices {};
-
     let storage_clone = storage.clone();
     let cleanup_fn = Box::new({
         let path = test_dir_path.clone();
@@ -212,16 +208,10 @@ pub async fn set_up_test_main_window() -> (
         }
     });
 
-    (
-        main_window,
-        delegate,
-        main_window_services,
-        ctx,
-        cleanup_fn,
-        test_dir_path,
-    )
+    (main_window, delegate, ctx, cleanup_fn, test_dir_path)
 }
 
+#[allow(unused)]
 pub async fn test_stream_projects(
     window: &MainWindow<MockAppRuntime>,
     ctx: &ArcContext,

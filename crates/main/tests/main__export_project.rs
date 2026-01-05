@@ -13,8 +13,7 @@ mod shared;
 // Create an archive file from a project and import it back
 #[tokio::test]
 async fn export_project_success() {
-    let (main_window, _delegate, main_window_services, ctx, cleanup, test_path) =
-        set_up_test_main_window().await;
+    let (main_window, _delegate, ctx, cleanup, test_path) = set_up_test_main_window().await;
 
     let project_name = random_project_name();
     let id = main_window
@@ -54,7 +53,7 @@ async fn export_project_success() {
         .unwrap()
         .archive_path;
 
-    let imported_id = main_window
+    let _imported_id = main_window
         .import_project(
             &ctx,
             &ImportProjectInput {
