@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useUpdateProjectResource } from "@/adapters";
-import { ResourceDetails } from "@/db/resource/types";
+import { ResourceDetails } from "@/db/resourceDetails/types";
 
 import { useTabbedPaneStore } from "../store/tabbedPane";
 

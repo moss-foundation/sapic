@@ -1,4 +1,4 @@
-import { ResourceDetails } from "@/db/resource/types";
+import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceService } from "@/domains/resource/resourceService";
 import { StreamResourcesEvent, UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";

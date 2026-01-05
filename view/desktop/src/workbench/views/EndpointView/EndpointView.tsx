@@ -1,4 +1,4 @@
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";

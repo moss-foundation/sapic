@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 import { useDescribeProjectResource } from "@/adapters/tanstackQuery/resource";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 
 interface useSyncResourceDetailsProps {
   resourceId: string;

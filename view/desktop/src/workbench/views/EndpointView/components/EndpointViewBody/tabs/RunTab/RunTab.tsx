@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";
