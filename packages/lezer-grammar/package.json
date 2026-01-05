@@ -13,10 +13,10 @@
     "build": "lezer-generator --typeScript src/variables.grammar -o src/parser && rollup -c"
   },
   "devDependencies": {
-    "rollup": "^4.54.0",
     "@lezer/generator": "1.8.0",
     "@rollup/plugin-node-resolve": "16.0.3",
-    "@rollup/plugin-typescript": "12.3.0"
+    "@rollup/plugin-typescript": "12.3.0",
+    "rollup": "^4.55.1"
   },
   "dependencies": {
     "@lezer/highlight": "1.2.2",
