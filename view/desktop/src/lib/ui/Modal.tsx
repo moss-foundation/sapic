@@ -42,7 +42,14 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
         "max-h-[80vh] min-h-0 w-full max-w-lg", // Added max-w-lg for standard modal width (adjust as needed)
         "flex flex-col overflow-hidden rounded-lg",
         "shadow-[0px_8px_40px_rgba(0,0,0,0.3)]",
-        "bg-white", // Ensure the dialog itself has a background
+        "bg-white",
+
+        // BACKDROP STYLING (Native dialog's ::backdrop)
+        {
+          "backdrop:bg-black/70": backdropFilter === "darken",
+          "backdrop:backdrop-blur-md": backdropFilter === "blur",
+          "backdrop:bg-transparent": backdropFilter === "none",
+        },
 
         // ANIMATION (entry/exit)
         "allow-discrete transition-[opacity,transform,display] duration-200",
@@ -50,18 +57,9 @@ export const Modal = ({ backdropFilter = "blur", showModal, onBackdropClick, cla
 
         // STARTING STATE (Before open)
         "opacity-0 backdrop:opacity-0",
-        "scale-95", // Optional: slight zoom effect on open
 
         // OPEN STATE (Target state)
         "open:opacity-100 open:backdrop:opacity-100",
-        "open:scale-100",
-
-        // BACKDROP STYLING (Native ::backdrop)
-        {
-          "backdrop:bg-black/70": backdropFilter === "darken",
-          "backdrop:backdrop-blur-md": backdropFilter === "blur",
-          "backdrop:bg-transparent": backdropFilter === "none",
-        },
 
         className
       )}

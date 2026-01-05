@@ -54,6 +54,12 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
     }
   });
 
+  const {
+    openModal: openNewAccountModal,
+    closeModal: closeNewAccountModal,
+    showModal: isNewAccountModalOpen,
+  } = useModal();
+
   useEffect(() => {
     setInitialProvider();
   }, []);
@@ -71,57 +77,60 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
-        <VcsProviderSwitcher
-          value={provider}
-          onValueChange={(value) => setProvider(value as "github" | "gitlab")}
-          label="From:"
-          layout="grid"
-          showGitHub={githubAccounts.length > 0}
-          showGitLab={gitlabAccounts.length > 0}
-        >
-          <PillTabs.Content value="github" className="contents">
-            <NameInput name={name} setName={setName} />
-          </PillTabs.Content>
-          <PillTabs.Content value="gitlab" className="contents">
-            <NameInput name={name} setName={setName} />
-          </PillTabs.Content>
-        </VcsProviderSwitcher>
-      </div>
+    <>
+      <div className="flex flex-col gap-2">
+        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2">
+          <VcsProviderSwitcher
+            value={provider}
+            onValueChange={(value) => setProvider(value as "github" | "gitlab")}
+            label="From:"
+            layout="grid"
+            showGitHub={githubAccounts.length > 0}
+            showGitLab={gitlabAccounts.length > 0}
+          >
+            <PillTabs.Content value="github" className="contents">
+              <NameInput name={name} setName={setName} />
+            </PillTabs.Content>
+            <PillTabs.Content value="gitlab" className="contents">
+              <NameInput name={name} setName={setName} />
+            </PillTabs.Content>
+          </VcsProviderSwitcher>
+        </div>
 
-      <div>
-        <Subheader>
-          <span>Git</span>
-          <div className="background-(--moss-border) my-auto h-px w-full" />
-          {gitProvider === null && (
-            <button
-              className="text-(--moss-primary) cursor-pointer whitespace-nowrap hover:underline"
-              onClick={() => {}}
-              type="button"
-            >
-              Log In via GitHub
-            </button>
-          )}
-        </Subheader>
+        <div>
+          <Subheader>
+            <span>Git</span>
+            <div className="background-(--moss-border) my-auto h-px w-full" />
+            {gitProvider === null && (
+              <button
+                className="text-(--moss-primary) cursor-pointer whitespace-nowrap hover:underline"
+                onClick={openNewAccountModal}
+                type="button"
+              >
+                Add new account
+              </button>
+            )}
+          </Subheader>
 
-        <span className="text-(--moss-secondary-foreground) text-sm">
-          You can switch modes in the workspace at any time and as often as needed.
-        </span>
+          <span className="text-(--moss-secondary-foreground) text-sm">
+            You can switch modes in the workspace at any time and as often as needed.
+          </span>
 
-        <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2 pl-5 pt-3">
-          <AccountSelect
-            accounts={provider === "github" ? githubAccounts : gitlabAccounts}
-            onValueChange={handleSetAccount}
-            disabled={hasNoAccounts}
-          />
+          <div className="grid grid-cols-[min-content_1fr] items-center gap-x-3 gap-y-6 pb-2 pl-5 pt-3">
+            <AccountSelect
+              accounts={provider === "github" ? githubAccounts : gitlabAccounts}
+              onValueChange={handleSetAccount}
+              disabled={hasNoAccounts}
+            />
 
-          <RepositoryInput repository={repository} setRepository={setRepository} />
+            <RepositoryInput repository={repository} setRepository={setRepository} />
 
-          <BranchInput branch={branch} setBranch={setBranch} />
+            <BranchInput branch={branch} setBranch={setBranch} />
+          </div>
         </div>
       </div>
-    </div>
+      <NewAccountModal showModal={isNewAccountModalOpen} closeModal={closeNewAccountModal} />
+    </>
   );
 };
 
