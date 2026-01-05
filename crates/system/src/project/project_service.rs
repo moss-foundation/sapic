@@ -66,12 +66,11 @@ impl ProjectService {
         ctx: &dyn AnyAsyncContext,
         name: String,
         order: isize,
-        external_path: Option<PathBuf>,
+        external_abs_path: Option<PathBuf>,
         git_params: Option<CreateProjectGitParams>,
         icon_path: Option<PathBuf>,
     ) -> joinerror::Result<ProjectItem> {
         let id = ProjectId::new();
-        let external_abs_path = external_path.map(|p| p);
         let internal_abs_path = self
             .backend
             .create_project(
@@ -87,7 +86,7 @@ impl ProjectService {
             .await
             .join_err::<()>("failed to create project")?;
 
-        let manifest = self.backend.create_project_manifest(ctx, &id).await?;
+        let manifest = self.backend.read_project_manifest(ctx, &id).await?;
         let config = self.backend.read_project_config(ctx, &id).await?;
 
         Ok(ProjectItem {

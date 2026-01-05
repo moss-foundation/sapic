@@ -193,7 +193,7 @@ impl ProjectServiceFs {
             .unwrap_or(internal_abs_path.to_path_buf());
 
         self.fs
-            .create_dir_with_rollback(ctx, rb, &abs_path)
+            .create_dir_all_with_rollback(ctx, rb, &abs_path)
             .await
             .join_err_with::<()>(|| {
                 format!("failed to create directory `{}`", abs_path.display())
@@ -461,9 +461,10 @@ impl ProjectServiceFsPort for ProjectServiceFs {
         ctx: &dyn AnyAsyncContext,
         id: &ProjectId,
     ) -> joinerror::Result<ProjectManifest> {
-        let manifest_path = self
-            .projects_dir
-            .join(id.to_string())
+        let config = self.read_project_config(ctx, &id).await?;
+        let manifest_path = config
+            .external_path
+            .unwrap_or_else(|| self.projects_dir.join(id.to_string()))
             .join(MANIFEST_FILE_NAME);
         let rdr = self
             .fs
@@ -642,6 +643,7 @@ impl ProjectServiceFsPort for ProjectServiceFs {
         Ok(())
     }
 
+    // FIXME: Should we delete the external project path as well?
     async fn delete_project(
         &self,
         ctx: &dyn AnyAsyncContext,

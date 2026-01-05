@@ -257,7 +257,7 @@ impl ProjectBuilder {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
-            internal_abs_path: abs_path,
+            internal_abs_path: params.abs_path.into(),
             external_abs_path: params.config.external_path.map(|p| p.into()),
             edit,
             set_icon_service,
