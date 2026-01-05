@@ -5,7 +5,6 @@ import { useImportProject } from "@/adapters/tanstackQuery/project/useImportProj
 import { useStreamProjects } from "@/adapters/tanstackQuery/project/useStreamProjects";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
-import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
@@ -26,8 +25,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const { mutateAsync: importProject } = useImportProject();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
-
-  const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState("New Project");
   const [mode, setMode] = useState<"Default" | "Custom">("Default");
@@ -103,7 +100,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     []
   );
 
-  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams, gitProvider });
+  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams });
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal} className="max-w-136 w-full">
