@@ -4,7 +4,6 @@ import { useListUserAccounts } from "@/adapters";
 import { useModal } from "@/hooks";
 import { Button } from "@/lib/ui";
 import { PillTabs } from "@/lib/ui/Tabs/index";
-import { useGitProviderStore } from "@/workbench/store/gitProvider";
 import { VcsProviderSwitcher } from "@/workbench/ui/components/VcsProviderSwitcher";
 import { ImportProjectSource } from "@repo/ipc";
 
@@ -26,8 +25,6 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
   const githubAccounts = userAccounts?.accounts.filter((account) => account.kind === "GITHUB") ?? [];
   const gitlabAccounts = userAccounts?.accounts.filter((account) => account.kind === "GITLAB") ?? [];
   const hasNoAccounts = userAccounts?.accounts.length === 0;
-
-  const { gitProvider } = useGitProviderStore();
 
   const [name, setName] = useState(DEFAULT_NAME);
   //TODO repository expects input like this: https://github.com/brutusyhy/test-empty-collection.git.
@@ -101,15 +98,14 @@ export const ImportSection = ({ onValuesUpdate }: ImportSectionProps) => {
           <Subheader>
             <span>Git</span>
             <div className="background-(--moss-border) my-auto h-px w-full" />
-            {gitProvider === null && (
-              <button
-                className="text-(--moss-primary) cursor-pointer whitespace-nowrap hover:underline"
-                onClick={openNewAccountModal}
-                type="button"
-              >
-                Add new account
-              </button>
-            )}
+
+            <button
+              className="text-(--moss-primary) cursor-pointer whitespace-nowrap hover:underline"
+              onClick={openNewAccountModal}
+              type="button"
+            >
+              Add new account
+            </button>
           </Subheader>
 
           <span className="text-(--moss-secondary-foreground) text-sm">

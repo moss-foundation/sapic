@@ -1,14 +1,12 @@
-import { AddAccountParams } from "@repo/window";
+import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
 import { CREATE_TAB, IMPORT_TAB } from "./constansts";
-import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
 interface CalculateIsSubmitDisabledProps {
   name: string;
   tab: typeof CREATE_TAB | typeof IMPORT_TAB;
   createParams: CreateProjectGitParams | undefined;
   importParams: ImportProjectSource | undefined;
-  gitProvider: AddAccountParams | null;
 }
 
 export const calculateIsSubmitDisabled = ({
