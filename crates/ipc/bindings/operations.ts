@@ -8,8 +8,15 @@ import {
   LanguageInfo,
   ThemeId,
 } from "@repo/base";
-import { JsonValue } from "@repo/moss-bindingutils";
-import type { WorkspaceInfo } from "./types";
+import { ChangePath, ChangeString, JsonValue } from "@repo/moss-bindingutils";
+import type {
+  Contributor,
+  CreateProjectGitParams,
+  ImportProjectSource,
+  UpdateProjectParams,
+  VcsInfo,
+  WorkspaceInfo,
+} from "./types";
 
 /**
  * @category Operation
@@ -26,7 +33,53 @@ export type AddUserAccountInput = {
 /**
  * @category Operation
  */
+export type ArchiveProjectInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type ArchiveProjectOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateProjectInput = { items: Array<UpdateProjectParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateProjectOutput = { ids: Array<string> };
+
+/**
+ * @category Operation
+ */
 export type CancelRequestInput = { request_id: string };
+
+/**
+ * @category Operation
+ */
+export type CreateProjectInput = {
+  name: string;
+  order: number;
+  externalPath?: string;
+  gitParams?: CreateProjectGitParams;
+  iconPath?: string;
+};
+
+/**
+ * @category Operation
+ */
+export type CreateProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteProjectInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteProjectOutput = { id: string };
 
 /**
  * @category Operation
@@ -41,7 +94,38 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
+export type DescribeProjectInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeProjectOutput = {
+  name: string;
+  vcs?: VcsInfo;
+  contributors: Array<Contributor>;
+  createdAt: string;
+};
+
+/**
+ * @category Operation
+ */
 export type DownloadExtensionInput = { extensionId: string; version: string };
+
+/**
+ * @category Operation
+ */
+export type ExportProjectInput = {
+  id: string;
+  /**
+   * Path to the folder containing the output archive file
+   */
+  destination: string;
+};
+
+/**
+ * @category Operation
+ */
+export type ExportProjectOutput = { archivePath: string };
 
 /**
  * @category Operation
@@ -62,6 +146,16 @@ export type GetTranslationNamespaceInput = { language: string; namespace: string
  * @category Operation
  */
 export type GetTranslationNamespaceOutput = { contents: JsonValue };
+
+/**
+ * @category Operation
+ */
+export type ImportProjectInput = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
+
+/**
+ * @category Operation
+ */
+export type ImportProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
 
 /**
  * @category Operation
@@ -94,6 +188,38 @@ export type ListWorkspacesOutput = Array<WorkspaceInfo>;
  * @category Operation
  */
 export type RemoveUserAccountInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type StreamProjectsOutput = {};
+
+/**
+ * @category Operation
+ */
+export type UnarchiveProjectInput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UnarchiveProjectOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type UpdateProjectInput = {
+  id: string;
+  name?: string;
+  repository?: ChangeString;
+  iconPath?: ChangePath;
+  order?: number;
+  expanded?: boolean;
+};
+
+/**
+ * @category Operation
+ */
+export type UpdateProjectOutput = { id: string };
 
 /**
  * @category Operation

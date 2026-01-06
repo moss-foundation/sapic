@@ -2,13 +2,13 @@ mod types;
 
 use std::sync::Arc;
 
-use sapic_base::user::types::primitives::AccountId;
+use sapic_base::{other::GitProviderKind, user::types::primitives::AccountId};
 use sapic_core::context::AnyAsyncContext;
 pub use types::*;
 
 use moss_git::url::GitUrl;
 use sapic_system::{
-    ports::{GitProviderKind, github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
+    ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::account::{Account, session::AccountSession},
 };
 

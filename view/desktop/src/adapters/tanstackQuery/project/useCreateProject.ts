@@ -1,5 +1,5 @@
 import { projectService } from "@/domains/project/projectService";
-import { CreateProjectInput, CreateProjectOutput, StreamProjectsEvent } from "@repo/moss-workspace";
+import { CreateProjectInput, CreateProjectOutput, StreamProjectsEvent } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECTS_QUERY_KEY } from "./useStreamProjects";

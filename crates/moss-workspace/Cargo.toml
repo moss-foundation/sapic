@@ -24,6 +24,7 @@ moss_logging.workspace = true
 moss_common.workspace = true
 moss_id_macro.workspace = true
 moss_text.workspace = true
+moss_testutils = { workspace = true, optional = true }
 
 static_json.workspace = true
 inventory.workspace = true
@@ -65,4 +66,5 @@ integration-tests = [
   "moss_keyring/test",
   "sapic-runtime/integration-tests",
   "moss_storage2/integration-tests",
+  "moss_testutils",
 ]

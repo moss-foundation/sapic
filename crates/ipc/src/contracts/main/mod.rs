@@ -1,3 +1,4 @@
+pub mod project;
 pub mod workspace;
 
 use serde::{Deserialize, Serialize};

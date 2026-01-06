@@ -1,6 +1,5 @@
 pub mod api;
 pub mod builder;
-mod config;
 pub mod contribution;
 mod edit;
 pub mod git;
@@ -32,10 +31,6 @@ inventory::submit! {
 pub mod constants {
     pub const ITEM_CONFIG_FILENAME: &str = "config.sap";
     pub const DIR_CONFIG_FILENAME: &str = "config-folder.sap";
-}
-
-mod defaults {
-    pub(crate) const DEFAULT_PROJECT_NAME: &str = "New Project";
 }
 
 pub mod dirs {

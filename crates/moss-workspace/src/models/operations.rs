@@ -4,10 +4,7 @@ use sapic_base::{
     project::types::primitives::ProjectId,
 };
 use serde::{Deserialize, Serialize};
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
@@ -16,178 +13,6 @@ use crate::models::types::*;
 // ------------------------------ //
 // Project
 // ------------------------------ //
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: CreateProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct CreateProjectOutput {
-    pub id: ProjectId,
-    pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
-    pub icon_path: Option<PathBuf>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub external_path: Option<PathBuf>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ImportProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: ImportProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct ImportProjectOutput {
-    pub id: ProjectId,
-    // FIXME: Maybe we should remove the name field until we have local display name
-    // Since a cloned/imported project already has a name
-    pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
-    pub icon_path: Option<PathBuf>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Arc<Path>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub external_path: Option<PathBuf>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ExportProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: ExportProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ExportProjectOutput {
-    pub archive_path: PathBuf,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateProjectInput {
-    #[serde(flatten)]
-    #[validate(nested)]
-    pub inner: UpdateProjectParams,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateProjectOutput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateProjectInput {
-    #[validate(nested)]
-    pub items: Vec<UpdateProjectParams>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateProjectOutput {
-    #[ts(as = "Vec<String>")]
-    pub ids: Vec<ProjectId>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DeleteProjectOutput {
-    pub id: ProjectId,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub abs_path: Option<Arc<Path>>,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ArchiveProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct ArchiveProjectOutput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, Deserialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UnarchiveProjectOutput {
-    pub id: ProjectId,
-}
 
 /// @category Operation
 #[derive(Debug, Deserialize, TS)]
@@ -204,16 +29,6 @@ pub struct DescribeEnvironmentInput {
 pub struct DescribeEnvironmentOutput {
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectsOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
 }
 
 // ------------------------------ //
@@ -338,28 +153,6 @@ pub struct StreamEnvironmentsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,
-}
-
-// Describe Project
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeProjectInput {
-    pub id: ProjectId,
-}
-
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "operations.ts")]
-pub struct DescribeProjectOutput {
-    pub name: String,
-    pub vcs: Option<VcsInfo>,
-    pub contributors: Vec<Contributor>,
-    pub created_at: String,
 }
 
 // Get File Statuses

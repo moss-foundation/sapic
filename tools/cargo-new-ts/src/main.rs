@@ -54,7 +54,7 @@ const PACKAGE_JSON_TEMPLATE: LazyCell<serde_json::Value> = LazyCell::new(|| {
       },
       "dependencies": {
         "typescript": "^5.9.2",
-        "zod": "^3.24.4"
+        "zod": "^3.25.32"
       }
     }
       )
