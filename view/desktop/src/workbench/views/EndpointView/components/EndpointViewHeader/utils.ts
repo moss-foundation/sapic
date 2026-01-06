@@ -77,6 +77,7 @@ export const buildDescriptionParamsToAdd = (
   if (localResourceDetails.name !== backendResourceDetails.name) updateObj.name = localResourceDetails.name;
   if (localResourceDetails.protocol !== backendResourceDetails.protocol)
     updateObj.protocol = localResourceDetails.protocol;
+  if (localResourceDetails.url !== backendResourceDetails.url) updateObj.url = localResourceDetails.url;
   //TODO this is not supported yet by the backend
   // if(localResourceDetails.body) updateObj.body = localResourceDetails.body;
   // if(localResourceDetails.order) updateObj.order = localResourceDetails.order;
