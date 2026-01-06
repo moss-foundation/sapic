@@ -10,6 +10,7 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { useNodeDragAndDropHandler } from "../../components/ProjectTree/hooks/useNodeDragAndDropHandler";
 import { useProjectDragAndDropHandler } from "../../components/ProjectTree/hooks/useProjectDragAndDropHandler";
+import { useSyncResourceSummaries } from "./hooks/useSyncResourceSummaries";
 import { ProjectCreationZone } from "./ProjectCreationZone";
 import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 
@@ -17,6 +18,9 @@ export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
+
+  useSyncResourceSummaries();
+
   const { displayMode } = useWorkspaceModeStore();
 
   useProjectDragAndDropHandler();

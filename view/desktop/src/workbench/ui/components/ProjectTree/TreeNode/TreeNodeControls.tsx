@@ -2,6 +2,7 @@ import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { useUpdateProjectResource } from "@/adapters";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -49,6 +50,8 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
     ref
   ) => {
     const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
+
+    const localResourceSummary = useGetLocalResourceDetails(node.id);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
@@ -131,6 +134,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             depth={depth}
             isChildDropBlocked={isChildDropBlocked}
             isActive={activePanelId === node.id}
+            isDirty={localResourceSummary?.metadata.isDirty ?? false}
           >
             <Tree.NodeTriggers onClick={handleControlsClick} className="overflow-hidden">
               <Tree.NodeDirToggleIcon

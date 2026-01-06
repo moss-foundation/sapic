@@ -1,5 +1,5 @@
 import { z } from "zod";
 
-import { resourceDetailsSchema } from "./schemas/resourceDetailsSchema";
+import { resourceDetailSchema } from "./schemas/resourceDetailSchema";
 
-export type ResourceDetails = z.infer<typeof resourceDetailsSchema>;
+export type ResourceDetails = z.infer<typeof resourceDetailSchema>;
