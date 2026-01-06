@@ -49,26 +49,21 @@ const Trigger = ({ value, className, trailingContent, leadingContent, label, dis
   return (
     <TabsPrimitive.TabsTrigger
       value={value}
-      //prettier-ignore
-      className={cn(`
-        p-0 border-none! text-base leading-4
-        cursor-pointer
-        rounded-full 
+      className={cn(
+        "border-none! p-0 text-base leading-4",
+        "cursor-pointer rounded-full",
 
-        has-[:focus-visible]:outline-3 
-        has-[:focus-visible]:outline-offset-1 
-        has-[:focus-visible]:outline-(--moss-accent) 
+        "outline-(--moss-accent)",
+        "focus-visible:outline-3 focus-visible:outline-offset-1",
 
-        ring ring-(--moss-border)
+        "ring-(--moss-border) ring",
+        "hover:not-data-[state=active]:hover:ring-(--moss-secondary-background-hover)",
 
-        hover:not-data-[state=active]:hover:ring-(--moss-secondary-background-hover) 
+        "data-[state=active]:ring-2 data-[state=active]:ring-offset-0",
+        "data-[state=active]:ring-(--moss-accent)",
 
-        data-[state=active]:ring-2 
-        data-[state=active]:ring-offset-0
-        data-[state=active]:ring-(--moss-accent)
+        "disabled:data-[state=active]:ring-(--moss-gray-11)",
 
-        disabled:data-[state=active]:ring-(--moss-gray-11)
-      `,
         className
       )}
       disabled={disabled}
@@ -76,8 +71,8 @@ const Trigger = ({ value, className, trailingContent, leadingContent, label, dis
       <div
         className={cn("flex cursor-pointer items-center gap-[5px] py-2", {
           "px-2": leadingContent && trailingContent,
-          "pr-3 pl-2": leadingContent && !trailingContent,
-          "pr-2 pl-3": !leadingContent && trailingContent,
+          "pl-2 pr-3": leadingContent && !trailingContent,
+          "pl-3 pr-2": !leadingContent && trailingContent,
         })}
       >
         {leadingContent}

@@ -17,7 +17,10 @@ use moss_project::{
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
-use sapic_base::{project::types::primitives::ProjectId, resource::types::primitives::ResourceId};
+use sapic_base::{
+    project::{config::ProjectConfig, types::primitives::ProjectId},
+    resource::types::primitives::ResourceId,
+};
 use sapic_core::context::{AsyncContext, MutableContext};
 use sapic_runtime::{
     app::kv_storage::{AppStorage, AppStorageOptions},
@@ -69,6 +72,7 @@ pub async fn create_test_project() -> (
         .join(&workspace_id)
         .join("projects")
         .join(project_id.as_str());
+    let resources_path = project_path.join("resources");
 
     let app_storage = AppStorage::new(
         &globals_path,
@@ -85,6 +89,7 @@ pub async fn create_test_project() -> (
     std::fs::create_dir_all(&globals_path).unwrap();
     std::fs::create_dir_all(&temp_path).unwrap();
     std::fs::create_dir_all(&project_path).unwrap();
+    std::fs::create_dir_all(&resources_path).unwrap();
     let fs = Arc::new(RealFileSystem::new(&temp_path));
 
     let app_delegate = {
@@ -100,9 +105,12 @@ pub async fn create_test_project() -> (
             &ctx,
             ProjectCreateParams {
                 name: Some(random_project_name()),
-                external_abs_path: None,
-                internal_abs_path: project_path.clone().into(),
-                git_params: None,
+                abs_path: project_path.clone(),
+                config: ProjectConfig {
+                    archived: false,
+                    external_path: None,
+                    account_id: None,
+                },
                 icon_path: None,
             },
         )

@@ -15,6 +15,8 @@ interface VcsProviderSwitcherProps {
   layout?: "vertical" | "grid";
   children?: ReactNode;
   className?: string;
+  showGitHub?: boolean;
+  showGitLab?: boolean;
 }
 
 export const VcsProviderSwitcher = ({
@@ -25,6 +27,8 @@ export const VcsProviderSwitcher = ({
   layout = "vertical",
   children,
   className,
+  showGitHub = true,
+  showGitLab = true,
 }: VcsProviderSwitcherProps) => {
   // Normalize value to lowercase for icon matching
   const normalizedValue = value.toLowerCase() as ProviderIconType;
@@ -39,18 +43,22 @@ export const VcsProviderSwitcher = ({
         <div className={cn(disabled && "opacity-50")}>{label}</div>
         <PillTabs.List className="grid h-min grid-cols-subgrid grid-rows-subgrid">
           <div className="flex gap-2">
-            <PillTabs.Trigger
-              value="github"
-              label="GitHub"
-              leadingContent={<ProviderIcon icon="github" />}
-              disabled={disabled}
-            />
-            <PillTabs.Trigger
-              value="gitlab"
-              label="GitLab"
-              leadingContent={<ProviderIcon icon="gitlab" />}
-              disabled={disabled}
-            />
+            {showGitHub && (
+              <PillTabs.Trigger
+                value="github"
+                label="GitHub"
+                leadingContent={<ProviderIcon icon="github" />}
+                disabled={disabled}
+              />
+            )}
+            {showGitLab && (
+              <PillTabs.Trigger
+                value="gitlab"
+                label="GitLab"
+                leadingContent={<ProviderIcon icon="gitlab" />}
+                disabled={disabled}
+              />
+            )}
           </div>
         </PillTabs.List>
 

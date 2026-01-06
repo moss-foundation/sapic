@@ -11,7 +11,7 @@ import {
   StreamProjectsEvent,
   UpdateProjectInput,
   UpdateProjectOutput,
-} from "@repo/moss-workspace";
+} from "@repo/ipc";
 import { Channel } from "@tauri-apps/api/core";
 
 // prettier-ignore
