@@ -5,7 +5,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 
 import { TanstackQueryClientProvider } from "@/app/providers/TanstackQueryClientProvider";
-import { welcomeRouter } from "@/welcome/router/router";
+import { welcomeRouter } from "@/welcome/router";
 import { RouterProvider } from "@tanstack/react-router";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
