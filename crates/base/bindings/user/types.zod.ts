@@ -13,9 +13,3 @@ export const accountInfoSchema = z.object({
   method: accountAuthMethodKindSchema,
   metadata: accountMetadataSchema,
 });
-
-export const profileInfoSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  accounts: z.array(accountInfoSchema),
-});

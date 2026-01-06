@@ -1,11 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
-import {
-  useCreateProject,
-  useCreateProjectResource,
-  useDeleteProjectResource,
-  useStreamProjects,
-} from "@/adapters/tanstackQuery/project";
+import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/adapters";
 import { cn } from "@/utils";
 import { IconInline } from "@/workbench/ui/components/IconInline";
 import {
@@ -116,7 +111,7 @@ export const ProjectCreationZone = () => {
         }
       )}
     >
-      <div className="bg-size-[20px_20px] flex animate-stripes flex-col items-center justify-center gap-3 bg-[linear-gradient(-45deg,white_5%,transparent_5%_45%,white_45%_55%,transparent_55%_95%,white_95%)] p-8 text-center">
+      <div className="bg-size-[20px_20px] animate-stripes flex flex-col items-center justify-center gap-3 bg-[linear-gradient(-45deg,white_5%,transparent_5%_45%,white_45%_55%,transparent_55%_95%,white_95%)] p-8 text-center">
         <IconInline icon="AddCircleActive" className={cn("text-(--moss-accent) size-5 rounded-full")} />
         <span>Drag & drop selected items here to create a new project</span>
       </div>

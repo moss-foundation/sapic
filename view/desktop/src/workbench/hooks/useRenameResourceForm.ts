@@ -1,7 +1,6 @@
 import { useState } from "react";
 
-import { useFetchResourcesForPath } from "@/adapters/tanstackQuery/project/derivedHooks/useFetchResourceForPath";
-import { useUpdateProjectResource } from "@/adapters/tanstackQuery/project/useUpdateProjectResource";
+import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
@@ -24,7 +23,7 @@ export const useRenameResourceForm = (resource: StreamResourcesEvent, projectId:
       if (resource.kind === "Dir") {
         await updateProjectResource({
           projectId,
-          updatedResource: {
+          updateResourceInput: {
             DIR: {
               id: resource.id,
               name: trimmedNewName,
@@ -40,7 +39,7 @@ export const useRenameResourceForm = (resource: StreamResourcesEvent, projectId:
       } else {
         await updateProjectResource({
           projectId,
-          updatedResource: {
+          updateResourceInput: {
             ITEM: {
               id: resource.id,
               name: trimmedNewName,

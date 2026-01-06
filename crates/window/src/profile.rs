@@ -29,10 +29,6 @@ const DEFAULT_PROFILE: LazyCell<ProfileRegistryItem> = LazyCell::new(|| ProfileR
     is_default: Some(true),
 });
 
-pub(crate) struct ProfileDetails {
-    pub name: String,
-}
-
 struct ServiceCache {
     profiles: NonEmptyHashMap<ProfileId, ProfileRegistryItem>,
 }
@@ -72,12 +68,6 @@ impl ProfileService {
             active_profile: RwLock::new(None),
             cache: RwLock::new(ServiceCache { profiles: profiles }),
         })
-    }
-
-    pub async fn profile_details(&self, id: &ProfileId) -> Option<ProfileDetails> {
-        let cache_lock = self.cache.read().await;
-        let profile = cache_lock.profiles.get(id).cloned();
-        profile.map(|p| ProfileDetails { name: p.name })
     }
 
     pub async fn activate_profile(&self) -> joinerror::Result<Arc<Profile>> {

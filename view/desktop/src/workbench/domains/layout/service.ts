@@ -1,4 +1,4 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorage";
+import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { JsonValue } from "@repo/moss-bindingutils";
 

@@ -6,13 +6,16 @@ import { Icon, Scrollbar } from "@/lib/ui";
 import { cn } from "@/utils";
 import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import WelcomeViewDivider from "./WelcomeViewDivider";
 import WelcomeViewLink from "./WelcomeViewLink";
 import WelcomeViewRecentWorkspaces from "./WelcomeViewRecentWorkspaces";
 import WelcomeViewSteps from "./WelcomeViewSteps";
 
-export const WelcomeView = () => {
+export type WelcomeViewProps = DefaultViewProps;
+
+export const WelcomeView = ({}: WelcomeViewProps) => {
   const learnMoreRef = useRef<HTMLAnchorElement>(null);
 
   const handleLearnMoreClick = (e: React.MouseEvent) => {

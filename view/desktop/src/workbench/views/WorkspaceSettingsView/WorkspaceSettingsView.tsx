@@ -1,25 +1,27 @@
-import { IDockviewPanelProps } from "moss-tabs";
 import { useState } from "react";
 
 import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace/useDeleteWorkspace";
 import { useModal } from "@/hooks";
 import { useRenameWorkspace } from "@/hooks/useRenameWorkspace";
-import { useActiveWorkspace } from "@/hooks/workspace/derived/useActiveWorkspace";
+import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { ConfirmationModal } from "@/workbench/ui/components/Modals/ConfirmationModal";
 import { PageHeader } from "@/workbench/ui/components/PageView/PageHeader";
 import { PageView } from "@/workbench/ui/components/PageView/PageView";
+import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { WorkspaceDangerZoneSection } from "./WorkspaceDangerZoneSection";
 import { WorkspaceDataSection } from "./WorkspaceDataSection";
 import { WorkspaceNameSection } from "./WorkspaceNameSection";
 import { WorkspaceStartupSection } from "./WorkspaceStartupSection";
 
-export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
-  const { hasActiveWorkspace, activeWorkspace } = useActiveWorkspace();
+export type WorkspaceSettingsViewProps = DefaultViewProps;
+
+export const WorkspaceSettingsView = ({ ...props }: WorkspaceSettingsViewProps) => {
+  const { currentWorkspace } = useCurrentWorkspace();
 
   const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
 
-  const [name, setName] = useState(activeWorkspace?.name || "");
+  const [name, setName] = useState(currentWorkspace?.name || "");
   const [reopenOnNextSession, setReopenOnNextSession] = useState(false);
   const [openPreviousWindows, setOpenPreviousWindows] = useState(false);
 
@@ -30,7 +32,7 @@ export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
   } = useModal();
 
   const { isRenamingWorkspace, setIsRenamingWorkspace, handleRenamingWorkspaceSubmit, handleRenamingWorkspaceCancel } =
-    useRenameWorkspace(activeWorkspace);
+    useRenameWorkspace(currentWorkspace);
 
   const handleBlur = () => {
     handleRenamingWorkspaceSubmit(name);
@@ -41,9 +43,9 @@ export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
   };
 
   const handleDeleteWorkspace = () => {
-    if (activeWorkspace) {
+    if (currentWorkspace) {
       deleteWorkspace(
-        { id: activeWorkspace.id },
+        { id: currentWorkspace.id },
         {
           onSuccess: () => {
             closeDeleteWorkspaceModal();
@@ -57,22 +59,11 @@ export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
     }
   };
 
-  if (!hasActiveWorkspace) {
-    return (
-      <div className="text-(--moss-primary-foreground) flex h-full items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold">No Active Workspace</h2>
-          <p className="text-sm">Please select a workspace to view its settings.</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <PageView>
       <PageHeader
         icon="Workspace"
-        title={activeWorkspace?.name}
+        title={currentWorkspace?.name}
         onTitleChange={handleRenamingWorkspaceSubmit}
         disableTitleChange={false}
         isRenamingTitle={isRenamingWorkspace}
@@ -108,7 +99,7 @@ export const WorkspaceSettingsView = ({ ...props }: IDockviewPanelProps) => {
           showModal={isDeleteWorkspaceModalOpen}
           closeModal={closeDeleteWorkspaceModal}
           title="Delete"
-          message={`Delete "${activeWorkspace?.name}"?`}
+          message={`Delete "${currentWorkspace?.name}"?`}
           description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with projects in the workspace."
           confirmLabel={isDeleting ? "Deleting..." : "Delete"}
           cancelLabel="Close"

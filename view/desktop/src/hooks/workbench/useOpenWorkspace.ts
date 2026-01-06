@@ -6,7 +6,6 @@ import { MainWindow_OpenWorkspaceInput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_LIST_WORKSPACES_QUERY_KEY } from "../../adapters/tanstackQuery/workspace/useListWorkspaces";
-import { USE_DESCRIBE_APP_QUERY_KEY } from "../app";
 
 export const USE_OPEN_WORKSPACE_QUERY_KEY = "openWorkspace";
 
@@ -20,7 +19,6 @@ export const useOpenWorkspace = () => {
       if (openInTarget === OpenInTargetEnum.CURRENT_WINDOW) {
         mainRouter.navigate({ to: "/$workspaceId", params: { workspaceId: id } });
 
-        queryClient.invalidateQueries({ queryKey: [USE_DESCRIBE_APP_QUERY_KEY] });
         queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
         queryClient.invalidateQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY] });
         queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });

@@ -14,8 +14,3 @@ export type AccountInfo = {
 };
 
 export type AccountMetadata = { patExpiresAt?: string };
-
-/**
- * @category Type
- */
-export type ProfileInfo = { id: string; name: string; accounts: Array<AccountInfo> };

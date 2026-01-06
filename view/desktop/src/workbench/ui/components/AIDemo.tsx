@@ -8,8 +8,8 @@ import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatMistralAI } from "@langchain/mistralai";
 import {
   MainWindow_CreateWorkspaceInput,
-  mainWindowCreateWorkspaceInputSchema,
   MainWindow_CreateWorkspaceOutput,
+  mainWindowCreateWorkspaceInputSchema,
 } from "@repo/ipc";
 
 async function setupModel() {
@@ -68,7 +68,6 @@ async function setupToolAgent() {
       schema: mainWindowCreateWorkspaceInputSchema,
     }
   );
-
   // @ts-expect-error We will fix the demo when we revisit AI
   return createReactAgent({ llm: model, tools: [alertTool, createWorkspaceTool] });
 }

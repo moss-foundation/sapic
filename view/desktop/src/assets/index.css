@@ -49,4 +49,8 @@
     /* transform: translateZ(0); */
     image-rendering: optimizeSpeed;
   }
+
+  *:focus {
+    @apply outline-2 outline-offset-1 outline-red-600;
+  }
 }

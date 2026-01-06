@@ -103,7 +103,8 @@ pub async fn run<R: TauriRuntime>() {
                 .clone();
 
             Ok(GlobalSettingsStorage::get(&delegate))
-        }));
+        }))
+        .plugin(template_parser::init());
 
     #[cfg(target_os = "macos")]
     {
@@ -255,8 +256,6 @@ pub async fn run<R: TauriRuntime>() {
             //
             // App
             //
-            commands::describe_app,
-            commands::update_configuration,
             commands::list_configuration_schemas,
             commands::execute_command,
             commands::describe_color_theme,
@@ -267,7 +266,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::get_translation_namespace,
             commands::list_workspaces,
             commands::delete_workspace,
-            commands::update_profile,
             commands::list_user_accounts,
             commands::add_user_account,
             commands::update_user_account,

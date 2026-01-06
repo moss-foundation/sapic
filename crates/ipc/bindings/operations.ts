@@ -41,7 +41,7 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
-export type DownloadExtensionInput = { extension_id: string; version: string };
+export type DownloadExtensionInput = { extensionId: string; version: string };
 
 /**
  * @category Operation

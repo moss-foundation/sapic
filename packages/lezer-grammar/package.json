@@ -1,0 +1,25 @@
+{
+  "name": "@repo/lezer-grammar",
+  "version": "0.0.0",
+  "main": "dist/index.cjs",
+  "type": "module",
+  "exports": {
+    "import": "./dist/index.js",
+    "require": "./dist/index.cjs"
+  },
+  "module": "dist/index.js",
+  "types": "dist/parser.d.ts",
+  "scripts": {
+    "build": "lezer-generator --typeScript src/variables.grammar -o src/parser && rollup -c"
+  },
+  "devDependencies": {
+    "rollup": "^4.54.0",
+    "@lezer/generator": "1.8.0",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-typescript": "12.3.0"
+  },
+  "dependencies": {
+    "@lezer/highlight": "1.2.2",
+    "@lezer/lr": "1.4.4"
+  }
+}

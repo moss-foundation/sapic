@@ -1,6 +1,6 @@
 import { BackendModule, ReadCallback } from "i18next";
 
-import { AppService } from "../services";
+import { languageService } from "@/domains/language/languageService";
 
 interface I18nDictionary {
   [key: string]: string;
@@ -24,15 +24,11 @@ const I18nTauriBackend: BackendModule = {
     }
 
     try {
-      const result = await AppService.getTranslationNamespace({ language, namespace });
+      const result = await languageService.getTranslationNamespace({ language, namespace });
 
-      if (result.status === "ok") {
-        const translations = result.data.contents as I18nDictionary;
-        translationCache.set(cacheKey, translations);
-        callback(null, translations);
-      } else {
-        throw new Error(String(result.error));
-      }
+      const translations = result.contents as I18nDictionary;
+      translationCache.set(cacheKey, translations);
+      callback(null, translations);
     } catch (error) {
       callback(String(error), false);
     }

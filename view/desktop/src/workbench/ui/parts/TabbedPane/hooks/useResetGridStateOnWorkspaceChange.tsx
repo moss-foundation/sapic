@@ -1,24 +1,24 @@
 import { useEffect, useEffectEvent } from "react";
 
-import { useActiveWorkspace } from "@/hooks";
-import { useGetLayout } from "@/hooks/workbench/layout/useGetLayout";
+import { useCurrentWorkspace } from "@/hooks";
+import { useGetLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 export const useResetGridStateOnWorkspaceChange = () => {
-  const { activeWorkspaceId } = useActiveWorkspace();
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { api, addOrFocusPanel } = useTabbedPaneStore();
   const { data: layout, isFetching: isFetchingLayout } = useGetLayout();
 
-  const updateGridState = useEffectEvent((activeWorkspaceId) => {
+  const updateGridState = useEffectEvent(() => {
     if (!api || !layout?.tabbedPaneState.gridState) return;
 
     try {
       api.clear();
-      if (!activeWorkspaceId) {
+      if (!currentWorkspaceId) {
         addOrFocusPanel({
           id: "Welcome",
-          component: "Welcome",
           title: "Welcome",
+          component: "WelcomeView",
         });
       } else {
         api.fromJSON(layout?.tabbedPaneState.gridState);
@@ -30,10 +30,10 @@ export const useResetGridStateOnWorkspaceChange = () => {
 
   useEffect(() => {
     if (isFetchingLayout) return;
-    updateGridState(activeWorkspaceId);
+    updateGridState();
 
     //we only want to run this effect when the workspace changes
     //but there is a race condition where the workspace changes before the layout is fetched
     //so we need to check if the layout is fetching
-  }, [activeWorkspaceId, isFetchingLayout]);
+  }, [currentWorkspaceId, isFetchingLayout]);
 };

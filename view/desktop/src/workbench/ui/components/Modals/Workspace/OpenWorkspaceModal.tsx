@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { useListWorkspaces } from "@/adapters/tanstackQuery/workspace";
+import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
 import { useOpenWorkspace } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
@@ -14,27 +15,23 @@ import { ModalWrapperProps } from "../types";
 
 export const OpenWorkspaceModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { data: workspaces, isLoading } = useListWorkspaces();
-  const { mutate: openWorkspace } = useOpenWorkspace();
+  const { mutateAsync: openWorkspace } = useOpenWorkspace();
 
   const [mode, setMode] = useState<WorkspaceMode>("LIVE");
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>("");
   const [reopenOnSession, setReopenOnSession] = useState(true);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!selectedWorkspace) return;
 
-    openWorkspace(
-      { id: selectedWorkspace, openInTarget: OpenInTargetEnum.CURRENT_WINDOW },
-      {
-        onSuccess: () => {
-          closeModal();
-          resetForm();
-        },
-        onError: (error) => {
-          console.error("Failed to open workspace:", error.message);
-        },
-      }
-    );
+    await openWorkspace({ id: selectedWorkspace, openInTarget: OpenInTargetEnum.CURRENT_WINDOW });
+
+    if (OpenInTargetEnum.CURRENT_WINDOW) {
+      resourceDetailsCollection.cleanup();
+    }
+
+    closeModal();
+    resetForm();
   };
 
   const handleCancel = () => {

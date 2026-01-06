@@ -1,6 +1,6 @@
 import { useActiveEnvironments } from "@/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
 import { useStreamedProjectsWithResources } from "@/adapters/tanstackQuery/project";
-import { useActiveWorkspace } from "@/hooks";
+import { useCurrentWorkspace } from "@/hooks";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
@@ -20,7 +20,7 @@ export interface HeadBarLeftItemsProps {
 export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuAction, os }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
 
-  const { activeWorkspace } = useActiveWorkspace();
+  const { currentWorkspace } = useCurrentWorkspace();
   const { selectedWorkspaceMenuItems } = useWorkspaceMenu();
   const { data: streamedProjectsWithResources } = useStreamedProjectsWithResources();
   const { activeGlobalEnvironment, activeProjectEnvironments } = useActiveEnvironments();
@@ -52,7 +52,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
       <div className="flex items-center">
         <ActionMenu.Root>
           <ActionMenu.Trigger asChild>
-            <IconLabelButton title={activeWorkspace?.name} placeholder="No workspace selected" />
+            <IconLabelButton title={currentWorkspace?.name} placeholder="No workspace selected" />
           </ActionMenu.Trigger>
           <ActionMenu.Content>
             {selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
