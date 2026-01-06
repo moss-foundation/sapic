@@ -113,6 +113,7 @@ export type CreateItemResourceParams = {
   name: string;
   order: number;
   protocol?: ResourceProtocol;
+  url?: string;
   headers: Array<AddHeaderParams>;
   pathParams: Array<AddPathParamParams>;
   queryParams: Array<AddQueryParamParams>;
@@ -275,6 +276,7 @@ export type UpdateItemResourceParams = {
   order?: number;
   expanded?: boolean;
   protocol?: ResourceProtocol;
+  url?: string;
   headersToAdd: Array<AddHeaderParams>;
   headersToUpdate: Array<UpdateHeaderParams>;
   headersToRemove: Array<string>;

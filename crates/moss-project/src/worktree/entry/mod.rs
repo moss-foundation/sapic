@@ -18,6 +18,7 @@ pub(crate) struct Entry {
     #[allow(unused)]
     pub class: ResourceClass,
     pub protocol: Option<ResourceProtocol>,
+    pub url: Option<String>,
     pub metadata: EntryMetadata,
     #[deref]
     #[deref_mut]

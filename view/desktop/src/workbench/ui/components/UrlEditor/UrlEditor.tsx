@@ -1,6 +1,7 @@
 import { EditorView, minimalSetup } from "codemirror";
 import { useContext, useEffect, useRef } from "react";
 
+import { hideVariableBracesPlugin } from "@/workbench/ui/components/UrlEditor/components/HideVariableBraces.tsx";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { history } from "@codemirror/commands";
 import { HighlightStyle, LanguageSupport, LRLanguage, syntaxHighlighting } from "@codemirror/language";
@@ -9,7 +10,6 @@ import { tags } from "@lezer/highlight";
 import { parser } from "@repo/lezer-grammar";
 
 import { tooltipOnVariableHover } from "./extensions/tooltipOnVariableHover";
-import { hideVariableBracesPlugin } from "@/workbench/ui/components/UrlEditor/components/HideVariableBraces.tsx";
 
 interface UrlEditorProps {
   value?: string;
@@ -83,7 +83,7 @@ export const UrlEditor = ({ value = "", onChange }: UrlEditorProps) => {
             outline: "none",
           },
           ".cm-line": {
-            padding: "0",
+            padding: "0 1px",
           },
           ".cm-scroller": {
             overflow: "hidden",

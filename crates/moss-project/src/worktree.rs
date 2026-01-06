@@ -98,10 +98,12 @@ struct ScanJob {
 
 pub(crate) struct ModifyParams {
     pub name: Option<String>,
-    pub protocol: Option<ResourceProtocol>,
     pub expanded: Option<bool>,
     pub order: Option<isize>,
     pub path: Option<PathBuf>,
+
+    pub protocol: Option<ResourceProtocol>,
+    pub url: Option<String>,
 
     pub headers_to_add: Vec<AddHeaderParams>,
     pub headers_to_update: Vec<UpdateHeaderParams>,
@@ -461,6 +463,7 @@ impl Worktree {
                 edit: EntryEditing::new(self.fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: model.protocol(),
+                url: model.url(),
                 metadata: EntryMetadata {
                     body_kind: model.body_kind(),
                 },
@@ -528,6 +531,7 @@ impl Worktree {
                 edit: EntryEditing::new(self.fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.metadata.class.clone(),
                 protocol: None,
+                url: None,
                 metadata: EntryMetadata { body_kind: None },
             },
         );
@@ -1039,6 +1043,24 @@ impl Worktree {
             on_edit_success.push(Box::new(move |entry: &mut Entry| {
                 entry.protocol = Some(protocol_clone)
             }));
+        }
+
+        if let Some(url) = &params.url {
+            patches.push((
+                PatchOperation::Replace(ReplaceOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/url/raw") },
+                    value: JsonValue::String(url.to_string()),
+                }),
+                EditOptions {
+                    create_missing_segments: false,
+                    ignore_if_not_exists: false,
+                },
+            ));
+
+            let url_clone = url.clone();
+            on_edit_success.push(Box::new(move |entry: &mut Entry| {
+                entry.url = Some(url_clone)
+            }))
         }
 
         let storage_scope = StorageScope::Project(self.project_id.inner());
@@ -2510,6 +2532,7 @@ async fn process_entry(
                 edit: EntryEditing::new(fs.clone(), path_tx, DIR_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: None,
+                url: None,
                 metadata: EntryMetadata { body_kind: None },
             },
             desc,
@@ -2542,6 +2565,7 @@ async fn process_entry(
                 edit: EntryEditing::new(fs.clone(), path_tx, ITEM_CONFIG_FILENAME),
                 class: model.class(),
                 protocol: model.protocol(),
+                url: model.url(),
                 metadata: EntryMetadata {
                     body_kind: model.body_kind(),
                 },
