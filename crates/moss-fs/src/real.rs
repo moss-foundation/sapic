@@ -53,7 +53,7 @@ impl FileSystem for RealFileSystem {
         context::abortable::<_, _, joinerror::Error, _>(ctx, async {
             tokio::fs::create_dir(path)
                 .await
-                .join_err::<()>("failed to create dir recursively")
+                .join_err::<()>("failed to create dir non-recursively")
         })
         .await
         .join_err_bare()
