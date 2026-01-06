@@ -19,10 +19,10 @@ const EndpointView = ({ params }: EndpointViewProps) => {
 
   if (!localResourceDetails) {
     return (
-      <PageWrapper>
-        <div className="flex flex-1 items-center justify-center">
+      <PageWrapper className="h-full">
+        <div className="flex h-full flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-(--moss-secondary-foreground) mb-4 text-sm">No endpoint selected</p>
+            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Loading endpoint details...</p>
           </div>
         </div>
       </PageWrapper>
