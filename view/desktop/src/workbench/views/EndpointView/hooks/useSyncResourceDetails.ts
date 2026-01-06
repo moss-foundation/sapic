@@ -21,11 +21,7 @@ export const useSyncResourceDetails = ({ resourceId, projectId }: useSyncResourc
       ...backendResourceDetails,
       id: resourceId,
       name: backendResourceDetails.name,
-      //FIXME this is a temporary solution because the backend returns hardcoded value for the url
-      url:
-        backendResourceDetails.url === "Hardcoded Value" || backendResourceDetails.url === undefined
-          ? "{{baseUrl}}/docs/:docId/tables/:tableIdOrName/columns?sort={{sortValue}}&limit=2"
-          : backendResourceDetails.url,
+      url: backendResourceDetails.url,
       description: undefined,
       body: undefined,
       //TODO: zod schema type should be updated.
