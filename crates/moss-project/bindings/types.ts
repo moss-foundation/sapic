@@ -81,6 +81,11 @@ export type AddUrlencodedParamParams = {
 /**
  * @category Type
  */
+export type AfterCreateResourceDescription = { id: string; path: ResourcePath };
+
+/**
+ * @category Type
+ */
 export type AfterUpdateDirResourceDescription = { id: string; path: ResourcePath };
 
 /**
