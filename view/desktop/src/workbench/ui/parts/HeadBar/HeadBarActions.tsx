@@ -237,10 +237,18 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         }
         break;
       case "kitchensink":
-        openPanel("KitchenSink");
+        addOrFocusPanel({
+          id: "KitchenSink",
+          title: "KitchenSink",
+          component: "KitchenSinkView",
+        });
         break;
       case "logs":
-        openPanel("Logs");
+        addOrFocusPanel({
+          id: "Logs",
+          title: "Logs",
+          component: "LogsView",
+        });
         break;
       case "debug":
         setShowDebugPanels(!showDebugPanels);
