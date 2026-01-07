@@ -414,19 +414,14 @@ export const defaultLightTheme: Theme = {
     "moss.list.toolbarItem.background.hover": { type: "variable", value: "moss.gray.10" },
 
     //buttons
-    "moss.button.primary.background": { type: "variable", value: "moss.blue.4" },
-    "moss.button.primary.background.hover": { type: "variable", value: "moss.blue.3" },
-    "moss.button.primary.foreground": { type: "variable", value: "moss.gray.14" },
+    "moss.button.default": { type: "variable", value: "moss.gray.13" },
+    "moss.button.danger": { type: "variable", value: "moss.red.4" },
 
     "moss.button.outlined.background": { type: "variable", value: "moss.gray.14" },
     "moss.button.outlined.background.hover": { type: "variable", value: "moss.gray.12" },
     "moss.button.outlined.border": { type: "variable", value: "moss.gray.9" },
     "moss.button.outlined.border.hover": { type: "variable", value: "moss.gray.8" },
     "moss.button.outlined.foreground": { type: "variable", value: "moss.gray.1" },
-
-    "moss.button.danger.background": { type: "variable", value: "moss.red.4" },
-    "moss.button.danger.background.hover": { type: "variable", value: "moss.red.2" },
-    "moss.button.danger.foreground": { type: "variable", value: "moss.gray.14" },
 
     //input, textarea, select, checkbox, radio, toggle, IconLabelButton etc.
     "moss.controls.background": { type: "variable", value: "moss.gray.14" },
