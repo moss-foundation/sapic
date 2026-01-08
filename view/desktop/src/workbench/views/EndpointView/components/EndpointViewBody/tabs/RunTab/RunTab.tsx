@@ -114,7 +114,6 @@ export const RunTab = () => {
           resourceDetailsCollection.update(resourceId, (draft) => {
             if (!draft) return;
             draft.metadata.isDirty = true;
-            draft.url = "";
             draft.pathParams = [];
             draft.queryParams = [];
           });
