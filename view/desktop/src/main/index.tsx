@@ -1,17 +1,14 @@
-import { NotificationsProvider } from "@/workbench/providers/NotificationsProvider";
+import { Workbench } from "@/workbench";
 import { Outlet } from "@tanstack/react-router";
 
 import { AppState } from "../app/global/AppState";
-import { ActivityRouterProvider } from "../workbench/providers/ActivityRouterProvider";
 
 const MainIndex = () => {
   return (
     <AppState>
-      <ActivityRouterProvider>
-        <NotificationsProvider>
-          <Outlet />
-        </NotificationsProvider>
-      </ActivityRouterProvider>
+      <Workbench>
+        <Outlet />
+      </Workbench>
     </AppState>
   );
 };

@@ -501,17 +501,13 @@
       "type": "variable",
       "value": "moss.gray.10"
     },
-    "moss.button.primary.background": {
+    "moss.button.default": {
       "type": "variable",
-      "value": "moss.blue.4"
+      "value": "moss.gray.13"
     },
-    "moss.button.primary.background.hover": {
+    "moss.button.danger": {
       "type": "variable",
-      "value": "moss.blue.3"
-    },
-    "moss.button.primary.foreground": {
-      "type": "variable",
-      "value": "moss.gray.14"
+      "value": "moss.red.4"
     },
     "moss.button.outlined.background": {
       "type": "variable",
@@ -532,18 +528,6 @@
     "moss.button.outlined.foreground": {
       "type": "variable",
       "value": "moss.gray.1"
-    },
-    "moss.button.danger.background": {
-      "type": "variable",
-      "value": "moss.red.4"
-    },
-    "moss.button.danger.background.hover": {
-      "type": "variable",
-      "value": "moss.red.2"
-    },
-    "moss.button.danger.foreground": {
-      "type": "variable",
-      "value": "moss.gray.14"
     },
     "moss.controls.background": {
       "type": "variable",
