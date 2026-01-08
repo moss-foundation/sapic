@@ -24,12 +24,6 @@ export const useSyncResourceDetails = ({ resourceId, projectId }: useSyncResourc
       url: backendResourceDetails.url,
       description: undefined,
       body: undefined,
-      //TODO: zod schema type should be updated.
-      // Without this zod will throw and error because the descriptions that return from the backend are null
-      // But in the schema we set them as optional and not as nullable
-      //Error message:
-      //SchemaValidationError: Insert validation failed:
-      // - Expected string, received null - path: pathParams,0,description
       pathParams: backendResourceDetails.pathParams,
       queryParams: backendResourceDetails.queryParams,
       metadata: {
