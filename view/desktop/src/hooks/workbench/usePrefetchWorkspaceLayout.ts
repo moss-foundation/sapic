@@ -1,12 +1,11 @@
 import { useEffect } from "react";
 
+import { useCurrentWorkspace } from "@/hooks/workspace";
 import { USE_GET_LAYOUT_QUERY_KEY } from "@/workbench/adapters";
 import { layoutService } from "@/workbench/domains/layout/service";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { useCurrentWorkspace } from "./derived/useCurrentWorkspace";
-
-export const useSyncWorkbenchSettings = () => {
+export const usePrefetchWorkspaceLayout = () => {
   const queryClient = useQueryClient();
   const { currentWorkspaceId } = useCurrentWorkspace();
 

@@ -1,9 +1,9 @@
-import { useSyncWorkbenchSettings } from "@/hooks/workbench";
+import { usePrefetchWorkspaceLayout } from "@/hooks/workbench";
 import { ActivityRouterProvider } from "@/workbench/providers/ActivityRouterProvider";
 import { NotificationsProvider } from "@/workbench/providers/NotificationsProvider";
 
 export const Workbench = ({ children }: { children: React.ReactNode }) => {
-  useSyncWorkbenchSettings();
+  usePrefetchWorkspaceLayout();
 
   return (
     <ActivityRouterProvider>
