@@ -27,4 +27,49 @@ export const sharedStorageIpc: ISharedStorageIpc = {
       },
     });
   },
+
+  batchPutItem: async (items, scope) => {
+    return await invoke("plugin:shared-storage|batch_put_item", {
+      input: {
+        items,
+        scope,
+      },
+    });
+  },
+
+  batchRemoveItem: async (keys, scope) => {
+    return await invoke("plugin:shared-storage|batch_remove_item", {
+      input: {
+        keys,
+        scope,
+      },
+    });
+  },
+
+  batchGetItem: async (keys, scope) => {
+    return await invoke("plugin:shared-storage|batch_get_item", {
+      input: {
+        keys,
+        scope,
+      },
+    });
+  },
+
+  batchGetItemByPrefix: async (prefix, scope) => {
+    return await invoke("plugin:shared-storage|batch_get_item_by_prefix", {
+      input: {
+        prefix,
+        scope,
+      },
+    });
+  },
+
+  batchRemoveItemByPrefix: async (prefix, scope) => {
+    return await invoke("plugin:shared-storage|batch_remove_item_by_prefix", {
+      input: {
+        prefix,
+        scope,
+      },
+    });
+  },
 };
