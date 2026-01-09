@@ -4,7 +4,8 @@ import { useEffect, useRef } from "react";
 import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
-import { ActivityBar, SidebarEdgeHandler } from "@/workbench/ui/components";
+import { SidebarEdgeHandler } from "@/workbench/ui/components";
+import { ActivityBar } from "@/workbench/ui/parts";
 import { BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
 
 import { Resizable, ResizablePanel } from "../../lib/ui/Resizable";

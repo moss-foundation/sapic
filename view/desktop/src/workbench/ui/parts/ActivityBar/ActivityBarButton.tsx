@@ -16,8 +16,8 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import DropIndicator from "../DropIndicator";
-import { IconInline } from "../IconInline";
+import DropIndicator from "@/workbench/ui/components/DropIndicator";
+import { IconInline } from "@/workbench/ui/components/IconInline";
 
 export const ActivityBarButton = ({
   icon,
