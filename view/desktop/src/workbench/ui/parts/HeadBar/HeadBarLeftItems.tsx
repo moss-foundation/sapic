@@ -1,38 +1,79 @@
-import { useActiveEnvironments } from "@/adapters/tanstackQuery/environment/derived/useActiveEnvironments";
-import { useStreamedProjectsWithResources } from "@/adapters/tanstackQuery/project";
+import { useState } from "react";
+
+import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace";
 import { useCurrentWorkspace } from "@/hooks";
+import { useModal } from "@/hooks/useModal";
 import Icon from "@/lib/ui/Icon";
 import { cn } from "@/utils";
-import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { ActionMenu, IconLabelButton } from "@/workbench/ui/components";
+import { ActionMenu, ConfirmationModal, IconLabelButton } from "@/workbench/ui/components";
+import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
+import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";
+import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
+import { useWorkspaceActions } from "./HeadBarActions";
 
 import { windowsMenuItems } from "./mockHeadBarData";
-import NavigationButtons from "./NavigationButtons";
-import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
   handleWindowsMenuAction: (action: string) => void;
-  handleWorkspaceMenuAction: (action: string) => void;
   os: string | null;
 }
 
-export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuAction, os }: HeadBarLeftItemsProps) => {
+export const HeadBarLeftItems = ({ handleWindowsMenuAction, os }: HeadBarLeftItemsProps) => {
   const isWindowsOrLinux = os === "windows" || os === "linux";
-
   const { currentWorkspace } = useCurrentWorkspace();
   const { selectedWorkspaceMenuItems } = useWorkspaceMenu();
-  const { data: streamedProjectsWithResources } = useStreamedProjectsWithResources();
-  const { activeGlobalEnvironment, activeProjectEnvironments } = useActiveEnvironments();
-  const { activePanelId } = useTabbedPaneStore();
+  const [isOpen, setIsOpen] = useState(false);
 
-  const activeProject = streamedProjectsWithResources?.find((project) =>
-    project.resources.some((resource) => resource.id === activePanelId)
-  );
+  // Workspace modals state
+  const { mutate: deleteWorkspace, isPending: isDeleting } = useDeleteWorkspace();
+  const [workspaceToDelete, setWorkspaceToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const currentProjectEnvironment = activeProjectEnvironments.find(
-    (environment) => environment.projectId === activeProject?.id
-  );
+  const {
+    showModal: showNewWorkspaceModal,
+    closeModal: closeNewWorkspaceModal,
+    openModal: openNewWorkspaceModal,
+  } = useModal();
+
+  const {
+    showModal: showOpenWorkspaceModal,
+    closeModal: closeOpenWorkspaceModal,
+    openModal: openOpenWorkspaceModal,
+  } = useModal();
+
+  const {
+    showModal: showDeleteConfirmModal,
+    closeModal: closeDeleteConfirmModal,
+    openModal: openDeleteConfirmModal,
+  } = useModal();
+
+  const handleDeleteWorkspace = () => {
+    if (workspaceToDelete) {
+      deleteWorkspace(
+        { id: workspaceToDelete.id },
+        {
+          onError: (error) => {
+            console.error("Failed to delete workspace:", error.message);
+          },
+          onSettled: () => {
+            setWorkspaceToDelete(null);
+            closeDeleteConfirmModal();
+          },
+        }
+      );
+    }
+  };
+
+  const workspaceModals = {
+    openNewWorkspaceModal,
+    openOpenWorkspaceModal,
+    openDeleteConfirmModal: (workspace: { id: string; name: string }) => {
+      setWorkspaceToDelete(workspace);
+      openDeleteConfirmModal();
+    },
+  };
+
+  const handleWorkspaceMenuAction = useWorkspaceActions(undefined, workspaceModals);
 
   return (
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
@@ -47,26 +88,44 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
         </ActionMenu.Root>
       )}
 
-      <NavigationButtons onBack={() => {}} onForward={() => {}} canGoBack={true} canGoForward={true} />
+      <ActionMenu.Root open={isOpen} onOpenChange={setIsOpen}>
+        <ActionMenu.Trigger asChild>
+          <IconLabelButton
+            title={currentWorkspace?.name}
+            rightIcon="ChevronDown"
+            rightIconClassName={cn("size-3.5 transition-transform duration-200", {
+              "rotate-180": isOpen,
+            })}
+            className="background-(--moss-secondary-background) max-w-full px-1.5 py-0.5 text-base"
+          />
+        </ActionMenu.Trigger>
+        <ActionMenu.Content>
+          {selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
+        </ActionMenu.Content>
+      </ActionMenu.Root>
 
-      <div className="flex items-center">
-        <ActionMenu.Root>
-          <ActionMenu.Trigger asChild>
-            <IconLabelButton title={currentWorkspace?.name} placeholder="No workspace selected" />
-          </ActionMenu.Trigger>
-          <ActionMenu.Content>
-            {selectedWorkspaceMenuItems.map((item) => renderActionMenuItem(item, handleWorkspaceMenuAction))}
-          </ActionMenu.Content>
-        </ActionMenu.Root>
+      {showNewWorkspaceModal && (
+        <NewWorkspaceModal showModal={showNewWorkspaceModal} closeModal={closeNewWorkspaceModal} />
+      )}
 
-        <Icon icon="ChevronRight" />
+      {showOpenWorkspaceModal && (
+        <OpenWorkspaceModal showModal={showOpenWorkspaceModal} closeModal={closeOpenWorkspaceModal} />
+      )}
 
-        <IconLabelButton title={activeGlobalEnvironment?.name} placeholder="No environment" />
-
-        <Icon icon="ChevronRight" />
-
-        <IconLabelButton title={currentProjectEnvironment?.name} placeholder="No environment" />
-      </div>
+      {showDeleteConfirmModal && (
+        <ConfirmationModal
+          showModal={showDeleteConfirmModal}
+          closeModal={closeDeleteConfirmModal}
+          title="Delete"
+          message={`Delete "${workspaceToDelete?.name}"?`}
+          description="This will delete the monitors, scheduled runs and integrations and deactivate the mock servers associated with projects in the workspace."
+          confirmLabel={isDeleting ? "Deleting..." : "Delete"}
+          cancelLabel="Close"
+          onConfirm={handleDeleteWorkspace}
+          variant="danger"
+          loading={isDeleting}
+        />
+      )}
     </div>
   );
 };

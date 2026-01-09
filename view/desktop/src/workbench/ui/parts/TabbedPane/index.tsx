@@ -15,6 +15,10 @@ import { useTabbedPaneResizeObserver } from "./hooks/useDockviewResizeObserver";
 import { useResetGridStateOnWorkspaceChange } from "./hooks/useResetGridStateOnWorkspaceChange";
 import { tabbedPaneComponents } from "./TabbedPaneComponents";
 
+// Re-export TabbedPaneComponents for external use
+export * from "./TabbedPaneComponents";
+export * from "./types";
+
 export const TabbedPane = () => {
   const dockviewRef = useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = useRef<HTMLDivElement>(null);

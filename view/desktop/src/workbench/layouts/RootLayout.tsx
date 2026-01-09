@@ -4,7 +4,7 @@ import { cn } from "@/utils";
 import { StatusBar } from "@/workbench/ui/parts";
 import { WorkspaceMenuProvider } from "@/workbench/ui/parts/HeadBar/WorkspaceMenuProvider";
 
-import { HeadBar } from "../ui/parts/HeadBar/HeadBar";
+import { HeadBar } from "../ui/parts/HeadBar";
 
 export const RootLayout = ({ children, className, ...props }: ComponentProps<"main">) => {
   return (

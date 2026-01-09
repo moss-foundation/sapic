@@ -1,5 +1,5 @@
-export * from "./BottomPane";
-export * from "./HeadBar";
+export { BottomPane } from "./BottomPane";
+export { HeadBar } from "./HeadBar";
 export { Sidebar } from "./Sidebar";
-export * from "./StatusBar";
-export * from "./TabbedPane";
+export { StatusBar } from "./StatusBar";
+export { TabbedPane } from "./TabbedPane";
