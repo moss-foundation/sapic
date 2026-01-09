@@ -3,7 +3,7 @@ import { useModal } from "@/hooks";
 import { ActionButton } from "@/workbench/ui/components";
 import { NewEnvironmentModal } from "@/workbench/ui/components/Modals/Environment/NewEnvironmentModal";
 
-import { SidebarHeader } from "../Sidebar";
+import { SidebarHeader } from "../../SidebarHeader";
 
 export const EnvironmentsListViewHeader = () => {
   const {
@@ -17,8 +17,7 @@ export const EnvironmentsListViewHeader = () => {
   return (
     <>
       <SidebarHeader
-        title="Environments"
-        actionsContent={
+        toolbar={
           <>
             <ActionButton icon="Add" onClick={openCreateEnvironmentModal} hoverVariant="list" />
             <ActionButton icon="Refresh" onClick={clearEnvironmentsCacheAndRefetch} hoverVariant="list" />

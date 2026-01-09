@@ -1,12 +1,11 @@
 import { ActionButton } from "@/workbench/ui/components";
 
-import { SidebarHeader } from "../Sidebar";
+import { SidebarHeader } from "../../SidebarHeader";
 
 export const SourceControlViewHeader = () => {
   return (
     <SidebarHeader
-      title="Commit"
-      actionsContent={
+      toolbar={
         <>
           <ActionButton title="Refresh" icon="Refresh" />
         </>

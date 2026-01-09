@@ -13,7 +13,6 @@ import { Controls } from "./Controls/Controls";
 import { HeadBarActionProps, useWindowsMenuActions, useWorkspaceActions } from "./HeadBarActions";
 import { HeadBarLeftItems } from "./HeadBarLeftItems";
 import { HeadBarRightItems } from "./HeadBarRightItems";
-import { WorkspaceMenuProvider } from "./WorkspaceMenuProvider";
 
 export const HeadBar = () => {
   const os = type();
@@ -80,7 +79,7 @@ export const HeadBar = () => {
   };
 
   return (
-    <WorkspaceMenuProvider>
+    <>
       <header
         data-tauri-drag-region
         className={cn(
@@ -129,6 +128,6 @@ export const HeadBar = () => {
           loading={isDeleting}
         />
       )}
-    </WorkspaceMenuProvider>
+    </>
   );
 };
