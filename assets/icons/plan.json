@@ -311,16 +311,10 @@
   "Warning": {
     "identical": false
   },
-  "WebServer": {
-    "identical": true
-  },
   "WindowsMenu": {
     "identical": true
   },
   "Workspace": {
-    "identical": false
-  },
-  "Wrench": {
     "identical": false
   }
 }

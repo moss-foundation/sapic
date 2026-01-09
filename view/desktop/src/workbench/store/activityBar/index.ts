@@ -42,22 +42,6 @@ const defaultItems: ActivityBarItemProps[] = [
     "isVisible": true,
   },
   {
-    "id": TREE_VIEW_GROUP_MOCK_SERVERS,
-    "title": "Mock",
-    "order": 3,
-    "icon": "WebServer",
-    "iconActive": "WebServerActive",
-    "isVisible": true,
-  },
-  {
-    "id": "4",
-    "title": "Preferences",
-    "order": 4,
-    "icon": "Wrench",
-    "iconActive": "WrenchActive",
-    "isVisible": true,
-  },
-  {
     "id": "5",
     "title": "Commit",
     "order": 5,
