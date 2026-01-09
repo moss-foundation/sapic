@@ -114,6 +114,7 @@ export const addQueryParamParamsSchema = z.object({
 export const afterCreateResourceDescriptionSchema = z.object({
   id: z.string(),
   path: resourcePathSchema,
+  name: z.string(),
 });
 
 export const afterUpdateDirResourceDescriptionSchema = z.object({

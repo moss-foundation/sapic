@@ -81,7 +81,7 @@ export type AddUrlencodedParamParams = {
 /**
  * @category Type
  */
-export type AfterCreateResourceDescription = { id: string; path: ResourcePath };
+export type AfterCreateResourceDescription = { id: string; path: ResourcePath; name: string };
 
 /**
  * @category Type

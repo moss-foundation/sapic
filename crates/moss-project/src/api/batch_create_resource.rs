@@ -44,19 +44,23 @@ impl Project {
 
         for dir in dirs {
             let path = dir.path.clone();
+            let name = dir.name.clone();
             let output = self.create_dir_resource::<R>(ctx, dir).await?;
             resources.push(AfterCreateResourceDescription {
                 id: output.id,
                 path: FrontendResourcePath::new(path.to_path_buf()),
+                name,
             });
         }
 
         for item in items {
             let path = item.path.clone();
+            let name = item.name.clone();
             let output = self.create_item_resource::<R>(ctx, item).await?;
             resources.push(AfterCreateResourceDescription {
                 id: output.id,
                 path: FrontendResourcePath::new(path.to_path_buf()),
+                name,
             });
         }
 

@@ -156,6 +156,7 @@ pub struct AfterCreateResourceDescription {
     pub id: ResourceId,
 
     pub path: FrontendResourcePath,
+    pub name: String,
 }
 /// @category Type
 #[derive(Clone, Debug, Deserialize, TS)]
