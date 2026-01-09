@@ -3,11 +3,7 @@ import { create } from "zustand";
 
 import { Icons } from "@/lib/ui/Icon";
 import { IconInlineType } from "@/workbench/ui/components/IconInline";
-import {
-  TREE_VIEW_GROUP_ENVIRONMENTS,
-  TREE_VIEW_GROUP_MOCK_SERVERS,
-  TREE_VIEW_GROUP_PROJECTS,
-} from "@repo/moss-workspace";
+import { TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_PROJECTS } from "@repo/moss-workspace";
 
 export interface ActivityBarItemProps extends ComponentPropsWithoutRef<"button"> {
   id: string;
@@ -27,7 +23,7 @@ export interface ActivityBarStore {
 const defaultItems: ActivityBarItemProps[] = [
   {
     "id": TREE_VIEW_GROUP_PROJECTS,
-    "title": "Projects",
+    "title": "Home",
     "order": 1,
     "icon": "Home",
     "iconActive": "HomeActive",
