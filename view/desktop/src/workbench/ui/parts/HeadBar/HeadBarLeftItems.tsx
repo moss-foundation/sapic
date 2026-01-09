@@ -75,6 +75,8 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, os }: HeadBarLeftIte
 
   const handleWorkspaceMenuAction = useWorkspaceActions(undefined, workspaceModals);
 
+  const firstLetter = currentWorkspace?.name ? currentWorkspace.name.charAt(0).toUpperCase() : "";
+
   return (
     <div className={cn("flex items-center justify-start gap-[6px] overflow-hidden")} data-tauri-drag-region>
       {isWindowsOrLinux && (
@@ -92,11 +94,12 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, os }: HeadBarLeftIte
         <ActionMenu.Trigger asChild>
           <IconLabelButton
             title={currentWorkspace?.name}
+            monogram={firstLetter}
             rightIcon="ChevronDown"
             rightIconClassName={cn("size-3.5 transition-transform duration-200", {
               "rotate-180": isOpen,
             })}
-            className="background-(--moss-secondary-background) max-w-full px-1.5 py-0.5 text-base"
+            className="background-(--moss-secondary-background) max-w-full py-0.5 pr-1.5 text-base"
           />
         </ActionMenu.Trigger>
         <ActionMenu.Content>
