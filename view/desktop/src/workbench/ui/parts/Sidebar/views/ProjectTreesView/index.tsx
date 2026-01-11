@@ -8,8 +8,8 @@ import { ProjectTree } from "@/workbench/ui/components";
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { useNodeDragAndDropHandler } from "../../components/ProjectTree/hooks/useNodeDragAndDropHandler";
-import { useProjectDragAndDropHandler } from "../../components/ProjectTree/hooks/useProjectDragAndDropHandler";
+import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
+import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";
 import { ProjectCreationZone } from "./ProjectCreationZone";
 import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 

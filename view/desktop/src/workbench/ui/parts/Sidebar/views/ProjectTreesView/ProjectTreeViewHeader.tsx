@@ -15,7 +15,7 @@ import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewPro
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
-import { SidebarHeader } from "../Sidebar";
+import { SidebarHeader } from "../../SidebarHeader";
 
 export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
@@ -108,8 +108,7 @@ export const ProjectTreeViewHeader = () => {
   return (
     <>
       <SidebarHeader
-        title="Projects"
-        actionsContent={
+        toolbar={
           <>
             <ActionButton
               title="Add Project"

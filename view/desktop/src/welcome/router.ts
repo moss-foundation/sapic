@@ -1,8 +1,8 @@
 import WelcomeIndex from "@/welcome/index";
-import { WelcomePage } from "@/welcome/pages";
 import { ExtensionsPage } from "@/welcome/pages/ExtensionsPage";
 import NotFoundPage from "@/welcome/pages/NotFoundPage";
 import { SettingsPage } from "@/welcome/pages/SettingsPage";
+import { WelcomePage } from "@/welcome/pages/WelcomePage";
 import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
 const rootRoute = createRootRoute({

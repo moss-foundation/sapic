@@ -3,8 +3,7 @@ import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-
-import { ActionMenu } from "..";
+import { ActionMenu } from "@/workbench/ui/components";
 import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
@@ -21,9 +20,27 @@ export const ActivityBarLastItems = () => {
           activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
+      <ActivityBarButton
+        icon="Puzzle"
+        id="extensions"
+        title="Extensions"
+        order={1}
+        isDraggable={false}
+        onClick={() => {
+          addOrFocusPanel({
+            id: "Extensions",
+            component: "DefaultView",
+            title: "Extensions",
+            params: {
+              tabIcon: "Puzzle",
+            },
+          });
+        }}
+      />
+
       <ActionMenu.Root>
         <ActionMenu.Trigger asChild>
-          <ActivityBarButton icon="Preferences" id="1" title="Preferences" order={1} isDraggable={false} />
+          <ActivityBarButton icon="Preferences" id="preferences" title="Preferences" order={2} isDraggable={false} />
         </ActionMenu.Trigger>
         <ActionMenu.Content>
           <ActionMenu.Item>

@@ -1,17 +1,17 @@
 import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
-import { ProjectTreesView } from "@/workbench/ui/parts/ProjectTreesView/ProjectTreesView";
-import { SidebarHeader } from "@/workbench/ui/parts/Sidebar/SidebarHeader";
 import {
   TREE_VIEW_GROUP_ENVIRONMENTS,
   TREE_VIEW_GROUP_MOCK_SERVERS,
   TREE_VIEW_GROUP_PROJECTS,
 } from "@repo/moss-workspace";
 
-import { EnvironmentsListView } from "../EnvironmentsListView/EnvironmentsListView";
-import { SourceControlView } from "../SourceControlView/SourceControlView";
+import { SidebarHeader } from "./SidebarHeader";
+import { EnvironmentsListView } from "./views/EnvironmentsListView";
+import { ProjectTreesView } from "./views/ProjectTreesView";
+import { SourceControlView } from "./views/SourceControlView";
 
-export const SidebarWorkspaceContent = () => {
+export const SidebarContent = () => {
   const { currentWorkspace } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
 
@@ -45,7 +45,7 @@ export const SidebarWorkspaceContent = () => {
     case TREE_VIEW_GROUP_MOCK_SERVERS:
       return (
         <div className="flex h-full flex-col">
-          <SidebarHeader title="Mock Servers" />
+          <SidebarHeader />
           <div className="flex grow items-center justify-center p-2">
             <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
@@ -55,7 +55,7 @@ export const SidebarWorkspaceContent = () => {
     case "4":
       return (
         <div className="flex h-full flex-col">
-          <SidebarHeader title="Preferences" />
+          <SidebarHeader />
           <div className="flex grow items-center justify-center p-2">
             <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
           </div>
@@ -82,4 +82,4 @@ export const SidebarWorkspaceContent = () => {
   }
 };
 
-export default SidebarWorkspaceContent;
+export default SidebarContent;
