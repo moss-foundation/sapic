@@ -341,6 +341,15 @@ impl RuntimeWorkspace {
     ) -> joinerror::Result<&RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>> {
         self.environments
             .get_or_try_init(|| async {
+                // HACK: There's a weird race condition
+                // Since project environment sources are added during project load
+                // When stream_projects and stream_environments are called simultaneously
+                // The project sources are not added correctly, making their environments non-discoverable
+                // The hack is to ensure that projects_internal finishes here
+                // Later we will split out the streaming of workspace vs project environments
+
+                let _ = self.projects_internal(ctx).await?;
+
                 let active_environments_result = self
                     .storage
                     .get(
