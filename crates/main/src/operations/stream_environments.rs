@@ -1,11 +1,13 @@
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_environment::AnyEnvironment;
-use sapic_ipc::contracts::main::environment::{StreamEnvironmentsEvent, StreamEnvironmentsOutput};
+use sapic_ipc::contracts::main::environment::{
+    EnvironmentGroup, StreamEnvironmentsEvent, StreamEnvironmentsOutput,
+};
 use std::error::Error;
 use tauri::ipc::Channel as TauriChannel;
 
-use crate::MainWindow;
+use crate::{MainWindow, workspace::GLOBAL_ACTIVE_ENVIRONMENT_KEY};
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn stream_environments(
@@ -16,15 +18,6 @@ impl<R: AppRuntime> MainWindow<R> {
         let workspace = self.workspace.load();
         let environments = workspace.environments(ctx).await?;
         let active_environments = workspace.active_environments(ctx).await?;
-
-        // let event = StreamEnvironmentsEvent {
-        //     id: (),
-        //     project_id: None,
-        //     is_active: false,
-        //     name: "".to_string(),
-        //     order: None,
-        //     total_variables: 0,
-        // }
 
         let mut total_returned = 0;
         for environment in environments {
@@ -38,7 +31,13 @@ impl<R: AppRuntime> MainWindow<R> {
 
             let id = environment.id;
             let project_id = environment.project_id;
-            let is_active = active_environments.get(&project_id) == Some(&id);
+            let env_group_key = if let Some(project_id) = &project_id {
+                project_id.inner()
+            } else {
+                GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+            };
+
+            let is_active = active_environments.get(&env_group_key) == Some(&id);
 
             if let Err(e) = channel.send(StreamEnvironmentsEvent {
                 id,
@@ -58,7 +57,19 @@ impl<R: AppRuntime> MainWindow<R> {
             // FIXME: Is returning environment groups still necessary?
             // Looks like the only things associated with them are expanded flag and order
             // Which would be handled on the frontend
-            groups: vec![],
+            groups: workspace
+                .environment_groups(ctx)
+                .await?
+                .into_iter()
+                .map(|group_id| {
+                    EnvironmentGroup {
+                        project_id: group_id.inner(),
+                        // FIXME: These should be removed from the backend
+                        expanded: false,
+                        order: None,
+                    }
+                })
+                .collect(),
             total_returned,
         })
     }

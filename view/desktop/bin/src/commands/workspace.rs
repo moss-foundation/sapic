@@ -347,9 +347,7 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     //     },
     // )
     // .await
-    unimplemented!(
-        "I think there's no need to update environment group since we removed order and expanded update logic from the backend"
-    );
+    Ok(())
 }
 
 #[tauri::command(async)]
@@ -373,7 +371,5 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     //     },
     // )
     // .await
-    unimplemented!(
-        "I think there's no need to update environment group since we removed order and expanded update logic from the backend"
-    );
+    Ok(())
 }

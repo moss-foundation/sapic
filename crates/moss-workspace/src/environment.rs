@@ -116,72 +116,72 @@ impl EnvironmentService {
         })
     }
 
-    pub(crate) async fn add_source(&self, id: Arc<String>, abs_path: PathBuf) {
-        let mut state = self.state.write().await;
-        state.sources.insert(id, abs_path);
-    }
-
-    pub(crate) async fn remove_source(&self, id: &Arc<String>) {
-        let mut state_lock = self.state.write().await;
-        state_lock.sources.remove(id);
-
-        state_lock.expanded_groups.remove(id);
-        state_lock.groups.remove(id);
-
-        // TODO: remove from the db
-    }
-
-    pub async fn update_environment_group(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        params: sapic_ipc::contracts::main::environment::UpdateEnvironmentGroupParams,
-    ) -> joinerror::Result<()> {
-        let mut state = self.state.write().await;
-
-        let mut batch_input = vec![];
-
-        let project_id = params.project_id;
-        let group_order_key = key_environment_group_order(&project_id);
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state.expanded_groups.insert(project_id.inner());
-            } else {
-                state.expanded_groups.remove(&project_id.inner());
-            }
-
-            batch_input.push((
-                KEY_EXPANDED_ENVIRONMENT_GROUPS,
-                serde_json::to_value(state.expanded_groups.clone())?,
-            ));
-        }
-
-        if let Some(order) = params.order {
-            batch_input.push((&group_order_key, serde_json::to_value(order)?));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(());
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Workspace(self.workspace_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update environment group `{}`: {}",
-                project_id, e
-            ));
-        }
-
-        Ok(())
-    }
-
+    // pub(crate) async fn add_source(&self, id: Arc<String>, abs_path: PathBuf) {
+    //     let mut state = self.state.write().await;
+    //     state.sources.insert(id, abs_path);
+    // }
+    //
+    // pub(crate) async fn remove_source(&self, id: &Arc<String>) {
+    //     let mut state_lock = self.state.write().await;
+    //     state_lock.sources.remove(id);
+    //
+    //     state_lock.expanded_groups.remove(id);
+    //     state_lock.groups.remove(id);
+    //
+    //     // TODO: remove from the db
+    // }
+    //
+    // pub async fn update_environment_group(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     params: sapic_ipc::contracts::main::environment::UpdateEnvironmentGroupParams,
+    // ) -> joinerror::Result<()> {
+    //     let mut state = self.state.write().await;
+    //
+    //     let mut batch_input = vec![];
+    //
+    //     let project_id = params.project_id;
+    //     let group_order_key = key_environment_group_order(&project_id);
+    //
+    //     if let Some(expanded) = params.expanded {
+    //         if expanded {
+    //             state.expanded_groups.insert(project_id.inner());
+    //         } else {
+    //             state.expanded_groups.remove(&project_id.inner());
+    //         }
+    //
+    //         batch_input.push((
+    //             KEY_EXPANDED_ENVIRONMENT_GROUPS,
+    //             serde_json::to_value(state.expanded_groups.clone())?,
+    //         ));
+    //     }
+    //
+    //     if let Some(order) = params.order {
+    //         batch_input.push((&group_order_key, serde_json::to_value(order)?));
+    //     }
+    //
+    //     if batch_input.is_empty() {
+    //         return Ok(());
+    //     }
+    //
+    //     if let Err(e) = self
+    //         .storage
+    //         .put_batch(
+    //             ctx,
+    //             StorageScope::Workspace(self.workspace_id.inner()),
+    //             &batch_input,
+    //         )
+    //         .await
+    //     {
+    //         session::warn!(format!(
+    //             "failed to update environment group `{}`: {}",
+    //             project_id, e
+    //         ));
+    //     }
+    //
+    //     Ok(())
+    // }
+    //
     pub async fn environment(&self, id: &EnvironmentId) -> Option<Arc<Environment>> {
         let state = self.state.read().await;
         state.environments.get(id).map(|item| item.handle.clone())
@@ -649,11 +649,11 @@ impl EnvironmentService {
     // }
 }
 
-struct ScanSourceJob {
-    source_id: Arc<String>,
-    abs_path: PathBuf,
-    tx: mpsc::UnboundedSender<(Option<Arc<String>>, Environment)>,
-}
+// struct ScanSourceJob {
+//     source_id: Arc<String>,
+//     abs_path: PathBuf,
+//     tx: mpsc::UnboundedSender<(Option<Arc<String>>, Environment)>,
+// }
 
 // struct EnvironmentSourceScanner {
 //     fs: Arc<dyn FileSystem>,

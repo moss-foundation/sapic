@@ -31,9 +31,9 @@ use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::{
     environment::{
         BatchUpdateEnvironmentInput, CreateEnvironmentInput, CreateEnvironmentOutput,
-        DeleteEnvironmentInput, StreamEnvironmentsEvent, StreamEnvironmentsOutput,
-        UpdateEnvironmentGroupParams, UpdateEnvironmentInput, UpdateEnvironmentOutput,
-        UpdateEnvironmentParams,
+        DeleteEnvironmentInput, EnvironmentGroup, StreamEnvironmentsEvent,
+        StreamEnvironmentsOutput, UpdateEnvironmentGroupParams, UpdateEnvironmentInput,
+        UpdateEnvironmentOutput, UpdateEnvironmentParams,
     },
     project::{
         CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportDiskParams,
@@ -58,12 +58,12 @@ use sapic_system::{
     user::User,
     workspace::{WorkspaceEditOp, WorkspaceEditParams},
 };
-use std::{path::PathBuf, sync::Arc};
+use std::{collections::HashSet, path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::environment::RuntimeEnvironment;
 
-const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
+pub(crate) const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
 
 #[derive(Clone)]
 pub struct RuntimeProject {
@@ -183,8 +183,7 @@ pub trait Workspace: Send + Sync {
         updates: Vec<UpdateEnvironmentParams>,
     ) -> joinerror::Result<()>;
 
-    // I didn't migrate them
-    // since they seem to be only about updating the expand flag and order of env groups
+    // I didn't migrate them since they seem to be only about updating the expand flag and order of env groups
 
     // async fn update_environment_group(
     //     &self,
@@ -214,7 +213,12 @@ pub trait Workspace: Send + Sync {
     async fn active_environments(
         &self,
         ctx: &dyn AnyAsyncContext,
-    ) -> joinerror::Result<FxHashMap<Option<ProjectId>, EnvironmentId>>;
+    ) -> joinerror::Result<FxHashMap<Arc<String>, EnvironmentId>>;
+
+    async fn environment_groups(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<FxHashSet<ProjectId>>;
 }
 
 pub struct RuntimeWorkspace {
@@ -238,8 +242,8 @@ pub struct RuntimeWorkspace {
     environments: OnceCell<RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>>,
     environment_groups: RwLock<FxHashSet<ProjectId>>,
 
-    // None indicates the global active environment for the workspace
-    active_environments: RwLock<FxHashMap<Option<ProjectId>, EnvironmentId>>,
+    // The key is the project ID or GLOBAL_ACTIVE_ENVIRONMENT_KEY
+    active_environments: RwLock<FxHashMap<Arc<String>, EnvironmentId>>,
 }
 
 impl RuntimeWorkspace {
@@ -346,7 +350,7 @@ impl RuntimeWorkspace {
                     )
                     .await;
 
-                let active_environments: FxHashMap<Option<ProjectId>, EnvironmentId> =
+                let active_environments: FxHashMap<Arc<String>, EnvironmentId> =
                     match active_environments_result {
                         Ok(Some(active_environments)) => {
                             serde_json::from_value(active_environments).unwrap_or_default()
@@ -387,7 +391,7 @@ impl RuntimeWorkspace {
                         env_id.clone(),
                         RuntimeEnvironment {
                             id: env_id.clone(),
-                            project_id: environment.project_id,
+                            project_id: environment.project_id.clone(),
                             handle: handle.into(),
                             edit: EnvironmentEditService::new(EnvironmentFsEditBackend::new(
                                 &environment.internal_abs_path,
@@ -396,6 +400,10 @@ impl RuntimeWorkspace {
                             order: None,
                         },
                     );
+
+                    if let Some(group_id) = environment.project_id {
+                        self.environment_groups.write().await.insert(group_id);
+                    }
                 }
 
                 Ok::<_, joinerror::Error>(RwLock::new(result))
@@ -909,15 +917,25 @@ impl Workspace for RuntimeWorkspace {
         ctx: &dyn AnyAsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
+        dbg!(1);
         let environments = self.environments_internal(ctx).await?.write().await;
 
+        dbg!(2);
         let environment_item = environments
             .get(&id)
             .ok_or_join_err_with::<()>(|| format!("environment {} not found", id.to_string()))?;
 
-        let mut active_environments = self.active_environments.write().await;
-        active_environments.insert(environment_item.project_id.clone(), id.clone());
+        dbg!(3);
+        let env_group_key = if let Some(project_id) = &environment_item.project_id {
+            project_id.inner()
+        } else {
+            GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+        };
 
+        let mut active_environments = self.active_environments.write().await;
+        active_environments.insert(env_group_key, id.clone());
+
+        dbg!(4);
         if let Err(e) = self
             .storage
             .put(
@@ -931,6 +949,7 @@ impl Workspace for RuntimeWorkspace {
             tracing::warn!("failed to put active environments in the database: {}", e);
         }
 
+        dbg!(5);
         Ok(())
     }
 
@@ -1025,11 +1044,17 @@ impl Workspace for RuntimeWorkspace {
             return Ok(());
         };
 
+        let env_group_key = if let Some(project_id) = environment.project_id {
+            project_id.inner()
+        } else {
+            GLOBAL_ACTIVE_ENVIRONMENT_KEY.to_string().into()
+        };
+
         // If the environment is currently active, removes it from active environments
         let active_environments_updated = {
             let mut active_environments = self.active_environments.write().await;
-            if active_environments.get(&environment.project_id) == Some(&environment.id) {
-                active_environments.remove(&environment.project_id);
+            if active_environments.get(&env_group_key) == Some(&environment.id) {
+                active_environments.remove(&env_group_key);
                 true
             } else {
                 false
@@ -1209,9 +1234,18 @@ impl Workspace for RuntimeWorkspace {
     async fn active_environments(
         &self,
         _ctx: &dyn AnyAsyncContext,
-    ) -> joinerror::Result<FxHashMap<Option<ProjectId>, EnvironmentId>> {
+    ) -> joinerror::Result<FxHashMap<Arc<String>, EnvironmentId>> {
         let active_environments = self.active_environments.read().await;
 
         Ok(active_environments.clone())
+    }
+
+    async fn environment_groups(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<FxHashSet<ProjectId>> {
+        let environment_groups = self.environment_groups.read().await.clone();
+
+        Ok(environment_groups)
     }
 }
