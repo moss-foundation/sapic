@@ -10,7 +10,6 @@ import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectT
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { useSyncResourceSummaries } from "../../../ProjectTreesView/hooks/useSyncResourceSummaries";
 import { ProjectCreationZone } from "./ProjectCreationZone";
 import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 
@@ -18,8 +17,6 @@ export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
   const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
-
-  useSyncResourceSummaries();
 
   const { displayMode } = useWorkspaceModeStore();
 

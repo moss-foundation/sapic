@@ -117,7 +117,7 @@ export const useProjectActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props?: HeadBarActionProps, workspaceModals?: WorkspaceModals) => {
-  const { openPanel, setShowDebugPanels, showDebugPanels } = props || {};
+  const { setShowDebugPanels, showDebugPanels } = props || {};
 
   if (!workspaceModals) {
     throw new Error("useWorkspaceActions requires workspaceModals parameter");
