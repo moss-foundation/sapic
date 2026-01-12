@@ -1,16 +1,28 @@
+import { useGetLayout } from "@/workbench/adapters";
+import { useActivityBarStore } from "@/workbench/store/activityBar";
+
 interface SidebarHeaderProps {
-  title: string;
-  actionsContent?: React.ReactNode;
+  toolbar?: React.ReactNode;
 }
 
-export const SidebarHeader = ({ title, actionsContent }: SidebarHeaderProps) => {
+export const SidebarHeader = ({ toolbar }: SidebarHeaderProps) => {
+  const { data: layout } = useGetLayout();
+  const { items } = useActivityBarStore();
+  const activeContainerId = layout?.activitybarState.activeContainerId;
+
+  const activeItem = items.find((item) => item.id === activeContainerId);
+  const title = activeItem?.title || "";
+
   return (
-    <div className="text-(--moss-primary-foreground) relative flex min-h-9 items-center justify-between px-2 uppercase">
-      <div className="text-(--moss-secondary-foreground) w-max items-center overflow-hidden text-ellipsis whitespace-nowrap text-xs">
+    <div className="text-(--moss-primary-foreground) relative flex min-h-9 items-center px-2">
+      <div className="text-(--moss-secondary-foreground) min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs uppercase">
         {title}
       </div>
-
-      <div className="flex grow justify-end gap-1">{actionsContent}</div>
+      {toolbar && (
+        <div className="background-(--moss-primary-background) relative z-10 flex shrink-0 items-center gap-1 pl-2">
+          {toolbar}
+        </div>
+      )}
     </div>
   );
 };

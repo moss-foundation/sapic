@@ -20,7 +20,7 @@ export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElem
 const inputWrapperStyles = cva(`
     flex items-center w-full gap-2
     border 
-    rounded-md pl-2 pr-[5px] 
+    rounded-md pl-2 pr-[4px] 
 
     has-[input:focus-within]:outline-2 
     has-[input:focus-within]:outline-(--moss-accent)   

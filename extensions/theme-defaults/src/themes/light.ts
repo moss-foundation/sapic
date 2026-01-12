@@ -377,22 +377,11 @@ export const defaultLightTheme: Theme = {
     "moss.secondary.background.active": { type: "variable", value: "moss.gray.11" },
     "moss.secondary.foreground": { type: "variable", value: "moss.gray.6" },
 
-    // head bar
-    "moss.headBar.background": { type: "variable", value: "moss.gray.12" },
-    "moss.headBar.border": { type: "variable", value: "moss.gray.11" },
-
-    //Sidebar
-    "moss.sidebar.background": { type: "variable", value: "moss.gray.13" },
-    "moss.sidebar.foreground": { type: "variable", value: "moss.gray.6" },
-
     // status bar
-    "moss.statusBar.background": { type: "variable", value: "moss.gray.13" },
-
     "moss.statusBarItem.foreground": { type: "variable", value: "moss.gray.4" },
     "moss.statusBarItem.background.hover": { type: "variable", value: "moss.gray.12" },
 
     // activity bar
-    "moss.activityBar.background": { type: "variable", value: "moss.gray.13" },
 
     "moss.activityBarItem.background": { type: "variable", value: "moss.gray.12" },
     "moss.activityBarItem.background.hover": { type: "variable", value: "moss.gray.10" },
@@ -414,19 +403,14 @@ export const defaultLightTheme: Theme = {
     "moss.list.toolbarItem.background.hover": { type: "variable", value: "moss.gray.10" },
 
     //buttons
-    "moss.button.primary.background": { type: "variable", value: "moss.blue.4" },
-    "moss.button.primary.background.hover": { type: "variable", value: "moss.blue.3" },
-    "moss.button.primary.foreground": { type: "variable", value: "moss.gray.14" },
+    "moss.button.default": { type: "variable", value: "moss.gray.13" },
+    "moss.button.danger": { type: "variable", value: "moss.red.4" },
 
     "moss.button.outlined.background": { type: "variable", value: "moss.gray.14" },
     "moss.button.outlined.background.hover": { type: "variable", value: "moss.gray.12" },
     "moss.button.outlined.border": { type: "variable", value: "moss.gray.9" },
     "moss.button.outlined.border.hover": { type: "variable", value: "moss.gray.8" },
     "moss.button.outlined.foreground": { type: "variable", value: "moss.gray.1" },
-
-    "moss.button.danger.background": { type: "variable", value: "moss.red.4" },
-    "moss.button.danger.background.hover": { type: "variable", value: "moss.red.2" },
-    "moss.button.danger.foreground": { type: "variable", value: "moss.gray.14" },
 
     //input, textarea, select, checkbox, radio, toggle, IconLabelButton etc.
     "moss.controls.background": { type: "variable", value: "moss.gray.14" },

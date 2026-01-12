@@ -47,6 +47,9 @@
         },
         {
           "url": "https://gitlab.com/-/user_settings/personal_access_tokens"
+        },
+        {
+          "url": "https://discord.gg/*"
         }
       ]
     },

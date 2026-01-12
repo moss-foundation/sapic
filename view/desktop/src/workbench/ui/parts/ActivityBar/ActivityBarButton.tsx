@@ -16,8 +16,8 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import DropIndicator from "../DropIndicator";
-import { IconInline } from "../IconInline";
+import DropIndicator from "@/workbench/ui/components/DropIndicator";
+import { IconInline } from "@/workbench/ui/components/IconInline";
 
 export const ActivityBarButton = ({
   icon,
@@ -136,7 +136,7 @@ export const ActivityBarButton = ({
       className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
         "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !layout?.sidebarState.visible,
         "background-(--moss-accent-secondary)": isActive && layout?.sidebarState.visible,
-        "background-(--moss-activityBarItem-background)": !isActive || !layout?.sidebarState.visible,
+        // "background-(--moss-activityBarItem-background)": !isActive || !layout?.sidebarState.visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}

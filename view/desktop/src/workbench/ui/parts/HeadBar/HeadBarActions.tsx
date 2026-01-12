@@ -7,26 +7,26 @@ import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspa
 import { OpenInTargetEnum } from "@/main/types";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
+interface WorkspaceModals {
+  openNewWorkspaceModal: () => void;
+  openOpenWorkspaceModal: () => void;
+  openDeleteConfirmModal: (workspace: { id: string; name: string }) => void;
+}
+
 // Helper to extract workspace ID from prefixed action ID
 const extractWorkspaceId = (actionId: string): string => {
   return actionId.startsWith("workspace:") ? actionId.replace("workspace:", "") : actionId;
 };
 
 export interface HeadBarActionProps {
-  openPanel: (panel: string) => void;
-  setShowDebugPanels: (show: boolean) => void;
-  showDebugPanels: boolean;
+  openPanel?: (panel: string) => void;
+  setShowDebugPanels?: (show: boolean) => void;
+  showDebugPanels?: boolean;
   setProjectName?: (name: string) => void;
   projectButtonRef?: RefObject<HTMLButtonElement>;
   setIsRenamingProject?: (isRenaming: boolean) => void;
   setSelectedUser?: (user: string | null) => void;
   setSelectedBranch?: (branch: string | null) => void;
-  openNewWorkspaceModal?: () => void;
-  openOpenWorkspaceModal?: () => void;
-  showDeleteConfirmModal?: boolean;
-  workspaceToDelete?: { id: string; name: string } | null;
-  setWorkspaceToDelete?: (workspace: { id: string; name: string } | null) => void;
-  openDeleteConfirmModal?: () => void;
 }
 
 /**
@@ -116,16 +116,12 @@ export const useProjectActions = (props: HeadBarActionProps) => {
 /**
  * Workspace menu action handler
  */
-export const useWorkspaceActions = (props: HeadBarActionProps) => {
-  const {
-    openPanel,
-    setShowDebugPanels,
-    showDebugPanels,
-    openNewWorkspaceModal,
-    openOpenWorkspaceModal,
-    setWorkspaceToDelete,
-    openDeleteConfirmModal,
-  } = props;
+export const useWorkspaceActions = (props?: HeadBarActionProps, workspaceModals?: WorkspaceModals) => {
+  const { openPanel, setShowDebugPanels, showDebugPanels } = props || {};
+
+  if (!workspaceModals) {
+    throw new Error("useWorkspaceActions requires workspaceModals parameter");
+  }
 
   const { mutate: openWorkspace } = useOpenWorkspace();
   const { mutate: closeWorkspace } = useCloseWorkspace();
@@ -155,11 +151,10 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         if (actionType === "delete") {
           const workspace = getWorkspaceById(workspaceId);
           if (workspace) {
-            setWorkspaceToDelete?.({
+            workspaceModals.openDeleteConfirmModal({
               id: workspaceId,
               name: workspace.name,
             });
-            openDeleteConfirmModal?.();
           }
           return;
         }
@@ -210,18 +205,17 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
 
     switch (action) {
       case "new-workspace":
-        openNewWorkspaceModal?.();
+        workspaceModals.openNewWorkspaceModal();
         break;
       case "open-workspace":
-        openOpenWorkspaceModal?.();
+        workspaceModals.openOpenWorkspaceModal();
         break;
       case "delete":
         if (currentWorkspace) {
-          setWorkspaceToDelete?.({
+          workspaceModals.openDeleteConfirmModal({
             id: currentWorkspace.id,
             name: currentWorkspace.name,
           });
-          openDeleteConfirmModal?.();
         }
         break;
       case "rename":
@@ -251,7 +245,9 @@ export const useWorkspaceActions = (props: HeadBarActionProps) => {
         });
         break;
       case "debug":
-        setShowDebugPanels(!showDebugPanels);
+        if (setShowDebugPanels && showDebugPanels !== undefined) {
+          setShowDebugPanels(!showDebugPanels);
+        }
         break;
       case "exit-workspace":
         if (currentWorkspace) {

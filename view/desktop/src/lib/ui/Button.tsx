@@ -1,16 +1,16 @@
 import { cva } from "class-variance-authority";
 import { ButtonHTMLAttributes, forwardRef } from "react";
-
 import { cn } from "@/utils";
-
 import { Icon, Icons } from "./Icon";
 
 export type Button = typeof Button;
 
+export type ButtonIntent = "primary" | "default" | "outlined" | "danger";
+
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   loading?: boolean;
   disabled?: boolean;
-  intent?: "primary" | "outlined" | "danger";
+  intent?: ButtonIntent;
   fullWidth?: boolean;
   iconLeft?: Icons;
   iconRight?: Icons;
@@ -23,9 +23,9 @@ const buttonRootStyles = cva(`
     relative 
     flex items-center justify-center  gap-1
     min-w-18 
-    py-1.25 px-1 rounded-sm truncate
+    py-1.25 px-2.5 rounded-md truncate
 
-    transition duration-150 ease-in-out  
+    transition duration-300 ease-in-out  
     cursor-pointer  
   
     border
@@ -54,10 +54,45 @@ const buttonRootStyles = cva(`
         false: null,
         true: "min-w-auto! py-1.5 px-1.5",
       },
-      intent:{
-        primary:  "background-(--moss-accent)  enabled:hover:background-(--moss-accent-hover) enabled:hover:border-(--moss-accent-hover)   text-(--moss-button-primary-foreground)  border-(--moss-accent)" ,
-        outlined: "background-(--moss-button-outlined-background) enabled:hover:background-(--moss-button-outlined-background-hover) text-(--moss-button-outlined-foreground)  border-(--moss-button-outlined-border) enabled:hover:border-(--moss-button-outlined-border-hover) ",
-        danger:   "background-(--moss-button-danger-background)   enabled:hover:background-(--moss-button-danger-background-hover)   text-(--moss-button-danger-foreground)  border-transparent",
+      intent: {
+        primary: `
+          background-(--moss-accent) enabled:hover:opacity-80 
+          
+          border-[color:color-mix(in_srgb,var(--moss-accent)_75%,black)] 
+          dark:border-[color:color-mix(in_srgb,var(--moss-accent)_75%,white)] 
+          
+          text-white
+          `,
+        default: `
+          background-(--moss-button-default)
+          enabled:hover:background-[color:color-mix(in_srgb,var(--moss-button-default)_95%,black)]
+          dark:enabled:hover:background-[color:color-mix(in_srgb,var(--moss-button-default)_95%,white)]
+          
+          border-[color:color-mix(in_srgb,var(--moss-button-default)_90%,black)]
+          enabled:hover:border-[color:color-mix(in_srgb,var(--moss-button-default)_85%,black)] 
+          
+          dark:border-[color:color-mix(in_srgb,var(--moss-button-default)_90%,white)]
+          
+          text-(--moss-button-outlined-foreground)
+          `,
+        outlined: `
+          background-(--moss-button-outlined-background) 
+          enabled:hover:background-(--moss-button-outlined-background-hover) 
+          
+          text-(--moss-button-outlined-foreground) 
+          text-black dark:text-white
+          
+          border-(--moss-button-outlined-border) 
+          enabled:hover:border-(--moss-button-outlined-border-hover)`,
+        danger: `
+          background-(--moss-button-danger)
+          enabled:hover:opacity-80
+          
+          border-[color:color-mix(in_srgb,var(--moss-button-danger)_80%,black)]
+          enabled:hover:border-[color:color-mix(in_srgb,var(--moss-button-danger)_75%,black)] 
+          
+          text-white
+          `,
       }
     },
   }
@@ -67,8 +102,9 @@ const loadingWrapperStyles = cva(`LoadingIcon absolute inset-0 grid place-items-
   variants: {
     intent: {
       primary: "background-(--moss-accent)",
+      default: "background-(--moss-accent)",
       outlined: "background-(--moss-button-outlined-background) rounded-sm",
-      danger: "background-(--moss-button-danger-background)",
+      danger: "background-(--moss-button-danger)",
     },
   },
 });
