@@ -8,7 +8,10 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use sapic_platform::{
-    environment::environment_service_fs::EnvironmentServiceFs,
+    environment::{
+        app_environment_service_fs::AppEnvironmentServiceFs,
+        environment_service_fs::EnvironmentServiceFs,
+    },
     extension::unpacker::ExtensionUnpackerImpl,
     language::loader::LanguagePackLoader,
     theme::loader::ColorThemeLoader,
@@ -19,7 +22,9 @@ use sapic_platform::{
 use sapic_runtime::extension_point::ExtensionPoint;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
-    environment::environment_service::EnvironmentService,
+    environment::{
+        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
+    },
     language::{LanguagePackRegistry, language_service::LanguageService},
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
@@ -137,10 +142,10 @@ impl<R: AppRuntime> AppBuilder<R> {
         let extension_api_service =
             ExtensionsApiService::new(self.server_api_client.clone()).into();
 
-        let environment_service = EnvironmentService::new(
-            EnvironmentServiceFs::new(&delegate.workspaces_dir(), self.fs.clone()),
-            self.storage.clone(),
-        )
+        let environment_service = AppEnvironmentService::new(AppEnvironmentServiceFs::new(
+            &delegate.workspaces_dir(),
+            self.fs.clone(),
+        ))
         .into();
 
         let services = AppServices {

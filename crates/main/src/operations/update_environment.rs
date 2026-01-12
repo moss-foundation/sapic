@@ -13,11 +13,16 @@ impl<R: AppRuntime> MainWindow<R> {
         input: UpdateEnvironmentInput,
     ) -> joinerror::Result<UpdateEnvironmentOutput> {
         input.validate().join_err_bare()?;
-
         let workspace = self.workspace.load();
 
         let id = input.inner.id.clone();
-        workspace.update_environment(ctx, input.inner).await?;
+
+        if let Some(project_id) = &input.inner.project_id {
+            let project = workspace.project(ctx, project_id).await?;
+            project.update_environment(ctx, input.inner).await?;
+        } else {
+            workspace.update_environment(ctx, input.inner).await?;
+        }
 
         Ok(UpdateEnvironmentOutput { id })
     }

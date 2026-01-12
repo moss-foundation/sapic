@@ -30,7 +30,7 @@ use crate::{
     dirs,
     errors::ErrorNotFound,
     storage::{
-        KEY_ACTIVE_ENVIRONMENTS, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
+        KEY_ACTIVE_ENVIRONMENT, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
         KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,
         key_environment_order,
     },

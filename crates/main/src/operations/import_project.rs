@@ -19,7 +19,7 @@ impl<R: AppRuntime> MainWindow<R> {
         let workspace = self.workspace.load();
         let params = &input.inner;
 
-        let project = match &params.source {
+        let project_id = match &params.source {
             ImportProjectSource::GitHub(git_params) => {
                 workspace
                     .clone_project(
@@ -54,9 +54,11 @@ impl<R: AppRuntime> MainWindow<R> {
             }
         };
 
+        let project = workspace.project(ctx, &project_id).await?;
+
         let details = project.handle.details(ctx).await?;
         Ok(ImportProjectOutput {
-            id: project.id,
+            id: project.id.clone(),
             name: details.name,
             order: project.order,
             expanded: true, // HACK: hardcoded value

@@ -25,9 +25,7 @@ use std::{
 };
 use tokio::sync::RwLock;
 
-use crate::environment::{
-    CreateEnvironmentFsParams, EnvironmentInitializeOp, EnvironmentServiceFs,
-};
+use crate::environment::{CreateEnvironmentFsParams, EnvironmentCreateOp, EnvironmentServiceFs};
 
 pub struct CreateEnvironmentItemParams {
     pub env_id: EnvironmentId,
@@ -44,42 +42,29 @@ pub struct EnvironmentItem {
     pub internal_abs_path: PathBuf,
 }
 
+// Both Workspace and Project has their own EnvironmentService
+// FIXME: Should they both store variables in the Workspace storage scope?
+
 pub struct EnvironmentService {
+    workspace_id: WorkspaceId,
+    project_id: Option<ProjectId>,
     backend: Arc<dyn EnvironmentServiceFs>,
     storage: Arc<dyn KvStorage>,
 }
 
 impl EnvironmentService {
-    pub fn new(backend: Arc<dyn EnvironmentServiceFs>, storage: Arc<dyn KvStorage>) -> Self {
-        Self { backend, storage }
-    }
-
-    // HACK: I'm not sure the best way to handle environment sources when switching to a new workspace
-    // This method is used when a new workspace is open, during which the old sources are cleared and
-    // the workspace's base source is added (projects sources will be added during discovery)
-    pub async fn open_workspace(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
-    ) -> joinerror::Result<()> {
-        self.backend.switch_workspace(ctx, workspace_id).await
-    }
-
-    pub async fn add_source(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        project_id: &ProjectId,
-        source_path: &Path,
-    ) -> joinerror::Result<()> {
-        self.backend.add_source(ctx, project_id, source_path).await
-    }
-
-    pub async fn remove_source(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        project_id: &ProjectId,
-    ) -> joinerror::Result<()> {
-        self.backend.remove_source(ctx, project_id).await
+    pub fn new(
+        workspace_id: WorkspaceId,
+        project_id: Option<ProjectId>,
+        backend: Arc<dyn EnvironmentServiceFs>,
+        storage: Arc<dyn KvStorage>,
+    ) -> Self {
+        Self {
+            workspace_id,
+            project_id,
+            backend,
+            storage,
+        }
     }
 
     pub async fn environments(
@@ -96,57 +81,16 @@ impl EnvironmentService {
             .into_iter()
             .map(|env| EnvironmentItem {
                 id: env.id,
-                project_id: env.project_id,
+                project_id: self.project_id.clone(),
                 internal_abs_path: env.internal_abs_path,
             })
             .collect::<Vec<_>>();
         Ok(environments)
     }
 
-    // This is primarily used to initialize predefined environments, when the storage and workspace are not yet prepared.
-    pub async fn initialize_environment(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
-        params: CreateEnvironmentItemParams,
-    ) -> joinerror::Result<PathBuf> {
-        let mut variable_decls = IndexMap::new();
-        for param in params.variables {
-            let id = VariableId::new();
-            let global_value = continue_if_err!(json_to_hcl(&param.global_value), |err| {
-                println!("failed to convert global value expression: {}", err); // TODO: log error
-            });
-            let decl = VariableDecl {
-                name: param.name,
-                value: global_value,
-                description: param.desc,
-                options: param.options,
-            };
-            variable_decls.insert(id, decl);
-        }
-
-        let abs_path = self
-            .backend
-            .initialize_environment(
-                ctx,
-                workspace_id,
-                &params.env_id,
-                &CreateEnvironmentFsParams {
-                    project_id: params.project_id,
-                    name: params.name,
-                    color: params.color,
-                    variables: variable_decls,
-                },
-            )
-            .await?;
-
-        Ok(abs_path)
-    }
-
     pub async fn create_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItem> {
         let mut variable_decls = IndexMap::new();
@@ -169,9 +113,8 @@ impl EnvironmentService {
         let id = EnvironmentId::new();
         let internal_abs_path = self
             .backend
-            .initialize_environment(
+            .create_environment(
                 ctx,
-                workspace_id,
                 &id,
                 &CreateEnvironmentFsParams {
                     project_id: params.project_id.clone(),
@@ -191,7 +134,7 @@ impl EnvironmentService {
                 .storage
                 .put(
                     ctx,
-                    StorageScope::Workspace(workspace_id.inner()),
+                    StorageScope::Workspace(self.workspace_id.inner()),
                     &local_value_key,
                     local_value,
                 )
@@ -207,42 +150,24 @@ impl EnvironmentService {
             internal_abs_path,
         })
     }
-    // HACK: we need the description to properly clean up all the variables from the storage
-    // Maybe there's a better way to structure this
     pub async fn delete_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
-        desc: DescribeEnvironment,
+        id: &EnvironmentId,
     ) -> joinerror::Result<()> {
-        self.backend
-            .remove_environment(ctx, desc.abs_path.as_ref())
-            .await?;
+        self.backend.remove_environment(ctx, id).await?;
 
+        // FIXME: Should the scope be project if the environment is a project level environment?
+        let storage_scope = StorageScope::Workspace(self.workspace_id.inner());
+        // Clean all the metadata and variables related to the deleted environment
+        if let Err(e) = self
+            .storage
+            .remove_batch_by_prefix(ctx, storage_scope.clone(), &key_environment(id))
+            .await
         {
-            let storage_scope = StorageScope::Workspace(workspace_id.inner());
-            // Clean all the metadata and variables related to the deleted environment
-            if let Err(e) = self
-                .storage
-                .remove_batch_by_prefix(ctx, storage_scope.clone(), &key_environment(&desc.id))
-                .await
-            {
-                tracing::warn!("failed to remove environment data from the db: {}", e);
-            }
+            tracing::warn!("failed to remove environment data from the db: {}", e);
         }
 
         Ok(())
-    }
-}
-
-#[async_trait]
-impl EnvironmentInitializeOp for EnvironmentService {
-    async fn initialize(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
-        params: CreateEnvironmentItemParams,
-    ) -> joinerror::Result<PathBuf> {
-        self.initialize_environment(ctx, workspace_id, params).await
     }
 }

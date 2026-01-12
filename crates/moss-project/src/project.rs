@@ -292,6 +292,7 @@ impl Project {
         Ok(())
     }
 
+    // TODO: Extract the logic into project service
     pub async fn details(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<ProjectDetails> {
         let manifest_path = self.abs_path().join(MANIFEST_FILE_NAME);
         let rdr = self

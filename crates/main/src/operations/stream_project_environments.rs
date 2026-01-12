@@ -1,23 +1,29 @@
+use crate::MainWindow;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
 use moss_environment::AnyEnvironment;
+use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::main::environment::{
     EnvironmentGroup, StreamEnvironmentsEvent, StreamEnvironmentsOutput,
+    StreamProjectEnvironmentsInput, StreamProjectEnvironmentsOutput,
 };
-use std::error::Error;
 use tauri::ipc::Channel as TauriChannel;
 
-use crate::{MainWindow, workspace::GLOBAL_ACTIVE_ENVIRONMENT_KEY};
-
 impl<R: AppRuntime> MainWindow<R> {
-    pub async fn stream_environments(
+    pub async fn stream_project_environments(
         &self,
         ctx: &R::AsyncContext,
+        input: StreamProjectEnvironmentsInput,
         channel: TauriChannel<StreamEnvironmentsEvent>,
-    ) -> joinerror::Result<StreamEnvironmentsOutput> {
-        let workspace = self.workspace.load();
-        let environments = workspace.environments(ctx).await?;
-        let active_environment = workspace.active_environment(ctx).await?;
+    ) -> joinerror::Result<StreamProjectEnvironmentsOutput> {
+        let project = self
+            .workspace
+            .load()
+            .project(ctx, &input.project_id)
+            .await?;
+
+        let environments = project.environments(ctx).await?;
+        let active_environment = project.active_environment(ctx).await?;
 
         let mut total_returned = 0;
         for environment in environments {
@@ -48,22 +54,6 @@ impl<R: AppRuntime> MainWindow<R> {
             }
         }
 
-        Ok(StreamEnvironmentsOutput {
-            // FIXME: Remove the concept of environment group
-            groups: workspace
-                .environment_groups(ctx)
-                .await?
-                .into_iter()
-                .map(|group_id| {
-                    EnvironmentGroup {
-                        project_id: group_id.inner(),
-                        // FIXME: These should be removed from the backend
-                        expanded: false,
-                        order: None,
-                    }
-                })
-                .collect(),
-            total_returned,
-        })
+        Ok(StreamProjectEnvironmentsOutput { total_returned })
     }
 }

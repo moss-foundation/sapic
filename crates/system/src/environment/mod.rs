@@ -22,6 +22,7 @@ use crate::{
     environment::environment_service::CreateEnvironmentItemParams, project::LookedUpProject,
 };
 
+pub mod app_environment_service;
 pub mod environment_edit_service;
 pub mod environment_service;
 
@@ -45,40 +46,39 @@ pub struct EnvironmentItemDescription {
 
 pub struct LookedUpEnvironment {
     pub id: EnvironmentId,
-    pub project_id: Option<ProjectId>,
+    // pub project_id: Option<ProjectId>,
     pub internal_abs_path: PathBuf,
 }
 
 #[async_trait]
 pub trait EnvironmentServiceFs: Send + Sync {
-    async fn switch_workspace(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
-    ) -> joinerror::Result<()>;
+    // async fn switch_workspace(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     workspace_id: &WorkspaceId,
+    // ) -> joinerror::Result<()>;
 
-    async fn add_source(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        project_id: &ProjectId,
-        source_path: &Path,
-    ) -> joinerror::Result<()>;
-
-    async fn remove_source(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        project_id: &ProjectId,
-    ) -> joinerror::Result<()>;
+    // async fn add_source(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     project_id: &ProjectId,
+    //     source_path: &Path,
+    // ) -> joinerror::Result<()>;
+    //
+    // async fn remove_source(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     project_id: &ProjectId,
+    // ) -> joinerror::Result<()>;
 
     async fn lookup_environments(
         &self,
         ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<LookedUpEnvironment>>;
 
-    async fn initialize_environment(
+    async fn create_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
-        workspace_id: &WorkspaceId,
         id: &EnvironmentId,
         params: &CreateEnvironmentFsParams,
     ) -> joinerror::Result<PathBuf>;
@@ -89,8 +89,21 @@ pub trait EnvironmentServiceFs: Send + Sync {
     async fn remove_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
-        path: &Path,
+        id: &EnvironmentId,
     ) -> joinerror::Result<()>;
+}
+
+// This is only used by the app to create predefined environments after creating a workspace
+// Since at that moment we don't immediately get the workspace handle
+#[async_trait]
+pub trait AppEnvironmentServiceFs: Send + Sync {
+    async fn create_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        workspace_id: &WorkspaceId,
+        id: &EnvironmentId,
+        params: &CreateEnvironmentFsParams,
+    ) -> joinerror::Result<PathBuf>;
 }
 
 pub struct EnvironmentEditParams {
@@ -112,8 +125,8 @@ pub trait EnvironmentEditBackend: Send + Sync {
 
 // This is used by Welcome and Main window to create predefined environments when creating a new workspace
 #[async_trait]
-pub trait EnvironmentInitializeOp: Send + Sync {
-    async fn initialize(
+pub trait EnvironmentCreateOp: Send + Sync {
+    async fn create(
         &self,
         ctx: &dyn AnyAsyncContext,
         workspace_id: &WorkspaceId,

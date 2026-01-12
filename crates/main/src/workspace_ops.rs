@@ -1,6 +1,6 @@
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::{
-    environment::EnvironmentInitializeOp,
+    environment::EnvironmentCreateOp,
     workspace::{CreatedWorkspace, WorkspaceCreateOp},
 };
 use std::sync::Arc;

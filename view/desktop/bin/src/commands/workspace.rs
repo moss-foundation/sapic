@@ -7,8 +7,9 @@ use sapic_ipc::contracts::main::{
         ActivateEnvironmentInput, ActivateEnvironmentOutput, BatchUpdateEnvironmentGroupInput,
         BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput, CreateEnvironmentInput,
         CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput,
-        StreamEnvironmentsEvent, StreamEnvironmentsOutput, UpdateEnvironmentGroupInput,
-        UpdateEnvironmentInput, UpdateEnvironmentOutput,
+        StreamEnvironmentsEvent, StreamEnvironmentsOutput, StreamProjectEnvironmentsInput,
+        StreamProjectEnvironmentsOutput, UpdateEnvironmentGroupInput, UpdateEnvironmentInput,
+        UpdateEnvironmentOutput,
     },
     project::{
         ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput,
@@ -19,7 +20,6 @@ use sapic_ipc::contracts::main::{
     },
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
-
 // Project
 
 #[tauri::command(async)]
@@ -227,6 +227,30 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, _, _, window| async move { window.stream_environments(&ctx, channel).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
+pub async fn stream_project_environments<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: StreamProjectEnvironmentsInput,
+    channel: TauriChannel<StreamEnvironmentsEvent>,
+    options: Options,
+) -> joinerror::Result<StreamProjectEnvironmentsOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move {
+            window
+                .stream_project_environments(&ctx, input, channel)
+                .await
+        },
     )
     .await
 }

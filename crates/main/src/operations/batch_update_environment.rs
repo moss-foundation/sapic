@@ -18,7 +18,14 @@ impl<R: AppRuntime> MainWindow<R> {
         let mut ids = Vec::new();
         for item_params in input.items {
             let id = item_params.id.clone();
-            workspace.update_environment(ctx, item_params).await?;
+
+            if let Some(project_id) = &item_params.project_id {
+                let project = workspace.project(ctx, project_id).await?;
+                project.update_environment(ctx, item_params).await?;
+            } else {
+                workspace.update_environment(ctx, item_params).await?;
+            }
+
             ids.push(id);
         }
 

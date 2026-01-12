@@ -55,6 +55,7 @@ pub struct DescribeEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct ActivateEnvironmentInput {
+    pub project_id: Option<ProjectId>,
     pub environment_id: EnvironmentId,
 }
 
@@ -118,6 +119,7 @@ pub struct UpdateEnvironmentGroupParams {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
 pub struct UpdateEnvironmentParams {
+    pub project_id: Option<ProjectId>,
     pub id: EnvironmentId,
     pub name: Option<String>,
     pub order: Option<isize>,
@@ -173,6 +175,7 @@ pub struct BatchUpdateEnvironmentOutput {
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEnvironmentInput {
+    pub project_id: Option<ProjectId>,
     pub id: EnvironmentId,
 }
 
@@ -194,6 +197,25 @@ pub struct DeleteEnvironmentOutput {
 pub struct StreamEnvironmentsOutput {
     pub groups: Vec<EnvironmentGroup>,
 
+    #[serde(skip)]
+    #[ts(skip)]
+    pub total_returned: usize,
+}
+
+// Stream Project Environments
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamProjectEnvironmentsInput {
+    pub project_id: ProjectId,
+}
+
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct StreamProjectEnvironmentsOutput {
     #[serde(skip)]
     #[ts(skip)]
     pub total_returned: usize,

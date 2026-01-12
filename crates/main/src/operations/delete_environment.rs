@@ -10,7 +10,12 @@ impl<R: AppRuntime> MainWindow<R> {
     ) -> joinerror::Result<DeleteEnvironmentOutput> {
         let workspace = self.workspace.load();
 
-        workspace.delete_environment(ctx, &input.id).await?;
+        if let Some(project_id) = input.project_id {
+            let project = workspace.project(ctx, &project_id).await?;
+            project.delete_environment(ctx, &input.id).await?;
+        } else {
+            workspace.delete_environment(ctx, &input.id).await?;
+        }
 
         Ok(DeleteEnvironmentOutput { id: input.id })
     }

@@ -35,6 +35,7 @@ pub struct Environment {
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) storage: Arc<dyn KvStorage>,
     pub(super) abs_path: PathBuf,
+    // FIXME: Should project environments be stored in the project database?
     // Environment variables are stored in workspace database
     // We use Arc<String> instead of WorkspaceId to avoid circular dependency
     pub(super) workspace_id: Arc<String>,

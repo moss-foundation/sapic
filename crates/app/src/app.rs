@@ -23,11 +23,16 @@ use sapic_main::{
     workspace_ops::MainWindowWorkspaceOps,
 };
 use sapic_onboarding::OnboardingWindow;
-use sapic_platform::project::project_service_fs::ProjectServiceFs;
+use sapic_platform::{
+    environment::environment_service_fs::EnvironmentServiceFs,
+    project::project_service_fs::ProjectServiceFs,
+};
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
-    environment::environment_service::EnvironmentService,
+    environment::{
+        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
+    },
     language::language_service::LanguageService,
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
@@ -81,7 +86,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 pub struct AppServices {
     pub workspace_service: Arc<WorkspaceService>,
     pub workspace_edit_service: Arc<WorkspaceEditService>,
-    pub environment_service: Arc<EnvironmentService>,
+    pub environment_service: Arc<AppEnvironmentService>,
     pub theme_service: Arc<ThemeService>,
     pub language_service: Arc<LanguageService>,
     pub extension_api_service: Arc<ExtensionsApiService>,
@@ -198,6 +203,18 @@ impl<R: AppRuntime> App<R> {
             self.storage.clone(),
         );
 
+        let environments_path = abs_path.join("environments");
+        let environment_service = EnvironmentService::new(
+            workspace_id.clone(),
+            None,
+            Arc::new(EnvironmentServiceFs::new(
+                environments_path,
+                self.fs.clone(),
+            )),
+            self.storage.clone(),
+        )
+        .into();
+
         let workspace = Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
             abs_path,
@@ -208,7 +225,7 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             project_service,
-            self.services.environment_service.clone(),
+            environment_service,
         ));
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
@@ -242,11 +259,6 @@ impl<R: AppRuntime> App<R> {
             tracing::warn!("Failed to set focus to main window: {}", err);
         }
 
-        self.services
-            .environment_service
-            .open_workspace(ctx, &workspace_id)
-            .await?;
-
         Ok(())
     }
 
@@ -277,6 +289,18 @@ impl<R: AppRuntime> App<R> {
             self.storage.clone(),
         );
 
+        let environments_path = abs_path.join("environments");
+        let environment_service = EnvironmentService::new(
+            workspace_id.clone(),
+            None,
+            Arc::new(EnvironmentServiceFs::new(
+                environments_path,
+                self.fs.clone(),
+            )),
+            self.storage.clone(),
+        )
+        .into();
+
         let workspace = Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
             abs_path,
@@ -287,7 +311,7 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             project_service,
-            self.services.environment_service.clone(),
+            environment_service,
         ));
 
         let old_window = OldSapicWindowBuilder::new(
@@ -305,11 +329,6 @@ impl<R: AppRuntime> App<R> {
         self.windows
             .swap_main_window_workspace(ctx, label, workspace, old_window)
             .await;
-
-        self.services
-            .environment_service
-            .open_workspace(ctx, &workspace_id)
-            .await?;
 
         Ok(())
     }

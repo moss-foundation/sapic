@@ -14,20 +14,15 @@ impl<R: AppRuntime> MainWindow<R> {
         input: CreateEnvironmentInput,
     ) -> joinerror::Result<CreateEnvironmentOutput> {
         input.validate().join_err_bare()?;
+
         let workspace = self.workspace.load();
 
-        let result = workspace
-            .create_environment(
-                ctx,
-                CreateEnvironmentInput {
-                    project_id: input.project_id,
-                    name: input.name,
-                    order: input.order,
-                    color: input.color,
-                    variables: input.variables,
-                },
-            )
-            .await?;
+        let result = if let Some(project_id) = &input.project_id {
+            let project = workspace.project(ctx, &project_id).await?;
+            project.create_environment(ctx, input).await?
+        } else {
+            workspace.create_environment(ctx, input).await?
+        };
 
         Ok(CreateEnvironmentOutput {
             id: result.id,
