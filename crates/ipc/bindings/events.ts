@@ -30,6 +30,22 @@ export type ActivityEvent =
 /**
  * @category Event
  */
+export type StreamEnvironmentsEvent = {
+  id: string;
+  /**
+   * The id of the project that the environment belongs to.
+   * If the environment is global, this will be `None`.
+   */
+  projectId?: string;
+  isActive: boolean;
+  name: string;
+  order?: number;
+  totalVariables: number;
+};
+
+/**
+ * @category Event
+ */
 export type StreamProjectsEvent = {
   id: string;
   name: string;

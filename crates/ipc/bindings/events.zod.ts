@@ -2,6 +2,15 @@
 import { localizedStringSchema, notificationLocationSchema } from "@repo/base";
 import { z } from "zod";
 import { branchInfoSchema } from "./types.zod";
+
+export const streamEnvironmentsEventSchema = z.object({
+  id: z.string(),
+  projectId: z.string().optional(),
+  isActive: z.boolean(),
+  name: z.string(),
+  order: z.number().optional(),
+  totalVariables: z.number(),
+});
 export const activityEventSchema = z.union([
   z.object({
     "oneshot": z.object({

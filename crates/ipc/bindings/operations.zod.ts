@@ -8,17 +8,32 @@ import {
   extensionInfoSchema,
   languageInfoSchema,
   themeIdSchema,
+  variableInfoSchema,
 } from "@repo/base";
 import { changePathSchema, changeStringSchema, jsonValueSchema } from "@repo/moss-bindingutils";
 import { z } from "zod";
 import {
+  addVariableParamsSchema,
   contributorSchema,
   createProjectGitParamsSchema,
+  environmentGroupSchema,
   importProjectSourceSchema,
+  updateEnvironmentGroupParamsSchema,
+  updateEnvironmentParamsSchema,
   updateProjectParamsSchema,
+  updateVariableParamsSchema,
   vcsInfoSchema,
   workspaceInfoSchema,
 } from "./types.zod";
+
+export const activateEnvironmentInputSchema = z.object({
+  projectId: z.string().optional(),
+  environmentId: z.string(),
+});
+
+export const activateEnvironmentOutputSchema = z.object({
+  environmentId: z.string(),
+});
 
 export const archiveProjectInputSchema = z.object({
   id: z.string(),
@@ -26,6 +41,10 @@ export const archiveProjectInputSchema = z.object({
 
 export const archiveProjectOutputSchema = z.object({
   id: z.string(),
+});
+
+export const batchUpdateEnvironmentOutputSchema = z.object({
+  ids: z.array(z.string()),
 });
 
 export const batchUpdateProjectOutputSchema = z.object({
@@ -36,12 +55,29 @@ export const cancelRequestInputSchema = z.object({
   request_id: z.string(),
 });
 
+export const createEnvironmentOutputSchema = z.object({
+  id: z.string(),
+  projectId: z.string().optional(),
+  name: z.string(),
+  order: z.number().optional(),
+  color: z.string().optional(),
+});
+
 export const createProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
   order: z.number().optional(),
   expanded: z.boolean(),
   iconPath: z.string().optional(),
+});
+
+export const deleteEnvironmentInputSchema = z.object({
+  projectId: z.string().optional(),
+  id: z.string(),
+});
+
+export const deleteEnvironmentOutputSchema = z.object({
+  id: z.string(),
 });
 
 export const deleteProjectInputSchema = z.object({
@@ -57,6 +93,10 @@ export const deleteWorkspaceInputSchema = z.object({
 });
 
 export const deleteWorkspaceOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const describeEnvironmentInputSchema = z.object({
   id: z.string(),
 });
 
@@ -99,6 +139,12 @@ export const removeUserAccountInputSchema = z.object({
   id: z.string(),
 });
 
+export const streamProjectEnvironmentsInputSchema = z.object({
+  projectId: z.string(),
+});
+
+export const streamProjectEnvironmentsOutputSchema = z.object({});
+
 export const streamProjectsOutputSchema = z.object({});
 
 export const unarchiveProjectInputSchema = z.object({
@@ -106,6 +152,16 @@ export const unarchiveProjectInputSchema = z.object({
 });
 
 export const unarchiveProjectOutputSchema = z.object({
+  id: z.string(),
+});
+
+export const updateEnvironmentGroupInputSchema = z.object({
+  projectId: z.string(),
+  expanded: z.boolean().optional(),
+  order: z.number().optional(),
+});
+
+export const updateEnvironmentOutputSchema = z.object({
   id: z.string(),
 });
 
@@ -123,8 +179,24 @@ export const addUserAccountInputSchema = z.object({
   pat: z.string().optional(),
 });
 
+export const batchUpdateEnvironmentGroupInputSchema = z.object({
+  items: z.array(updateEnvironmentGroupParamsSchema),
+});
+
+export const batchUpdateEnvironmentInputSchema = z.object({
+  items: z.array(updateEnvironmentParamsSchema),
+});
+
 export const batchUpdateProjectInputSchema = z.object({
   items: z.array(updateProjectParamsSchema),
+});
+
+export const createEnvironmentInputSchema = z.object({
+  projectId: z.string().optional(),
+  name: z.string(),
+  order: z.number(),
+  color: z.string().optional(),
+  variables: z.array(addVariableParamsSchema),
 });
 
 export const createProjectInputSchema = z.object({
@@ -133,6 +205,10 @@ export const createProjectInputSchema = z.object({
   externalPath: z.string().optional(),
   gitParams: createProjectGitParamsSchema.optional(),
   iconPath: z.string().optional(),
+});
+
+export const describeEnvironmentOutputSchema = z.object({
+  variables: variableInfoSchema,
 });
 
 export const describeProjectOutputSchema = z.object({
@@ -173,10 +249,25 @@ export const listUserAccountsOutputSchema = z.object({
 
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
 
+export const streamEnvironmentsOutputSchema = z.object({
+  groups: z.array(environmentGroupSchema),
+});
+
+export const updateEnvironmentInputSchema = z.object({
+  projectId: z.string().optional(),
+  id: z.string(),
+  name: z.string().optional(),
+  order: z.number().optional(),
+  color: changeStringSchema.optional(),
+  expanded: z.boolean().optional(),
+  varsToAdd: z.array(addVariableParamsSchema),
+  varsToUpdate: z.array(updateVariableParamsSchema),
+  varsToDelete: z.array(z.string()),
+});
+
 export const updateProjectInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
-  repository: changeStringSchema.optional(),
   iconPath: changePathSchema.optional(),
   order: z.number().optional(),
   expanded: z.boolean().optional(),
