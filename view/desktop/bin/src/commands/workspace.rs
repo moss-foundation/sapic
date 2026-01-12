@@ -1,38 +1,26 @@
+use crate::commands::primitives::*;
 use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
-use moss_workspace::models::{events::*, operations::*};
-use sapic_ipc::contracts::main::project::{
-    ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput, BatchUpdateProjectOutput,
-    DeleteProjectInput, DeleteProjectOutput, DescribeProjectInput, DescribeProjectOutput,
-    ExportProjectInput, ExportProjectOutput, ImportProjectInput, ImportProjectOutput,
-    UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput, UpdateProjectOutput,
+use moss_workspace::models::operations::*;
+use sapic_ipc::contracts::main::{
+    environment::{
+        ActivateEnvironmentInput, ActivateEnvironmentOutput, BatchUpdateEnvironmentGroupInput,
+        BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput, CreateEnvironmentInput,
+        CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput,
+        StreamEnvironmentsEvent, StreamEnvironmentsOutput, UpdateEnvironmentGroupInput,
+        UpdateEnvironmentInput, UpdateEnvironmentOutput,
+    },
+    project::{
+        ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput,
+        BatchUpdateProjectOutput, DeleteProjectInput, DeleteProjectOutput, DescribeProjectInput,
+        DescribeProjectOutput, ExportProjectInput, ExportProjectOutput, ImportProjectInput,
+        ImportProjectOutput, UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput,
+        UpdateProjectOutput,
+    },
 };
 use tauri::{Window, ipc::Channel as TauriChannel};
 
-use crate::commands::primitives::*;
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_environments<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    channel: TauriChannel<StreamEnvironmentsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamEnvironmentsOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .stream_environments(&ctx, app_delegate, channel)
-                .await
-        },
-    )
-    .await
-}
+// Project
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
@@ -223,6 +211,26 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
     .await
 }
 
+// Environment
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
+pub async fn stream_environments<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    channel: TauriChannel<StreamEnvironmentsEvent>,
+    options: Options,
+) -> joinerror::Result<StreamEnvironmentsOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move { window.stream_environments(&ctx, channel).await },
+    )
+    .await
+}
+
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn activate_environment<'a, R: tauri::Runtime>(
@@ -232,16 +240,12 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
     input: ActivateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<ActivateEnvironmentOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .activate_environment::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.activate_environment(&ctx, input).await },
     )
     .await
 }
@@ -255,16 +259,12 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
     input: CreateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<CreateEnvironmentOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, appp_delegate, workspace| async move {
-            workspace
-                .create_environment::<TauriAppRuntime<R>>(&ctx, appp_delegate, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.create_environment(&ctx, input).await },
     )
     .await
 }
@@ -278,16 +278,12 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<UpdateEnvironmentOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .update_environment::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.update_environment(&ctx, input).await },
     )
     .await
 }
@@ -301,16 +297,12 @@ pub async fn batch_update_environment<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<BatchUpdateEnvironmentOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .batch_update_environment::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.batch_update_environment(&ctx, input).await },
     )
     .await
 }
@@ -324,16 +316,12 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
     input: DeleteEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<DeleteEnvironmentOutput> {
-    super::with_workspace_timeout(
+    super::with_main_window_timeout(
         ctx.inner(),
         app,
         window,
         options,
-        |ctx, _, workspace| async move {
-            workspace
-                .delete_environment::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
+        |ctx, _, _, window| async move { window.delete_environment(&ctx, input).await },
     )
     .await
 }
@@ -347,18 +335,21 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     input: UpdateEnvironmentGroupInput,
     options: Options,
 ) -> joinerror::Result<()> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move {
-            workspace
-                .update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
-    )
-    .await
+    // super::with_workspace_timeout(
+    //     ctx.inner(),
+    //     app,
+    //     window,
+    //     options,
+    //     |ctx, _, workspace| async move {
+    //         workspace
+    //             .update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
+    //             .await
+    //     },
+    // )
+    // .await
+    unimplemented!(
+        "I think there's no need to update environment group since we removed order and expanded update logic from the backend"
+    );
 }
 
 #[tauri::command(async)]
@@ -370,16 +361,19 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     input: BatchUpdateEnvironmentGroupInput,
     options: Options,
 ) -> joinerror::Result<()> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, workspace| async move {
-            workspace
-                .batch_update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
-                .await
-        },
-    )
-    .await
+    // super::with_workspace_timeout(
+    //     ctx.inner(),
+    //     app,
+    //     window,
+    //     options,
+    //     |ctx, _, workspace| async move {
+    //         workspace
+    //             .batch_update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
+    //             .await
+    //     },
+    // )
+    // .await
+    unimplemented!(
+        "I think there's no need to update environment group since we removed order and expanded update logic from the backend"
+    );
 }

@@ -1,5 +1,8 @@
 use sapic_core::context::AnyAsyncContext;
-use sapic_system::workspace::{CreatedWorkspace, WorkspaceCreateOp};
+use sapic_system::{
+    environment::EnvironmentInitializeOp,
+    workspace::{CreatedWorkspace, WorkspaceCreateOp},
+};
 use std::sync::Arc;
 
 #[derive(Clone)]

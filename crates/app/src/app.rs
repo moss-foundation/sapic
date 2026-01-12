@@ -5,6 +5,9 @@ pub mod command;
 pub mod operations;
 pub mod windows;
 
+use crate::{
+    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
+};
 use derive_more::Deref;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
@@ -15,12 +18,16 @@ use moss_storage2::KvStorage;
 use moss_text::ReadOnlyStr;
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
-use sapic_main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_main::{
+    MainWindow, environment_ops::MainWindowEnvironmentOps, workspace::RuntimeWorkspace,
+    workspace_ops::MainWindowWorkspaceOps,
+};
 use sapic_onboarding::OnboardingWindow;
 use sapic_platform::project::project_service_fs::ProjectServiceFs;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
+    environment::environment_service::EnvironmentService,
     language::language_service::LanguageService,
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
@@ -32,7 +39,10 @@ use sapic_system::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
 };
-use sapic_welcome::{WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps};
+use sapic_welcome::{
+    WelcomeWindow, environment_ops::WelcomeWindowEnvironmentOps,
+    workspace_ops::WelcomeWindowWorkspaceOps,
+};
 use sapic_window::OldSapicWindowBuilder;
 use sapic_window2::AppWindowApi;
 use std::{
@@ -40,10 +50,6 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
-
-use crate::{
-    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
-};
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))
@@ -75,6 +81,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 pub struct AppServices {
     pub workspace_service: Arc<WorkspaceService>,
     pub workspace_edit_service: Arc<WorkspaceEditService>,
+    pub environment_service: Arc<EnvironmentService>,
     pub theme_service: Arc<ThemeService>,
     pub language_service: Arc<LanguageService>,
     pub extension_api_service: Arc<ExtensionsApiService>,
@@ -124,9 +131,11 @@ impl<R: AppRuntime> App<R> {
                 self.services.workspace_service.clone(),
                 self.services.workspace_edit_service.clone(),
             );
+            let environment_ops =
+                WelcomeWindowEnvironmentOps::new(self.services.environment_service.clone());
             let welcome_window = self
                 .windows
-                .create_welcome_window(delegate, workspace_ops)
+                .create_welcome_window(delegate, workspace_ops, environment_ops)
                 .await?;
             if let Err(err) = welcome_window.set_focus() {
                 tracing::warn!("Failed to set focus to welcome window: {}", err);
@@ -199,6 +208,7 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             project_service,
+            self.services.environment_service.clone(),
         ));
         let old_window = OldSapicWindowBuilder::new(
             self.fs.clone(),
@@ -214,14 +224,28 @@ impl<R: AppRuntime> App<R> {
 
         let workspace_ops = MainWindowWorkspaceOps::new(self.services.workspace_service.clone());
 
+        let environment_ops =
+            MainWindowEnvironmentOps::new(self.services.environment_service.clone());
+
         let main_window = self
             .windows
-            .create_main_window(delegate, old_window, workspace, workspace_ops)
+            .create_main_window(
+                delegate,
+                old_window,
+                workspace,
+                workspace_ops,
+                environment_ops,
+            )
             .await?;
 
         if let Err(err) = main_window.handle.set_focus() {
             tracing::warn!("Failed to set focus to main window: {}", err);
         }
+
+        self.services
+            .environment_service
+            .open_workspace(ctx, &workspace_id)
+            .await?;
 
         Ok(())
     }
@@ -263,6 +287,7 @@ impl<R: AppRuntime> App<R> {
             self.github_api_client.clone(),
             self.gitlab_api_client.clone(),
             project_service,
+            self.services.environment_service.clone(),
         ));
 
         let old_window = OldSapicWindowBuilder::new(
@@ -279,7 +304,14 @@ impl<R: AppRuntime> App<R> {
 
         self.windows
             .swap_main_window_workspace(ctx, label, workspace, old_window)
-            .await
+            .await;
+
+        self.services
+            .environment_service
+            .open_workspace(ctx, &workspace_id)
+            .await?;
+
+        Ok(())
     }
 
     pub async fn main_window(&self, label: &str) -> Option<MainWindow<R>> {

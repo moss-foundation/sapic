@@ -1,7 +1,6 @@
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
-use moss_environment::builder::{CreateEnvironmentParams, EnvironmentBuilder};
 use moss_fs::{CreateOptions, FileSystem};
 use moss_storage2::KvStorage;
 use rustc_hash::FxHashMap;
@@ -110,22 +109,22 @@ impl WorkspaceBuilder {
         .await
         .join_err::<()>("failed to create manifest file")?;
 
-        for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(workspace_id.inner(), fs.clone(), storage.clone())
-                .initialize(
-                    ctx,
-                    CreateEnvironmentParams {
-                        name: env.name.clone(),
-                        abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
-                        color: env.color.clone(),
-                        variables: vec![],
-                    },
-                )
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to initialize environment `{}`", env.name)
-                })?;
-        }
+        // for env in PREDEFINED_ENVIRONMENTS.iter() {
+        //     EnvironmentBuilder::new(workspace_id.inner(), fs.clone(), storage.clone())
+        //         .initialize(
+        //             ctx,
+        //             CreateEnvironmentParams {
+        //                 name: env.name.clone(),
+        //                 abs_path: &params.abs_path.join(dirs::ENVIRONMENTS_DIR),
+        //                 color: env.color.clone(),
+        //                 variables: vec![],
+        //             },
+        //         )
+        //         .await
+        //         .join_err_with::<()>(|| {
+        //             format!("failed to initialize environment `{}`", env.name)
+        //         })?;
+        // }
 
         Ok(())
     }

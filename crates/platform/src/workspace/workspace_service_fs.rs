@@ -1,4 +1,3 @@
-use crate::workspace::MANIFEST_FILE_NAME;
 use async_trait::async_trait;
 use joinerror::ResultExt;
 use moss_common::continue_if_err;
@@ -14,13 +13,9 @@ use sapic_core::context::AnyAsyncContext;
 use sapic_system::workspace::{LookedUpWorkspace, WorkspaceServiceFs as WorkspaceServiceFsPort};
 use std::{cell::LazyCell, path::PathBuf, sync::Arc};
 
+use crate::workspace::MANIFEST_FILE_NAME;
+
 const WORKSPACE_DIRS: &[&str] = &["projects", "environments"];
-const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
-    vec![PredefinedEnvironment {
-        name: "Globals".to_string(),
-        color: Some("#3574F0".to_string()),
-    }]
-});
 
 pub struct WorkspaceServiceFs {
     workspaces_dir: PathBuf,
@@ -91,8 +86,6 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
         ctx: &dyn AnyAsyncContext,
         id: &WorkspaceId,
         name: &str,
-        // FIXME: Passing the store here is a temporary solution until we move the environment creation out of this function.
-        storage: Arc<dyn KvStorage>,
     ) -> joinerror::Result<PathBuf> {
         let abs_path = self.workspaces_dir.join(id.as_str());
         if abs_path.exists() {
@@ -111,23 +104,6 @@ impl WorkspaceServiceFsPort for WorkspaceServiceFs {
                 .create_dir_with_rollback(ctx, &mut rb, &abs_path.join(dir))
                 .await
                 .join_err::<()>("failed to create workspace directory")?;
-        }
-
-        for env in PREDEFINED_ENVIRONMENTS.iter() {
-            EnvironmentBuilder::new(id.inner(), self.fs.clone(), storage.clone())
-                .initialize(
-                    ctx,
-                    CreateEnvironmentParams {
-                        name: env.name.clone(),
-                        abs_path: &abs_path.join("environments"),
-                        color: env.color.clone(),
-                        variables: vec![],
-                    },
-                )
-                .await
-                .join_err_with::<()>(|| {
-                    format!("failed to initialize environment `{}`", env.name)
-                })?;
         }
 
         self.fs
@@ -216,7 +192,7 @@ mod tests {
         let id = WorkspaceId::new();
 
         let workspace_path = service_fs
-            .create_workspace(&ctx, &id, &random_string(10), storage.clone())
+            .create_workspace(&ctx, &id, &random_string(10))
             .await
             .unwrap();
 
@@ -237,10 +213,7 @@ mod tests {
         let (ctx, service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
         let id = WorkspaceId::new();
 
-        let workspace_path = service_fs
-            .create_workspace(&ctx, &id, "", storage.clone())
-            .await
-            .unwrap();
+        let workspace_path = service_fs.create_workspace(&ctx, &id, "").await.unwrap();
 
         assert!(workspace_path.exists());
         for dir in WORKSPACE_DIRS {
@@ -259,12 +232,12 @@ mod tests {
         let id = WorkspaceId::new();
 
         service_fs
-            .create_workspace(&ctx, &id, &random_string(10), storage.clone())
+            .create_workspace(&ctx, &id, &random_string(10))
             .await
             .unwrap();
 
         let result = service_fs
-            .create_workspace(&ctx, &id, &random_string(10), storage.clone())
+            .create_workspace(&ctx, &id, &random_string(10))
             .await;
 
         assert!(result.is_err());
@@ -280,7 +253,7 @@ mod tests {
         let id = WorkspaceId::new();
 
         let workspace_path = service_fs
-            .create_workspace(&ctx, &id, &random_string(10), storage.clone())
+            .create_workspace(&ctx, &id, &random_string(10))
             .await
             .unwrap();
 
@@ -324,10 +297,7 @@ mod tests {
         let (ctx, service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
         let id = WorkspaceId::new();
         let name = random_string(10);
-        let workspace_path = service_fs
-            .create_workspace(&ctx, &id, &name, storage.clone())
-            .await
-            .unwrap();
+        let workspace_path = service_fs.create_workspace(&ctx, &id, &name).await.unwrap();
 
         let workspaces = service_fs.lookup_workspaces(&ctx).await.unwrap();
 
@@ -346,10 +316,7 @@ mod tests {
         let (ctx, service_fs, storage, test_path) = setup_test_workspace_service_fs().await;
         let id = WorkspaceId::new();
         let name = random_string(10);
-        service_fs
-            .create_workspace(&ctx, &id, &name, storage.clone())
-            .await
-            .unwrap();
+        service_fs.create_workspace(&ctx, &id, &name).await.unwrap();
 
         service_fs.delete_workspace(&ctx, &id).await.unwrap();
 

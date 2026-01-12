@@ -94,7 +94,6 @@ pub struct Project {
     pub(super) storage: Arc<dyn KvStorage>,
     pub(super) internal_abs_path: Arc<Path>,
     pub(super) external_abs_path: Option<Arc<Path>>,
-    pub(super) edit: ProjectEdit,
     pub(super) worktree: OnceCell<Arc<Worktree>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) vcs: OnceCell<Vcs>,
@@ -169,6 +168,7 @@ impl Project {
         // Since it will trigger spurious git2 type errors
         {
             let account_id = client.account_id();
+            // FIXME: This should probably be removed in favor of project edit service?
             self.modify_config(
                 ctx,
                 ProjectConfigModifyParams {
@@ -328,43 +328,6 @@ impl Project {
             archived: config.archived,
             account_id: config.account_id,
         })
-    }
-
-    pub async fn modify(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        params: ProjectModifyParams,
-    ) -> joinerror::Result<()> {
-        let mut patches = Vec::new();
-
-        if let Some(new_name) = params.name {
-            patches.push((
-                PatchOperation::Replace(ReplaceOperation {
-                    path: unsafe { PointerBuf::new_unchecked("/name") },
-                    value: JsonValue::String(new_name),
-                }),
-                EditOptions {
-                    create_missing_segments: false,
-                    ignore_if_not_exists: false,
-                },
-            ));
-        }
-
-        match params.icon_path {
-            None => {}
-            Some(ChangePath::Update(new_icon_path)) => {
-                self.set_icon_service.set_icon(&new_icon_path)?;
-            }
-            Some(ChangePath::Remove) => {
-                self.set_icon_service.remove_icon(ctx).await?;
-            }
-        }
-        self.edit
-            .edit(ctx, &patches)
-            .await
-            .join_err::<()>("failed to edit project")?;
-
-        Ok(())
     }
 
     pub(crate) async fn modify_config(

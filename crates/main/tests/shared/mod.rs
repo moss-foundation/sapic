@@ -7,11 +7,10 @@ use moss_fs::RealFileSystem;
 use moss_keyring::KeyringClientImpl;
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::random_string;
-use moss_workspace::models::events::StreamProjectsEvent;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::ArcContext;
-use sapic_ipc::contracts::main::project::StreamProjectsOutput;
+use sapic_ipc::contracts::main::project::{StreamProjectsEvent, StreamProjectsOutput};
 use sapic_platform::{
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
     gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},

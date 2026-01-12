@@ -8,15 +8,18 @@ pub mod utils;
 
 pub use environment::Environment;
 
+use crate::models::types::{AddVariableParams, UpdateVariableParams};
 use moss_bindingutils::primitives::ChangeString;
 use sapic_base::environment::types::{
     VariableInfo,
     primitives::{EnvironmentId, VariableId},
 };
 use sapic_core::context::AnyAsyncContext;
-use std::{collections::HashMap, path::Path, sync::Arc};
-
-use crate::models::types::{AddVariableParams, UpdateVariableParams};
+use std::{
+    collections::HashMap,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 
 pub mod constants {
     pub const ENVIRONMENT_FILE_EXTENSION: &str = "env.sap";
@@ -70,12 +73,11 @@ pub struct DescribeEnvironment {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment {
-    async fn abs_path(&self) -> Arc<Path>;
-    async fn name(&self) -> joinerror::Result<String>;
+    async fn abs_path(&self) -> &Path;
     async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
-    async fn modify(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        params: ModifyEnvironmentParams,
-    ) -> joinerror::Result<()>;
+    // async fn modify(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     params: ModifyEnvironmentParams,
+    // ) -> joinerror::Result<()>;
 }

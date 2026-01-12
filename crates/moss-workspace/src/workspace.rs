@@ -94,17 +94,18 @@ impl Workspace {
         on_did_add_project_event
             .subscribe(move |event| {
                 let project_service_clone = project_service.clone();
-                let environment_service_clone = environment_service.clone();
+                // let environment_service_clone = environment_service.clone();
                 async move {
                     let project = project_service_clone.project(&event.project_id).await;
 
-                    if let Some(project) = project {
-                        environment_service_clone
-                            .add_source(event.project_id.inner(), project.environments_path())
-                            .await;
-                    } else {
-                        unreachable!()
-                    }
+                    todo!("Add source")
+                    // if let Some(project) = project {
+                    //     environment_service_clone
+                    //         .add_source(event.project_id.inner(), project.environments_path())
+                    //         .await;
+                    // } else {
+                    //     unreachable!()
+                    // }
                 }
             })
             .await
@@ -116,11 +117,12 @@ impl Workspace {
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
             .subscribe(move |event| {
-                let environment_service_clone = environment_service.clone();
+                // let environment_service_clone = environment_service.clone();
                 async move {
-                    environment_service_clone
-                        .remove_source(&event.project_id.inner())
-                        .await;
+                    todo!("Remove source")
+                    // environment_service_clone
+                    //     .remove_source(&event.project_id.inner())
+                    //     .await;
                 }
             })
             .await

@@ -1,5 +1,12 @@
 use async_trait::async_trait;
 use joinerror::{OptionExt, ResultExt};
+use moss_bindingutils::primitives::ChangeJsonValue;
+use moss_common::continue_if_err;
+use moss_environment::{
+    AnyEnvironment, Environment,
+    builder::{CreateEnvironmentParams, EnvironmentBuilder, EnvironmentLoadParams},
+    storage::{key_variable, key_variable_local_value},
+};
 use moss_fs::FileSystem;
 use moss_git::url::GitUrl;
 use moss_project::{
@@ -11,19 +18,38 @@ use moss_project::{
     git::GitClient,
 };
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
-use moss_workspace::storage::key_project;
-use rustc_hash::FxHashMap;
+use moss_workspace::storage::{KEY_ACTIVE_ENVIRONMENTS, key_project};
+use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::{
-    other::GitProviderKind, project::types::primitives::ProjectId,
-    user::types::primitives::AccountId, workspace::types::primitives::WorkspaceId,
+    environment::types::primitives::{EnvironmentId, VariableId},
+    other::GitProviderKind,
+    project::types::primitives::ProjectId,
+    user::types::primitives::AccountId,
+    workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
-use sapic_ipc::contracts::main::project::{
-    CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportDiskParams,
-    UpdateProjectParams,
+use sapic_ipc::contracts::main::{
+    environment::{
+        BatchUpdateEnvironmentInput, CreateEnvironmentInput, CreateEnvironmentOutput,
+        DeleteEnvironmentInput, StreamEnvironmentsEvent, StreamEnvironmentsOutput,
+        UpdateEnvironmentGroupParams, UpdateEnvironmentInput, UpdateEnvironmentOutput,
+        UpdateEnvironmentParams,
+    },
+    project::{
+        CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportDiskParams,
+        UpdateProjectParams,
+    },
 };
-use sapic_platform::project::project_edit_backend::ProjectFsEditBackend;
+use sapic_platform::{
+    environment::environment_edit_backend::EnvironmentFsEditBackend,
+    project::project_edit_backend::ProjectFsEditBackend,
+};
 use sapic_system::{
+    environment::{
+        EnvironmentEditParams, EnvironmentItemDescription,
+        environment_edit_service::EnvironmentEditService,
+        environment_service::{CreateEnvironmentItemParams, EnvironmentService},
+    },
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     project::{
         CreateProjectGitParams, ProjectConfigEditParams, ProjectEditParams,
@@ -35,16 +61,19 @@ use sapic_system::{
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
+use crate::environment::RuntimeEnvironment;
+
+const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
+
 #[derive(Clone)]
 pub struct RuntimeProject {
     pub id: ProjectId,
     pub handle: Arc<Project>,
 
     pub(crate) edit: ProjectEditService,
-    // edit: ProjectEditService
+
     pub order: Option<isize>,
 }
-
 #[async_trait]
 pub trait Workspace: Send + Sync {
     fn id(&self) -> WorkspaceId;
@@ -57,6 +86,7 @@ pub trait Workspace: Send + Sync {
         params: WorkspaceEditParams,
     ) -> joinerror::Result<()>;
 
+    // Project
     async fn create_project(
         &self,
         ctx: &dyn AnyAsyncContext,
@@ -121,6 +151,70 @@ pub trait Workspace: Send + Sync {
     ) -> joinerror::Result<RuntimeProject>;
 
     async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<RuntimeProject>>;
+
+    // Environment
+    async fn activate_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()>;
+
+    async fn create_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        input: CreateEnvironmentInput,
+    ) -> joinerror::Result<EnvironmentItemDescription>;
+
+    async fn delete_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()>;
+
+    async fn update_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: UpdateEnvironmentParams,
+    ) -> joinerror::Result<()>;
+
+    async fn batch_update_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        updates: Vec<UpdateEnvironmentParams>,
+    ) -> joinerror::Result<()>;
+
+    // I didn't migrate them
+    // since they seem to be only about updating the expand flag and order of env groups
+
+    // async fn update_environment_group(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     params: UpdateEnvironmentGroupParams,
+    // ) -> joinerror::Result<()>;
+    //
+    // async fn batch_update_environment_groups(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     updates: Vec<UpdateEnvironmentGroupParams>
+    // ) -> joinerror::Result<()>;
+
+    async fn environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<RuntimeEnvironment>;
+
+    // FIXME: For now I have kept the old behavior of streaming both workspace and project environments for consistency
+    // We will revisit this later
+    async fn environments(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<RuntimeEnvironment>>;
+
+    async fn active_environments(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<FxHashMap<Option<ProjectId>, EnvironmentId>>;
 }
 
 pub struct RuntimeWorkspace {
@@ -136,10 +230,16 @@ pub struct RuntimeWorkspace {
     global_gitlab_api: Arc<dyn GitLabApiClient>,
 
     project_service: ProjectService,
-
-    // environment_service
     projects: OnceCell<RwLock<FxHashMap<ProjectId, RuntimeProject>>>,
-    // environments: FxHashMap<EnvironmentId, Environment>
+
+    // FIXME: Is it correctly to have environment service created at app level and pass it to the workspace?
+    // The AppService needs the environment service to initialize predefined environments before a workspace is fully created
+    environment_service: Arc<EnvironmentService>,
+    environments: OnceCell<RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>>,
+    environment_groups: RwLock<FxHashSet<ProjectId>>,
+
+    // None indicates the global active environment for the workspace
+    active_environments: RwLock<FxHashMap<Option<ProjectId>, EnvironmentId>>,
 }
 
 impl RuntimeWorkspace {
@@ -153,6 +253,7 @@ impl RuntimeWorkspace {
         global_github_api: Arc<dyn GitHubApiClient>,
         global_gitlab_api: Arc<dyn GitLabApiClient>,
         project_service: ProjectService,
+        environment_service: Arc<EnvironmentService>,
     ) -> Self {
         Self {
             id,
@@ -165,6 +266,10 @@ impl RuntimeWorkspace {
             global_gitlab_api,
             project_service,
             projects: OnceCell::new(),
+            environment_service,
+            environments: OnceCell::new(),
+            environment_groups: RwLock::new(FxHashSet::default()),
+            active_environments: Default::default(),
         }
     }
 
@@ -184,13 +289,26 @@ impl RuntimeWorkspace {
                         project.id.clone(),
                     )
                     .await;
-                    let handle = builder
-                        .load(
-                            ctx,
-                            ProjectLoadParams {
-                                internal_abs_path: project.internal_abs_path.clone().into(),
-                            },
-                        )
+                    let handle = continue_if_err!(
+                        builder
+                            .load(
+                                ctx,
+                                ProjectLoadParams {
+                                    internal_abs_path: project.internal_abs_path.clone().into(),
+                                },
+                            )
+                            .await,
+                        |e| {
+                            tracing::warn!(
+                                "failed to load project '{}': {}",
+                                project.id.to_string(),
+                                e
+                            );
+                        }
+                    );
+
+                    self.environment_service
+                        .add_source(ctx, &project.id, &handle.abs_path().join("environments"))
                         .await?;
 
                     result.insert(
@@ -211,6 +329,79 @@ impl RuntimeWorkspace {
             })
             .await
             .join_err::<()>("failed to get projects")
+    }
+
+    async fn environments_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<&RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>> {
+        self.environments
+            .get_or_try_init(|| async {
+                let active_environments_result = self
+                    .storage
+                    .get(
+                        ctx,
+                        StorageScope::Workspace(self.id.inner()),
+                        KEY_ACTIVE_ENVIRONMENTS,
+                    )
+                    .await;
+
+                let active_environments: FxHashMap<Option<ProjectId>, EnvironmentId> =
+                    match active_environments_result {
+                        Ok(Some(active_environments)) => {
+                            serde_json::from_value(active_environments).unwrap_or_default()
+                        }
+                        Ok(None) => FxHashMap::default(),
+                        Err(e) => {
+                            tracing::warn!(
+                                "failed to get activated environments from the db: {}",
+                                e
+                            );
+                            FxHashMap::default()
+                        }
+                    };
+
+                let mut active_environments_lock = self.active_environments.write().await;
+                (*active_environments_lock).extend(active_environments);
+
+                let environments = self.environment_service.environments(ctx).await?;
+
+                let mut result = FxHashMap::default();
+
+                for environment in environments {
+                    let env_id = environment.id;
+                    let builder = EnvironmentBuilder::new(
+                        self.id.inner(),
+                        self.fs.clone(),
+                        self.storage.clone(),
+                        env_id.clone(),
+                    );
+
+                    let handle = builder
+                        .load(EnvironmentLoadParams {
+                            abs_path: environment.internal_abs_path.clone(),
+                        })
+                        .await?;
+
+                    result.insert(
+                        env_id.clone(),
+                        RuntimeEnvironment {
+                            id: env_id.clone(),
+                            project_id: environment.project_id,
+                            handle: handle.into(),
+                            edit: EnvironmentEditService::new(EnvironmentFsEditBackend::new(
+                                &environment.internal_abs_path,
+                                self.fs.clone(),
+                            )),
+                            order: None,
+                        },
+                    );
+                }
+
+                Ok::<_, joinerror::Error>(RwLock::new(result))
+            })
+            .await
+            .join_err::<()>("failed to get environments")
     }
 }
 
@@ -246,7 +437,7 @@ impl Workspace for RuntimeWorkspace {
             .await
             .get(id)
             .cloned()
-            .ok_or_join_err::<()>("project not found")?;
+            .ok_or_join_err_with::<()>(|| format!("project {} not found", id.to_string()))?;
 
         Ok(project)
     }
@@ -297,6 +488,10 @@ impl Workspace for RuntimeWorkspace {
                     icon_path: params.icon_path,
                 },
             )
+            .await?;
+
+        self.environment_service
+            .add_source(ctx, handle.id(), &handle.abs_path().join("environments"))
             .await?;
 
         let project = RuntimeProject {
@@ -430,6 +625,10 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
+        self.environment_service
+            .add_source(ctx, handle.id(), &handle.abs_path().join("environments"))
+            .await?;
+
         let project = RuntimeProject {
             id: project_item.id.clone(),
             handle: handle.into(),
@@ -485,6 +684,9 @@ impl Workspace for RuntimeWorkspace {
                     internal_abs_path: project_item.internal_abs_path.clone().into(),
                 },
             )
+            .await?;
+        self.environment_service
+            .add_source(ctx, handle.id(), &handle.abs_path().join("environments"))
             .await?;
 
         let project = RuntimeProject {
@@ -544,6 +746,10 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
+        self.environment_service
+            .add_source(ctx, handle.id(), &handle.abs_path().join("environments"))
+            .await?;
+
         let project = RuntimeProject {
             id: project_item.id.clone(),
             handle: handle.into(),
@@ -588,6 +794,10 @@ impl Workspace for RuntimeWorkspace {
         let project = project.unwrap();
         project.handle.dispose(ctx).await?;
 
+        self.environment_service
+            .remove_source(ctx, &project.id)
+            .await?;
+
         self.storage
             .remove_project(self.id.inner(), project.id.inner())
             .await?;
@@ -605,6 +815,9 @@ impl Workspace for RuntimeWorkspace {
         {
             tracing::warn!("failed to remove project `{}` from storage: {}", id, e);
         }
+
+        let mut environment_groups = self.environment_groups.write().await;
+        environment_groups.remove(&id);
 
         Ok(path)
     }
@@ -689,5 +902,316 @@ impl Workspace for RuntimeWorkspace {
         let projects = self.projects_internal(ctx).await?;
 
         Ok(projects.read().await.clone().into_values().collect())
+    }
+
+    async fn activate_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()> {
+        let environments = self.environments_internal(ctx).await?.write().await;
+
+        let environment_item = environments
+            .get(&id)
+            .ok_or_join_err_with::<()>(|| format!("environment {} not found", id.to_string()))?;
+
+        let mut active_environments = self.active_environments.write().await;
+        active_environments.insert(environment_item.project_id.clone(), id.clone());
+
+        if let Err(e) = self
+            .storage
+            .put(
+                ctx,
+                StorageScope::Workspace(self.id.inner()),
+                KEY_ACTIVE_ENVIRONMENTS,
+                serde_json::to_value(active_environments.clone())?,
+            )
+            .await
+        {
+            tracing::warn!("failed to put active environments in the database: {}", e);
+        }
+
+        Ok(())
+    }
+
+    async fn create_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        input: CreateEnvironmentInput,
+    ) -> joinerror::Result<EnvironmentItemDescription> {
+        let id = EnvironmentId::new();
+        let environment_item = self
+            .environment_service
+            .create_environment(
+                ctx,
+                &self.id,
+                CreateEnvironmentItemParams {
+                    env_id: id.clone(),
+                    project_id: input.project_id.clone(),
+                    name: input.name.clone(),
+                    order: input.order.clone(),
+                    color: input.color.clone(),
+                    variables: input.variables.clone(),
+                },
+            )
+            .await?;
+
+        let builder = EnvironmentBuilder::new(
+            self.id.inner(),
+            self.fs.clone(),
+            self.storage.clone(),
+            id.clone(),
+        );
+
+        let handle = builder
+            .create(
+                ctx,
+                CreateEnvironmentParams {
+                    name: input.name.clone(),
+                    abs_path: &environment_item.internal_abs_path,
+                    color: input.color.clone(),
+                    variables: input.variables,
+                },
+            )
+            .await?;
+
+        let env_abs_path = handle.abs_path().await.to_owned();
+        let environment = RuntimeEnvironment {
+            id: environment_item.id.clone(),
+            project_id: input.project_id.clone(),
+            handle: handle.into(),
+            edit: EnvironmentEditService::new(EnvironmentFsEditBackend::new(
+                env_abs_path.as_ref(),
+                self.fs.clone(),
+            )),
+            order: Some(input.order.clone()),
+        };
+
+        let environments = self.environments_internal(ctx).await?;
+        environments
+            .write()
+            .await
+            .insert(environment_item.id.clone(), environment.clone());
+
+        let desc = environment.handle.describe(ctx).await?;
+
+        if let Some(project_id) = &input.project_id {
+            let mut groups_lock = self.environment_groups.write().await;
+            groups_lock.insert(project_id.clone());
+        }
+
+        Ok(EnvironmentItemDescription {
+            id: desc.id.clone(),
+            project_id: input.project_id.clone(),
+            is_active: false,
+            display_name: input.name.clone(),
+            order: Some(input.order.clone()),
+            color: desc.color.clone(),
+            abs_path: env_abs_path.into(),
+            total_variables: desc.variables.len(),
+        })
+    }
+
+    async fn delete_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()> {
+        let environments = self.environments_internal(ctx).await?;
+
+        let environment = if let Some(environment) = environments.write().await.remove(id) {
+            environment
+        } else {
+            return Ok(());
+        };
+
+        // If the environment is currently active, removes it from active environments
+        let active_environments_updated = {
+            let mut active_environments = self.active_environments.write().await;
+            if active_environments.get(&environment.project_id) == Some(&environment.id) {
+                active_environments.remove(&environment.project_id);
+                true
+            } else {
+                false
+            }
+        };
+
+        let desc = environment.handle.describe(ctx).await?;
+
+        self.environment_service
+            .delete_environment(ctx, &self.id, desc)
+            .await?;
+
+        if active_environments_updated {
+            let active_environments = self.active_environments.read().await;
+            if let Err(e) = self
+                .storage
+                .put(
+                    ctx,
+                    StorageScope::Workspace(self.id.inner()),
+                    KEY_ACTIVE_ENVIRONMENTS,
+                    serde_json::to_value(active_environments.to_owned())?,
+                )
+                .await
+            {
+                tracing::warn!(
+                    "failed to update active_environments in the database: {}",
+                    e
+                );
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn update_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        params: UpdateEnvironmentParams,
+    ) -> joinerror::Result<()> {
+        let environment = self.environment(ctx, &params.id).await?;
+
+        // We need to assign VariableId to newly created variables
+        let vars_to_add = params
+            .vars_to_add
+            .iter()
+            .map(|params| (VariableId::new(), params.to_owned()))
+            .collect::<Vec<_>>();
+        environment
+            .edit
+            .edit(
+                ctx,
+                EnvironmentEditParams {
+                    name: params.name,
+                    color: params.color,
+                    vars_to_add: vars_to_add.clone(),
+                    vars_to_update: params.vars_to_update.clone(),
+                    vars_to_delete: params.vars_to_delete.clone(),
+                },
+            )
+            .await
+            .join_err_with::<()>(|| format!("failed to update environment {}", params.id))?;
+
+        let storage_scope = StorageScope::Workspace(self.id.inner());
+
+        // Again issue with the signature of put_batch, will try to fix it later
+        for (var_id, var_to_add) in vars_to_add {
+            if let Err(e) = self
+                .storage
+                .put(
+                    ctx,
+                    storage_scope.clone(),
+                    &key_variable_local_value(&params.id, &var_id),
+                    var_to_add.local_value,
+                )
+                .await
+            {
+                tracing::error!("failed to add variable local value to the database: {}", e);
+            }
+        }
+
+        for var_to_update in params.vars_to_update {
+            match var_to_update.local_value {
+                Some(ChangeJsonValue::Update(value)) => {
+                    if let Err(e) = self
+                        .storage
+                        .put(
+                            ctx,
+                            storage_scope.clone(),
+                            &key_variable_local_value(&params.id, &var_to_update.id),
+                            value,
+                        )
+                        .await
+                    {
+                        tracing::error!(
+                            "failed to update variable local value in the database: {}",
+                            e
+                        );
+                    }
+                }
+                Some(ChangeJsonValue::Remove) => {
+                    if let Err(e) = self
+                        .storage
+                        .remove(
+                            ctx,
+                            storage_scope.clone(),
+                            &key_variable_local_value(&params.id, &var_to_update.id),
+                        )
+                        .await
+                    {
+                        tracing::error!(
+                            "failed to remove variable local value in the database: {}",
+                            e
+                        );
+                    }
+                }
+                None => {}
+            }
+        }
+
+        for id in params.vars_to_delete {
+            if let Err(e) = self
+                .storage
+                .remove_batch_by_prefix(ctx, storage_scope.clone(), &key_variable(&params.id, &id))
+                .await
+            {
+                tracing::error!("failed to remove variable data from the database: {}", e);
+            }
+        }
+
+        Ok(())
+    }
+
+    async fn batch_update_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        updates: Vec<UpdateEnvironmentParams>,
+    ) -> joinerror::Result<()> {
+        for update in updates {
+            self.update_environment(ctx, update).await?
+        }
+        Ok(())
+    }
+
+    // async fn update_environment_group(&self, ctx: &dyn AnyAsyncContext, params: UpdateEnvironmentGroupParams) -> joinerror::Result<()> {
+    //     todo!()
+    // }
+    //
+    // async fn batch_update_environment_groups(&self, ctx: &dyn AnyAsyncContext, updates: Vec<UpdateEnvironmentGroupParams>) -> joinerror::Result<()> {
+    //     todo!()
+    // }
+
+    async fn environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<RuntimeEnvironment> {
+        let environments = self.environments_internal(ctx).await?;
+        let environment = environments
+            .read()
+            .await
+            .get(id)
+            .cloned()
+            .ok_or_join_err_with::<()>(|| format!("environment {} not found", id.to_string()))?;
+
+        Ok(environment)
+    }
+
+    async fn environments(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<Vec<RuntimeEnvironment>> {
+        let environments = self.environments_internal(ctx).await?;
+
+        Ok(environments.read().await.clone().into_values().collect())
+    }
+
+    async fn active_environments(
+        &self,
+        _ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<FxHashMap<Option<ProjectId>, EnvironmentId>> {
+        let active_environments = self.active_environments.read().await;
+
+        Ok(active_environments.clone())
     }
 }
