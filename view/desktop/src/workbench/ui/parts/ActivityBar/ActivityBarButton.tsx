@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useCurrentWorkspace } from "@/hooks";
-import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
@@ -17,7 +16,6 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import DropIndicator from "@/workbench/ui/components/DropIndicator";
-import { IconInline } from "@/workbench/ui/components/IconInline";
 
 export const ActivityBarButton = ({
   icon,
@@ -141,11 +139,9 @@ export const ActivityBarButton = ({
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      {isActive && layout?.sidebarState.visible ? (
-        <IconInline icon={iconActive} className="size-4.5" />
-      ) : (
-        <Icon icon={icon} className="size-4.5" />
-      )}
+      <div className="size-4.5 flex items-center justify-center [&>svg]:size-full">
+        {isActive && layout?.sidebarState.visible && iconActive ? iconActive : icon}
+      </div>
 
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
 
