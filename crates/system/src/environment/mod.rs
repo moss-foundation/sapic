@@ -1,9 +1,12 @@
+use crate::{
+    environment::environment_service::CreateEnvironmentItemParams, project::LookedUpProject,
+};
 use async_trait::async_trait;
 use indexmap::IndexMap;
 use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
     DescribeEnvironment,
-    configuration::VariableDecl,
+    configuration::{SourceFile, VariableDecl},
     models::types::{AddVariableParams, UpdateVariableParams},
 };
 use moss_storage2::KvStorage;
@@ -16,10 +19,6 @@ use sapic_core::context::AnyAsyncContext;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
-};
-
-use crate::{
-    environment::environment_service::CreateEnvironmentItemParams, project::LookedUpProject,
 };
 
 pub mod app_environment_service;
@@ -52,29 +51,16 @@ pub struct LookedUpEnvironment {
 
 #[async_trait]
 pub trait EnvironmentServiceFs: Send + Sync {
-    // async fn switch_workspace(
-    //     &self,
-    //     ctx: &dyn AnyAsyncContext,
-    //     workspace_id: &WorkspaceId,
-    // ) -> joinerror::Result<()>;
-
-    // async fn add_source(
-    //     &self,
-    //     ctx: &dyn AnyAsyncContext,
-    //     project_id: &ProjectId,
-    //     source_path: &Path,
-    // ) -> joinerror::Result<()>;
-    //
-    // async fn remove_source(
-    //     &self,
-    //     ctx: &dyn AnyAsyncContext,
-    //     project_id: &ProjectId,
-    // ) -> joinerror::Result<()>;
-
     async fn lookup_environments(
         &self,
         ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<Vec<LookedUpEnvironment>>;
+
+    async fn read_environment_sourcefile(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<SourceFile>;
 
     async fn create_environment(
         &self,

@@ -7,7 +7,7 @@ use moss_common::continue_if_err;
 use moss_edit::json::{EditOptions, JsonEdit};
 use moss_environment::configuration::VariableDecl;
 use moss_fs::{CreateOptions, FileSystem};
-use moss_hcl::json_to_hcl;
+use moss_hcl::{HclResultExt, json_to_hcl};
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::environment::{EnvironmentEditBackend, EnvironmentEditParams};
 use serde_json::Value as JsonValue;
@@ -49,6 +49,19 @@ impl EnvironmentEditBackend for EnvironmentFsEditBackend {
         // FIXME: tbh I think instead of recreating the file rename logic, we should switch to ID based filename
 
         let mut patches = Vec::new();
+
+        if let Some(new_name) = params.name {
+            patches.push((
+                PatchOperation::Add(AddOperation {
+                    path: unsafe { PointerBuf::new_unchecked("/metadata/name") },
+                    value: JsonValue::String(new_name),
+                }),
+                EditOptions {
+                    create_missing_segments: true,
+                    ignore_if_not_exists: false,
+                },
+            ));
+        }
 
         match params.color {
             Some(ChangeString::Update(color)) => {
@@ -256,14 +269,15 @@ impl EnvironmentEditBackend for EnvironmentFsEditBackend {
             .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
 
         let mut value: JsonValue =
-            serde_json::from_reader(rdr).join_err::<()>("failed to parse environment json")?;
+            hcl::from_reader(rdr).join_err::<()>("failed to parse environment json")?;
 
         let mut edits_lock = self.edits.write().await;
         edits_lock
             .apply(&mut value, &patches)
             .join_err::<()>("failed to apply patches")?;
 
-        let content = serde_json::to_string(&value).join_err::<()>("failed to serialize json")?;
+        let content =
+            hcl::to_string(&value).join_err::<()>("failed to serialize environment json")?;
 
         self.fs
             .create_file_with(

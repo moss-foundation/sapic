@@ -55,6 +55,24 @@ impl EnvironmentServiceFsPort for EnvironmentServiceFs {
         Ok(environments)
     }
 
+    async fn read_environment_sourcefile(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<SourceFile> {
+        let abs_path = self.environments_path.join(format_env_file_name(id));
+        let rdr = self
+            .fs
+            .open_file(ctx, &abs_path)
+            .await
+            .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
+
+        let parsed: SourceFile = hcl::from_reader(rdr)
+            .join_err_with::<()>(|| format!("failed to parse hcl: {}", abs_path.display()))?;
+
+        Ok(parsed)
+    }
+
     async fn create_environment(
         &self,
         ctx: &dyn AnyAsyncContext,

@@ -10,14 +10,18 @@ use moss_environment::{
     storage::{key_environment, key_variable_local_value},
 };
 use moss_fs::FileSystem;
-use moss_hcl::json_to_hcl;
+use moss_hcl::{hcl_to_json, json_to_hcl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use sapic_base::{
-    environment::types::primitives::{EnvironmentId, VariableId},
+    environment::types::{
+        VariableInfo,
+        primitives::{EnvironmentId, VariableId},
+    },
     project::types::primitives::ProjectId,
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
+use serde_json::Value as JsonValue;
 use std::{
     collections::HashMap,
     path::{Path, PathBuf},
@@ -169,5 +173,62 @@ impl EnvironmentService {
         }
 
         Ok(())
+    }
+
+    pub async fn describe_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<DescribeEnvironment> {
+        let parsed = self.backend.read_environment_sourcefile(ctx, id).await?;
+        let mut variables =
+            HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
+
+        if let Some(vars) = parsed.variables.as_ref() {
+            // TODO: Use project storage scope for project environments
+            let storage_scope = StorageScope::Workspace(self.workspace_id.inner());
+
+            for (var_id, var) in vars.iter() {
+                let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
+                    println!("failed to convert global value expression: {}", err); // TODO: log error
+                });
+
+                let local_value: Option<JsonValue> = self
+                    .storage
+                    .get(
+                        ctx,
+                        storage_scope.clone(),
+                        &key_variable_local_value(id, var_id),
+                    )
+                    .await
+                    .unwrap_or_else(|e| {
+                        tracing::warn!(
+                            "failed to get variable localValue from the database: {}",
+                            e
+                        );
+                        None
+                    });
+
+                // FIXME: Should the variables be cached?
+                variables.insert(
+                    var_id.clone(),
+                    VariableInfo {
+                        id: var_id.clone(),
+                        name: var.name.clone(),
+                        global_value: Some(global_value),
+                        local_value,
+                        disabled: var.options.disabled,
+                        order: None, // TODO: REMOVE
+                        desc: var.description.clone(),
+                    },
+                );
+            }
+        }
+        Ok(DescribeEnvironment {
+            id: id.clone(),
+            name: parsed.metadata.name.clone(),
+            color: parsed.metadata.color.clone(),
+            variables,
+        })
     }
 }

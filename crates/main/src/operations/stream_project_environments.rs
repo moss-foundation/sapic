@@ -27,13 +27,16 @@ impl<R: AppRuntime> MainWindow<R> {
 
         let mut total_returned = 0;
         for environment in environments {
-            let desc = continue_if_err!(environment.describe(ctx).await, |e| {
-                tracing::warn!(
-                    "failed to describe environment {}: {}",
-                    environment.id.to_string(),
-                    e
-                )
-            });
+            let desc = continue_if_err!(
+                project.describe_environment(ctx, &environment.id).await,
+                |e| {
+                    tracing::warn!(
+                        "failed to describe environment {}: {}",
+                        environment.id.to_string(),
+                        e
+                    )
+                }
+            );
 
             let id = environment.id;
             let project_id = environment.project_id;

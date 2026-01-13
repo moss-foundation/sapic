@@ -53,68 +53,68 @@ impl AnyEnvironment for Environment {
 
     // TODO: rename to details
     // FIXME: Should this be handled by the environment service? I'll keep it for now
-    async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment> {
-        let abs_path = self.abs_path().await;
-        let rdr = self
-            .fs
-            .open_file(ctx, abs_path)
-            .await
-            .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
-
-        let parsed: SourceFile = hcl::from_reader(rdr)
-            .join_err_with::<()>(|| format!("failed to parse hcl: {}", abs_path.display()))?;
-
-        let mut variables =
-            HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
-
-        if let Some(vars) = parsed.variables.as_ref() {
-            let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
-
-            for (var_id, var) in vars.iter() {
-                let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
-                    println!("failed to convert global value expression: {}", err); // TODO: log error
-                });
-
-                let local_value: Option<JsonValue> = self
-                    .storage
-                    .get(
-                        ctx,
-                        storage_scope.clone(),
-                        &key_variable_local_value(&self.id, var_id),
-                    )
-                    .await
-                    .unwrap_or_else(|e| {
-                        session::warn!(format!(
-                            "failed to get variable localValue from the database: {}",
-                            e
-                        ));
-                        None
-                    });
-
-                // FIXME: Should the variables be cached?
-                variables.insert(
-                    var_id.clone(),
-                    VariableInfo {
-                        id: var_id.clone(),
-                        name: var.name.clone(),
-                        global_value: Some(global_value),
-                        local_value,
-                        disabled: var.options.disabled,
-                        order: None, // TODO: REMOVE
-                        desc: var.description.clone(),
-                    },
-                );
-            }
-        }
-
-        Ok(DescribeEnvironment {
-            id: self.id.clone(),
-            abs_path: abs_path.into(),
-            color: parsed.metadata.color.clone(),
-            name: parsed.metadata.name.clone(),
-            variables,
-        })
-    }
+    // async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment> {
+    //     let abs_path = self.abs_path().await;
+    //     let rdr = self
+    //         .fs
+    //         .open_file(ctx, abs_path)
+    //         .await
+    //         .join_err_with::<()>(|| format!("failed to open file: {}", abs_path.display()))?;
+    //
+    //     let parsed: SourceFile = hcl::from_reader(rdr)
+    //         .join_err_with::<()>(|| format!("failed to parse hcl: {}", abs_path.display()))?;
+    //
+    //     let mut variables =
+    //         HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
+    //
+    //     if let Some(vars) = parsed.variables.as_ref() {
+    //         let storage_scope = StorageScope::Workspace(self.workspace_id.clone());
+    //
+    //         for (var_id, var) in vars.iter() {
+    //             let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
+    //                 println!("failed to convert global value expression: {}", err); // TODO: log error
+    //             });
+    //
+    //             let local_value: Option<JsonValue> = self
+    //                 .storage
+    //                 .get(
+    //                     ctx,
+    //                     storage_scope.clone(),
+    //                     &key_variable_local_value(&self.id, var_id),
+    //                 )
+    //                 .await
+    //                 .unwrap_or_else(|e| {
+    //                     session::warn!(format!(
+    //                         "failed to get variable localValue from the database: {}",
+    //                         e
+    //                     ));
+    //                     None
+    //                 });
+    //
+    //             // FIXME: Should the variables be cached?
+    //             variables.insert(
+    //                 var_id.clone(),
+    //                 VariableInfo {
+    //                     id: var_id.clone(),
+    //                     name: var.name.clone(),
+    //                     global_value: Some(global_value),
+    //                     local_value,
+    //                     disabled: var.options.disabled,
+    //                     order: None, // TODO: REMOVE
+    //                     desc: var.description.clone(),
+    //                 },
+    //             );
+    //         }
+    //     }
+    //
+    //     Ok(DescribeEnvironment {
+    //         id: self.id.clone(),
+    //         abs_path: abs_path.into(),
+    //         color: parsed.metadata.color.clone(),
+    //         name: parsed.metadata.name.clone(),
+    //         variables,
+    //     })
+    // }
 
     // async fn modify(
     //     &self,

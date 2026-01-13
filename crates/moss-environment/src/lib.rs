@@ -66,7 +66,6 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
-    pub abs_path: Arc<Path>,
     pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }
@@ -74,7 +73,7 @@ pub struct DescribeEnvironment {
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment {
     async fn abs_path(&self) -> &Path;
-    async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
+    // async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
     // async fn modify(
     //     &self,
     //     ctx: &dyn AnyAsyncContext,

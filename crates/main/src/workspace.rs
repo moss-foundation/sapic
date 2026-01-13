@@ -3,7 +3,7 @@ use joinerror::{OptionExt, ResultExt};
 use moss_bindingutils::primitives::ChangeJsonValue;
 use moss_common::continue_if_err;
 use moss_environment::{
-    AnyEnvironment, Environment,
+    AnyEnvironment, DescribeEnvironment, Environment,
     builder::{CreateEnvironmentParams, EnvironmentBuilder, EnvironmentLoadParams},
     storage::{key_variable, key_variable_local_value},
 };
@@ -172,7 +172,8 @@ impl RuntimeProject {
 
         Ok(environment)
     }
-
+}
+impl RuntimeProject {
     pub async fn environments(
         &self,
         ctx: &dyn AnyAsyncContext,
@@ -189,6 +190,14 @@ impl RuntimeProject {
         let active_environments = self.active_environment.read().await;
 
         Ok(active_environments.clone())
+    }
+
+    pub async fn describe_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<DescribeEnvironment> {
+        self.environment_service.describe_environment(ctx, id).await
     }
 
     pub async fn activate_environment(
@@ -281,7 +290,10 @@ impl RuntimeProject {
             .await
             .insert(environment_item.id.clone(), environment.clone());
 
-        let desc = environment.handle.describe(ctx).await?;
+        let desc = self
+            .environment_service
+            .describe_environment(ctx, &environment.id)
+            .await?;
 
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
@@ -520,6 +532,12 @@ pub trait Workspace: Send + Sync {
     ) -> joinerror::Result<Vec<Arc<RuntimeProject>>>;
 
     // Environment
+    async fn describe_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<DescribeEnvironment>;
+
     async fn activate_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
@@ -1442,7 +1460,10 @@ impl Workspace for RuntimeWorkspace {
             .await
             .insert(environment_item.id.clone(), environment.clone());
 
-        let desc = environment.handle.describe(ctx).await?;
+        let desc = self
+            .environment_service
+            .describe_environment(ctx, &environment.id)
+            .await?;
 
         Ok(EnvironmentItemDescription {
             id: desc.id.clone(),
@@ -1659,5 +1680,13 @@ impl Workspace for RuntimeWorkspace {
         let environment_groups = self.environment_groups.read().await.clone();
 
         Ok(environment_groups)
+    }
+
+    async fn describe_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<DescribeEnvironment> {
+        self.environment_service.describe_environment(ctx, id).await
     }
 }
