@@ -23,14 +23,14 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
   const { currentWorkspace } = useCurrentWorkspace();
   const { selectedWorkspaceMenuItems } = useWorkspaceMenu();
   const { data: streamedProjectsWithResources } = useStreamedProjectsWithResources();
-  const { activeGlobalEnvironment, activeProjectEnvironments } = useActiveEnvironments();
+  const { activeWorkspaceEnvironment, activeProjectEnvironments } = useActiveEnvironments();
   const { activePanelId } = useTabbedPaneStore();
 
   const activeProject = streamedProjectsWithResources?.find((project) =>
     project.resources.some((resource) => resource.id === activePanelId)
   );
 
-  const currentProjectEnvironment = activeProjectEnvironments.find(
+  const currentProjectEnvironment = activeProjectEnvironments?.find(
     (environment) => environment.projectId === activeProject?.id
   );
 
@@ -61,7 +61,7 @@ export const HeadBarLeftItems = ({ handleWindowsMenuAction, handleWorkspaceMenuA
 
         <Icon icon="ChevronRight" />
 
-        <IconLabelButton title={activeGlobalEnvironment?.name} placeholder="No environment" />
+        <IconLabelButton title={activeWorkspaceEnvironment?.name} placeholder="No environment" />
 
         <Icon icon="ChevronRight" />
 
