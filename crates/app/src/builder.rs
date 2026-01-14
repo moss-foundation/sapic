@@ -8,10 +8,7 @@ use moss_fs::FileSystem;
 use moss_keyring::KeyringClient;
 use moss_storage2::KvStorage;
 use sapic_platform::{
-    environment::{
-        app_environment_service_fs::AppEnvironmentServiceFs,
-        environment_service_fs::EnvironmentServiceFs,
-    },
+    environment::app_environment_service_fs::AppEnvironmentServiceFs,
     extension::unpacker::ExtensionUnpackerImpl,
     language::loader::LanguagePackLoader,
     theme::loader::ColorThemeLoader,
@@ -22,9 +19,7 @@ use sapic_platform::{
 use sapic_runtime::extension_point::ExtensionPoint;
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
-    environment::{
-        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
-    },
+    environment::app_environment_service::AppEnvironmentService,
     language::{LanguagePackRegistry, language_service::LanguageService},
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,

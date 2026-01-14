@@ -1,13 +1,11 @@
-use crate::MainWindow;
 use moss_applib::AppRuntime;
 use moss_common::continue_if_err;
-use moss_environment::AnyEnvironment;
-use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::main::environment::{
-    EnvironmentGroup, StreamEnvironmentsEvent, StreamEnvironmentsOutput,
-    StreamProjectEnvironmentsInput, StreamProjectEnvironmentsOutput,
+    StreamEnvironmentsEvent, StreamProjectEnvironmentsInput, StreamProjectEnvironmentsOutput,
 };
 use tauri::ipc::Channel as TauriChannel;
+
+use crate::MainWindow;
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn stream_project_environments(

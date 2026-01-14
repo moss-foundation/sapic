@@ -13,9 +13,8 @@ use crate::{
     environment::Environment, errors::ErrorEnvironmentNotFound, models::types::AddVariableParams,
 };
 
-pub struct CreateEnvironmentParams<'a> {
+pub struct CreateEnvironmentParams {
     pub name: String,
-    pub abs_path: &'a Path,
     pub color: Option<String>,
     pub variables: Vec<AddVariableParams>,
 }
@@ -45,8 +44,6 @@ impl EnvironmentBuilder {
             env_id: id,
         }
     }
-
-    // Replaced by EnvironmentService::initialize_environment
 
     // pub async fn initialize<'a>(
     //     &mut self,
@@ -116,13 +113,11 @@ impl EnvironmentBuilder {
     //     Ok(abs_path)
     // }
 
-    pub async fn create<'a>(
+    pub async fn create(
         mut self,
         ctx: &dyn AnyAsyncContext,
-        params: CreateEnvironmentParams<'a>,
+        params: CreateEnvironmentParams,
     ) -> joinerror::Result<Environment> {
-        debug_assert!(params.abs_path.is_absolute());
-
         // This is done during EnvironmentService::create_environment
 
         // for (id, (local_value, order)) in self.vars_to_store.drain() {
@@ -151,7 +146,6 @@ impl EnvironmentBuilder {
             id: self.env_id,
             fs: self.fs,
             storage: self.storage,
-            abs_path: params.abs_path.to_path_buf(),
             workspace_id: self.workspace_id,
         })
     }
@@ -169,7 +163,6 @@ impl EnvironmentBuilder {
             id: self.env_id,
             fs: self.fs,
             storage: self.storage,
-            abs_path: params.abs_path.to_path_buf(),
             workspace_id: self.workspace_id,
         })
     }

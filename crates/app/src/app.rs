@@ -328,7 +328,7 @@ impl<R: AppRuntime> App<R> {
 
         self.windows
             .swap_main_window_workspace(ctx, label, workspace, old_window)
-            .await;
+            .await?;
 
         Ok(())
     }

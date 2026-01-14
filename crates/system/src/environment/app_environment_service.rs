@@ -52,7 +52,6 @@ impl AppEnvironmentService {
                 workspace_id,
                 &params.env_id,
                 &CreateEnvironmentFsParams {
-                    project_id: params.project_id,
                     name: params.name,
                     color: params.color,
                     variables: variable_decls,

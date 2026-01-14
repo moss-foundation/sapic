@@ -3,7 +3,7 @@ use joinerror::{OptionExt, ResultExt};
 use moss_bindingutils::primitives::ChangeJsonValue;
 use moss_common::continue_if_err;
 use moss_environment::{
-    AnyEnvironment, DescribeEnvironment, Environment,
+    DescribeEnvironment,
     builder::{CreateEnvironmentParams, EnvironmentBuilder, EnvironmentLoadParams},
     storage::{key_variable, key_variable_local_value},
 };
@@ -29,12 +29,7 @@ use sapic_base::{
 };
 use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::{
-    environment::{
-        BatchUpdateEnvironmentInput, CreateEnvironmentInput, CreateEnvironmentOutput,
-        DeleteEnvironmentInput, EnvironmentGroup, StreamEnvironmentsEvent,
-        StreamEnvironmentsOutput, UpdateEnvironmentGroupParams, UpdateEnvironmentInput,
-        UpdateEnvironmentOutput, UpdateEnvironmentParams,
-    },
+    environment::{CreateEnvironmentInput, UpdateEnvironmentParams},
     project::{
         CreateProjectParams, ExportProjectParams, ImportArchiveParams, ImportDiskParams,
         UpdateProjectParams,
@@ -61,12 +56,10 @@ use sapic_system::{
     user::User,
     workspace::{WorkspaceEditOp, WorkspaceEditParams},
 };
-use std::{collections::HashSet, path::PathBuf, sync::Arc};
+use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock};
 
 use crate::environment::RuntimeEnvironment;
-
-pub(crate) const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
 
 pub struct RuntimeProject {
     pub id: ProjectId,
@@ -207,7 +200,7 @@ impl RuntimeProject {
     ) -> joinerror::Result<()> {
         let environments = self.environments_internal(ctx).await?.read().await;
 
-        let environment_item = environments
+        let _environment_item = environments
             .get(&id)
             .ok_or_join_err_with::<()>(|| format!("environment {} not found", id.to_string()))?;
 
@@ -265,20 +258,18 @@ impl RuntimeProject {
                 ctx,
                 CreateEnvironmentParams {
                     name: input.name.clone(),
-                    abs_path: &environment_item.internal_abs_path,
                     color: input.color.clone(),
                     variables: input.variables,
                 },
             )
             .await?;
 
-        let env_abs_path = handle.abs_path().await.to_owned();
         let environment = RuntimeEnvironment {
             id: environment_item.id.clone(),
             project_id: input.project_id.clone(),
             handle: handle.into(),
             edit: EnvironmentEditService::new(EnvironmentFsEditBackend::new(
-                env_abs_path.as_ref(),
+                environment_item.internal_abs_path.as_ref(),
                 self.fs.clone(),
             )),
             order: Some(input.order.clone()),
@@ -302,7 +293,7 @@ impl RuntimeProject {
             display_name: input.name.clone(),
             order: Some(input.order.clone()),
             color: desc.color.clone(),
-            abs_path: env_abs_path.into(),
+            abs_path: environment_item.internal_abs_path.into(),
             total_variables: desc.variables.len(),
         })
     }
@@ -319,6 +310,8 @@ impl RuntimeProject {
         } else {
             return Ok(());
         };
+
+        drop(environment);
 
         // If the environment is currently active, reset the active environment
         let active_environment_updated = {
@@ -1376,7 +1369,7 @@ impl Workspace for RuntimeWorkspace {
     ) -> joinerror::Result<()> {
         let environments = self.environments_internal(ctx).await?.read().await;
 
-        let environment_item = environments
+        let _environment_item = environments
             .get(&id)
             .ok_or_join_err_with::<()>(|| format!("environment {} not found", id.to_string()))?;
 
@@ -1435,20 +1428,18 @@ impl Workspace for RuntimeWorkspace {
                 ctx,
                 CreateEnvironmentParams {
                     name: input.name.clone(),
-                    abs_path: &environment_item.internal_abs_path,
                     color: input.color.clone(),
                     variables: input.variables,
                 },
             )
             .await?;
 
-        let env_abs_path = handle.abs_path().await.to_owned();
         let environment = RuntimeEnvironment {
             id: environment_item.id.clone(),
             project_id: input.project_id.clone(),
             handle: handle.into(),
             edit: EnvironmentEditService::new(EnvironmentFsEditBackend::new(
-                env_abs_path.as_ref(),
+                environment_item.internal_abs_path.as_ref(),
                 self.fs.clone(),
             )),
             order: Some(input.order.clone()),
@@ -1472,7 +1463,7 @@ impl Workspace for RuntimeWorkspace {
             display_name: input.name.clone(),
             order: Some(input.order.clone()),
             color: desc.color.clone(),
-            abs_path: env_abs_path.into(),
+            abs_path: environment_item.internal_abs_path.into(),
             total_variables: desc.variables.len(),
         })
     }
@@ -1489,6 +1480,8 @@ impl Workspace for RuntimeWorkspace {
         } else {
             return Ok(());
         };
+
+        drop(environment);
 
         // If the environment is currently active, reset the active environment
         let active_environment_updated = {
@@ -1675,7 +1668,7 @@ impl Workspace for RuntimeWorkspace {
 
     async fn environment_groups(
         &self,
-        ctx: &dyn AnyAsyncContext,
+        _ctx: &dyn AnyAsyncContext,
     ) -> joinerror::Result<FxHashSet<ProjectId>> {
         let environment_groups = self.environment_groups.read().await.clone();
 

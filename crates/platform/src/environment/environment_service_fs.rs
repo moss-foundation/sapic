@@ -128,7 +128,7 @@ impl EnvironmentServiceFsPort for EnvironmentServiceFs {
                 &path,
                 RemoveOptions {
                     recursive: false,
-                    ignore_if_not_exists: false,
+                    ignore_if_not_exists: true,
                 },
             )
             .await
@@ -173,4 +173,200 @@ async fn lookup_source(
     }
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use hcl::Expression;
+    use indexmap::IndexMap;
+    use moss_environment::{configuration::VariableDecl, models::types::VariableOptions};
+    use moss_fs::RealFileSystem;
+    use moss_testutils::random_name::random_string;
+    use sapic_base::environment::types::primitives::VariableId;
+    use sapic_core::context::ArcContext;
+
+    use super::*;
+
+    async fn setup_env_service_fs() -> (ArcContext, Arc<EnvironmentServiceFs>, PathBuf) {
+        let ctx = ArcContext::background();
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+
+        let tmp_path = test_path.join("tmp");
+        let environments_path = test_path.join("environments");
+
+        tokio::fs::create_dir_all(&environments_path).await.unwrap();
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let env_fs = Arc::new(EnvironmentServiceFs::new(environments_path, fs));
+
+        (ctx, env_fs, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_create_environment_success() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: IndexMap::default(),
+        };
+        let id = EnvironmentId::new();
+        let path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        assert!(path.exists());
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.metadata.name, params.name);
+        assert_eq!(source_file.metadata.color, params.color);
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_create_environment_already_exists() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: IndexMap::default(),
+        };
+        let id = EnvironmentId::new();
+        env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        let result = env_fs.create_environment(&ctx, &id, &params).await;
+        assert!(result.is_err());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_create_environment_with_variables() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let var_key1 = VariableId::new();
+        let var_key2 = VariableId::new();
+
+        let var_decl1 = VariableDecl {
+            name: "Variable 1".to_string(),
+            value: Expression::String("Variable 1".to_string()),
+            description: Some("Description".to_string()),
+            options: VariableOptions { disabled: false },
+        };
+
+        let var_decl2 = VariableDecl {
+            name: "Variable 2".to_string(),
+            value: Expression::Bool(false),
+            description: Some("Disabled".to_string()),
+            options: VariableOptions { disabled: true },
+        };
+
+        let mut variables = IndexMap::new();
+        variables.insert(var_key1.clone(), var_decl1.clone());
+        variables.insert(var_key2.clone(), var_decl2.clone());
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: variables.clone(),
+        };
+
+        let id = EnvironmentId::new();
+        env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.metadata.name, params.name);
+        assert_eq!(source_file.metadata.color, params.color);
+        let stored_variables = source_file.variables.unwrap().into_inner();
+        assert_eq!(stored_variables, variables);
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_remove_environment_success() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: IndexMap::default(),
+        };
+        let id = EnvironmentId::new();
+        let path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        env_fs.remove_environment(&ctx, &id).await.unwrap();
+
+        assert!(!path.exists());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    // Deleting non-existent environment is handled gracefully
+    #[tokio::test]
+    async fn test_remove_environment_nonexistent() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+        let id = EnvironmentId::new();
+
+        let result = env_fs.remove_environment(&ctx, &id).await;
+
+        assert!(result.is_ok());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_lookup_environments_empty() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let environments = env_fs.lookup_environments(&ctx).await.unwrap();
+        assert!(environments.is_empty());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_lookup_environments_after_creation() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: IndexMap::default(),
+        };
+        let id = EnvironmentId::new();
+        let path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        let environments = env_fs.lookup_environments(&ctx).await.unwrap();
+        assert_eq!(environments.len(), 1);
+        assert_eq!(environments[0].id, id);
+        assert_eq!(environments[0].internal_abs_path, path);
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_lookup_environments_after_deletion() {
+        let (ctx, env_fs, test_path) = setup_env_service_fs().await;
+
+        let params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some(String::from("#ff0000")),
+            variables: IndexMap::default(),
+        };
+        let id = EnvironmentId::new();
+        let path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+
+        env_fs.remove_environment(&ctx, &id).await.unwrap();
+
+        let environments = env_fs.lookup_environments(&ctx).await.unwrap();
+        assert!(environments.is_empty());
+
+        tokio::fs::remove_dir_all(test_path).await.unwrap();
+    }
 }

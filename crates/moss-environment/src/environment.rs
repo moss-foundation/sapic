@@ -30,11 +30,15 @@ use crate::{
     utils,
 };
 
+// FIXME: I'm actually not sure what this structure is supposed to hold now
+// Since we have extracted file system and storage logic into environment services
+// It looks like fs, storage and abs_path can all be gone
+// Maybe it can hold an in-memory cache of the variables? Not sure
 pub struct Environment {
     pub(super) id: EnvironmentId,
     pub(super) fs: Arc<dyn FileSystem>,
     pub(super) storage: Arc<dyn KvStorage>,
-    pub(super) abs_path: PathBuf,
+    // pub(super) abs_path: PathBuf,
     // FIXME: Should project environments be stored in the project database?
     // Environment variables are stored in workspace database
     // We use Arc<String> instead of WorkspaceId to avoid circular dependency
@@ -45,9 +49,9 @@ unsafe impl Send for Environment {}
 unsafe impl Sync for Environment {}
 
 impl AnyEnvironment for Environment {
-    async fn abs_path(&self) -> &Path {
-        &self.abs_path
-    }
+    // async fn abs_path(&self) -> &Path {
+    //     &self.abs_path
+    // }
 
     // TODO: add variables()
 

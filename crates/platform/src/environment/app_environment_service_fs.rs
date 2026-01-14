@@ -86,3 +86,85 @@ impl AppEnvironmentServiceFsPort for AppEnvironmentServiceFs {
         Ok(abs_path)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use moss_fs::RealFileSystem;
+    use moss_testutils::random_name::random_string;
+    use sapic_core::context::ArcContext;
+
+    use super::*;
+    async fn setup_app_env_service_fs() -> (ArcContext, Arc<AppEnvironmentServiceFs>, PathBuf) {
+        let ctx = ArcContext::background();
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+
+        let tmp_path = test_path.join("tmp");
+        let workspaces_path = test_path.join("workspaces");
+
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+        tokio::fs::create_dir_all(&workspaces_path).await.unwrap();
+
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let env_fs = AppEnvironmentServiceFs::new(&workspaces_path, fs.clone());
+
+        (ctx, env_fs, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_create_environment_success() {
+        let (ctx, env_fs, test_path) = setup_app_env_service_fs().await;
+
+        let workspace_id = WorkspaceId::new();
+        let workspace_path = test_path.join("workspaces").join(workspace_id.to_string());
+        let environment_path = workspace_path.join("environments");
+        tokio::fs::create_dir_all(&workspace_path).await.unwrap();
+        tokio::fs::create_dir_all(&environment_path).await.unwrap();
+
+        let environment_id = EnvironmentId::new();
+
+        let params = CreateEnvironmentFsParams {
+            name: "Globals".to_string(),
+            color: Some(String::from("#ffffff")),
+            variables: Default::default(),
+        };
+        let path = env_fs
+            .create_environment(&ctx, &workspace_id, &environment_id, &params)
+            .await
+            .unwrap();
+
+        let content = std::fs::read_to_string(&path).unwrap();
+        let parsed: SourceFile = hcl::from_str(&content).unwrap();
+
+        assert_eq!(parsed.metadata.name, params.name);
+        assert_eq!(parsed.metadata.color, params.color);
+
+        dbg!(&test_path);
+
+        tokio::fs::remove_dir_all(&test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_create_environment_nonexistent_workspace() {
+        let (ctx, env_fs, test_path) = setup_app_env_service_fs().await;
+
+        let workspace_id = WorkspaceId::new();
+
+        let environment_id = EnvironmentId::new();
+
+        let params = CreateEnvironmentFsParams {
+            name: "Globals".to_string(),
+            color: Some(String::from("#ffffff")),
+            variables: Default::default(),
+        };
+
+        let result = env_fs
+            .create_environment(&ctx, &workspace_id, &environment_id, &params)
+            .await;
+        assert!(result.is_err());
+
+        tokio::fs::remove_dir_all(&test_path).await.unwrap();
+    }
+}

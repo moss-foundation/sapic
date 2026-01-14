@@ -1,5 +1,4 @@
 use moss_applib::AppRuntime;
-use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::environment::{
     ActivateEnvironmentInput, ActivateEnvironmentOutput,
 };

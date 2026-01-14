@@ -121,7 +121,6 @@ impl EnvironmentService {
                 ctx,
                 &id,
                 &CreateEnvironmentFsParams {
-                    project_id: params.project_id.clone(),
                     name: params.name,
                     color: params.color,
                     variables: variable_decls,

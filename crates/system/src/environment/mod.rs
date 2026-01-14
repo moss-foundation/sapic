@@ -26,7 +26,6 @@ pub mod environment_edit_service;
 pub mod environment_service;
 
 pub struct CreateEnvironmentFsParams {
-    pub project_id: Option<ProjectId>,
     pub name: String,
     pub color: Option<String>,
     pub variables: IndexMap<VariableId, VariableDecl>,
@@ -92,6 +91,7 @@ pub trait AppEnvironmentServiceFs: Send + Sync {
     ) -> joinerror::Result<PathBuf>;
 }
 
+#[derive(Clone)]
 pub struct EnvironmentEditParams {
     pub name: Option<String>,
     pub color: Option<ChangeString>,

@@ -72,7 +72,7 @@ pub struct DescribeEnvironment {
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment {
-    async fn abs_path(&self) -> &Path;
+    // async fn abs_path(&self) -> &Path;
     // async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
     // async fn modify(
     //     &self,

@@ -300,3 +300,227 @@ impl EnvironmentEditBackend for EnvironmentFsEditBackend {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use hcl::Expression;
+    use indexmap::indexmap;
+    use moss_environment::models::types::{
+        AddVariableParams, UpdateVariableParams, VariableOptions,
+    };
+    use moss_fs::RealFileSystem;
+    use moss_testutils::random_name::random_string;
+    use sapic_base::environment::types::primitives::{EnvironmentId, VariableId};
+    use sapic_core::context::ArcContext;
+    use sapic_system::environment::{
+        CreateEnvironmentFsParams, EnvironmentServiceFs as EnvironmentServiceFsPort,
+    };
+
+    use crate::environment::environment_service_fs::EnvironmentServiceFs;
+
+    use super::*;
+
+    async fn setup_env_edit_backend() -> (
+        ArcContext,
+        EnvironmentId,
+        Arc<EnvironmentServiceFs>,
+        Arc<EnvironmentFsEditBackend>,
+        PathBuf,
+    ) {
+        let ctx = ArcContext::background();
+        let test_path = PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").unwrap())
+            .join("tests")
+            .join("data")
+            .join(random_string(10));
+
+        let tmp_path = test_path.join("tmp");
+        let environments_path = test_path.join("environments");
+
+        tokio::fs::create_dir_all(&environments_path).await.unwrap();
+        tokio::fs::create_dir_all(&tmp_path).await.unwrap();
+
+        let fs = Arc::new(RealFileSystem::new(&tmp_path));
+        let env_fs = Arc::new(EnvironmentServiceFs::new(
+            environments_path.clone(),
+            fs.clone(),
+        ));
+
+        let id = EnvironmentId::new();
+        let create_params = CreateEnvironmentFsParams {
+            name: "Test".to_string(),
+            color: Some("#ff0000".to_string()),
+            variables: Default::default(),
+        };
+
+        let path = env_fs
+            .create_environment(&ctx, &id, &create_params)
+            .await
+            .unwrap();
+
+        let edit = EnvironmentFsEditBackend::new(&path, fs);
+
+        (ctx, id, env_fs, edit, test_path)
+    }
+
+    #[tokio::test]
+    async fn test_edit_name() {
+        let (ctx, id, env_fs, edit, test_path) = setup_env_edit_backend().await;
+
+        let edit_params = EnvironmentEditParams {
+            name: Some("New Name".to_string()),
+            color: None,
+            vars_to_add: vec![],
+            vars_to_update: vec![],
+            vars_to_delete: vec![],
+        };
+
+        edit.edit(&ctx, edit_params.clone()).await.unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.metadata.name, edit_params.name.unwrap());
+        tokio::fs::remove_dir_all(&test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_edit_color() {
+        let (ctx, id, env_fs, edit, test_path) = setup_env_edit_backend().await;
+
+        // Change color
+        let new_color = "#000000".to_string();
+        let edit_params = EnvironmentEditParams {
+            name: None,
+            color: Some(ChangeString::Update(new_color.clone())),
+            vars_to_add: vec![],
+            vars_to_update: vec![],
+            vars_to_delete: vec![],
+        };
+
+        edit.edit(&ctx, edit_params.clone()).await.unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.metadata.color, Some(new_color));
+
+        // Remove color
+        let edit_params = EnvironmentEditParams {
+            name: None,
+            color: Some(ChangeString::Remove),
+            vars_to_add: vec![],
+            vars_to_update: vec![],
+            vars_to_delete: vec![],
+        };
+
+        edit.edit(&ctx, edit_params.clone()).await.unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.metadata.color, None);
+        tokio::fs::remove_dir_all(&test_path).await.unwrap();
+    }
+
+    #[tokio::test]
+    async fn test_edit_vars() {
+        let (ctx, id, env_fs, edit, test_path) = setup_env_edit_backend().await;
+
+        let var_id = VariableId::new();
+        let var_params = AddVariableParams {
+            name: "Test".to_string(),
+            global_value: JsonValue::String("Value 1".to_string()),
+            local_value: JsonValue::Null,
+            order: 0,
+            desc: Some("Description".to_string()),
+            options: VariableOptions { disabled: false },
+        };
+        // Add Variable
+        edit.edit(
+            &ctx,
+            EnvironmentEditParams {
+                name: None,
+                color: None,
+                vars_to_add: vec![(var_id.clone(), var_params.clone())],
+                vars_to_update: vec![],
+                vars_to_delete: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(
+            source_file.variables.unwrap().into_inner(),
+            indexmap! {
+                var_id.clone() => VariableDecl {
+                    name: var_params.name.clone(),
+                    value: Expression::String("Value 1".to_string()),
+                    description: var_params.desc.clone(),
+                    options: VariableOptions {
+                        disabled: false
+                    },
+                }
+            }
+        );
+
+        // Update Variable
+        let update_params = UpdateVariableParams {
+            id: var_id.clone(),
+            name: Some("New Name".to_string()),
+            global_value: Some(ChangeJsonValue::Update(JsonValue::Number(42.into()))),
+            local_value: None,
+            order: None,
+            desc: Some(ChangeString::Remove),
+            options: Some(VariableOptions { disabled: true }),
+        };
+
+        edit.edit(
+            &ctx,
+            EnvironmentEditParams {
+                name: None,
+                color: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![update_params.clone()],
+                vars_to_delete: vec![],
+            },
+        )
+        .await
+        .unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(
+            source_file.variables.unwrap().into_inner(),
+            indexmap! {
+                var_id.clone() => VariableDecl {
+                    name: "New Name".to_string(),
+                    value: Expression::Number(42.into()),
+                    description: None,
+                    options: VariableOptions {
+                        disabled: true,
+                    },
+                }
+            }
+        );
+
+        // Remove Variable
+
+        edit.edit(
+            &ctx,
+            EnvironmentEditParams {
+                name: None,
+                color: None,
+                vars_to_add: vec![],
+                vars_to_update: vec![],
+                vars_to_delete: vec![var_id.clone()],
+            },
+        )
+        .await
+        .unwrap();
+
+        let source_file = env_fs.read_environment_sourcefile(&ctx, &id).await.unwrap();
+
+        assert_eq!(source_file.variables.unwrap().into_inner(), indexmap! {});
+
+        tokio::fs::remove_dir_all(&test_path).await.unwrap();
+    }
+}

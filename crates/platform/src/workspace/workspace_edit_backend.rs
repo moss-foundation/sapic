@@ -140,7 +140,7 @@ mod tests {
         let new_name = random_string(10);
 
         workspace_fs
-            .create_workspace(&ctx, &id, &old_name, storage.clone())
+            .create_workspace(&ctx, &id, &old_name)
             .await
             .unwrap();
 
