@@ -417,26 +417,6 @@
       "type": "variable",
       "value": "moss.gray.6"
     },
-    "moss.statusBarItem.foreground": {
-      "type": "variable",
-      "value": "moss.gray.4"
-    },
-    "moss.statusBarItem.background.hover": {
-      "type": "variable",
-      "value": "moss.gray.12"
-    },
-    "moss.activityBarItem.background": {
-      "type": "variable",
-      "value": "moss.gray.12"
-    },
-    "moss.activityBarItem.background.hover": {
-      "type": "variable",
-      "value": "moss.gray.10"
-    },
-    "moss.activityBarItem.foreground": {
-      "type": "variable",
-      "value": "moss.gray.6"
-    },
     "moss.toolbarItem.background": {
       "type": "variable",
       "value": "moss.gray.14"

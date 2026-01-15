@@ -132,9 +132,8 @@ export const ActivityBarButton = ({
     <button
       ref={ref}
       className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
-        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !layout?.sidebarState.visible,
+        "hover:background-(--moss-secondary-background-hover)": !isActive || !layout?.sidebarState.visible,
         "background-(--moss-accent-secondary)": isActive && layout?.sidebarState.visible,
-        // "background-(--moss-activityBarItem-background)": !isActive || !layout?.sidebarState.visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
@@ -151,7 +150,7 @@ export const ActivityBarButton = ({
             {...props}
             icon={icon}
             iconActive={iconActive}
-            className="background-(--moss-activityBarItem-background-hover) rounded-md p-1"
+            className="background-(--moss-secondary-background-hover) rounded-md p-1"
           />,
           preview
         )}
