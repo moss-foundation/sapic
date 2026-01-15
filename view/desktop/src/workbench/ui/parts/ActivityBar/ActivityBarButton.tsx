@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 import { useCurrentWorkspace } from "@/hooks";
-import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
@@ -17,7 +16,6 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
 import DropIndicator from "@/workbench/ui/components/DropIndicator";
-import { IconInline } from "@/workbench/ui/components/IconInline";
 
 export const ActivityBarButton = ({
   icon,
@@ -134,18 +132,15 @@ export const ActivityBarButton = ({
     <button
       ref={ref}
       className={cn("relative flex size-7 cursor-pointer items-center justify-center rounded-md p-1", {
-        "hover:background-(--moss-activityBarItem-background-hover)": !isActive || !layout?.sidebarState.visible,
+        "hover:background-(--moss-secondary-background-hover)": !isActive || !layout?.sidebarState.visible,
         "background-(--moss-accent-secondary)": isActive && layout?.sidebarState.visible,
-        // "background-(--moss-activityBarItem-background)": !isActive || !layout?.sidebarState.visible,
       })}
       onClick={() => handleClick(props.id)}
       {...props}
     >
-      {isActive && layout?.sidebarState.visible ? (
-        <IconInline icon={iconActive} className="size-4.5" />
-      ) : (
-        <Icon icon={icon} className="size-4.5" />
-      )}
+      <div className="size-4.5 flex items-center justify-center [&>svg]:size-full">
+        {isActive && layout?.sidebarState.visible && iconActive ? iconActive : icon}
+      </div>
 
       {closestEdge && <DropIndicator edge={closestEdge} gap={12} />}
 
@@ -155,7 +150,7 @@ export const ActivityBarButton = ({
             {...props}
             icon={icon}
             iconActive={iconActive}
-            className="background-(--moss-activityBarItem-background-hover) rounded-md p-1"
+            className="background-(--moss-secondary-background-hover) rounded-md p-1"
           />,
           preview
         )}

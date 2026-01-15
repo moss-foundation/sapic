@@ -377,16 +377,6 @@ export const defaultLightTheme: Theme = {
     "moss.secondary.background.active": { type: "variable", value: "moss.gray.11" },
     "moss.secondary.foreground": { type: "variable", value: "moss.gray.6" },
 
-    // status bar
-    "moss.statusBarItem.foreground": { type: "variable", value: "moss.gray.4" },
-    "moss.statusBarItem.background.hover": { type: "variable", value: "moss.gray.12" },
-
-    // activity bar
-
-    "moss.activityBarItem.background": { type: "variable", value: "moss.gray.12" },
-    "moss.activityBarItem.background.hover": { type: "variable", value: "moss.gray.10" },
-    "moss.activityBarItem.foreground": { type: "variable", value: "moss.gray.6" },
-
     // toolbar
     "moss.toolbarItem.background": { type: "variable", value: "moss.gray.14" },
     "moss.toolbarItem.background.hover": { type: "variable", value: "moss.gray.12" },
