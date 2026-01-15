@@ -8,6 +8,7 @@ pub mod create_project;
 pub mod create_workspace;
 pub mod delete_environment;
 pub mod delete_project;
+mod describe_environment;
 pub mod describe_project;
 pub mod export_project;
 pub mod import_project;

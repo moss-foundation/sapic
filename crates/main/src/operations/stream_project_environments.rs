@@ -46,6 +46,7 @@ impl<R: AppRuntime> MainWindow<R> {
                 project_id,
                 is_active,
                 name: desc.name,
+                color: desc.color,
                 order: None,
                 total_variables: desc.variables.len(),
             }) {

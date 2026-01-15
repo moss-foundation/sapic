@@ -54,9 +54,7 @@ impl AnyEnvironment for Environment {
     // }
 
     // TODO: add variables()
-
-    // TODO: rename to details
-    // FIXME: Should this be handled by the environment service? I'll keep it for now
+    // Moved to EnvironmentService::describe_environment
     // async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment> {
     //     let abs_path = self.abs_path().await;
     //     let rdr = self
@@ -120,6 +118,7 @@ impl AnyEnvironment for Environment {
     //     })
     // }
 
+    // Moved to RuntimeProject/RuntimeWorkspace::update_environment
     // async fn modify(
     //     &self,
     //     ctx: &dyn AnyAsyncContext,

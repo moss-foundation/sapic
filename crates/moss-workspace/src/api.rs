@@ -1,9 +1,1 @@
-pub mod activate_environment;
-pub mod batch_update_environment;
-pub mod batch_update_environment_group;
-pub mod create_environment;
-pub mod delete_environment;
 pub mod list_changes;
-pub mod stream_environments;
-pub mod update_environment;
-pub mod update_environment_group;

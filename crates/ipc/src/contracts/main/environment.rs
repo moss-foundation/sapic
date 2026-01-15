@@ -27,6 +27,8 @@ pub struct StreamEnvironmentsEvent {
     pub is_active: bool,
 
     pub name: String,
+    pub color: Option<String>,
+
     pub order: Option<isize>,
     pub total_variables: usize,
 }
@@ -37,14 +39,17 @@ pub struct StreamEnvironmentsEvent {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
-    pub id: ProjectId,
+    pub project_id: Option<ProjectId>,
+    pub environment_id: EnvironmentId,
 }
 
 /// @category Operation
-#[derive(Debug, Serialize, TS)]
+#[derive(Debug, PartialEq, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentOutput {
+    pub name: String,
+    pub color: Option<String>,
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,
 }
@@ -70,7 +75,7 @@ pub struct ActivateEnvironmentOutput {
 // FIXME: Should this be refactored to use an inner params?
 
 /// @category Operation
-#[derive(Debug, Deserialize, Serialize, Validate, TS)]
+#[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
@@ -114,7 +119,7 @@ pub struct UpdateEnvironmentGroupParams {
 }
 
 /// @category Type
-#[derive(Debug, Deserialize, Validate, TS)]
+#[derive(Clone, Debug, Deserialize, Validate, TS)]
 #[ts(optional_fields)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "types.ts")]
@@ -132,7 +137,7 @@ pub struct UpdateEnvironmentParams {
 }
 
 /// @category Operation
-#[derive(Debug, Deserialize, Validate, TS)]
+#[derive(Clone, Debug, Deserialize, Validate, TS)]
 #[ts(optional_fields)]
 #[ts(export, export_to = "operations.ts")]
 pub struct UpdateEnvironmentInput {

@@ -7,9 +7,9 @@ use sapic_ipc::contracts::main::{
         ActivateEnvironmentInput, ActivateEnvironmentOutput, BatchUpdateEnvironmentGroupInput,
         BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput, CreateEnvironmentInput,
         CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput,
-        StreamEnvironmentsEvent, StreamEnvironmentsOutput, StreamProjectEnvironmentsInput,
-        StreamProjectEnvironmentsOutput, UpdateEnvironmentGroupInput, UpdateEnvironmentInput,
-        UpdateEnvironmentOutput,
+        DescribeEnvironmentInput, DescribeEnvironmentOutput, StreamEnvironmentsEvent,
+        StreamEnvironmentsOutput, StreamProjectEnvironmentsInput, StreamProjectEnvironmentsOutput,
+        UpdateEnvironmentGroupInput, UpdateEnvironmentInput, UpdateEnvironmentOutput,
     },
     project::{
         ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput,
@@ -346,6 +346,25 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
         window,
         options,
         |ctx, _, _, window| async move { window.delete_environment(&ctx, input).await },
+    )
+    .await
+}
+
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn describe_environment<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: Window<R>,
+    input: DescribeEnvironmentInput,
+    options: Options,
+) -> joinerror::Result<DescribeEnvironmentOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move { window.describe_environment(&ctx, &input).await },
     )
     .await
 }
