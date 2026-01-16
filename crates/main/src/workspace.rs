@@ -612,8 +612,6 @@ pub struct RuntimeWorkspace {
     project_service: ProjectService,
     projects: OnceCell<RwLock<FxHashMap<ProjectId, Arc<RuntimeProject>>>>,
 
-    // FIXME: Is it correctly to have environment service created at app level and pass it to the workspace?
-    // The AppService needs the environment service to initialize predefined environments before a workspace is fully created
     environment_service: Arc<EnvironmentService>,
     environments: OnceCell<RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>>,
     active_environment: RwLock<Option<EnvironmentId>>,
@@ -621,9 +619,6 @@ pub struct RuntimeWorkspace {
     // Workspace EnvironmentService will only handle workspace-level environments now
     // FIXME: Remove this after frontend changes
     environment_groups: RwLock<FxHashSet<ProjectId>>,
-    //
-    // // The key is the project ID or GLOBAL_ACTIVE_ENVIRONMENT_KEY
-    // active_environments: RwLock<FxHashMap<Arc<String>, EnvironmentId>>,
 }
 
 impl RuntimeWorkspace {

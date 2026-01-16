@@ -5,9 +5,6 @@ pub mod command;
 pub mod operations;
 pub mod windows;
 
-use crate::{
-    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
-};
 use derive_more::Deref;
 use joinerror::ResultExt;
 use moss_app_delegate::AppDelegate;
@@ -55,6 +52,10 @@ use std::{
     sync::Arc,
 };
 use tauri::{AppHandle as TauriAppHandle, Runtime as TauriRuntime};
+
+use crate::{
+    command::CommandCallback, services::extension_service::ExtensionService, windows::WindowManager,
+};
 
 inventory::submit! {
     RegisterConfigurationContribution(include_str!(concat!(env!("OUT_DIR"), "/configurations.json")))

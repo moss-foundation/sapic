@@ -1,10 +1,11 @@
-use crate::MainWindow;
 use moss_applib::AppRuntime;
 use sapic_ipc::{
     ValidationResultExt,
     contracts::main::environment::{UpdateEnvironmentInput, UpdateEnvironmentOutput},
 };
 use validator::Validate;
+
+use crate::MainWindow;
 
 impl<R: AppRuntime> MainWindow<R> {
     pub async fn update_environment(

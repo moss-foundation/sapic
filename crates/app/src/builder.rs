@@ -1,7 +1,3 @@
-use crate::{
-    App, AppCommands, AppServices, command::CommandDecl,
-    services::extension_service::ExtensionService, windows::WindowManager,
-};
 use moss_app_delegate::AppDelegate;
 use moss_applib::AppRuntime;
 use moss_fs::FileSystem;
@@ -31,6 +27,11 @@ use sapic_system::{
     },
 };
 use std::sync::Arc;
+
+use crate::{
+    App, AppCommands, AppServices, command::CommandDecl,
+    services::extension_service::ExtensionService, windows::WindowManager,
+};
 
 pub struct AppBuilder<R: AppRuntime> {
     user: Arc<dyn User>,
