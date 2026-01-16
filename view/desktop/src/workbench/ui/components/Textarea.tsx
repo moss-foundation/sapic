@@ -7,7 +7,7 @@ function Textarea({ className, ...props }: TextareaHTMLAttributes<HTMLTextAreaEl
     <textarea
       // prettier-ignore
       className={cn(`
-        background-(--moss-controls-background) 
+        background-(--moss-secondary-background) 
         w-full resize-none rounded-sm 
         border border-(--moss-controls-border) 
         px-1.5 py-1 

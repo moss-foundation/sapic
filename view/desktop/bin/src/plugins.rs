@@ -54,10 +54,12 @@ pub mod plugin_window_state {
 
     pub fn init<R: Runtime>() -> TauriPlugin<R> {
         tauri_plugin_window_state::Builder::default()
-            .with_denylist(&["ignored"])
+            .with_denylist(&["ignored", "welcome"])
             .map_label(|label| {
                 if label.starts_with(crate::OTHER_WINDOW_PREFIX) {
                     "ignored"
+                } else if label.starts_with("welcome") {
+                    "welcome"
                 } else {
                     label
                 }

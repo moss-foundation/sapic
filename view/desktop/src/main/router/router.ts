@@ -1,7 +1,7 @@
 // Create a new router instance
 import MainIndex from "@/main";
 import WorkspaceShell from "@/pages/main/WorkspaceShell";
-import NotFoundPage from "@/pages/NotFoundPage";
+import NotFoundPage from "@/welcome/pages/NotFoundPage";
 import { createHashHistory, createRootRoute, createRoute, createRouter } from "@tanstack/react-router";
 
 const rootRoute = createRootRoute({

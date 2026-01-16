@@ -1,6 +1,5 @@
 export * from "./ActionButton";
 export * as ActionMenu from "./ActionMenu";
-export * from "./ActivityBar/ActivityBar";
 export * from "./Divider";
 export * from "./DropIndicator";
 
