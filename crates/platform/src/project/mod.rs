@@ -1,6 +1,6 @@
 use joinerror::OptionExt;
 use moss_environment::constants;
-use moss_text::sanitized::{desanitize, sanitize};
+use moss_text::sanitized::desanitize;
 use sapic_base::environment::types::primitives::EnvironmentId;
 
 pub mod project_edit_backend;

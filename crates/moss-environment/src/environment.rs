@@ -1,48 +1,23 @@
-use derive_more::Deref;
-use joinerror::{OptionExt, ResultExt};
-use json_patch::{
-    AddOperation, PatchOperation, RemoveOperation, ReplaceOperation, jsonptr::PointerBuf,
-};
-use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
-use moss_common::continue_if_err;
-use moss_edit::json::EditOptions;
 use moss_fs::FileSystem;
-use moss_hcl::{HclResultExt, hcl_to_json, json_to_hcl};
-use moss_logging::session;
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
-use sapic_base::environment::types::{
-    VariableInfo,
-    primitives::{EnvironmentId, VariableId},
-};
-use sapic_core::context::AnyAsyncContext;
-use serde_json::Value as JsonValue;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::watch;
+use moss_storage2::KvStorage;
+use sapic_base::environment::types::primitives::EnvironmentId;
+use std::sync::Arc;
 
-use crate::{
-    AnyEnvironment, DescribeEnvironment, ModifyEnvironmentParams,
-    configuration::{SourceFile, VariableDecl},
-    storage::{key_variable, key_variable_local_value},
-    utils,
-};
+use crate::AnyEnvironment;
 
 // FIXME: I'm actually not sure what this structure is supposed to hold now
 // Since we have extracted file system and storage logic into environment services
 // It looks like fs, storage and abs_path can all be gone
 // Maybe it can hold an in-memory cache of the variables? Not sure
 pub struct Environment {
-    pub(super) id: EnvironmentId,
-    pub(super) fs: Arc<dyn FileSystem>,
-    pub(super) storage: Arc<dyn KvStorage>,
+    pub(super) _id: EnvironmentId,
+    pub(super) _fs: Arc<dyn FileSystem>,
+    pub(super) _storage: Arc<dyn KvStorage>,
     // pub(super) abs_path: PathBuf,
     // FIXME: Should project environments be stored in the project database?
     // Environment variables are stored in workspace database
     // We use Arc<String> instead of WorkspaceId to avoid circular dependency
-    pub(super) workspace_id: Arc<String>,
+    pub(super) _workspace_id: Arc<String>,
 }
 
 unsafe impl Send for Environment {}

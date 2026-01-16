@@ -1,16 +1,16 @@
-use crate::dirs;
 use anyhow::Result;
 use image::{GenericImageView, imageops::FilterType};
-use moss_fs::{FileSystem, RemoveOptions};
-use sapic_core::context::AnyAsyncContext;
+use moss_fs::FileSystem;
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
 
+use crate::dirs;
+
 const COLLECTION_ICON_FILENAME: &str = "icon.png";
 pub struct SetIconService {
-    fs: Arc<dyn FileSystem>,
+    _fs: Arc<dyn FileSystem>,
     assets_abs_path: Arc<Path>,
     icon_size: u32,
 }
@@ -36,19 +36,19 @@ impl SetIconService {
         Ok(())
     }
 
-    pub async fn remove_icon(&self, ctx: &dyn AnyAsyncContext) -> Result<()> {
-        self.fs
-            .remove_file(
-                ctx,
-                &self.assets_abs_path.join(COLLECTION_ICON_FILENAME),
-                RemoveOptions {
-                    recursive: false,
-                    ignore_if_not_exists: true,
-                },
-            )
-            .await?;
-        Ok(())
-    }
+    // pub async fn remove_icon(&self, ctx: &dyn AnyAsyncContext) -> Result<()> {
+    //     self.fs
+    //         .remove_file(
+    //             ctx,
+    //             &self.assets_abs_path.join(COLLECTION_ICON_FILENAME),
+    //             RemoveOptions {
+    //                 recursive: false,
+    //                 ignore_if_not_exists: true,
+    //             },
+    //         )
+    //         .await?;
+    //     Ok(())
+    // }
 
     pub fn icon_path(&self) -> Option<PathBuf> {
         let path = self.assets_abs_path.join(COLLECTION_ICON_FILENAME);
@@ -57,9 +57,9 @@ impl SetIconService {
 }
 
 impl SetIconService {
-    pub fn new(collection_abs_path: Arc<Path>, fs: Arc<dyn FileSystem>, icon_size: u32) -> Self {
+    pub fn new(collection_abs_path: Arc<Path>, _fs: Arc<dyn FileSystem>, icon_size: u32) -> Self {
         Self {
-            fs,
+            _fs,
             assets_abs_path: collection_abs_path.join(dirs::ASSETS_DIR).into(),
             icon_size,
         }

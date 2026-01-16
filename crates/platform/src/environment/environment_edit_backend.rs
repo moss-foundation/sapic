@@ -15,7 +15,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::{RwLock, watch::Sender};
+use tokio::sync::RwLock;
 
 // I tie the environment edit backend to a particular environment
 // Since different environments can have different locations

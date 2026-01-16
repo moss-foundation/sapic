@@ -370,13 +370,13 @@ pub async fn describe_environment<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+#[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
 pub async fn update_environment_group<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: UpdateEnvironmentGroupInput,
-    options: Options,
+    _ctx: AsyncContext<'a>,
+    _app: App<'a, R>,
+    _window: Window<R>,
+    _input: UpdateEnvironmentGroupInput,
+    _options: Options,
 ) -> joinerror::Result<()> {
     // super::with_workspace_timeout(
     //     ctx.inner(),
@@ -394,13 +394,13 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
 }
 
 #[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
+#[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
 pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: Window<R>,
-    input: BatchUpdateEnvironmentGroupInput,
-    options: Options,
+    _ctx: AsyncContext<'a>,
+    _app: App<'a, R>,
+    _window: Window<R>,
+    _input: BatchUpdateEnvironmentGroupInput,
+    _options: Options,
 ) -> joinerror::Result<()> {
     // super::with_workspace_timeout(
     //     ctx.inner(),

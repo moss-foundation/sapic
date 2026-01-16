@@ -3,11 +3,7 @@ use moss_fs::FileSystem;
 use moss_storage2::KvStorage;
 use sapic_base::environment::types::primitives::EnvironmentId;
 use sapic_core::context::AnyAsyncContext;
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::{watch, watch::Sender};
+use std::{path::PathBuf, sync::Arc};
 
 use crate::{
     environment::Environment, errors::ErrorEnvironmentNotFound, models::types::AddVariableParams,
@@ -114,9 +110,9 @@ impl EnvironmentBuilder {
     // }
 
     pub async fn create(
-        mut self,
-        ctx: &dyn AnyAsyncContext,
-        params: CreateEnvironmentParams,
+        self,
+        _ctx: &dyn AnyAsyncContext,
+        _params: CreateEnvironmentParams,
     ) -> joinerror::Result<Environment> {
         // This is done during EnvironmentService::create_environment
 
@@ -143,10 +139,10 @@ impl EnvironmentBuilder {
         // }
 
         Ok(Environment {
-            id: self.env_id,
-            fs: self.fs,
-            storage: self.storage,
-            workspace_id: self.workspace_id,
+            _id: self.env_id,
+            _fs: self.fs,
+            _storage: self.storage,
+            _workspace_id: self.workspace_id,
         })
     }
 
@@ -160,10 +156,10 @@ impl EnvironmentBuilder {
         }
 
         Ok(Environment {
-            id: self.env_id,
-            fs: self.fs,
-            storage: self.storage,
-            workspace_id: self.workspace_id,
+            _id: self.env_id,
+            _fs: self.fs,
+            _storage: self.storage,
+            _workspace_id: self.workspace_id,
         })
     }
 }

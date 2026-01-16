@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use joinerror::{OptionExt, ResultExt, bail};
+use joinerror::{ResultExt, bail};
 use moss_environment::{
     configuration::{MetadataDecl, SourceFile},
     constants::ENVIRONMENT_FILE_EXTENSION,
@@ -7,22 +7,16 @@ use moss_environment::{
 };
 use moss_fs::{CreateOptions, FileSystem, RemoveOptions};
 use moss_hcl::{Block, HclResultExt, LabeledBlock};
-use moss_storage2::KvStorage;
-use sapic_base::{
-    environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
-    workspace::types::primitives::WorkspaceId,
-};
+use sapic_base::environment::types::primitives::EnvironmentId;
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::environment::{
     CreateEnvironmentFsParams, EnvironmentServiceFs as EnvironmentServiceFsPort,
     LookedUpEnvironment,
 };
 use std::{
-    collections::HashMap,
     path::{Path, PathBuf},
     sync::Arc,
 };
-use tokio::sync::RwLock;
 
 use crate::project::{format_env_file_name, parse_file_name};
 
@@ -360,7 +354,7 @@ mod tests {
             variables: IndexMap::default(),
         };
         let id = EnvironmentId::new();
-        let path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
+        let _path = env_fs.create_environment(&ctx, &id, &params).await.unwrap();
 
         env_fs.remove_environment(&ctx, &id).await.unwrap();
 

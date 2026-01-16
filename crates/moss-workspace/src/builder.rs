@@ -16,24 +16,24 @@ use sapic_system::{
     ports::{github_api::GitHubApiClient, gitlab_api::GitLabApiClient},
     user::profile::Profile,
 };
-use std::{cell::LazyCell, path::Path, sync::Arc};
+use std::{path::Path, sync::Arc};
 
 use crate::{
     Workspace, dirs, edit::WorkspaceEdit, environment::EnvironmentService,
     manifest::MANIFEST_FILE_NAME, project::ProjectService,
 };
 
-struct PredefinedEnvironment {
-    name: String,
-    color: Option<String>,
-}
+// struct PredefinedEnvironment {
+//     name: String,
+//     color: Option<String>,
+// }
 
-const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
-    vec![PredefinedEnvironment {
-        name: "Globals".to_string(),
-        color: Some("#3574F0".to_string()),
-    }]
-});
+// const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
+//     vec![PredefinedEnvironment {
+//         name: "Globals".to_string(),
+//         color: Some("#3574F0".to_string()),
+//     }]
+// });
 
 pub struct LoadWorkspaceParams {
     pub abs_path: Arc<Path>,
@@ -90,8 +90,8 @@ impl WorkspaceBuilder {
     pub async fn initialize(
         ctx: &dyn AnyAsyncContext,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn KvStorage>,
-        workspace_id: WorkspaceId,
+        _storage: Arc<dyn KvStorage>,
+        _workspace_id: WorkspaceId,
         params: CreateWorkspaceParams,
     ) -> joinerror::Result<()> {
         debug_assert!(params.abs_path.is_absolute());

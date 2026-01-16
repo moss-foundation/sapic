@@ -18,10 +18,7 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-use crate::{
-    Project, edit::ProjectEdit, git::GitClient, set_icon::SetIconService, vcs::Vcs,
-    worktree::Worktree,
-};
+use crate::{Project, git::GitClient, set_icon::SetIconService, vcs::Vcs, worktree::Worktree};
 
 const PROJECT_ICON_SIZE: u32 = 128;
 

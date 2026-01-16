@@ -1,15 +1,12 @@
-use async_trait::async_trait;
 use indexmap::IndexMap;
 use joinerror::ResultExt;
 use moss_common::continue_if_err;
 use moss_environment::{
     DescribeEnvironment,
-    builder::{CreateEnvironmentParams, EnvironmentBuilder},
     configuration::VariableDecl,
     models::types::AddVariableParams,
     storage::{key_environment, key_variable_local_value},
 };
-use moss_fs::FileSystem;
 use moss_hcl::{hcl_to_json, json_to_hcl};
 use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use sapic_base::{
@@ -22,14 +19,9 @@ use sapic_base::{
 };
 use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
-use std::{
-    collections::HashMap,
-    path::{Path, PathBuf},
-    sync::Arc,
-};
-use tokio::sync::RwLock;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use crate::environment::{CreateEnvironmentFsParams, EnvironmentCreateOp, EnvironmentServiceFs};
+use crate::environment::{CreateEnvironmentFsParams, EnvironmentServiceFs};
 
 pub struct CreateEnvironmentItemParams {
     pub env_id: EnvironmentId,

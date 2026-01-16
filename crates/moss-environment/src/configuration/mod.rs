@@ -1,7 +1,7 @@
 use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
 use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
-use sapic_base::environment::types::primitives::{EnvironmentId, VariableId, VariableName};
+use sapic_base::environment::types::primitives::{VariableId, VariableName};
 use serde::{Deserialize, Serialize};
 
 use crate::models::types::VariableOptions;

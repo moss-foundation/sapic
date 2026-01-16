@@ -359,7 +359,6 @@ pub async fn run<R: TauriRuntime>() {
                             app.ensure_onboarding(&app_delegate).await.unwrap();
                         } else {
                             app.ensure_welcome(&app_delegate).await.unwrap();
-                            println!("Not onboarding");
                         }
                     });
                 }

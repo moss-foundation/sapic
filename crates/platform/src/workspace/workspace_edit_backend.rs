@@ -134,7 +134,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_edit_rename() {
-        let (ctx, workspace_fs, storage, edit, test_path) = setup_workspace_edit_test().await;
+        let (ctx, workspace_fs, _storage, edit, test_path) = setup_workspace_edit_test().await;
         let id = WorkspaceId::new();
         let old_name = random_string(10);
         let new_name = random_string(10);

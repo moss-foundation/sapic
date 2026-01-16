@@ -88,7 +88,7 @@ impl AnyWorkspace for Workspace {
 impl Workspace {
     pub(super) async fn on_did_add_project(
         project_service: Arc<ProjectService>,
-        environment_service: Arc<EnvironmentService>,
+        _environment_service: Arc<EnvironmentService>,
         on_did_add_project_event: &Event<OnDidAddProject>,
     ) -> Subscription<OnDidAddProject> {
         on_did_add_project_event
@@ -96,9 +96,8 @@ impl Workspace {
                 let project_service_clone = project_service.clone();
                 // let environment_service_clone = environment_service.clone();
                 async move {
-                    let project = project_service_clone.project(&event.project_id).await;
+                    let _project = project_service_clone.project(&event.project_id).await;
 
-                    todo!("Add source")
                     // if let Some(project) = project {
                     //     environment_service_clone
                     //         .add_source(event.project_id.inner(), project.environments_path())
@@ -112,11 +111,11 @@ impl Workspace {
     }
 
     pub(super) async fn on_did_delete_project(
-        environment_service: Arc<EnvironmentService>,
+        _environment_service: Arc<EnvironmentService>,
         on_did_delete_project_event: &Event<OnDidDeleteProject>,
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
-            .subscribe(move |event| {
+            .subscribe(move |_event| {
                 // let environment_service_clone = environment_service.clone();
                 async move {
                     todo!("Remove source")

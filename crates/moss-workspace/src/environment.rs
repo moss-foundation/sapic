@@ -1,118 +1,97 @@
 use derive_more::Deref;
-use moss_environment::{
-    AnyEnvironment, DescribeEnvironment, Environment, ModifyEnvironmentParams,
-    builder::{EnvironmentBuilder, EnvironmentLoadParams},
-    constants::ENVIRONMENT_FILE_EXTENSION,
-    errors::ErrorIo,
-    models::types::AddVariableParams,
-    storage::key_variable,
-};
-use moss_fs::{FileSystem, RemoveOptions};
-use moss_logging::session;
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
+use moss_environment::Environment;
+use moss_fs::FileSystem;
+use moss_storage2::KvStorage;
 use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::{
-    environment::{PredefinedEnvironment, types::primitives::EnvironmentId},
-    project::types::primitives::ProjectId,
-    workspace::types::primitives::WorkspaceId,
+    environment::types::primitives::EnvironmentId, workspace::types::primitives::WorkspaceId,
 };
-use sapic_core::context::AnyAsyncContext;
 use std::{
-    cell::LazyCell,
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
-    pin::Pin,
     sync::Arc,
 };
-use tokio::sync::{RwLock, mpsc};
+use tokio::sync::RwLock;
 
-use crate::{
-    dirs,
-    errors::ErrorNotFound,
-    storage::{
-        KEY_ACTIVE_ENVIRONMENT, KEY_ENVIRONMENT_GROUP_PREFIX, KEY_ENVIRONMENT_PREFIX,
-        KEY_EXPANDED_ENVIRONMENT_GROUPS, key_environment, key_environment_group_order,
-        key_environment_order,
-    },
-};
+use crate::dirs;
 
-const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
+// const GLOBAL_ACTIVE_ENVIRONMENT_KEY: &'static str = "";
 
-pub struct ActivateEnvironmentItemParams {
-    pub environment_id: EnvironmentId,
-}
+// pub struct ActivateEnvironmentItemParams {
+//     pub environment_id: EnvironmentId,
+// }
 
-pub struct CreateEnvironmentItemParams {
-    pub project_id: Option<ProjectId>,
-    pub name: String,
-    pub order: isize,
-    pub color: Option<String>,
-    pub variables: Vec<AddVariableParams>,
-}
+// pub struct CreateEnvironmentItemParams {
+//     pub project_id: Option<ProjectId>,
+//     pub name: String,
+//     pub order: isize,
+//     pub color: Option<String>,
+//     pub variables: Vec<AddVariableParams>,
+// }
 
 #[derive(Clone, Deref)]
 struct EnvironmentItem {
-    pub id: EnvironmentId,
-    pub project_id: Option<Arc<String>>,
-    pub order: Option<isize>,
+    pub _id: EnvironmentId,
+    pub _project_id: Option<Arc<String>>,
+    pub _order: Option<isize>,
 
     #[deref]
     pub handle: Arc<Environment>,
 }
 
-pub struct EnvironmentItemDescription {
-    pub id: EnvironmentId,
-    pub project_id: Option<Arc<String>>,
-    pub is_active: bool,
-    pub display_name: String,
-    pub order: Option<isize>,
-    pub color: Option<String>,
-    pub abs_path: Arc<Path>,
-    pub total_variables: usize,
-}
+// pub struct EnvironmentItemDescription {
+//     pub id: EnvironmentId,
+//     pub project_id: Option<Arc<String>>,
+//     pub is_active: bool,
+//     pub display_name: String,
+//     pub order: Option<isize>,
+//     pub color: Option<String>,
+//     pub abs_path: Arc<Path>,
+//     pub total_variables: usize,
+// }
 
 type EnvironmentMap = HashMap<EnvironmentId, EnvironmentItem>;
 
 struct ServiceState {
     environments: EnvironmentMap,
-    active_environments: HashMap<Arc<String>, EnvironmentId>,
-    groups: FxHashSet<Arc<String>>,
-    expanded_groups: HashSet<Arc<String>>,
-    sources: FxHashMap<Arc<String>, PathBuf>,
+    _active_environments: HashMap<Arc<String>, EnvironmentId>,
+    _groups: FxHashSet<Arc<String>>,
+    _expanded_groups: HashSet<Arc<String>>,
+    _sources: FxHashMap<Arc<String>, PathBuf>,
 }
 
 pub struct EnvironmentService {
-    abs_path: PathBuf,
-    fs: Arc<dyn FileSystem>,
+    _abs_path: PathBuf,
+    _fs: Arc<dyn FileSystem>,
     state: Arc<RwLock<ServiceState>>,
-    storage: Arc<dyn KvStorage>,
-    workspace_id: WorkspaceId,
+    _storage: Arc<dyn KvStorage>,
+    _workspace_id: WorkspaceId,
 }
 
 impl EnvironmentService {
     /// `abs_path` is the absolute path to the workspace directory
     pub async fn new(
-        abs_path: &Path,
-        fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn KvStorage>,
-        workspace_id: WorkspaceId,
-        sources: FxHashMap<Arc<String>, PathBuf>,
+        _abs_path: &Path,
+        _fs: Arc<dyn FileSystem>,
+        _storage: Arc<dyn KvStorage>,
+        _workspace_id: WorkspaceId,
+        _sources: FxHashMap<Arc<String>, PathBuf>,
     ) -> joinerror::Result<Self> {
-        let abs_path = abs_path.join(dirs::ENVIRONMENTS_DIR);
+        let _abs_path = _abs_path.join(dirs::ENVIRONMENTS_DIR);
         let state = Arc::new(RwLock::new(ServiceState {
             environments: HashMap::new(),
-            active_environments: HashMap::new(),
-            groups: FxHashSet::default(),
-            expanded_groups: HashSet::new(),
-            sources,
+            _active_environments: HashMap::new(),
+            _groups: FxHashSet::default(),
+            _expanded_groups: HashSet::new(),
+            _sources,
         }));
 
         Ok(Self {
-            fs,
-            abs_path,
+            _fs,
+            _abs_path,
             state,
-            storage,
-            workspace_id,
+            _storage,
+            _workspace_id,
         })
     }
 

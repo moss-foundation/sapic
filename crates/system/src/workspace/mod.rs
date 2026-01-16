@@ -3,7 +3,6 @@ pub mod workspace_edit_service;
 pub mod workspace_service;
 
 use async_trait::async_trait;
-use moss_storage2::KvStorage;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::AnyAsyncContext;
 use std::path::PathBuf;

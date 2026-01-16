@@ -270,6 +270,7 @@ pub async fn test_stream_projects(
     (output, received_events.lock().unwrap().clone())
 }
 
+#[allow(unused)]
 pub async fn test_stream_environments<R: AppRuntime>(
     ctx: &R::AsyncContext,
     window: &MainWindow<R>,

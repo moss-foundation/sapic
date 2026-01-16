@@ -1,15 +1,11 @@
-use crate::{
-    environment::environment_service::CreateEnvironmentItemParams, project::LookedUpProject,
-};
+use crate::environment::environment_service::CreateEnvironmentItemParams;
 use async_trait::async_trait;
 use indexmap::IndexMap;
 use moss_bindingutils::primitives::ChangeString;
 use moss_environment::{
-    DescribeEnvironment,
     configuration::{SourceFile, VariableDecl},
     models::types::{AddVariableParams, UpdateVariableParams},
 };
-use moss_storage2::KvStorage;
 use sapic_base::{
     environment::types::primitives::{EnvironmentId, VariableId},
     project::types::primitives::ProjectId,

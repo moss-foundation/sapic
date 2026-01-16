@@ -1,10 +1,8 @@
 use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
-use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
@@ -22,7 +20,6 @@ use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
 };
-use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
     sync::{
@@ -34,7 +31,6 @@ use tokio::sync::OnceCell;
 
 use crate::{
     dirs,
-    edit::ProjectEdit,
     git::GitClient,
     set_icon::SetIconService,
     vcs::{ProjectVcs, Vcs},

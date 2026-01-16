@@ -1,15 +1,13 @@
-use crate::shared::{set_up_test_main_window, test_stream_environments};
 use moss_environment::models::types::{AddVariableParams, VariableOptions};
 use moss_testutils::random_name::random_environment_name;
 use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::main::{
-    environment::{
-        CreateEnvironmentInput, CreateEnvironmentOutput, DescribeEnvironmentInput,
-        StreamEnvironmentsEvent,
-    },
+    environment::{CreateEnvironmentInput, DescribeEnvironmentInput, StreamEnvironmentsEvent},
     project::{CreateProjectInput, CreateProjectParams},
 };
 use serde_json::Value as JsonValue;
+
+use crate::shared::{set_up_test_main_window, test_stream_environments};
 
 #[cfg(feature = "integration-tests")]
 mod shared;

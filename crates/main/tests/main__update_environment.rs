@@ -1,4 +1,4 @@
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::set_up_test_main_window;
 use moss_bindingutils::primitives::{ChangeJsonValue, ChangeString};
 use moss_environment::models::types::{AddVariableParams, UpdateVariableParams, VariableOptions};
 use moss_testutils::random_name::random_environment_name;
@@ -9,7 +9,7 @@ use sapic_base::{
 use sapic_ipc::contracts::main::{
     environment::{
         CreateEnvironmentInput, DescribeEnvironmentInput, DescribeEnvironmentOutput,
-        StreamEnvironmentsEvent, UpdateEnvironmentInput, UpdateEnvironmentParams,
+        UpdateEnvironmentInput, UpdateEnvironmentParams,
     },
     project::{CreateProjectInput, CreateProjectParams},
 };

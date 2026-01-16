@@ -1,22 +1,11 @@
-use main::MainWindow;
-use moss_applib::AppRuntime;
 use moss_testutils::random_name::random_project_name;
 use sapic_base::{
     environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
 };
-use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::contracts::main::{
-    environment::{
-        ActivateEnvironmentInput, CreateEnvironmentInput, StreamEnvironmentsEvent,
-        StreamProjectEnvironmentsInput,
-    },
+    environment::{ActivateEnvironmentInput, CreateEnvironmentInput},
     project::{CreateProjectInput, CreateProjectParams},
 };
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex},
-};
-use tauri::ipc::{Channel, InvokeResponseBody};
 
 use crate::shared::{set_up_test_main_window, test_stream_environments};
 
