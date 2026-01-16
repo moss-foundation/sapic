@@ -97,7 +97,8 @@ export const deleteWorkspaceOutputSchema = z.object({
 });
 
 export const describeEnvironmentInputSchema = z.object({
-  id: z.string(),
+  projectId: z.string().nullable(),
+  environmentId: z.string(),
 });
 
 export const describeProjectInputSchema = z.object({
@@ -208,6 +209,8 @@ export const createProjectInputSchema = z.object({
 });
 
 export const describeEnvironmentOutputSchema = z.object({
+  name: z.string(),
+  color: z.string().nullable(),
   variables: variableInfoSchema,
 });
 

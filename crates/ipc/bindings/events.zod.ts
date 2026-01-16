@@ -8,6 +8,7 @@ export const streamEnvironmentsEventSchema = z.object({
   projectId: z.string().optional(),
   isActive: z.boolean(),
   name: z.string(),
+  color: z.string().optional(),
   order: z.number().optional(),
   totalVariables: z.number(),
 });

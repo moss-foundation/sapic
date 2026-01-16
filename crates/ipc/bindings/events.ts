@@ -39,6 +39,7 @@ export type StreamEnvironmentsEvent = {
   projectId?: string;
   isActive: boolean;
   name: string;
+  color?: string;
   order?: number;
   totalVariables: number;
 };

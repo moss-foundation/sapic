@@ -145,12 +145,12 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
-export type DescribeEnvironmentInput = { id: string };
+export type DescribeEnvironmentInput = { projectId: string | null; environmentId: string };
 
 /**
  * @category Operation
  */
-export type DescribeEnvironmentOutput = { variables: VariableInfo };
+export type DescribeEnvironmentOutput = { name: string; color: string | null; variables: VariableInfo };
 
 /**
  * @category Operation
