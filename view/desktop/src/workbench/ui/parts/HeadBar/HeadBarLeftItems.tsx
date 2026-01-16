@@ -1,4 +1,3 @@
-import { error } from "console";
 import { useState } from "react";
 
 import { useDeleteWorkspace } from "@/adapters/tanstackQuery/workspace";
