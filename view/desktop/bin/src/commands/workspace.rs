@@ -369,6 +369,7 @@ pub async fn describe_environment<'a, R: tauri::Runtime>(
     .await
 }
 
+// TODO: This command will be removed once the frontend gets rid of it
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
 pub async fn update_environment_group<'a, R: tauri::Runtime>(
@@ -378,21 +379,10 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
     _input: UpdateEnvironmentGroupInput,
     _options: Options,
 ) -> joinerror::Result<()> {
-    // super::with_workspace_timeout(
-    //     ctx.inner(),
-    //     app,
-    //     window,
-    //     options,
-    //     |ctx, _, workspace| async move {
-    //         workspace
-    //             .update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
-    //             .await
-    //     },
-    // )
-    // .await
     Ok(())
 }
 
+// TODO: This command will be removed once the frontend gets rid of it
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
 pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
@@ -402,17 +392,5 @@ pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     _input: BatchUpdateEnvironmentGroupInput,
     _options: Options,
 ) -> joinerror::Result<()> {
-    // super::with_workspace_timeout(
-    //     ctx.inner(),
-    //     app,
-    //     window,
-    //     options,
-    //     |ctx, _, workspace| async move {
-    //         workspace
-    //             .batch_update_environment_group::<TauriAppRuntime<R>>(&ctx, input)
-    //             .await
-    //     },
-    // )
-    // .await
     Ok(())
 }

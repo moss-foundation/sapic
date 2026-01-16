@@ -6,6 +6,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::models::types::VariableOptions;
 
+// Move to base crate
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MetadataDecl {
     pub name: String,

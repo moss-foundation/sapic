@@ -1,10 +1,3 @@
-use crate::{
-    builder::{OnDidAddProject, OnDidDeleteProject},
-    edit::WorkspaceEdit,
-    environment::EnvironmentService,
-    manifest::MANIFEST_FILE_NAME,
-    project::ProjectService,
-};
 use anyhow::Result;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
@@ -25,6 +18,14 @@ use sapic_core::{
 use sapic_system::user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
+
+use crate::{
+    builder::{OnDidAddProject, OnDidDeleteProject},
+    edit::WorkspaceEdit,
+    environment::EnvironmentService,
+    manifest::MANIFEST_FILE_NAME,
+    project::ProjectService,
+};
 
 pub struct WorkspaceSummary {
     pub name: String,
@@ -97,14 +98,6 @@ impl Workspace {
                 // let environment_service_clone = environment_service.clone();
                 async move {
                     let _project = project_service_clone.project(&event.project_id).await;
-
-                    // if let Some(project) = project {
-                    //     environment_service_clone
-                    //         .add_source(event.project_id.inner(), project.environments_path())
-                    //         .await;
-                    // } else {
-                    //     unreachable!()
-                    // }
                 }
             })
             .await
@@ -115,15 +108,7 @@ impl Workspace {
         on_did_delete_project_event: &Event<OnDidDeleteProject>,
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
-            .subscribe(move |_event| {
-                // let environment_service_clone = environment_service.clone();
-                async move {
-                    todo!("Remove source")
-                    // environment_service_clone
-                    //     .remove_source(&event.project_id.inner())
-                    //     .await;
-                }
-            })
+            .subscribe(move |_event| async move {})
             .await
     }
 }

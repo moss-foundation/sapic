@@ -14,6 +14,7 @@ Default permissions for the template-parser plugin
 <th>Description</th>
 </tr>
 
+
 <tr>
 <td>
 
