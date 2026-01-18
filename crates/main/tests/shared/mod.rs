@@ -177,7 +177,7 @@ pub async fn set_up_test_main_window() -> (
         );
 
         let environment_service = EnvironmentService::new(
-            workspace_id.clone(),
+            Some(workspace_id.clone()),
             None,
             Arc::new(EnvironmentServiceFs::new(
                 workspace_environments_path,

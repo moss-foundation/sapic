@@ -688,7 +688,7 @@ impl RuntimeWorkspace {
 
                     let environments_path = handle.abs_path().join("environments");
                     let environment_service = EnvironmentService::new(
-                        self.id.clone(),
+                        Some(self.id.clone()),
                         Some(project.id.clone()),
                         Arc::new(EnvironmentServiceFs::new(
                             environments_path,
@@ -889,7 +889,7 @@ impl Workspace for RuntimeWorkspace {
 
         let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
-            self.id.clone(),
+            Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,
@@ -1038,7 +1038,7 @@ impl Workspace for RuntimeWorkspace {
 
         let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
-            self.id.clone(),
+            Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,
@@ -1113,7 +1113,7 @@ impl Workspace for RuntimeWorkspace {
 
         let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
-            self.id.clone(),
+            Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,
@@ -1188,7 +1188,7 @@ impl Workspace for RuntimeWorkspace {
 
         let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
-            self.id.clone(),
+            Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,

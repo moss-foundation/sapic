@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use indexmap::IndexMap;
 use joinerror::ResultExt;
 use moss_common::continue_if_err;
@@ -21,7 +22,9 @@ use sapic_core::context::AnyAsyncContext;
 use serde_json::Value as JsonValue;
 use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
-use crate::environment::{CreateEnvironmentFsParams, EnvironmentServiceFs};
+use crate::environment::{
+    CreateEnvironmentFsParams, EnvironmentServiceFs, WorkspaceEnvironmentCreateOp,
+};
 
 pub struct CreateEnvironmentItemParams {
     pub env_id: EnvironmentId,
@@ -42,7 +45,8 @@ pub struct EnvironmentItem {
 // FIXME: Should they both store variables in the Workspace storage scope?
 
 pub struct EnvironmentService {
-    workspace_id: WorkspaceId,
+    // This filed is None for app-level environment service
+    workspace_id: Option<WorkspaceId>,
     project_id: Option<ProjectId>,
     backend: Arc<dyn EnvironmentServiceFs>,
     storage: Arc<dyn KvStorage>,
@@ -50,7 +54,7 @@ pub struct EnvironmentService {
 
 impl EnvironmentService {
     pub fn new(
-        workspace_id: WorkspaceId,
+        workspace_id: Option<WorkspaceId>,
         project_id: Option<ProjectId>,
         backend: Arc<dyn EnvironmentServiceFs>,
         storage: Arc<dyn KvStorage>,
@@ -89,6 +93,11 @@ impl EnvironmentService {
         ctx: &dyn AnyAsyncContext,
         params: CreateEnvironmentItemParams,
     ) -> joinerror::Result<EnvironmentItem> {
+        debug_assert!(
+            self.workspace_id.is_some(),
+            "This method should only be called from workspace/project environment services"
+        );
+
         let mut variable_decls = IndexMap::new();
         let mut variable_localvalues = HashMap::new();
         for param in params.variables {
@@ -129,7 +138,7 @@ impl EnvironmentService {
                 .storage
                 .put(
                     ctx,
-                    StorageScope::Workspace(self.workspace_id.inner()),
+                    StorageScope::Workspace(self.workspace_id.clone().unwrap().inner()),
                     &local_value_key,
                     local_value,
                 )
@@ -145,15 +154,60 @@ impl EnvironmentService {
             internal_abs_path,
         })
     }
+
+    // This method is used by App to create predefined environments for newly created workspaces
+    pub async fn create_workspace_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        workspace_id: &WorkspaceId,
+        params: CreateEnvironmentItemParams,
+    ) -> joinerror::Result<PathBuf> {
+        let mut variable_decls = IndexMap::new();
+        for param in params.variables {
+            let id = VariableId::new();
+            let global_value = continue_if_err!(json_to_hcl(&param.global_value), |err| {
+                println!("failed to convert global value expression: {}", err); // TODO: log error
+            });
+            let decl = VariableDecl {
+                name: param.name,
+                value: global_value,
+                description: param.desc,
+                options: param.options,
+            };
+            variable_decls.insert(id, decl);
+        }
+
+        let abs_path = self
+            .backend
+            .create_workspace_environment(
+                ctx,
+                workspace_id,
+                &params.env_id,
+                &CreateEnvironmentFsParams {
+                    name: params.name,
+                    color: params.color,
+                    variables: variable_decls,
+                },
+            )
+            .await?;
+
+        Ok(abs_path)
+    }
+
     pub async fn delete_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<()> {
+        debug_assert!(
+            self.workspace_id.is_some(),
+            "This method should only be called from workspace/project environment services"
+        );
+
         self.backend.remove_environment(ctx, id).await?;
 
         // FIXME: Should the scope be project if the environment is a project level environment?
-        let storage_scope = StorageScope::Workspace(self.workspace_id.inner());
+        let storage_scope = StorageScope::Workspace(self.workspace_id.clone().unwrap().inner());
         // Clean all the metadata and variables related to the deleted environment
         if let Err(e) = self
             .storage
@@ -171,13 +225,18 @@ impl EnvironmentService {
         ctx: &dyn AnyAsyncContext,
         id: &EnvironmentId,
     ) -> joinerror::Result<DescribeEnvironment> {
+        debug_assert!(
+            self.workspace_id.is_some(),
+            "This method should only be called from workspace/project environment services"
+        );
+
         let parsed = self.backend.read_environment_sourcefile(ctx, id).await?;
         let mut variables =
             HashMap::with_capacity(parsed.variables.as_ref().map_or(0, |v| v.len()));
 
         if let Some(vars) = parsed.variables.as_ref() {
             // TODO: Use project storage scope for project environments
-            let storage_scope = StorageScope::Workspace(self.workspace_id.inner());
+            let storage_scope = StorageScope::Workspace(self.workspace_id.clone().unwrap().inner());
 
             for (var_id, var) in vars.iter() {
                 let global_value = continue_if_err!(hcl_to_json(&var.value), |err| {
@@ -221,5 +280,18 @@ impl EnvironmentService {
             color: parsed.metadata.color.clone(),
             variables,
         })
+    }
+}
+
+#[async_trait]
+impl WorkspaceEnvironmentCreateOp for EnvironmentService {
+    async fn create(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        workspace_id: &WorkspaceId,
+        params: CreateEnvironmentItemParams,
+    ) -> joinerror::Result<PathBuf> {
+        self.create_workspace_environment(ctx, workspace_id, params)
+            .await
     }
 }

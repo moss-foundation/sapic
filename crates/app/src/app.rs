@@ -27,9 +27,7 @@ use sapic_platform::{
 use sapic_system::{
     application::extensions_service::ExtensionsApiService,
     configuration::configuration_registry::RegisterConfigurationContribution,
-    environment::{
-        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
-    },
+    environment::environment_service::EnvironmentService,
     language::language_service::LanguageService,
     ports::{
         github_api::GitHubApiClient, gitlab_api::GitLabApiClient, server_api::ServerApiClient,
@@ -87,7 +85,7 @@ impl<R: TauriRuntime> DerefMut for AppCommands<R> {
 pub struct AppServices {
     pub workspace_service: Arc<WorkspaceService>,
     pub workspace_edit_service: Arc<WorkspaceEditService>,
-    pub environment_service: Arc<AppEnvironmentService>,
+    pub environment_service: Arc<EnvironmentService>,
     pub theme_service: Arc<ThemeService>,
     pub language_service: Arc<LanguageService>,
     pub extension_api_service: Arc<ExtensionsApiService>,
@@ -206,7 +204,7 @@ impl<R: AppRuntime> App<R> {
 
         let environments_path = abs_path.join("environments");
         let environment_service = EnvironmentService::new(
-            workspace_id.clone(),
+            Some(workspace_id.clone()),
             None,
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,
@@ -292,7 +290,7 @@ impl<R: AppRuntime> App<R> {
 
         let environments_path = abs_path.join("environments");
         let environment_service = EnvironmentService::new(
-            workspace_id.clone(),
+            Some(workspace_id.clone()),
             None,
             Arc::new(EnvironmentServiceFs::new(
                 environments_path,

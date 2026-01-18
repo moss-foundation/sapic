@@ -1,17 +1,17 @@
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::AnyAsyncContext;
 use sapic_system::environment::{
-    EnvironmentCreateOp, environment_service::CreateEnvironmentItemParams,
+    WorkspaceEnvironmentCreateOp, environment_service::CreateEnvironmentItemParams,
 };
 use std::{path::PathBuf, sync::Arc};
 
 #[derive(Clone)]
 pub struct WelcomeWindowEnvironmentOps {
-    initialize_environment: Arc<dyn EnvironmentCreateOp>,
+    initialize_environment: Arc<dyn WorkspaceEnvironmentCreateOp>,
 }
 
 impl WelcomeWindowEnvironmentOps {
-    pub fn new(initialize_environment: Arc<dyn EnvironmentCreateOp>) -> Self {
+    pub fn new(initialize_environment: Arc<dyn WorkspaceEnvironmentCreateOp>) -> Self {
         Self {
             initialize_environment,
         }

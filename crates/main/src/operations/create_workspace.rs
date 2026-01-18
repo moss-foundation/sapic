@@ -33,7 +33,7 @@ impl<R: AppRuntime> MainWindow<R> {
 
         for env in PREDEFINED_ENVIRONMENTS.iter() {
             self.environment_ops
-                .create(
+                .create_workspace_environment(
                     ctx,
                     &output.id,
                     CreateEnvironmentItemParams {

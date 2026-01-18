@@ -17,7 +17,6 @@ use std::{
     sync::Arc,
 };
 
-pub mod app_environment_service;
 pub mod environment_edit_service;
 pub mod environment_service;
 
@@ -64,27 +63,21 @@ pub trait EnvironmentServiceFs: Send + Sync {
         params: &CreateEnvironmentFsParams,
     ) -> joinerror::Result<PathBuf>;
 
-    // HACK: Right now the environment file name is based on the environment name, which I think should be fixed
-    // This means that we will need to pass in the full absolute path here
-
-    async fn remove_environment(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        id: &EnvironmentId,
-    ) -> joinerror::Result<()>;
-}
-
-// This is only used by the app to create predefined environments after creating a workspace
-// Since at that moment we don't immediately get the workspace handle
-#[async_trait]
-pub trait AppEnvironmentServiceFs: Send + Sync {
-    async fn create_environment(
+    // This method is the only one used by app-level environment service
+    // It's used to create predefined environments for newly created workspaces
+    async fn create_workspace_environment(
         &self,
         ctx: &dyn AnyAsyncContext,
         workspace_id: &WorkspaceId,
         id: &EnvironmentId,
         params: &CreateEnvironmentFsParams,
     ) -> joinerror::Result<PathBuf>;
+
+    async fn remove_environment(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+        id: &EnvironmentId,
+    ) -> joinerror::Result<()>;
 }
 
 #[derive(Clone)]
@@ -107,7 +100,7 @@ pub trait EnvironmentEditBackend: Send + Sync {
 
 // This is used by Welcome and Main window to create predefined environments when creating a new workspace
 #[async_trait]
-pub trait EnvironmentCreateOp: Send + Sync {
+pub trait WorkspaceEnvironmentCreateOp: Send + Sync {
     async fn create(
         &self,
         ctx: &dyn AnyAsyncContext,
