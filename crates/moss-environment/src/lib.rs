@@ -1,10 +1,8 @@
 pub mod builder;
 pub mod configuration;
-pub mod edit;
 pub mod environment;
 pub mod models;
 pub mod storage;
-pub mod utils;
 
 pub use environment::Environment;
 
@@ -13,8 +11,7 @@ use sapic_base::environment::types::{
     VariableInfo,
     primitives::{EnvironmentId, VariableId},
 };
-use sapic_core::context::AnyAsyncContext;
-use std::{collections::HashMap, path::Path, sync::Arc};
+use std::collections::HashMap;
 
 use crate::models::types::{AddVariableParams, UpdateVariableParams};
 
@@ -63,19 +60,17 @@ pub struct DescribeEnvironment {
     pub id: EnvironmentId,
     pub name: String,
     pub color: Option<String>,
-    pub abs_path: Arc<Path>,
     pub variables: HashMap<VariableId, VariableInfo>,
     // TODO: git info
 }
 
 #[allow(private_bounds, async_fn_in_trait)]
 pub trait AnyEnvironment {
-    async fn abs_path(&self) -> Arc<Path>;
-    async fn name(&self) -> joinerror::Result<String>;
-    async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
-    async fn modify(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        params: ModifyEnvironmentParams,
-    ) -> joinerror::Result<()>;
+    // async fn abs_path(&self) -> &Path;
+    // async fn describe(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<DescribeEnvironment>;
+    // async fn modify(
+    //     &self,
+    //     ctx: &dyn AnyAsyncContext,
+    //     params: ModifyEnvironmentParams,
+    // ) -> joinerror::Result<()>;
 }

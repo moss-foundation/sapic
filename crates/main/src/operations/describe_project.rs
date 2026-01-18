@@ -13,7 +13,13 @@ impl<R: AppRuntime> MainWindow<R> {
         ctx: &R::AsyncContext,
         input: &DescribeProjectInput,
     ) -> joinerror::Result<DescribeProjectOutput> {
-        let project = self.workspace.load().project(ctx, &input.id).await?.handle;
+        let project = self
+            .workspace
+            .load()
+            .project(ctx, &input.id)
+            .await?
+            .handle
+            .clone();
 
         let details = project.details(ctx).await?;
         let (vcs_summary, contributors) = if let Some(vcs) = project.vcs::<R>() {

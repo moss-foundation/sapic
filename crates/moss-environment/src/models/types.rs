@@ -6,7 +6,7 @@ use ts_rs::TS;
 use sapic_base::environment::types::primitives::{VariableId, VariableName};
 
 /// @category Type
-#[derive(Clone, Debug, Deserialize, Serialize, TS)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, TS)]
 #[ts(export, export_to = "types.ts")]
 #[serde(rename_all = "camelCase")]
 pub struct VariableOptions {

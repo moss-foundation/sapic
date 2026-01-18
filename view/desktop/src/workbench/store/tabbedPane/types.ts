@@ -1,7 +1,7 @@
 import { AddPanelOptions } from "moss-tabs";
 import { ComponentType } from "react";
 
-import { tabbedPaneComponents } from "@/workbench/ui/parts";
+import { tabbedPaneComponents } from "@/workbench/ui/parts/TabbedPane/TabbedPaneComponents";
 
 // 1. EXTRACT PARAMS
 // We return 'Record<string, never>' (an empty object) instead of 'undefined'.

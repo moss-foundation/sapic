@@ -107,10 +107,7 @@ impl WorkspaceCreateOp for WorkspaceService {
         name: String,
     ) -> joinerror::Result<CreatedWorkspace> {
         let id = WorkspaceId::new();
-        let abs_path = self
-            .fs
-            .create_workspace(ctx, &id, &name, self.storage.clone())
-            .await?;
+        let abs_path = self.fs.create_workspace(ctx, &id, &name).await?;
 
         Ok(CreatedWorkspace { id, name, abs_path })
     }

@@ -1,18 +1,30 @@
 #![cfg(feature = "integration-tests")]
 
-use main::{MainWindow, workspace::RuntimeWorkspace, workspace_ops::MainWindowWorkspaceOps};
+use main::{
+    MainWindow, environment_ops::MainWindowEnvironmentOps, workspace::RuntimeWorkspace,
+    workspace_ops::MainWindowWorkspaceOps,
+};
 use moss_app_delegate::AppDelegate;
-use moss_applib::mock::MockAppRuntime;
+use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_keyring::KeyringClientImpl;
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::random_string;
-use moss_workspace::models::events::StreamProjectsEvent;
 use reqwest::ClientBuilder as HttpClientBuilder;
-use sapic_base::workspace::types::primitives::WorkspaceId;
+use sapic_base::{
+    environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
+    workspace::types::primitives::WorkspaceId,
+};
 use sapic_core::context::ArcContext;
-use sapic_ipc::contracts::main::project::StreamProjectsOutput;
+use sapic_ipc::contracts::main::{
+    environment::{StreamEnvironmentsEvent, StreamProjectEnvironmentsInput},
+    project::{StreamProjectsEvent, StreamProjectsOutput},
+};
 use sapic_platform::{
+    environment::{
+        app_environment_service_fs::AppEnvironmentServiceFs,
+        environment_service_fs::EnvironmentServiceFs,
+    },
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
     gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
     project::project_service_fs::ProjectServiceFs,
@@ -23,6 +35,9 @@ use sapic_platform::{
 };
 use sapic_runtime::{app::kv_storage::AppStorage, user::AppUser};
 use sapic_system::{
+    environment::{
+        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
+    },
     ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
     project::project_service::ProjectService,
     workspace::{
@@ -31,6 +46,7 @@ use sapic_system::{
 };
 use sapic_window::OldSapicWindowBuilder;
 use std::{
+    collections::HashMap,
     path::PathBuf,
     pin::Pin,
     sync::{Arc, Mutex},
@@ -127,10 +143,15 @@ pub async fn set_up_test_main_window() -> (
     // Main Window requires a workspace. We will create it first
 
     let workspace_id = WorkspaceId::new();
-    let workspace_path = delegate.workspaces_dir().join(workspace_id.to_string());
+    let workspaces_path = delegate.workspaces_dir();
+    let workspace_path = workspaces_path.join(workspace_id.to_string());
     let workspace_projects_path = workspace_path.join("projects");
+    let workspace_environments_path = workspace_path.join("environments");
     tokio::fs::create_dir_all(&workspace_path).await.unwrap();
     tokio::fs::create_dir_all(&workspace_projects_path)
+        .await
+        .unwrap();
+    tokio::fs::create_dir_all(&workspace_environments_path)
         .await
         .unwrap();
 
@@ -148,13 +169,23 @@ pub async fn set_up_test_main_window() -> (
     };
 
     let workspace = {
-        let projects_path = workspace_path.join("projects");
         let project_service = ProjectService::new(
             workspace_id.clone(),
-            ProjectServiceFs::new(fs.clone(), projects_path.clone()),
+            ProjectServiceFs::new(fs.clone(), workspace_projects_path),
             fs.clone(),
             storage.clone(),
         );
+
+        let environment_service = EnvironmentService::new(
+            Some(workspace_id.clone()),
+            None,
+            Arc::new(EnvironmentServiceFs::new(
+                workspace_environments_path,
+                fs.clone(),
+            )),
+            storage.clone(),
+        )
+        .into();
 
         Arc::new(RuntimeWorkspace::new(
             workspace_id.clone(),
@@ -166,11 +197,12 @@ pub async fn set_up_test_main_window() -> (
             github_api_client.clone(),
             gitlab_api_client.clone(),
             project_service,
+            environment_service,
         ))
     };
 
     let old_sapic_window = OldSapicWindowBuilder::new(
-        fs,
+        fs.clone(),
         storage.clone(),
         keyring.clone(),
         server_api_client.clone(),
@@ -184,12 +216,17 @@ pub async fn set_up_test_main_window() -> (
 
     let workspace_ops = MainWindowWorkspaceOps::new(workspace_service.clone());
 
+    let app_environment_service = Arc::new(AppEnvironmentService::new(
+        AppEnvironmentServiceFs::new(&workspaces_path, fs.clone()),
+    ));
+
     let main_window = MainWindow::new(
         &delegate,
         0,
         old_sapic_window,
         workspace.clone(),
         workspace_ops,
+        MainWindowEnvironmentOps::new(app_environment_service.clone()),
     )
     .await
     .unwrap();
@@ -231,4 +268,43 @@ pub async fn test_stream_projects(
     let output = window.stream_projects(ctx, channel).await.unwrap();
 
     (output, received_events.lock().unwrap().clone())
+}
+
+#[allow(unused)]
+pub async fn test_stream_environments<R: AppRuntime>(
+    ctx: &R::AsyncContext,
+    window: &MainWindow<R>,
+    project_id: Option<ProjectId>,
+) -> HashMap<EnvironmentId, StreamEnvironmentsEvent> {
+    let received_events = Arc::new(Mutex::new(Vec::new()));
+    let received_events_clone = received_events.clone();
+
+    let channel = Channel::new(move |body: InvokeResponseBody| {
+        if let InvokeResponseBody::Json(json_str) = body {
+            if let Ok(event) = serde_json::from_str::<StreamEnvironmentsEvent>(&json_str) {
+                received_events_clone.lock().unwrap().push(event);
+            }
+        }
+        Ok(())
+    });
+
+    if let Some(project_id) = project_id {
+        window
+            .stream_project_environments(
+                ctx,
+                StreamProjectEnvironmentsInput { project_id },
+                channel,
+            )
+            .await
+            .unwrap();
+    } else {
+        window.stream_environments(ctx, channel).await.unwrap();
+    }
+
+    received_events
+        .lock()
+        .unwrap()
+        .iter()
+        .map(|event| (event.id.clone(), event.clone()))
+        .collect()
 }

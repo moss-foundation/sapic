@@ -1,5 +1,6 @@
 pub mod application;
 pub mod configuration;
+pub mod environment;
 pub mod language;
 pub mod ports;
 pub mod project;

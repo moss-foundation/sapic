@@ -1,20 +1,22 @@
 use hcl::Expression as HclExpression;
 use indexmap::IndexMap;
 use moss_hcl::{Block, LabeledBlock, deserialize_expression, expression, serialize_expression};
-use sapic_base::environment::types::primitives::{EnvironmentId, VariableId, VariableName};
+use sapic_base::environment::types::primitives::{VariableId, VariableName};
 use serde::{Deserialize, Serialize};
 
 use crate::models::types::VariableOptions;
 
+// Move to base crate
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MetadataDecl {
-    pub id: EnvironmentId,
+    pub name: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub color: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct VariableDecl {
     pub name: VariableName,
     #[serde(

@@ -10,10 +10,12 @@ import {
   DeleteEnvironmentOutput,
   StreamEnvironmentsEvent,
   StreamEnvironmentsOutput,
+  StreamProjectEnvironmentsInput,
+  StreamProjectEnvironmentsOutput,
   UpdateEnvironmentGroupInput,
   UpdateEnvironmentInput,
   UpdateEnvironmentOutput,
-} from "@repo/moss-workspace";
+} from "@repo/ipc";
 import { Channel } from "@tauri-apps/api/core";
 
 export interface IEnvironmentIpc {
@@ -25,6 +27,10 @@ export interface IEnvironmentIpc {
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
   streamEnvironments: (channelEvent: Channel<StreamEnvironmentsEvent>) => Promise<StreamEnvironmentsOutput>;
+  streamProjectEnvironments: (
+    input: StreamProjectEnvironmentsInput,
+    channelEvent: Channel<StreamEnvironmentsEvent>
+  ) => Promise<StreamProjectEnvironmentsOutput>;
 
   updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
   updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;

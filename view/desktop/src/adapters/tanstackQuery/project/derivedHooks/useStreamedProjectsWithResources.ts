@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
+import { StreamProjectsEvent } from "@repo/ipc";
 import { StreamResourcesEvent } from "@repo/moss-project";
-import { StreamProjectsEvent } from "@repo/moss-workspace";
 import { useQueries } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";

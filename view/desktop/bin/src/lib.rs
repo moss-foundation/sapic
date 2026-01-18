@@ -309,9 +309,11 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_environment,
             commands::batch_update_environment,
             commands::stream_environments,
+            commands::stream_project_environments,
             commands::delete_environment,
             commands::update_environment_group,
             commands::batch_update_environment_group,
+            commands::describe_environment,
             //
             // Project
             //
@@ -357,7 +359,6 @@ pub async fn run<R: TauriRuntime>() {
                             app.ensure_onboarding(&app_delegate).await.unwrap();
                         } else {
                             app.ensure_welcome(&app_delegate).await.unwrap();
-                            println!("Not onboarding");
                         }
                     });
                 }

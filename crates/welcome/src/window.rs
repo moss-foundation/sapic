@@ -1,6 +1,10 @@
+pub mod environment_ops;
 pub mod operations;
 pub mod workspace_ops;
 
+use crate::{
+    environment_ops::WelcomeWindowEnvironmentOps, workspace_ops::WelcomeWindowWorkspaceOps,
+};
 use async_trait::async_trait;
 use derive_more::Deref;
 use moss_app_delegate::AppDelegate;
@@ -14,8 +18,6 @@ use sapic_window2::{
 use std::{collections::HashMap, sync::Arc};
 use tokio::sync::RwLock;
 
-use crate::workspace_ops::WelcomeWindowWorkspaceOps;
-
 pub const WELCOME_WINDOW_LABEL: &str = "welcome";
 const WELCOME_WINDOW_ENTRY_POINT: &str = "welcome.html";
 
@@ -26,6 +28,7 @@ pub struct WelcomeWindow<R: AppRuntime> {
     pub(crate) handle: WindowHandle<R::EventLoop>,
 
     pub(crate) workspace_ops: WelcomeWindowWorkspaceOps,
+    pub(crate) environment_ops: WelcomeWindowEnvironmentOps,
 
     // Store cancellers by the id of API requests
     pub(crate) tracked_cancellations: Arc<RwLock<HashMap<String, Canceller>>>,
@@ -36,6 +39,7 @@ impl<R: AppRuntime> Clone for WelcomeWindow<R> {
         Self {
             handle: self.handle.clone(),
             workspace_ops: self.workspace_ops.clone(),
+            environment_ops: self.environment_ops.clone(),
             tracked_cancellations: self.tracked_cancellations.clone(),
         }
     }
@@ -45,6 +49,7 @@ impl<R: AppRuntime> WelcomeWindow<R> {
     pub async fn new(
         delegate: &AppDelegate<R>,
         workspace_ops: WelcomeWindowWorkspaceOps,
+        environment_ops: WelcomeWindowEnvironmentOps,
     ) -> joinerror::Result<Self> {
         let tao_handle = delegate.handle();
         let win_builder = tauri::WebviewWindowBuilder::new(
@@ -81,6 +86,7 @@ impl<R: AppRuntime> WelcomeWindow<R> {
         Ok(Self {
             handle: WindowHandle::new(webview_window),
             workspace_ops,
+            environment_ops,
             tracked_cancellations: Default::default(),
         })
     }

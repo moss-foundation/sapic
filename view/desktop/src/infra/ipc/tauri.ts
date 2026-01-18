@@ -67,6 +67,7 @@ export type TauriIpcCommand =
   | "update_environment_group"
   | "batch_update_environment_group"
   | "activate_environment"
+  | "describe_environment"
   //
   // Project
   //

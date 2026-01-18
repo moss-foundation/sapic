@@ -4,15 +4,24 @@ use moss_applib::mock::MockAppRuntime;
 use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_string;
 use sapic_core::context::ArcContext;
-use sapic_platform::workspace::{
-    workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
+use sapic_platform::{
+    environment::app_environment_service_fs::AppEnvironmentServiceFs,
+    workspace::{
+        workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
+    },
 };
 use sapic_runtime::app::kv_storage::AppStorage;
-use sapic_system::workspace::{
-    workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
+use sapic_system::{
+    environment::app_environment_service::AppEnvironmentService,
+    workspace::{
+        workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
+    },
 };
 use std::{path::PathBuf, pin::Pin, sync::Arc, time::Duration};
-use welcome::{WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps};
+use welcome::{
+    WelcomeWindow, environment_ops::WelcomeWindowEnvironmentOps,
+    workspace_ops::WelcomeWindowWorkspaceOps,
+};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 
@@ -71,9 +80,17 @@ pub async fn set_up_test_welcome_window() -> (
         storage.clone(),
     ));
 
+    let app_environment_service = AppEnvironmentService::new(AppEnvironmentServiceFs::new(
+        &delegate.workspaces_dir(),
+        fs.clone(),
+    ));
+
+    let environment_ops = WelcomeWindowEnvironmentOps::new(Arc::new(app_environment_service));
+
     let welcome_window = WelcomeWindow::new(
         &delegate,
         WelcomeWindowWorkspaceOps::new(workspace_service.clone(), workspace_edit_service),
+        environment_ops,
     )
     .await
     .unwrap();

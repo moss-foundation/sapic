@@ -1,7 +1,7 @@
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE, ENVIRONMENT_LIST_DRAG_TYPE } from "./constants";
 import {

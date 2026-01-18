@@ -10,13 +10,12 @@ import {
   DeleteEnvironmentInput,
   DeleteEnvironmentOutput,
   StreamEnvironmentsEvent,
+  StreamProjectEnvironmentsInput,
   UpdateEnvironmentGroupInput,
   UpdateEnvironmentInput,
   UpdateEnvironmentOutput,
-} from "@repo/moss-workspace";
+} from "@repo/ipc";
 import { Channel } from "@tauri-apps/api/core";
-
-import { StreamEnvironmentsResult } from "./types";
 
 interface IEnvironmentService {
   activateEnvironment: (input: ActivateEnvironmentInput) => Promise<ActivateEnvironmentOutput>;
@@ -28,7 +27,8 @@ interface IEnvironmentService {
 
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
 
-  streamEnvironments: () => Promise<StreamEnvironmentsResult>;
+  streamEnvironments: () => Promise<StreamEnvironmentsEvent[]>;
+  streamProjectEnvironments: (input: StreamProjectEnvironmentsInput) => Promise<StreamEnvironmentsEvent[]>;
 
   updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
   updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;
@@ -50,7 +50,7 @@ export const environmentService: IEnvironmentService = {
   deleteEnvironment: async (input) => {
     return await environmentIpc.deleteEnvironment(input);
   },
-  streamEnvironments: async (): Promise<StreamEnvironmentsResult> => {
+  streamEnvironments: async () => {
     const environments: StreamEnvironmentsEvent[] = [];
 
     const environmentsEvent = new Channel<StreamEnvironmentsEvent>();
@@ -58,9 +58,21 @@ export const environmentService: IEnvironmentService = {
       environments.push(environmentGroup);
     };
 
-    const { groups } = await environmentIpc.streamEnvironments(environmentsEvent);
+    await environmentIpc.streamEnvironments(environmentsEvent);
 
-    return { environments, groups };
+    return environments;
+  },
+  streamProjectEnvironments: async (input) => {
+    const projectEnvironments: StreamEnvironmentsEvent[] = [];
+
+    const environmentsEvent = new Channel<StreamEnvironmentsEvent>();
+    environmentsEvent.onmessage = (environmentGroup) => {
+      projectEnvironments.push(environmentGroup);
+    };
+
+    await environmentIpc.streamProjectEnvironments(input, environmentsEvent);
+
+    return projectEnvironments;
   },
   updateEnvironment: async (input) => {
     return await environmentIpc.updateEnvironment(input);

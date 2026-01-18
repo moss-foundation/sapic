@@ -3,7 +3,7 @@ import { RefObject, useEffect, useState } from "react";
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentListType } from "../../types";
 import { getSourceEnvironmentItem } from "../../utils";

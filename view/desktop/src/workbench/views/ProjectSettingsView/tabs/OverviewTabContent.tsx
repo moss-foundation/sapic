@@ -62,7 +62,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     try {
       await updateProject({
         id: project.id,
-        repository: !repository ? "REMOVE" : { UPDATE: repository },
+        // repository: !repository ? "REMOVE" : { UPDATE: repository },
       });
     } catch (e) {
       console.error("handleUpdateProjectRepository", e);

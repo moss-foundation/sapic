@@ -1,5 +1,5 @@
 import { projectService } from "@/domains/project/projectService";
-import { StreamProjectsEvent } from "@repo/moss-workspace";
+import { StreamProjectsEvent } from "@repo/ipc";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Channel } from "@tauri-apps/api/core";
 

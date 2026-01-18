@@ -6,10 +6,14 @@ use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use rustc_hash::FxHashMap;
 use sapic_base::workspace::types::primitives::WorkspaceId;
 use sapic_core::context::{AnyAsyncContext, Canceller};
-use sapic_main::{MainWindow, workspace::Workspace, workspace_ops::MainWindowWorkspaceOps};
+use sapic_main::{
+    MainWindow, environment_ops::MainWindowEnvironmentOps, workspace::Workspace,
+    workspace_ops::MainWindowWorkspaceOps,
+};
 use sapic_onboarding::{ONBOARDING_WINDOW_LABEL, OnboardingWindow};
 use sapic_welcome::{
-    WELCOME_WINDOW_LABEL, WelcomeWindow, workspace_ops::WelcomeWindowWorkspaceOps,
+    WELCOME_WINDOW_LABEL, WelcomeWindow, environment_ops::WelcomeWindowEnvironmentOps,
+    workspace_ops::WelcomeWindowWorkspaceOps,
 };
 use sapic_window::OldSapicWindow;
 use sapic_window2::AppWindowApi;
@@ -195,12 +199,13 @@ impl<R: AppRuntime> WindowManager<R> {
         &self,
         delegate: &AppDelegate<R>,
         workspace_ops: WelcomeWindowWorkspaceOps,
+        environment_ops: WelcomeWindowEnvironmentOps,
     ) -> joinerror::Result<WelcomeWindow<R>> {
         if let Some(w) = self.welcome_window().await {
             return Ok(w);
         }
 
-        let window = WelcomeWindow::new(delegate, workspace_ops).await?;
+        let window = WelcomeWindow::new(delegate, workspace_ops, environment_ops).await?;
         self.windows.write().await.insert(
             WELCOME_WINDOW_LABEL.to_string(),
             AppWindow::Welcome(window.clone()),
@@ -244,6 +249,7 @@ impl<R: AppRuntime> WindowManager<R> {
         old_window: OldSapicWindow<R>,
         workspace: Arc<dyn Workspace>,
         workspace_ops: MainWindowWorkspaceOps,
+        environment_ops: MainWindowEnvironmentOps,
     ) -> joinerror::Result<MainWindow<R>> {
         let window = MainWindow::new(
             delegate,
@@ -251,6 +257,7 @@ impl<R: AppRuntime> WindowManager<R> {
             old_window,
             workspace.clone(),
             workspace_ops,
+            environment_ops,
         )
         .await?;
 

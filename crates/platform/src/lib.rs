@@ -6,5 +6,6 @@ pub mod server;
 pub mod theme;
 pub mod workspace;
 
+pub mod environment;
 pub mod github;
 pub mod gitlab;

@@ -27,7 +27,7 @@ impl<R: AppRuntime> MainWindow<R> {
             };
 
             let event = StreamProjectsEvent {
-                id: project.id,
+                id: project.id.clone(),
                 name: details.name,
                 order: project.order,
                 expanded: true, // HACK: hardcoded value

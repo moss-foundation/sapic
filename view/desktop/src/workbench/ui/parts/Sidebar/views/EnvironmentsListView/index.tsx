@@ -1,4 +1,5 @@
 import { useStreamEnvironments } from "@/adapters";
+import { useAllStreamedProjectEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllStreamedProjectEnvironments";
 import ErrorNaughtyDog from "@/assets/images/ErrorNaughtyDog.svg";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
@@ -14,17 +15,19 @@ import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
   const {
-    globalEnvironments,
-    projectEnvironments,
-    isLoading,
-    data: streamEnvironmentsData,
-    isFetched,
+    data: workspaceEnvironments,
+    isLoading: isWorkspaceEnvironmentsLoading,
+    isFetched: isWorkspaceEnvironmentsFetched,
   } = useStreamEnvironments();
+  const { allProjectEnvironments } = useAllStreamedProjectEnvironments();
 
   useMonitorEnvironmentsLists();
   useMonitorEnvironmentsItems();
 
-  const noEnvironments = streamEnvironmentsData?.environments.length === 0;
+  const noWorkspaceEnvironments = workspaceEnvironments?.length === 0;
+  const noProjectEnvironments = allProjectEnvironments?.length === 0;
+
+  const noEnvironments = noWorkspaceEnvironments && noProjectEnvironments;
 
   return (
     <div className="flex h-full flex-col">
@@ -44,7 +47,7 @@ export const EnvironmentsListView = () => {
           }}
         />
 
-        {isLoading ? (
+        {isWorkspaceEnvironmentsLoading ? (
           <div className="flex flex-col items-center justify-center gap-2 p-10 text-center">
             <span>Environments are loading... </span>
             <span>Please wait...</span>
@@ -52,17 +55,17 @@ export const EnvironmentsListView = () => {
           </div>
         ) : (
           <>
-            {globalEnvironments && globalEnvironments.length > 0 && <EnvironmentsListViewDivider />}
+            {workspaceEnvironments && workspaceEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
             <GlobalEnvironmentsList />
 
-            {projectEnvironments && projectEnvironments.length > 0 && <EnvironmentsListViewDivider />}
+            {allProjectEnvironments && allProjectEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
             <GroupedEnvironmentsList />
           </>
         )}
 
-        {isFetched && noEnvironments && (
+        {isWorkspaceEnvironmentsFetched && noEnvironments && (
           <div className="px-2">
             <img src={ErrorNaughtyDog} className="pointer-events-none mx-auto h-auto w-full max-w-[200px]" />
             <p className="text-(--moss-secondary-foreground) text-center">You have no environments yet</p>
