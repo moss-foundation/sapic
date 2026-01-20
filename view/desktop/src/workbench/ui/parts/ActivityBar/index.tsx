@@ -14,7 +14,7 @@ export const ActivityBar = () => {
 
   return (
     <div
-      className={cn("background-(--moss-activityBar-background) flex items-center justify-between gap-3", {
+      className={cn("background-(--moss-primary-background) flex items-center justify-between gap-3", {
         "border-b-(--moss-border) w-full border-b px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.TOP,
         "border-t-(--moss-border) w-full border-t px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
         "h-full flex-col py-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
