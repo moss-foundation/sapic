@@ -30,7 +30,7 @@
     "@vitest/browser": "4.0.15",
     "clsx": "2.1.1",
     "jsdom": "27.3.0",
-    "lefthook": "1.13.6",
+    "lefthook": "2.0.8",
     "lint-staged": "16.2.3",
     "prettier": "3.7.4",
     "prettier-plugin-tailwindcss": "0.7.0",
