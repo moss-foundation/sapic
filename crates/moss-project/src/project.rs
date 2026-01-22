@@ -1,10 +1,8 @@
 use chrono::{DateTime, Utc};
 use git2::{BranchType, IndexAddOption, Signature};
 use joinerror::{Error, OptionExt, ResultExt};
-use json_patch::{PatchOperation, ReplaceOperation, jsonptr::PointerBuf};
 use moss_applib::AppRuntime;
 use moss_bindingutils::primitives::{ChangePath, ChangeString};
-use moss_edit::json::EditOptions;
 use moss_fs::{CreateOptions, FileSystem};
 use moss_git::{repository::Repository, url::GitUrl};
 use moss_storage2::KvStorage;
@@ -22,7 +20,6 @@ use sapic_core::{
     context::AnyAsyncContext,
     subscription::{Event, EventEmitter, EventMarker},
 };
-use serde_json::Value as JsonValue;
 use std::{
     path::{Path, PathBuf},
     sync::{
@@ -34,7 +31,6 @@ use tokio::sync::OnceCell;
 
 use crate::{
     dirs,
-    edit::ProjectEdit,
     git::GitClient,
     set_icon::SetIconService,
     vcs::{ProjectVcs, Vcs},
@@ -94,7 +90,6 @@ pub struct Project {
     pub(super) storage: Arc<dyn KvStorage>,
     pub(super) internal_abs_path: Arc<Path>,
     pub(super) external_abs_path: Option<Arc<Path>>,
-    pub(super) edit: ProjectEdit,
     pub(super) worktree: OnceCell<Arc<Worktree>>,
     pub(super) set_icon_service: SetIconService,
     pub(super) vcs: OnceCell<Vcs>,
@@ -169,6 +164,7 @@ impl Project {
         // Since it will trigger spurious git2 type errors
         {
             let account_id = client.account_id();
+            // FIXME: This should probably be removed in favor of project edit service?
             self.modify_config(
                 ctx,
                 ProjectConfigModifyParams {
@@ -292,6 +288,7 @@ impl Project {
         Ok(())
     }
 
+    // TODO: Extract the logic into project service
     pub async fn details(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<ProjectDetails> {
         let manifest_path = self.abs_path().join(MANIFEST_FILE_NAME);
         let rdr = self
@@ -328,43 +325,6 @@ impl Project {
             archived: config.archived,
             account_id: config.account_id,
         })
-    }
-
-    pub async fn modify(
-        &self,
-        ctx: &dyn AnyAsyncContext,
-        params: ProjectModifyParams,
-    ) -> joinerror::Result<()> {
-        let mut patches = Vec::new();
-
-        if let Some(new_name) = params.name {
-            patches.push((
-                PatchOperation::Replace(ReplaceOperation {
-                    path: unsafe { PointerBuf::new_unchecked("/name") },
-                    value: JsonValue::String(new_name),
-                }),
-                EditOptions {
-                    create_missing_segments: false,
-                    ignore_if_not_exists: false,
-                },
-            ));
-        }
-
-        match params.icon_path {
-            None => {}
-            Some(ChangePath::Update(new_icon_path)) => {
-                self.set_icon_service.set_icon(&new_icon_path)?;
-            }
-            Some(ChangePath::Remove) => {
-                self.set_icon_service.remove_icon(ctx).await?;
-            }
-        }
-        self.edit
-            .edit(ctx, &patches)
-            .await
-            .join_err::<()>("failed to edit project")?;
-
-        Ok(())
     }
 
     pub(crate) async fn modify_config(

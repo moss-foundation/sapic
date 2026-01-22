@@ -31,6 +31,8 @@ moss_keyring = { workspace = true }
 moss_storage2 = { workspace = true }
 moss_logging = { workspace = true }
 moss_testutils = { workspace = true, optional = true }
+moss_environment.workspace = true
+moss_bindingutils.workspace = true
 
 derive_more = { workspace = true, features = ["deref"] }
 tauri = { workspace = true }
@@ -43,7 +45,7 @@ arc-swap = { workspace = true }
 rustc-hash = { workspace = true }
 tracing.workspace = true
 reqwest = { workspace = true, optional = true }
-serde_json = { workspace = true, optional = true }
+serde_json = { workspace = true }
 
 [features]
 integration-tests = [
@@ -53,6 +55,5 @@ integration-tests = [
   "sapic-runtime/integration-tests",
   "tauri/test",
   "reqwest",
-  "serde_json",
 
 ]

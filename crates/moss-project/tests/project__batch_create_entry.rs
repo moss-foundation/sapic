@@ -43,6 +43,7 @@ async fn batch_create_entry_success() {
         path_params: vec![],
         headers: vec![],
         body: None,
+        url: None,
     });
     let input = BatchCreateResourceInput {
         // Make sure that the order is correctly sorted
@@ -92,6 +93,7 @@ async fn batch_create_entry_missing_parent() {
         path_params: vec![],
         headers: vec![],
         body: None,
+        url: None,
     });
     let input = BatchCreateResourceInput {
         resources: vec![inner_input],

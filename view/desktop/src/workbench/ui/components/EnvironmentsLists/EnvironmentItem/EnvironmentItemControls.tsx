@@ -8,7 +8,7 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
 import { EnvironmentListType } from "../types";
@@ -38,7 +38,16 @@ export const EnvironmentItemControls = ({
 
   const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    activateEnvironment({ environmentId: environment.id });
+    if (environment.projectId) {
+      activateEnvironment({ environmentId: environment.id, projectId: environment.projectId });
+    } else {
+      activateEnvironment({ environmentId: environment.id });
+    }
+  };
+
+  const handleDeleteEnvironmentClick = async () => {
+    await handleDeleteEnvironment();
+    closeDeleteModal();
   };
 
   return (
@@ -101,7 +110,7 @@ export const EnvironmentItemControls = ({
           closeModal={closeDeleteModal}
           title="Delete Environment"
           message={`Are you sure you want to delete ${environment.name} environment?`}
-          onConfirm={handleDeleteEnvironment}
+          onConfirm={handleDeleteEnvironmentClick}
         />
       )}
     </>

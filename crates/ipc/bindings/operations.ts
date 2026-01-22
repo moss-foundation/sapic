@@ -7,16 +7,26 @@ import {
   ExtensionInfo,
   LanguageInfo,
   ThemeId,
+  VariableInfo,
 } from "@repo/base";
 import { ChangePath, ChangeString, JsonValue } from "@repo/moss-bindingutils";
 import type {
+  AddVariableParams,
   Contributor,
   CreateProjectGitParams,
+  EnvironmentGroup,
   ImportProjectSource,
+  UpdateEnvironmentGroupParams,
+  UpdateEnvironmentParams,
   UpdateProjectParams,
+  UpdateVariableParams,
   VcsInfo,
   WorkspaceInfo,
 } from "./types";
+
+export type ActivateEnvironmentInput = { projectId?: string; environmentId: string };
+
+export type ActivateEnvironmentOutput = { environmentId: string };
 
 /**
  * @category Operation
@@ -43,6 +53,21 @@ export type ArchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
+export type BatchUpdateEnvironmentGroupInput = { items: Array<UpdateEnvironmentGroupParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams> };
+
+/**
+ * @category Operation
+ */
+export type BatchUpdateEnvironmentOutput = { ids: Array<string> };
+
+/**
+ * @category Operation
+ */
 export type BatchUpdateProjectInput = { items: Array<UpdateProjectParams> };
 
 /**
@@ -54,6 +79,22 @@ export type BatchUpdateProjectOutput = { ids: Array<string> };
  * @category Operation
  */
 export type CancelRequestInput = { request_id: string };
+
+/**
+ * @category Operation
+ */
+export type CreateEnvironmentInput = {
+  projectId?: string;
+  name: string;
+  order: number;
+  color?: string;
+  variables: Array<AddVariableParams>;
+};
+
+/**
+ * @category Operation
+ */
+export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; order?: number; color?: string };
 
 /**
  * @category Operation
@@ -74,6 +115,16 @@ export type CreateProjectOutput = { id: string; name: string; order?: number; ex
 /**
  * @category Operation
  */
+export type DeleteEnvironmentInput = { projectId?: string; id: string };
+
+/**
+ * @category Operation
+ */
+export type DeleteEnvironmentOutput = { id: string };
+
+/**
+ * @category Operation
+ */
 export type DeleteProjectInput = { id: string };
 
 /**
@@ -90,6 +141,16 @@ export type DeleteWorkspaceInput = { id: string };
  * @category Operation
  */
 export type DeleteWorkspaceOutput = { id: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeEnvironmentInput = { projectId: string | null; environmentId: string };
+
+/**
+ * @category Operation
+ */
+export type DescribeEnvironmentOutput = { name: string; color: string | null; variables: VariableInfo };
 
 /**
  * @category Operation
@@ -192,6 +253,18 @@ export type RemoveUserAccountInput = { id: string };
 /**
  * @category Operation
  */
+export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
+
+/**
+ * @category Operation
+ */
+export type StreamProjectEnvironmentsInput = { projectId: string };
+
+export type StreamProjectEnvironmentsOutput = {};
+
+/**
+ * @category Operation
+ */
 export type StreamProjectsOutput = {};
 
 /**
@@ -207,10 +280,34 @@ export type UnarchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
+export type UpdateEnvironmentGroupInput = { projectId: string; expanded?: boolean; order?: number };
+
+/**
+ * @category Operation
+ */
+export type UpdateEnvironmentInput = {
+  projectId?: string;
+  id: string;
+  name?: string;
+  order?: number;
+  color?: ChangeString;
+  expanded?: boolean;
+  varsToAdd: Array<AddVariableParams>;
+  varsToUpdate: Array<UpdateVariableParams>;
+  varsToDelete: Array<string>;
+};
+
+/**
+ * @category Operation
+ */
+export type UpdateEnvironmentOutput = { id: string };
+
+/**
+ * @category Operation
+ */
 export type UpdateProjectInput = {
   id: string;
   name?: string;
-  repository?: ChangeString;
   iconPath?: ChangePath;
   order?: number;
   expanded?: boolean;

@@ -4,6 +4,7 @@ import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
+
 import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {

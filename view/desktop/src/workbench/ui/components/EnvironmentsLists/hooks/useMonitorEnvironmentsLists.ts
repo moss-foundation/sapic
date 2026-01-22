@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { useAllStreamedProjectEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllStreamedProjectEnvironments";
 import { useBatchUpdateEnvironmentGroup } from "@/adapters/tanstackQuery/environment/useBatchUpdateEnvironmentGroup";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -12,7 +12,7 @@ import {
 } from "../utils";
 
 export const useMonitorEnvironmentsLists = () => {
-  const { groups } = useStreamEnvironments();
+  const { allProjectEnvironments } = useAllStreamedProjectEnvironments();
   const { mutate: batchUpdateEnvironmentGroup } = useBatchUpdateEnvironmentGroup();
 
   useEffect(() => {
@@ -21,8 +21,8 @@ export const useMonitorEnvironmentsLists = () => {
         return isSourceGroupedEnvironmentList(source);
       },
       onDrop({ source, location }) {
-        if (!groups) {
-          console.warn("can't drop: no groups", groups);
+        if (!allProjectEnvironments) {
+          console.warn("can't drop: no project environments", allProjectEnvironments);
           return;
         }
 
@@ -45,35 +45,35 @@ export const useMonitorEnvironmentsLists = () => {
           return;
         }
 
-        const targetIndex = groups.findIndex(
+        const targetIndex = allProjectEnvironments.findIndex(
           (group) => group.projectId === locationData.data.groupWithEnvironments.projectId
         );
 
         const inserted = [
-          ...groups
+          ...allProjectEnvironments
             .slice(0, targetIndex)
-            .filter((group) => group.projectId !== sourceData.data.groupWithEnvironments.projectId),
+            .filter((environment) => environment.projectId !== sourceData.data.groupWithEnvironments.projectId),
           sourceData.data.groupWithEnvironments,
-          ...groups
+          ...allProjectEnvironments
             .slice(targetIndex)
-            .filter((group) => group.projectId !== sourceData.data.groupWithEnvironments.projectId),
-        ].map((group, index) => ({
-          ...group,
+            .filter((environment) => environment.projectId !== sourceData.data.groupWithEnvironments.projectId),
+        ].map((environment, index) => ({
+          ...environment,
           order: index + 1,
         }));
 
         const groupsToUpdate = inserted.filter((group) => {
-          const groupInLocation = groups.find((g) => g.projectId === group.projectId);
+          const groupInLocation = allProjectEnvironments.find((g) => g.projectId === group.projectId);
           return groupInLocation?.order !== group.order;
         });
 
         batchUpdateEnvironmentGroup({
-          items: groupsToUpdate.map((group) => ({
-            order: group.order,
-            projectId: group.projectId,
+          items: groupsToUpdate.map((environment) => ({
+            order: environment.order,
+            projectId: environment.projectId ?? "",
           })),
         });
       },
     });
-  }, [batchUpdateEnvironmentGroup, groups]);
+  }, [batchUpdateEnvironmentGroup, allProjectEnvironments]);
 };
