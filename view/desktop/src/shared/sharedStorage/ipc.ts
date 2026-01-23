@@ -16,10 +16,7 @@ export interface ISharedStorageIpc {
   putItem: (key: string, value: JsonValue, scope: StorageScope) => Promise<PutItemOutput>;
   removeItem: (key: string, scope: StorageScope) => Promise<RemoveItemOutput>;
 
-  batchPutItem: (
-    items: { key: string; value: JsonValue; scope: StorageScope }[],
-    scope: StorageScope
-  ) => Promise<BatchPutItemOutput>;
+  batchPutItem: (items: Record<string, JsonValue>, scope: StorageScope) => Promise<BatchPutItemOutput>;
   batchRemoveItem: (keys: string[], scope: StorageScope) => Promise<BatchRemoveItemOutput>;
   batchGetItem: (keys: string[], scope: StorageScope) => Promise<BatchGetItemOutput>;
   batchGetItemByPrefix: (prefix: string, scope: StorageScope) => Promise<BatchGetItemByPrefixOutput>;

@@ -1,6 +1,8 @@
 import { useContext, useState } from "react";
 
 import { useCreateProjectResource } from "@/adapters";
+import { useCurrentWorkspace } from "@/hooks";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../../types";
@@ -8,7 +10,9 @@ import { createResourceKind } from "../../utils";
 
 export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
+  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
 
   const [isAddingRootFileNode, setIsAddingRootFileNode] = useState(false);
@@ -16,12 +20,13 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
 
   const handleRootAddFormSubmit = async (name: string) => {
     const newName = name.trim();
+    const newOrder = node.childNodes.length + 1;
     const newResource = createResourceKind({
       name: newName,
       path: "",
       class: "endpoint",
       isAddingFolder: isAddingRootFolderNode,
-      order: node.childNodes.length + 1,
+      order: newOrder,
       protocol: "Get",
     });
 
@@ -29,9 +34,14 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
       setIsAddingRootFileNode(false);
       setIsAddingRootFolderNode(false);
 
-      await createProjectResource({
+      const createdResourceOutput = await createProjectResource({
         projectId: id,
         input: newResource,
+      });
+
+      await updateTreeItemState({
+        treeItemState: { id: createdResourceOutput.id, order: newOrder, expanded: true },
+        workspaceId: currentWorkspaceId,
       });
     } catch (error) {
       console.error(error);

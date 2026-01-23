@@ -17,7 +17,7 @@ interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   isLastChild?: boolean;
   hideDragHandle?: boolean;
   dropIndicatorFullWidth?: boolean;
-  isDirty: boolean;
+  isDirty?: boolean;
 }
 
 export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(

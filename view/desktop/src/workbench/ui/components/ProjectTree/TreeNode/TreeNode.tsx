@@ -1,8 +1,6 @@
 import { useContext, useRef, useState } from "react";
 
-import { useGetLocalResourceSummary } from "@/db/resourceSummaries/hooks/useGetLocalResourceSummary";
 import { Tree } from "@/lib/ui/Tree";
-import { cn } from "@/utils";
 
 import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { ProjectTreeContext } from "../ProjectTreeContext";
@@ -25,8 +23,6 @@ export interface TreeNodeComponentProps {
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
   const { id } = useContext(ProjectTreeContext);
-
-  const localResourceSummary = useGetLocalResourceSummary(node.id);
 
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
@@ -63,14 +59,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <Tree.Node
-      ref={dropTargetListRef}
-      isChildDropBlocked={isChildDropBlocked}
-      dropInstructionForDir={instruction}
-      className={cn({
-        "bg-amber-300": localResourceSummary?.metadata.isDirty,
-      })}
-    >
+    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} dropInstructionForDir={instruction}>
       {isRenamingNode ? (
         <TreeNodeRenamingForm
           node={node}

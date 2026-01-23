@@ -14,7 +14,6 @@ import {
 } from "@repo/ipc";
 import { Channel } from "@tauri-apps/api/core";
 
-// prettier-ignore
 interface IProjectService {
   batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
 

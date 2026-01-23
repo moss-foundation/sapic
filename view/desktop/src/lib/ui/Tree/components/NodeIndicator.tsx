@@ -4,10 +4,10 @@ import { cn } from "@/utils";
 
 interface NodeIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   isActive: boolean;
-  isDirty: boolean;
+  isDirty?: boolean;
 }
 
-export const NodeIndicator = ({ isActive, isDirty, className, ...props }: NodeIndicatorProps) => {
+export const NodeIndicator = ({ isActive, isDirty = false, className, ...props }: NodeIndicatorProps) => {
   return (
     <div
       //prettier-ignore

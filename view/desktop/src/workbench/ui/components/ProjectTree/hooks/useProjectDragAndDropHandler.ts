@@ -1,16 +1,19 @@
 import { useCallback, useEffect } from "react";
 
 import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
-import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
+import { useCurrentWorkspace } from "@/hooks";
+import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectDragType } from "../constants";
 import { getTreeRootNodeSourceData, getTreeRootNodeTargetData } from "../utils";
 
 export const useProjectDragAndDropHandler = () => {
-  const { projectsTrees: projectsTrees } = useProjectsTrees();
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
+  const { projectsTrees } = useProjectsTrees();
+
+  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
 
   const handleReorder = useCallback(
     async ({ location, source }) => {
@@ -54,17 +57,19 @@ export const useProjectDragAndDropHandler = () => {
           return projectUnderQuestion!.order !== reorderedProject.order;
         });
 
-        await batchUpdateProject({
-          items: projectsToUpdate.map((project) => ({
+        await batchPutTreeItemState({
+          treeItemStates: projectsToUpdate.map((project) => ({
             id: project.id,
             order: project.order,
+            expanded: project.expanded,
           })),
+          workspaceId: currentWorkspaceId,
         });
       } catch (error) {
         console.error("Error reordering projects:", error);
       }
     },
-    [projectsTrees, batchUpdateProject]
+    [projectsTrees, batchPutTreeItemState, currentWorkspaceId]
   );
 
   useEffect(() => {

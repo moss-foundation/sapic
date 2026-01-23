@@ -8,6 +8,12 @@ import {
   useFetchResourcesForPath,
   useUpdateProjectResource,
 } from "@/adapters";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
+import { useCurrentWorkspace } from "@/hooks";
+import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
+import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -34,6 +40,8 @@ import {
 } from "../utils";
 
 export const useNodeDragAndDropHandler = () => {
+  const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
   const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
@@ -41,10 +49,14 @@ export const useNodeDragAndDropHandler = () => {
   const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
 
+  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
+  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
+  const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
+
   const { fetchResourcesForPath } = useFetchResourcesForPath();
 
   //Within Project
-  const handleCombineWithinProject = useCallback(
+  const handleNodeOnFolderWithinProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
@@ -75,16 +87,21 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
+      await updateTreeItemState({
+        treeItemState: { id: sourceTreeNodeData.node.id, order: newOrder, expanded: sourceTreeNodeData.node.expanded },
+        workspaceId: currentWorkspaceId,
+      });
+
       await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
 
       await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateProjectResource, fetchResourcesForPath]
+    [batchUpdateProjectResource, currentWorkspaceId, fetchResourcesForPath, updateTreeItemState]
   );
 
-  const handleReorderWithinProject = useCallback(
+  const handleNodeOnNodeWithinProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
       const dropIndex =
         operation === "reorder-before"
@@ -105,6 +122,28 @@ export const useNodeDragAndDropHandler = () => {
             resources: updatedSourceNodesPayload,
           },
         });
+
+        for (const resource of updatedSourceNodesPayload) {
+          if ("ITEM" in resource) {
+            await updateTreeItemState({
+              treeItemState: {
+                id: resource.ITEM.id,
+                order: resource.ITEM.order!,
+                expanded: sourceTreeNodeData.node.expanded,
+              },
+              workspaceId: currentWorkspaceId,
+            });
+          } else if ("DIR" in resource) {
+            await updateTreeItemState({
+              treeItemState: {
+                id: resource.DIR.id,
+                order: resource.DIR.order!,
+                expanded: sourceTreeNodeData.node.expanded,
+              },
+              workspaceId: currentWorkspaceId,
+            });
+          }
+        }
 
         await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
@@ -131,16 +170,38 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
+      for (const resource of allResourcesToUpdate) {
+        if ("ITEM" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.ITEM.id,
+              order: resource.ITEM.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        } else if ("DIR" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.DIR.id,
+              order: resource.DIR.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        }
+      }
+
       await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
       await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchUpdateProjectResource, fetchResourcesForPath]
+    [batchUpdateProjectResource, currentWorkspaceId, fetchResourcesForPath, updateTreeItemState]
   );
 
   //To Another Project
-  const handleMoveToAnotherProject = useCallback(
+  const handleNodeOnNodeToAnotherProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode, operation: Operation) => {
       const dropIndex =
         operation === "reorder-before"
@@ -164,6 +225,7 @@ export const useNodeDragAndDropHandler = () => {
         removedNode: sourceTreeNodeData.node,
       });
 
+      //Update items in source project
       await batchUpdateProjectResource({
         projectId: sourceTreeNodeData.projectId,
         resources: {
@@ -171,6 +233,29 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
+      for (const resource of updatedSourceResourcesPayload) {
+        if ("ITEM" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.ITEM.id,
+              order: resource.ITEM.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        } else if ("DIR" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.DIR.id,
+              order: resource.DIR.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        }
+      }
+
+      //Update items in target project
       await batchUpdateProjectResource({
         projectId: locationTreeNodeData.projectId,
         resources: {
@@ -178,9 +263,36 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
+      for (const resource of targetResourcesToUpdate) {
+        if ("ITEM" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.ITEM.id,
+              order: resource.ITEM.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        } else if ("DIR" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.DIR.id,
+              order: resource.DIR.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        }
+      }
+      //Delete item in source project
       await deleteProjectResource({
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
+      });
+
+      await removeTreeItemState({
+        id: sourceTreeNodeData.node.id,
+        workspaceId: currentWorkspaceId,
       });
 
       const newDropOrder =
@@ -215,12 +327,44 @@ export const useNodeDragAndDropHandler = () => {
         })
       );
 
-      await batchCreateProjectResource({
+      const batchCreateResourceOutput = await batchCreateProjectResource({
         projectId: locationTreeNodeData.projectId,
         input: {
           resources: batchCreateResourceInput,
         },
       });
+
+      for (const resource of batchCreateResourceOutput.resources) {
+        const resourceInput = batchCreateResourceInput.find((input) => {
+          if ("ITEM" in input) {
+            return input.ITEM.path === resource.path.raw && input.ITEM.name === resource.name;
+          } else {
+            return input.DIR.path === resource.path.raw && input.DIR.name === resource.name;
+          }
+        });
+
+        if (resourceInput) {
+          if ("ITEM" in resourceInput) {
+            await updateTreeItemState({
+              treeItemState: {
+                id: resource.id,
+                order: resourceInput.ITEM.order,
+                expanded: sourceTreeNodeData.node.expanded,
+              },
+              workspaceId: currentWorkspaceId,
+            });
+          } else {
+            await updateTreeItemState({
+              treeItemState: {
+                id: resource.id,
+                order: resourceInput.DIR.order,
+                expanded: sourceTreeNodeData.node.expanded,
+              },
+              workspaceId: currentWorkspaceId,
+            });
+          }
+        }
+      }
 
       await fetchResourcesForPath(
         locationTreeNodeData.projectId,
@@ -231,10 +375,18 @@ export const useNodeDragAndDropHandler = () => {
         "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
       );
     },
-    [batchUpdateProjectResource, deleteProjectResource, batchCreateProjectResource, fetchResourcesForPath]
+    [
+      batchUpdateProjectResource,
+      deleteProjectResource,
+      removeTreeItemState,
+      currentWorkspaceId,
+      batchCreateProjectResource,
+      fetchResourcesForPath,
+      updateTreeItemState,
+    ]
   );
 
-  const handleCombineToAnotherProject = useCallback(
+  const handleNodeOnFolderToAnotherProject = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
       const allResources = getAllNestedResources(sourceTreeNodeData.node);
       const resourcesPreparedForCreation = await prepareResourcesForCreation(allResources);
@@ -244,6 +396,11 @@ export const useNodeDragAndDropHandler = () => {
       await deleteProjectResource({
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
+      });
+
+      await removeTreeItemState({
+        id: sourceTreeNodeData.node.id,
+        workspaceId: currentWorkspaceId,
       });
 
       const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
@@ -257,6 +414,28 @@ export const useNodeDragAndDropHandler = () => {
           resources: updatedSourceResourcesPayload,
         },
       });
+
+      for (const resource of updatedSourceResourcesPayload) {
+        if ("ITEM" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.ITEM.id,
+              order: resource.ITEM.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        } else if ("DIR" in resource) {
+          await updateTreeItemState({
+            treeItemState: {
+              id: resource.DIR.id,
+              order: resource.DIR.order!,
+              expanded: sourceTreeNodeData.node.expanded,
+            },
+            workspaceId: currentWorkspaceId,
+          });
+        }
+      }
 
       const batchCreateResourceInput = await Promise.all(
         resourcesPreparedForCreation.map(async (resource, index) => {
@@ -287,17 +466,25 @@ export const useNodeDragAndDropHandler = () => {
         projectId: locationTreeNodeData.projectId,
         input: { resources: batchCreateResourceInput },
       });
-
+      //TODO Create orders for created resources
       await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
       await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
 
       return;
     },
-    [batchCreateProjectResource, batchUpdateProjectResource, deleteProjectResource, fetchResourcesForPath]
+    [
+      batchCreateProjectResource,
+      batchUpdateProjectResource,
+      currentWorkspaceId,
+      deleteProjectResource,
+      fetchResourcesForPath,
+      removeTreeItemState,
+      updateTreeItemState,
+    ]
   );
 
   //To Another Project's Root
-  const handleCombineToAnotherProjectRoot = useCallback(
+  const handleNodeOnAnotherProjectRoot = useCallback(
     async (sourceTreeNodeData: DragNode, locationTreeRootNodeData: DropRootNode) => {
       const allResources = getAllNestedResources(sourceTreeNodeData.node);
       const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
@@ -308,6 +495,16 @@ export const useNodeDragAndDropHandler = () => {
         projectId: sourceTreeNodeData.projectId,
         input: { id: sourceTreeNodeData.node.id },
       });
+
+      console.log(allResources);
+      for (const resource of allResources) {
+        if (resourceSummariesCollection.has(resource.id)) {
+          resourceSummariesCollection.delete(resource.id);
+        }
+        if (resourceDetailsCollection.has(resource.id)) {
+          resourceDetailsCollection.delete(resource.id);
+        }
+      }
 
       const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
         nodes: sourceTreeNodeData.parentNode.childNodes,
@@ -347,17 +544,43 @@ export const useNodeDragAndDropHandler = () => {
         },
       });
 
-      await batchCreateProjectResource({
+      const batchCreateResourceOutput = await batchCreateProjectResource({
         projectId: locationTreeRootNodeData.projectId,
         input: {
           resources: batchCreateResourceInput,
         },
       });
 
+      await batchPutTreeItemState({
+        treeItemStates: batchCreateResourceOutput.resources.map((resource) => {
+          const resourceInput = batchCreateResourceInput.find((input) => {
+            if ("ITEM" in input) {
+              return input.ITEM.path === resource.path.raw && input.ITEM.name === resource.name;
+            } else {
+              return input.DIR.path === resource.path.raw && input.DIR.name === resource.name;
+            }
+          });
+
+          return {
+            id: resource.id,
+            order: resourceInput ? ("ITEM" in resourceInput ? resourceInput.ITEM.order : resourceInput.DIR.order) : 0,
+            expanded: sourceTreeNodeData.node.expanded,
+          };
+        }),
+        workspaceId: currentWorkspaceId,
+      });
+
       await fetchResourcesForPath(locationTreeRootNodeData.projectId, "");
       await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
     },
-    [deleteProjectResource, batchUpdateProjectResource, batchCreateProjectResource, fetchResourcesForPath]
+    [
+      deleteProjectResource,
+      batchUpdateProjectResource,
+      batchCreateProjectResource,
+      batchPutTreeItemState,
+      currentWorkspaceId,
+      fetchResourcesForPath,
+    ]
   );
 
   useEffect(() => {
@@ -389,7 +612,7 @@ export const useNodeDragAndDropHandler = () => {
             return;
           }
 
-          await handleCombineToAnotherProjectRoot(sourceTreeNodeData, locationTreeRootNodeData);
+          await handleNodeOnAnotherProjectRoot(sourceTreeNodeData, locationTreeRootNodeData);
           return;
         }
 
@@ -406,15 +629,15 @@ export const useNodeDragAndDropHandler = () => {
         const isSameProject = sourceTreeNodeData.projectId === locationTreeNodeData.projectId;
         if (isSameProject) {
           if (operation === "combine") {
-            await handleCombineWithinProject(sourceTreeNodeData, locationTreeNodeData);
+            await handleNodeOnFolderWithinProject(sourceTreeNodeData, locationTreeNodeData);
           } else {
-            await handleReorderWithinProject(sourceTreeNodeData, locationTreeNodeData, operation);
+            await handleNodeOnNodeWithinProject(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         } else {
           if (operation === "combine") {
-            await handleCombineToAnotherProject(sourceTreeNodeData, locationTreeNodeData);
+            await handleNodeOnFolderToAnotherProject(sourceTreeNodeData, locationTreeNodeData);
           } else {
-            await handleMoveToAnotherProject(sourceTreeNodeData, locationTreeNodeData, operation);
+            await handleNodeOnNodeToAnotherProject(sourceTreeNodeData, locationTreeNodeData, operation);
           }
         }
       },
@@ -425,11 +648,11 @@ export const useNodeDragAndDropHandler = () => {
     createProjectResource,
     deleteProjectResource,
     fetchResourcesForPath,
-    handleCombineWithinProject,
-    handleMoveToAnotherProject,
-    handleReorderWithinProject,
-    handleCombineToAnotherProjectRoot,
+    handleNodeOnFolderWithinProject,
+    handleNodeOnNodeToAnotherProject,
+    handleNodeOnNodeWithinProject,
+    handleNodeOnAnotherProjectRoot,
     updateProjectResource,
-    handleCombineToAnotherProject,
+    handleNodeOnFolderToAnotherProject,
   ]);
 };

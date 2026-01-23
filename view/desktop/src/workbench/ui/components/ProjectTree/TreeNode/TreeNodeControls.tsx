@@ -1,11 +1,13 @@
 import { forwardRef, useContext } from "react";
 import { createPortal } from "react-dom";
 
-import { useUpdateProjectResource } from "@/adapters";
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
+import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
@@ -49,15 +51,20 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
     },
     ref
   ) => {
-    const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
+    const { currentWorkspaceId } = useCurrentWorkspace();
 
-    const localResourceSummary = useGetLocalResourceDetails(node.id);
+    const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
 
     const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
+    const localResourceSummary = useGetLocalResourceDetails(node.id);
 
-    const handleControlsClick = () => {
+    const { mutateAsync: putTreeItemState } = usePutTreeItemState();
+
+    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
+    const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
+
+    const handleControlsClick = async () => {
       if (node.kind === "Dir") {
         addOrFocusPanel({
           id: node.id,
@@ -73,17 +80,20 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         });
 
         if (!node.expanded) {
-          updateProjectResource({
-            projectId: id,
-            updateResourceInput: {
-              DIR: {
-                id: node.id,
-                expanded: true,
-              },
+          await putTreeItemState({
+            treeItemState: {
+              id: node.id,
+              order: node.order ?? 0,
+              expanded: true,
             },
+            workspaceId: currentWorkspaceId,
+          });
+          resourceSummariesCollection.update(node.id, (draft) => {
+            draft.expanded = true;
           });
         }
       }
+
       if (node.kind === "Item") {
         if (node.class === "endpoint") {
           addOrFocusPanel({
@@ -106,23 +116,23 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       }
     };
 
-    const handleClickOnDir = (e: React.MouseEvent<HTMLButtonElement>) => {
+    const handleClickOnDir = async (e: React.MouseEvent<HTMLButtonElement>) => {
       e.stopPropagation();
       if (node.kind === "Item") return;
 
-      updateProjectResource({
-        projectId: id,
-        updateResourceInput: {
-          DIR: {
-            id: node.id,
-            expanded: !node.expanded,
-          },
+      await putTreeItemState({
+        treeItemState: {
+          id: node.id,
+          order: node.order ?? 0,
+          expanded: !node.expanded,
         },
+        workspaceId: currentWorkspaceId,
+      });
+
+      resourceSummariesCollection.update(node.id, (draft) => {
+        draft.expanded = !node.expanded;
       });
     };
-
-    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
-    const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
     return (
       <ActionMenu.Root modal={false}>
