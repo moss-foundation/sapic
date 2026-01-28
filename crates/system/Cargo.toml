@@ -15,6 +15,9 @@ moss_keyring.workspace = true      # TODO: move impl to platform crate
 moss_git.workspace = true
 moss_edit.workspace = true
 moss_bindingutils.workspace = true
+moss_environment.workspace = true
+moss_common.workspace = true
+moss_hcl.workspace = true
 
 joinerror.workspace = true
 serde_json.workspace = true
@@ -25,6 +28,8 @@ async-trait.workspace = true
 inventory.workspace = true
 tracing.workspace = true
 chrono.workspace = true
+derive_more.workspace = true
+indexmap.workspace = true
 
 [features]
 integration-tests = []

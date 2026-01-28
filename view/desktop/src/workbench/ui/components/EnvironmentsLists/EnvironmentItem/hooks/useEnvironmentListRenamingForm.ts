@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useUpdateEnvironment } from "@/adapters/tanstackQuery/environment";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 interface UseGlobalEnvironmentsListRenamingFormProps {
   environment: StreamEnvironmentsEvent;
@@ -14,6 +14,7 @@ export const useGlobalEnvironmentsListRenamingForm = ({ environment }: UseGlobal
   const handleRename = async (name: string) => {
     await updateEnvironment({
       id: environment.id,
+      projectId: environment.projectId,
       name,
       varsToAdd: [],
       varsToUpdate: [],

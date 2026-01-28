@@ -1,13 +1,18 @@
+import { useGroupedEnvironments } from "@/workbench/ui/components/EnvironmentsLists/hooks/useGroupedEnvironments";
+
 import { useStreamEnvironments } from "../useStreamEnvironments";
 
 export const useActiveEnvironments = () => {
-  const { globalEnvironments, projectEnvironments } = useStreamEnvironments();
+  const { data: workspaceEnvironments } = useStreamEnvironments();
+  const { groupedEnvironments } = useGroupedEnvironments();
 
-  const activeGlobalEnvironment = globalEnvironments.find((environment) => environment.isActive);
-  const activeProjectEnvironments = projectEnvironments.filter((environment) => environment.isActive);
+  const activeWorkspaceEnvironment = workspaceEnvironments?.find((environment) => environment.isActive);
+  const activeProjectEnvironments = groupedEnvironments?.flatMap((group) =>
+    group.environments.filter((environment) => environment.isActive)
+  );
 
   return {
-    activeGlobalEnvironment,
+    activeWorkspaceEnvironment,
     activeProjectEnvironments,
   };
 };

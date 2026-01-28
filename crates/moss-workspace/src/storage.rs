@@ -5,7 +5,7 @@ use sapic_base::{
 pub static KEY_EXPANDED_ITEMS: &'static str = "expandedItems";
 
 pub static KEY_EXPANDED_ENVIRONMENT_GROUPS: &'static str = "expandedEnvironmentGroups";
-pub static KEY_ACTIVE_ENVIRONMENTS: &'static str = "activeEnvironments";
+pub static KEY_ACTIVE_ENVIRONMENT: &'static str = "activeEnvironment";
 
 pub static KEY_PROJECT_PREFIX: &'static str = "project";
 pub static KEY_ENVIRONMENT_GROUP_PREFIX: &'static str = "environmentGroup";

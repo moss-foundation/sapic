@@ -1,10 +1,3 @@
-use crate::{
-    builder::{OnDidAddProject, OnDidDeleteProject},
-    edit::WorkspaceEdit,
-    environment::EnvironmentService,
-    manifest::MANIFEST_FILE_NAME,
-    project::ProjectService,
-};
 use anyhow::Result;
 use joinerror::ResultExt;
 use json_patch::{PatchOperation, ReplaceOperation};
@@ -25,6 +18,14 @@ use sapic_core::{
 use sapic_system::user::profile::Profile;
 use serde_json::Value as JsonValue;
 use std::{path::Path, sync::Arc};
+
+use crate::{
+    builder::{OnDidAddProject, OnDidDeleteProject},
+    edit::WorkspaceEdit,
+    environment::EnvironmentService,
+    manifest::MANIFEST_FILE_NAME,
+    project::ProjectService,
+};
 
 pub struct WorkspaceSummary {
     pub name: String,
@@ -88,41 +89,26 @@ impl AnyWorkspace for Workspace {
 impl Workspace {
     pub(super) async fn on_did_add_project(
         project_service: Arc<ProjectService>,
-        environment_service: Arc<EnvironmentService>,
+        _environment_service: Arc<EnvironmentService>,
         on_did_add_project_event: &Event<OnDidAddProject>,
     ) -> Subscription<OnDidAddProject> {
         on_did_add_project_event
             .subscribe(move |event| {
                 let project_service_clone = project_service.clone();
-                let environment_service_clone = environment_service.clone();
+                // let environment_service_clone = environment_service.clone();
                 async move {
-                    let project = project_service_clone.project(&event.project_id).await;
-
-                    if let Some(project) = project {
-                        environment_service_clone
-                            .add_source(event.project_id.inner(), project.environments_path())
-                            .await;
-                    } else {
-                        unreachable!()
-                    }
+                    let _project = project_service_clone.project(&event.project_id).await;
                 }
             })
             .await
     }
 
     pub(super) async fn on_did_delete_project(
-        environment_service: Arc<EnvironmentService>,
+        _environment_service: Arc<EnvironmentService>,
         on_did_delete_project_event: &Event<OnDidDeleteProject>,
     ) -> Subscription<OnDidDeleteProject> {
         on_did_delete_project_event
-            .subscribe(move |event| {
-                let environment_service_clone = environment_service.clone();
-                async move {
-                    environment_service_clone
-                        .remove_source(&event.project_id.inner())
-                        .await;
-                }
-            })
+            .subscribe(move |_event| async move {})
             .await
     }
 }

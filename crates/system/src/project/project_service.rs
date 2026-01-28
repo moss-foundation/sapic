@@ -91,7 +91,7 @@ impl ProjectService {
 
         Ok(ProjectItem {
             id,
-            internal_abs_path: internal_abs_path,
+            internal_abs_path,
             manifest,
             config,
             order: Some(order),
@@ -133,7 +133,7 @@ impl ProjectService {
 
         let project_item = ProjectItem {
             id,
-            internal_abs_path: internal_abs_path,
+            internal_abs_path,
             manifest,
             config,
             order: None,
@@ -166,7 +166,7 @@ impl ProjectService {
 
         let project_item = ProjectItem {
             id,
-            internal_abs_path: internal_abs_path,
+            internal_abs_path,
             manifest,
             config,
             order: None,
@@ -199,7 +199,7 @@ impl ProjectService {
 
         let project_item = ProjectItem {
             id,
-            internal_abs_path: internal_abs_path,
+            internal_abs_path,
             manifest,
             config,
             order: None,

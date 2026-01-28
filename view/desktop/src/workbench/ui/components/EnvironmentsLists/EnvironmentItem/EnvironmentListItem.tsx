@@ -4,7 +4,7 @@ import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentListType } from "../types";
@@ -47,7 +47,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
 
   const restrictedNames = useMemo(() => {
     if (!environments) return [];
-    return environments.environments.map((environment) => environment.name) ?? [];
+    return environments.map((environment) => environment.name) ?? [];
   }, [environments]);
 
   return (

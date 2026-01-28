@@ -18,10 +18,7 @@ use std::{
 };
 use tokio::sync::OnceCell;
 
-use crate::{
-    Project, edit::ProjectEdit, git::GitClient, set_icon::SetIconService, vcs::Vcs,
-    worktree::Worktree,
-};
+use crate::{Project, git::GitClient, set_icon::SetIconService, vcs::Vcs, worktree::Worktree};
 
 const PROJECT_ICON_SIZE: u32 = 128;
 
@@ -127,15 +124,12 @@ impl ProjectBuilder {
             .into()
         };
 
-        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
-
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
             internal_abs_path: params.internal_abs_path,
             external_abs_path: config.external_path.map(|p| p.into()),
-            edit,
             set_icon_service,
             vcs: OnceCell::new(),
             worktree: worktree_service,
@@ -251,15 +245,12 @@ impl ProjectBuilder {
         //         .await?;
         // }
 
-        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
-
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
             internal_abs_path: params.abs_path.into(),
             external_abs_path: params.config.external_path.map(|p| p.into()),
-            edit,
             set_icon_service,
             vcs: OnceCell::new(),
             worktree: worktree_service_inner.into(),
@@ -319,14 +310,12 @@ impl ProjectBuilder {
         //     )
         //     .await?;
 
-        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
             internal_abs_path: abs_path,
             external_abs_path: None,
-            edit,
             set_icon_service,
             vcs: OnceCell::new_with(Some(Vcs::new(params.repository, repository, git_client))),
             worktree: worktree_inner.into(),
@@ -374,15 +363,12 @@ impl ProjectBuilder {
         //     )
         //     .await?;
 
-        let edit = ProjectEdit::new(self.fs.clone(), abs_path.join(MANIFEST_FILE_NAME));
-
         Ok(Project {
             id: self.project_id,
             fs: self.fs,
             storage: self.storage,
             internal_abs_path: abs_path,
             external_abs_path: None,
-            edit,
             set_icon_service,
             vcs: OnceCell::new(),
             worktree: worktree_inner.into(),

@@ -6,8 +6,8 @@ export const GroupedEnvironmentsList = () => {
 
   return (
     <div>
-      {groupedEnvironments?.map((groupedEnv) => (
-        <GroupedEnvironmentsListRoot key={groupedEnv.projectId} groupedEnvironments={groupedEnv} />
+      {groupedEnvironments?.map((groupedEnvironment) => (
+        <GroupedEnvironmentsListRoot key={groupedEnvironment.projectId} groupedEnvironments={groupedEnvironment} />
       ))}
     </div>
   );

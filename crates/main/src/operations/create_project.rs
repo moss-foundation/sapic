@@ -15,16 +15,15 @@ impl<R: AppRuntime> MainWindow<R> {
     ) -> joinerror::Result<CreateProjectOutput> {
         input.validate().join_err_bare()?;
 
-        let project = self
-            .workspace
-            .load()
-            .create_project(ctx, input.inner.clone())
-            .await?;
+        let workspace = self.workspace.load();
+        let project_id = workspace.create_project(ctx, input.inner.clone()).await?;
+
+        let project = workspace.project(ctx, &project_id).await?;
 
         let details = project.handle.details(ctx).await?;
 
         Ok(CreateProjectOutput {
-            id: project.id,
+            id: project.id.clone(),
             name: details.name,
             order: project.order,
             expanded: true, // HACK: hardcoded value

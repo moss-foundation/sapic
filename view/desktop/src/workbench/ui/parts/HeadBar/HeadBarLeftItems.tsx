@@ -9,10 +9,10 @@ import { ActionMenu, ConfirmationModal, IconLabelButton } from "@/workbench/ui/c
 import { NewWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/NewWorkspaceModal";
 import { OpenWorkspaceModal } from "@/workbench/ui/components/Modals/Workspace/OpenWorkspaceModal";
 import { renderActionMenuItem } from "@/workbench/utils/renderActionMenuItem";
-import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
-import { useWorkspaceActions } from "./HeadBarActions";
 
+import { useWorkspaceActions } from "./HeadBarActions";
 import { windowsMenuItems } from "./mockHeadBarData";
+import { useWorkspaceMenu } from "./WorkspaceMenuProvider";
 
 export interface HeadBarLeftItemsProps {
   handleWindowsMenuAction: (action: string) => void;

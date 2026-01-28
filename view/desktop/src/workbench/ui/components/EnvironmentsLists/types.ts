@@ -1,5 +1,5 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { EnvironmentGroup, StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { EnvironmentGroup, StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE, ENVIRONMENT_LIST_DRAG_TYPE } from "./constants";
 

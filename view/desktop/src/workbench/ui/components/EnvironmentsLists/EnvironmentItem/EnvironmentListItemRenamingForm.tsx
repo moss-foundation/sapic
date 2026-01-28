@@ -1,7 +1,8 @@
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
-import { StreamEnvironmentsEvent } from "@repo/moss-workspace";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
+
 import { EnvironmentListType } from "../types";
 
 interface EnvironmentListItemRenamingFormProps {
