@@ -299,6 +299,9 @@ importers:
       '@lezer/highlight':
         specifier: 1.2.2
         version: 1.2.2
+      '@lezer/lr':
+        specifier: 1.4.7
+        version: 1.4.7
     devDependencies:
       '@lezer/generator':
         specifier: 1.8.0
@@ -1270,9 +1273,6 @@ packages:
 
   '@lezer/highlight@1.2.2':
     resolution: {integrity: sha512-z8TQwaBXXQIvG6i2g3e9cgMwUUXu9Ib7jo2qRRggdhwKpM56Dw3PM3wmexn+EGaaOZ7az0K7sjc3/gcGW7sz7A==}
-
-  '@lezer/lr@1.4.4':
-    resolution: {integrity: sha512-LHL17Mq0OcFXm1pGQssuGTQFPPdxARjKM8f7GA5+sGtHi0K3R84YaSbmche0+RKWHnCsx9asEe5OWOI4FHfe4A==}
 
   '@lezer/lr@1.4.7':
     resolution: {integrity: sha512-wNIFWdSUfX9Jc6ePMzxSPVgTVB4EOfDIwLQLWASyiUdHKaMsiilj9bYiGkGQCKVodd0x6bgQCV207PILGFCF9Q==}
@@ -5713,14 +5713,13 @@ snapshots:
   '@lezer/generator@1.8.0':
     dependencies:
       '@lezer/common': 1.5.0
-      '@lezer/lr': 1.4.4
+      '@lezer/lr': 1.4.7
 
   '@lezer/highlight@1.2.2':
     dependencies:
       '@lezer/common': 1.5.0
-      '@lezer/common': 1.5.0
 
-  '@lezer/lr@1.4.4':
+  '@lezer/lr@1.4.7':
     dependencies:
       '@lezer/common': 1.5.0
 
