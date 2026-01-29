@@ -4,11 +4,8 @@ import { useStreamProjects } from "@/adapters";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchGetTreeItemState";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const useSyncProjectSummaries = () => {
-  const queryClient = useQueryClient();
-
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: projects, isLoading } = useStreamProjects();
@@ -23,27 +20,25 @@ export const useSyncProjectSummaries = () => {
         const treeItemState = treeItemStates?.find((treeItemState) => treeItemState.id === project.id);
 
         if (projectSummariesCollection.has(project.id)) {
-          projectSummariesCollection.update(
-            project.id,
-            {
-              metadata: {
-                workspaceId: currentWorkspaceId,
-              },
-            },
-            (draft) => {
-              Object.assign(draft, {
-                ...draft,
-                order: treeItemState?.order ?? 0,
-                expanded: treeItemState?.expanded ?? true,
-              });
-            }
-          );
+          projectSummariesCollection.update(project.id, (draft) => {
+            Object.assign(draft, {
+              ...draft,
+              order: treeItemState?.order ?? 0,
+              expanded: treeItemState?.expanded ?? true,
+            });
+          });
+        } else {
+          projectSummariesCollection.insert({
+            ...project,
+            order: treeItemState?.order ?? 0,
+            expanded: treeItemState?.expanded ?? true,
+          });
         }
       }
     };
 
     if (projects && projects.length > 0) {
-      // updateLocalProjects();
+      updateLocalProjects();
     }
   }, [currentWorkspaceId, projects, treeItemStates]);
 

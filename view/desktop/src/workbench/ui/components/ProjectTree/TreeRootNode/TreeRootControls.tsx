@@ -44,44 +44,27 @@ export const TreeRootControls = ({
   };
 
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log("handleIconClick", node.id, !node.expanded);
     e.stopPropagation();
 
-    // await updateTreeItemState({
-    //   treeItemState: { id: node.id, order: node.order ?? 0, expanded: !node.expanded },
-    //   workspaceId: currentWorkspaceId,
-    // });
+    await updateTreeItemState({
+      treeItemState: { id: node.id, order: node.order ?? 0, expanded: !node.expanded },
+      workspaceId: currentWorkspaceId,
+    });
 
-    projectSummariesCollection.update(
-      node.id,
-      {
-        metadata: {
-          workspaceId: currentWorkspaceId,
-        },
-      },
-      (draft) => {
-        draft.expanded = !node.expanded;
-      }
-    );
+    projectSummariesCollection.update(node.id, (draft) => {
+      draft.expanded = !node.expanded;
+    });
   };
 
   const handleLabelClick = async () => {
     if (!node.expanded) {
-      // await updateTreeItemState({
-      //   treeItemState: { id: node.id, order: node.order ?? 0, expanded: true },
-      //   workspaceId: currentWorkspaceId,
-      // });
-      projectSummariesCollection.update(
-        node.id,
-        {
-          metadata: {
-            workspaceId: currentWorkspaceId,
-          },
-        },
-        (draft) => {
-          draft.expanded = true;
-        }
-      );
+      await updateTreeItemState({
+        treeItemState: { id: node.id, order: node.order ?? 0, expanded: true },
+        workspaceId: currentWorkspaceId,
+      });
+      projectSummariesCollection.update(node.id, (draft) => {
+        draft.expanded = true;
+      });
     }
 
     addOrFocusPanel({
