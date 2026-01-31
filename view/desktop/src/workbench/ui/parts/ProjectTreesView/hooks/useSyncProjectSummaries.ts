@@ -23,6 +23,7 @@ export const useSyncProjectSummaries = () => {
           projectSummariesCollection.update(project.id, (draft) => {
             Object.assign(draft, {
               ...draft,
+              ...project,
               order: treeItemState?.order ?? 0,
               expanded: treeItemState?.expanded ?? true,
             });
