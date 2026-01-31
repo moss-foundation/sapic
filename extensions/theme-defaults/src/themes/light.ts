@@ -425,7 +425,7 @@ export const defaultLightTheme: Theme = {
     "moss.toggleButton.thumb.border": { type: "variable", value: "moss.gray.8" },
 
     "moss.notification.background": { type: "variable", value: "moss.gray.2" },
-    "moss.notification.foreground": { type: "variable", value: "moss.gray.14" },
+    "moss.notification.foreground": { type: "variable", value: "moss.gray.1" },
     "moss.notification.button.outline": { type: "variable", value: "moss.gray.7" },
     "moss.notification.button.hover": { type: "variable", value: "moss.gray.4" },
     "moss.notification.close": { type: "variable", value: "moss.gray.6" },

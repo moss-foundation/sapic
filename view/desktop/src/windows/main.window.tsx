@@ -12,7 +12,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { type } from "@tauri-apps/plugin-os";
 
 scan({
-  enabled: import.meta.env.MODE === "development",
+  enabled: import.meta.env.MODE === "development" && type() !== "linux", //for whatever reason react scan causes flickering black screen on linux. So we disable it on linux temporarily.
 });
 
 const rootElement = document.getElementById("root") as HTMLElement;

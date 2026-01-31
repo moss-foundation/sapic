@@ -148,7 +148,16 @@ pub struct AfterUpdateItemResourceDescription {
 
     pub path: FrontendResourcePath,
 }
+/// @category Type
+#[derive(Clone, Debug, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "types.ts")]
+pub struct AfterCreateResourceDescription {
+    pub id: ResourceId,
 
+    pub path: FrontendResourcePath,
+    pub name: String,
+}
 /// @category Type
 #[derive(Clone, Debug, Deserialize, TS)]
 #[serde(rename_all = "UPPERCASE")]

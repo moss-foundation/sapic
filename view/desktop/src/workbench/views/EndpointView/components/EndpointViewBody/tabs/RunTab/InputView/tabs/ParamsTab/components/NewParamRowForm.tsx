@@ -1,6 +1,6 @@
 import { ChangeEvent, useContext, useRef, useState } from "react";
 
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
 import { DropIndicator } from "@/workbench/ui/components";

@@ -2,6 +2,7 @@
 import { z } from "zod";
 import { resourceClassSchema, resourceKindSchema, resourceProtocolSchema } from "./primitives.zod";
 import {
+  afterCreateResourceDescriptionSchema,
   afterUpdateDirResourceDescriptionSchema,
   afterUpdateItemResourceDescriptionSchema,
   bodyInfoSchema,
@@ -14,10 +15,6 @@ import {
   updateItemResourceParamsSchema,
   vcsOperationSchema,
 } from "./types.zod";
-
-export const batchCreateResourceOutputSchema = z.object({
-  ids: z.array(z.string()),
-});
 
 export const batchUpdateResourceOutputSchema = z.record(z.string(), z.never());
 
@@ -51,6 +48,10 @@ export const batchCreateResourceKindSchema = z.union([
     "DIR": createDirResourceParamsSchema,
   }),
 ]);
+
+export const batchCreateResourceOutputSchema = z.object({
+  resources: z.array(afterCreateResourceDescriptionSchema),
+});
 
 export const batchUpdateResourceKindSchema = z.union([
   z.object({

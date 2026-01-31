@@ -117,7 +117,7 @@ export const useProjectActions = (props: HeadBarActionProps) => {
  * Workspace menu action handler
  */
 export const useWorkspaceActions = (props?: HeadBarActionProps, workspaceModals?: WorkspaceModals) => {
-  const { openPanel, setShowDebugPanels, showDebugPanels } = props || {};
+  const { setShowDebugPanels, showDebugPanels } = props || {};
 
   if (!workspaceModals) {
     throw new Error("useWorkspaceActions requires workspaceModals parameter");
@@ -231,10 +231,18 @@ export const useWorkspaceActions = (props?: HeadBarActionProps, workspaceModals?
         }
         break;
       case "kitchensink":
-        openPanel?.("KitchenSink");
+        addOrFocusPanel({
+          id: "KitchenSink",
+          title: "KitchenSink",
+          component: "KitchenSinkView",
+        });
         break;
       case "logs":
-        openPanel?.("Logs");
+        addOrFocusPanel({
+          id: "Logs",
+          title: "Logs",
+          component: "LogsView",
+        });
         break;
       case "debug":
         if (setShowDebugPanels && showDebugPanels !== undefined) {

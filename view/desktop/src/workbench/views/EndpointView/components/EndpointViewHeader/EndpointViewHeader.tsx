@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
 import { useDescribeProjectResource, useUpdateProjectResource } from "@/adapters";
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";

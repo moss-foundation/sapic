@@ -1,7 +1,7 @@
 import { useContext, useState } from "react";
 
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { Scrollbar } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";

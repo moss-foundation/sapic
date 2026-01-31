@@ -10,7 +10,7 @@ export const ProjectTree = ({
   nodeOffset = 12,
   searchInput,
   displayMode = "LIVE",
-  showOrders = false,
+  showOrders = true,
 }: ProjectTreeProps) => {
   return (
     <ProjectTreeContext.Provider

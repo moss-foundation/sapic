@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useListWorkspaces } from "@/adapters/tanstackQuery/workspace";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { useOpenWorkspace } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";

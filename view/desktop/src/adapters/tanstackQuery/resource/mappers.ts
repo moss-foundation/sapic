@@ -1,4 +1,4 @@
-import { ResourceDetails } from "@/db/resource/types";
+import { ResourceDetails } from "@/db/resourceDetails/types";
 import { BodyInfo, UpdateBodyParams, UpdateResourceInput } from "@repo/moss-project";
 
 export const mapUpdateResourceInputToResourceDetails = (

@@ -4,8 +4,8 @@ import { cn } from "@/utils";
 import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
+import { NodeIndicator } from "../NodeIndicator";
 import { useTreeContext } from "../TreeContext";
 
 interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
@@ -17,6 +17,7 @@ interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   isLastChild?: boolean;
   hideDragHandle?: boolean;
   dropIndicatorFullWidth?: boolean;
+  isDirty?: boolean;
 }
 
 export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
@@ -31,6 +32,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
       isLastChild = false,
       hideDragHandle = false,
       dropIndicatorFullWidth = false,
+      isDirty = false,
       ...props
     }: NodeControlsProps,
     ref
@@ -49,7 +51,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
         tabIndex={0}
         {...props}
       >
-        {isChildDropBlocked !== true && <ActiveNodeIndicator isActive={isActive} />}
+        {isChildDropBlocked !== true && <NodeIndicator isActive={isActive} isDirty={isDirty} />}
 
         <DropIndicatorForTrigger
           paddingLeft={nodePaddingLeft}

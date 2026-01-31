@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo } from "react";
 
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { EndpointViewContext } from "@/workbench/views/EndpointView/EndpointViewContext";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";

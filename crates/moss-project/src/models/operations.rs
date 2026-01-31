@@ -7,9 +7,10 @@ use validator::Validate;
 use crate::models::{
     primitives::{ResourceClass, ResourceKind, ResourceProtocol},
     types::{
-        AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription, BodyInfo,
-        CreateDirResourceParams, CreateItemResourceParams, HeaderInfo, PathParamInfo,
-        QueryParamInfo, UpdateDirResourceParams, UpdateItemResourceParams, VcsOperation,
+        AfterCreateResourceDescription, AfterUpdateDirResourceDescription,
+        AfterUpdateItemResourceDescription, BodyInfo, CreateDirResourceParams,
+        CreateItemResourceParams, HeaderInfo, PathParamInfo, QueryParamInfo,
+        UpdateDirResourceParams, UpdateItemResourceParams, VcsOperation,
     },
 };
 // ########################################################
@@ -55,11 +56,11 @@ pub struct BatchCreateResourceInput {
 }
 
 /// @category Operation
-#[derive(Clone, Debug, Serialize, Deserialize, TS)]
+#[derive(Clone, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchCreateResourceOutput {
-    pub ids: Vec<ResourceId>,
+    pub resources: Vec<AfterCreateResourceDescription>,
 }
 
 // ########################################################

@@ -10,7 +10,7 @@ import {
   resourceProtocolSchema,
 } from "@repo/moss-project";
 
-export const resourceDetailsSchema = z.object({
+export const resourceDetailSchema = z.object({
   id: z.string(),
   name: z.string(),
   class: resourceClassSchema,
@@ -22,6 +22,6 @@ export const resourceDetailsSchema = z.object({
   queryParams: z.array(queryParamInfoSchema),
   body: bodyInfoSchema.optional(),
   metadata: z.object({
-    isDirty: z.boolean(),
+    isDirty: z.boolean().default(false),
   }),
 });

@@ -21,10 +21,11 @@ export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
   const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
-  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
   const { data: projectsWithResources } = useStreamedProjectsWithResources();
+
   const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
+  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
