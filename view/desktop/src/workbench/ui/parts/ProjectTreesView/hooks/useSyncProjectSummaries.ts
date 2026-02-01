@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useStreamProjects } from "@/adapters";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
@@ -7,6 +7,8 @@ import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/tre
 
 export const useSyncProjectSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+  const hasSyncedRef = useRef(false);
+  const lastWorkspaceIdRef = useRef<string | undefined>(currentWorkspaceId);
 
   const { data: projects, isLoading } = useStreamProjects();
   const { data: treeItemStates } = useBatchGetTreeItemState(
@@ -14,33 +16,41 @@ export const useSyncProjectSummaries = () => {
     currentWorkspaceId
   );
 
+  // Reset sync flag when workspace changes
   useEffect(() => {
+    if (lastWorkspaceIdRef.current !== currentWorkspaceId) {
+      lastWorkspaceIdRef.current = currentWorkspaceId;
+      hasSyncedRef.current = false;
+    }
+  }, [currentWorkspaceId]);
+
+  useEffect(() => {
+    // Only sync on initial load when data is available
+    if (hasSyncedRef.current || !projects || projects.length === 0 || !treeItemStates) {
+      return;
+    }
+
     const updateLocalProjects = async () => {
-      for (const project of projects ?? []) {
-        const treeItemState = treeItemStates?.find((treeItemState) => treeItemState.id === project.id);
+      for (const project of projects) {
+        const treeItemState = treeItemStates.find((treeItemState) => treeItemState.id === project.id);
 
         if (projectSummariesCollection.has(project.id)) {
           projectSummariesCollection.update(project.id, (draft) => {
-            Object.assign(draft, {
-              ...draft,
-              ...project,
-              order: treeItemState?.order ?? 0,
-              expanded: treeItemState?.expanded ?? true,
-            });
+            draft.order = treeItemState?.order ?? -1;
+            draft.expanded = treeItemState?.expanded ?? true;
           });
         } else {
           projectSummariesCollection.insert({
             ...project,
-            order: treeItemState?.order ?? 0,
+            order: treeItemState?.order ?? -1,
             expanded: treeItemState?.expanded ?? true,
           });
         }
       }
+      hasSyncedRef.current = true;
     };
 
-    if (projects && projects.length > 0) {
-      updateLocalProjects();
-    }
+    updateLocalProjects();
   }, [currentWorkspaceId, projects, treeItemStates]);
 
   return { isLoading };

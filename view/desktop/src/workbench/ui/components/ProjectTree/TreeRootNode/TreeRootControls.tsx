@@ -1,6 +1,5 @@
 import { useContext } from "react";
 
-import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
@@ -50,10 +49,6 @@ export const TreeRootControls = ({
       treeItemState: { id: node.id, order: node.order ?? 0, expanded: !node.expanded },
       workspaceId: currentWorkspaceId,
     });
-
-    projectSummariesCollection.update(node.id, (draft) => {
-      draft.expanded = !node.expanded;
-    });
   };
 
   const handleLabelClick = async () => {
@@ -61,9 +56,6 @@ export const TreeRootControls = ({
       await updateTreeItemState({
         treeItemState: { id: node.id, order: node.order ?? 0, expanded: true },
         workspaceId: currentWorkspaceId,
-      });
-      projectSummariesCollection.update(node.id, (draft) => {
-        draft.expanded = true;
       });
     }
 

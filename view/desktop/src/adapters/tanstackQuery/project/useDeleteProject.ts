@@ -1,4 +1,3 @@
-import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { projectService } from "@/domains/project/projectService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/ipc";
@@ -40,8 +39,6 @@ export const useDeleteProject = () => {
           });
         }
       });
-
-      projectSummariesCollection.delete(data.id);
     },
   });
 };

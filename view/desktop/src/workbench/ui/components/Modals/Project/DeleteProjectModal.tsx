@@ -1,4 +1,5 @@
-import { useBatchUpdateProject, useDeleteProject, useStreamProjects } from "@/adapters/tanstackQuery/project";
+import { useDeleteProject } from "@/adapters/tanstackQuery/project";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchUpdateTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchUpdateTreeItemState";
 import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
@@ -9,19 +10,18 @@ import { ModalWrapperProps } from "../types";
 
 export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperProps & { id: string }) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { data: streamedProject } = useStreamProjects();
   const { mutateAsync: deleteProject, isPending: isDeleteProjectLoading } = useDeleteProject();
-  const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
+  const localProjectSummaries = useGetAllLocalProjectSummaries();
 
   const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
   const { mutateAsync: batchUpdateTreeItemState } = useBatchUpdateTreeItemState();
 
   const { removePanel } = useTabbedPaneStore();
 
-  const project = streamedProject?.find((p) => p.id === id);
+  const project = localProjectSummaries?.find((p) => p.id === id);
 
   const handleSubmit = async () => {
-    const projectToDelete = streamedProject?.find((p) => p.id === id);
+    const projectToDelete = localProjectSummaries?.find((p) => p.id === id);
 
     if (!projectToDelete) return;
 
@@ -33,15 +33,9 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
         workspaceId: currentWorkspaceId,
       });
 
-      const projectsAfterDeleted = streamedProject?.filter((col) => col.order! > projectToDelete.order!);
-      if (projectsAfterDeleted) {
-        await batchUpdateProject({
-          items: projectsAfterDeleted.map((col) => ({
-            id: col.id,
-            order: col.order! - 1,
-          })),
-        });
+      const projectsAfterDeleted = localProjectSummaries?.filter((p) => p.order > projectToDelete.order);
 
+      if (projectsAfterDeleted) {
         await batchUpdateTreeItemState({
           treeItemStates: projectsAfterDeleted.map((project) => ({
             id: project.id,

@@ -1,5 +1,6 @@
 import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 
+import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { JsonValue } from "@repo/moss-bindingutils";
 import { TreeItemState } from "./types";
 
@@ -32,6 +33,13 @@ export const treeItemStateService: ITreeItemStateService = {
     await sharedStorageIpc.putItem(constructTreeItemStateKey(id, workspaceId), state, {
       workspace: workspaceId ?? "application",
     });
+
+    if (projectSummariesCollection.has(treeItemState.id)) {
+      projectSummariesCollection.update(treeItemState.id, (draft) => {
+        draft.order = treeItemState.order;
+        draft.expanded = treeItemState.expanded;
+      });
+    }
   },
   remove: async (treeItemId: string, workspaceId: string) => {
     await sharedStorageIpc.removeItem(constructTreeItemStateKey(treeItemId, workspaceId), {
@@ -77,6 +85,16 @@ export const treeItemStateService: ITreeItemStateService = {
       ),
       scope
     );
+
+    console.log("treeItemStates", treeItemStates);
+    treeItemStates.forEach((treeItemState) => {
+      if (!projectSummariesCollection.has(treeItemState.id)) return;
+
+      projectSummariesCollection.update(treeItemState.id, (draft) => {
+        draft.order = treeItemState.order;
+        draft.expanded = treeItemState.expanded;
+      });
+    });
   },
   batchRemove: async (treeItemIds: string[], workspaceId: string) => {
     await sharedStorageIpc.batchRemoveItem(treeItemIds, {

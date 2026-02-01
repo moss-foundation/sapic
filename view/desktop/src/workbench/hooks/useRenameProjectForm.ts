@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useStreamProjects, useUpdateProject } from "@/adapters/tanstackQuery/project";
-import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 
 export const useRenameProjectForm = (projectId: string) => {
   const [isRenamingProject, setIsRenamingProject] = useState(false);
@@ -21,9 +20,6 @@ export const useRenameProjectForm = (projectId: string) => {
       await updateProject({
         id: projectId,
         name: trimmedNewName,
-      });
-      projectSummariesCollection.update(projectId, (draft) => {
-        draft.name = trimmedNewName;
       });
     } catch (error) {
       console.error(error);
