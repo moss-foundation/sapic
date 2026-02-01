@@ -3,8 +3,8 @@ import { useCallback, useMemo } from "react";
 import { useWindowActivityEvents } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
-import { ActivityEvent } from "@repo/ipc";
 import { LocalizedString } from "@repo/base";
+import { ActivityEvent } from "@repo/ipc";
 
 export const StatusBarActivity = () => {
   const { hasActiveEvents, latestEvent, getStartTitleForActivity, displayQueue } = useWindowActivityEvents();
@@ -92,9 +92,9 @@ export const StatusBarActivity = () => {
   return (
     <div className="flex h-full items-center">
       <button className="group flex h-full items-center rounded transition">
-        <div className="hover:background-(--moss-statusBarItem-background-hover) flex h-[22px] items-center gap-1.5 rounded px-1">
+        <div className="hover:background-(--moss-secondary-background-hover) flex h-[22px] items-center gap-1.5 rounded px-1">
           <Icon className={cn("size-[14px]", animateIcon && "animate-spin")} icon="Refresh" />
-          {textToDisplay && <span className="text-(--moss-statusBarItem-foreground)">{textToDisplay}</span>}
+          {textToDisplay && <span className="text-(--moss-secondary-foreground)">{textToDisplay}</span>}
         </div>
       </button>
     </div>
