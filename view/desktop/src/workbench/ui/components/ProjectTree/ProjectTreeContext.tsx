@@ -25,4 +25,5 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   searchInput: "",
   displayMode: "LIVE",
   showOrders: false,
+  showRootNodeIds: false,
 });

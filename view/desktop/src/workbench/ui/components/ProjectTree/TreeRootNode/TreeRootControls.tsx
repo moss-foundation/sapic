@@ -29,7 +29,8 @@ export const TreeRootControls = ({
 }: TreeRootControlsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, showOrders } = useContext(ProjectTreeContext);
+  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, showOrders, showRootNodeIds } =
+    useContext(ProjectTreeContext);
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -77,7 +78,7 @@ export const TreeRootControls = ({
           <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
           {showOrders && <Tree.RootNodeOrder order={node.order} />}
           <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />
-          <Tree.RootNodeLabel label={node.id} />
+          {showRootNodeIds && <Tree.RootNodeLabel label={node.id} />}
         </Tree.RootNodeTriggers>
 
         <Tree.RootNodeActions>

@@ -6,4 +6,5 @@ export interface BaseTreeContextProps {
   treePaddingRight: number;
   nodeOffset: number;
   showOrders?: boolean;
+  showRootNodeIds?: boolean;
 }
