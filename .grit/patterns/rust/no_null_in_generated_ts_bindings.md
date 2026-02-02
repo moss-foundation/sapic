@@ -1,6 +1,6 @@
 ---
 title: TypeScript exports must not contain "null"
-level: warn
+level: error
 ---
 
 ```grit
