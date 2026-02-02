@@ -1,4 +1,5 @@
 import { ComponentPropsWithoutRef, ReactNode } from "react";
+
 import { ACTIVITY_BAR_BUTTON_DND_TYPE } from "./constants";
 
 export interface ActivityBarItemData {

@@ -1,9 +1,11 @@
+import { useEffect } from "react";
+
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchPutActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchPutActivityBarItemState";
 import { swapListById } from "@/workbench/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { useEffect } from "react";
+
 import { ACTIVITY_BAR_BUTTON_DND_TYPE } from "../constants";
 import { ActivityBarButtonDragData } from "../types";
 import { useSyncedActivityBarFirstItems } from "./useSyncedActivityBarFirstItems";

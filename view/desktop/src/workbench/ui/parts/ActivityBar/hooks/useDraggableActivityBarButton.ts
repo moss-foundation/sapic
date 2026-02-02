@@ -1,4 +1,4 @@
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
+import { RefObject, useEffect, useState } from "react";
 
 import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
@@ -7,9 +7,10 @@ import {
   extractClosestEdge,
   type Edge,
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
+import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
-import { RefObject, useEffect, useState } from "react";
+
 import { ACTIVITY_BAR_BUTTON_DND_TYPE } from "../constants";
 import { ActivityBarButtonDragData } from "../types";
 
