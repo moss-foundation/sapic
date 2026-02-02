@@ -52,7 +52,7 @@ export const SidebarContent = () => {
         </div>
       );
 
-    case "workbench.view.commit":
+    case "workbench.view.sourceControl":
       return (
         <div className="flex h-full flex-col">
           <SourceControlView />

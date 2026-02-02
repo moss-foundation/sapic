@@ -4,7 +4,7 @@ import { TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_PROJECTS } from "@repo/mo
 export const placeholderActivityBarFirstItems = [
   {
     "id": TREE_VIEW_GROUP_PROJECTS,
-    "title": "Home",
+    "title": "Projects",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -57,8 +57,8 @@ export const placeholderActivityBarFirstItems = [
     ),
   },
   {
-    "id": "workbench.view.commit",
-    "title": "Commit",
+    "id": "workbench.view.sourceControl",
+    "title": "Source Control",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path

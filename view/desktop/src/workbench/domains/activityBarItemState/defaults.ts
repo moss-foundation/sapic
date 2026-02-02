@@ -11,7 +11,7 @@ export const defaultStates = [
     order: 2,
   },
   {
-    id: "workbench.view.commit",
+    id: "workbench.view.sourceControl",
     order: 3,
   },
 ] as const satisfies ActivityBarItemState[];
