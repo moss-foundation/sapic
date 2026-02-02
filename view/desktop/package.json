@@ -83,7 +83,7 @@
     "@repo/tailwind-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@tauri-apps/cli": "2.9.1",
-    "@types/node": "24.10.4",
+    "@types/node": "25.0.3",
     "babel-plugin-react-compiler": "1.0.0",
     "vite-plugin-svgr": "4.5.0"
   },
