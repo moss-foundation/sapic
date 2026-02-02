@@ -7,6 +7,7 @@ export const USE_GET_LAYOUT_QUERY_KEY = "getLayout";
 
 export const useGetLayout = (workspaceId?: string) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+
   const workspaceIdToUse = workspaceId || currentWorkspaceId;
 
   return useQuery({

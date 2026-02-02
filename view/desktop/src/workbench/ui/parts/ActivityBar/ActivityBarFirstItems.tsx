@@ -1,19 +1,24 @@
 import { useEffect } from "react";
 
+import { useCurrentWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
+import { useBatchPutActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchPutActivityBarItemState";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
-import { ActivityBarItemProps, useActivityBarStore } from "@/workbench/store/activityBar";
-import { swapListById } from "@/workbench/utils/swapListById";
+import { swapListById } from "@/workbench/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ActivityBarButton } from "./ActivityBarButton";
 import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
+import { ActivityBarButtonProps } from "./types";
+import { useActivityBarFirstItems } from "./useActivityBarFirstItems";
 
 export const ActivityBarFirstItems = () => {
+  const { currentWorkspaceId } = useCurrentWorkspace();
   const { data: layout } = useGetLayout();
-  const { items, setItems } = useActivityBarStore();
+  const { items, isLoadingActivityBarItemStates } = useActivityBarFirstItems();
+  const { mutateAsync: batchPutActivityBarItemState } = useBatchPutActivityBarItemState();
 
   const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
@@ -26,8 +31,8 @@ export const ActivityBarFirstItems = () => {
         const target = location.current.dropTargets[0];
         if (!target) return;
 
-        const sourceData = source.data as { data: ActivityBarItemProps };
-        const targetData = target.data as { data: ActivityBarItemProps };
+        const sourceData = source.data as { data: ActivityBarButtonProps };
+        const targetData = target.data as { data: ActivityBarButtonProps };
         const edge = extractClosestEdge(targetData);
 
         if (!sourceData || !targetData || !sourceData.data || !targetData.data) return;
@@ -36,10 +41,15 @@ export const ActivityBarFirstItems = () => {
 
         if (!updatedItems) return;
 
-        setItems(updatedItems);
+        batchPutActivityBarItemState({
+          activityBarItemStates: updatedItems.map((item) => ({ id: item.id, order: item.order })),
+          workspaceId: currentWorkspaceId,
+        });
       },
     });
-  }, [items, setItems]);
+  }, [batchPutActivityBarItemState, currentWorkspaceId, items]);
+
+  if (isLoadingActivityBarItemStates) return null;
 
   return (
     <div
@@ -49,26 +59,31 @@ export const ActivityBarFirstItems = () => {
           activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
       })}
     >
-      {items
-        .filter((item) => item.isVisible !== false)
-        .map((item) => {
-          const isActive = item.id === layout?.activitybarState.activeContainerId;
-          return (
-            <div
+      {items.map((item) => {
+        const isActive = item.id === layout?.activitybarState.activeContainerId;
+        return (
+          <div
+            key={item.id}
+            className={cn("relative flex flex-col", {
+              "px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
+              "py-[3px]":
+                activityBarPosition === ACTIVITYBAR_POSITION.TOP || activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
+            })}
+          >
+            <ActivityBarButton
               key={item.id}
-              className={cn("relative flex flex-col", {
-                "px-1.5": activityBarPosition === ACTIVITYBAR_POSITION.DEFAULT,
-                "py-[3px]":
-                  activityBarPosition === ACTIVITYBAR_POSITION.TOP ||
-                  activityBarPosition === ACTIVITYBAR_POSITION.BOTTOM,
-              })}
-            >
-              <ActivityBarButton key={item.id} {...item} />
+              id={item.id}
+              title={item.title}
+              icon={item.icon}
+              iconActive={item.iconActive}
+              order={item.order}
+              isDraggable={true}
+            />
 
-              {isActive && layout?.sidebarState.visible && <ActivityBarButtonIndicator />}
-            </div>
-          );
-        })}
+            {isActive && layout?.sidebarState.visible && <ActivityBarButtonIndicator />}
+          </div>
+        );
+      })}
     </div>
   );
 };

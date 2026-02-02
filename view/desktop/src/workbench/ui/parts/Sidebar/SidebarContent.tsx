@@ -52,17 +52,7 @@ export const SidebarContent = () => {
         </div>
       );
 
-    case "4":
-      return (
-        <div className="flex h-full flex-col">
-          <SidebarHeader />
-          <div className="flex grow items-center justify-center p-2">
-            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
-          </div>
-        </div>
-      );
-
-    case "5":
+    case "workbench.view.commit":
       return (
         <div className="flex h-full flex-col">
           <SourceControlView />

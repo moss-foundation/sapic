@@ -5,7 +5,8 @@ import { useCurrentWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
-import { ActivityBarItemProps } from "@/workbench/store/activityBar";
+import { ActivityBarButtonProps } from "@/workbench/store/activityBar";
+import DropIndicator from "@/workbench/ui/components/DropIndicator";
 import {
   attachClosestEdge,
   extractClosestEdge,
@@ -15,15 +16,7 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import DropIndicator from "@/workbench/ui/components/DropIndicator";
-
-export const ActivityBarButton = ({
-  icon,
-  iconActive,
-  isVisible: _,
-  isDraggable = true,
-  ...props
-}: ActivityBarItemProps) => {
+export const ActivityBarButton = ({ icon, iconActive, isDraggable, ...props }: ActivityBarButtonProps) => {
   const ref = useRef<HTMLButtonElement | null>(null);
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
@@ -151,6 +144,7 @@ export const ActivityBarButton = ({
             icon={icon}
             iconActive={iconActive}
             className="background-(--moss-secondary-background-hover) rounded-md p-1"
+            isDraggable={false}
           />,
           preview
         )}
