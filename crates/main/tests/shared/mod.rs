@@ -21,10 +21,7 @@ use sapic_ipc::contracts::main::{
     project::{StreamProjectsEvent, StreamProjectsOutput},
 };
 use sapic_platform::{
-    environment::{
-        app_environment_service_fs::AppEnvironmentServiceFs,
-        environment_service_fs::EnvironmentServiceFs,
-    },
+    environment::environment_service_fs::EnvironmentServiceFs,
     github::{AppGitHubApiClient, auth::AppGitHubAuthAdapter},
     gitlab::{AppGitLabApiClient, auth::AppGitLabAuthAdapter},
     project::project_service_fs::ProjectServiceFs,
@@ -35,9 +32,7 @@ use sapic_platform::{
 };
 use sapic_runtime::{app::kv_storage::AppStorage, user::AppUser};
 use sapic_system::{
-    environment::{
-        app_environment_service::AppEnvironmentService, environment_service::EnvironmentService,
-    },
+    environment::environment_service::EnvironmentService,
     ports::{github_api::GitHubAuthAdapter, gitlab_api::GitLabAuthAdapter},
     project::project_service::ProjectService,
     workspace::{
@@ -216,8 +211,14 @@ pub async fn set_up_test_main_window() -> (
 
     let workspace_ops = MainWindowWorkspaceOps::new(workspace_service.clone());
 
-    let app_environment_service = Arc::new(AppEnvironmentService::new(
-        AppEnvironmentServiceFs::new(&workspaces_path, fs.clone()),
+    let environment_service = Arc::new(EnvironmentService::new(
+        None,
+        None,
+        Arc::new(EnvironmentServiceFs::new(
+            workspaces_path.to_path_buf(),
+            fs.clone(),
+        )),
+        storage.clone(),
     ));
 
     let main_window = MainWindow::new(
@@ -226,7 +227,7 @@ pub async fn set_up_test_main_window() -> (
         old_sapic_window,
         workspace.clone(),
         workspace_ops,
-        MainWindowEnvironmentOps::new(app_environment_service.clone()),
+        MainWindowEnvironmentOps::new(environment_service),
     )
     .await
     .unwrap();
