@@ -421,7 +421,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Dependencies for desktop
-        #        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
+#        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
         run: cd view/desktop && pnpm install --frozen-lockfile
 
       - name: Build lezer-grammar
