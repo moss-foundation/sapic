@@ -150,7 +150,7 @@ export type DescribeEnvironmentInput = { projectId?: string; environmentId: stri
 /**
  * @category Operation
  */
-export type DescribeEnvironmentOutput = { name: string; color: string | null; variables: VariableInfo };
+export type DescribeEnvironmentOutput = { name: string; color?: string; variables: VariableInfo };
 
 /**
  * @category Operation

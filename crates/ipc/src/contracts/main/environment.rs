@@ -50,6 +50,7 @@ pub struct DescribeEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentOutput {
     pub name: String,
+    #[ts(optional)]
     pub color: Option<String>,
     #[ts(type = "VariableInfo")]
     pub variables: Vec<VariableInfo>,

@@ -210,7 +210,7 @@ export const createProjectInputSchema = z.object({
 
 export const describeEnvironmentOutputSchema = z.object({
   name: z.string(),
-  color: z.string().nullable(),
+  color: z.string().optional(),
   variables: variableInfoSchema,
 });
 
