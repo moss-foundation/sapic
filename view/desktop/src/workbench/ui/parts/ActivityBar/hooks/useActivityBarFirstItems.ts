@@ -1,8 +1,8 @@
 import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { useBatchGetActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchGetActivityBarItemState";
 import { useMemo } from "react";
-import { placeholderActivityBarFirstItems } from "./placeholder";
-import { ActivityBarItem } from "./types";
+import { placeholderActivityBarFirstItems } from "../components/placeholder";
+import { ActivityBarItem } from "../types";
 
 export const useActivityBarFirstItems = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();

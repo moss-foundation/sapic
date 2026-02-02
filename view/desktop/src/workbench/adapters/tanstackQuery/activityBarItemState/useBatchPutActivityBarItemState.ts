@@ -3,7 +3,7 @@ import { ActivityBarItemState } from "@/workbench/domains/activityBarItemState/t
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useCurrentWorkspace } from "@/hooks";
-import { placeholderActivityBarFirstItems } from "@/workbench/ui/parts/ActivityBar/placeholder";
+import { placeholderActivityBarFirstItems } from "@/workbench/ui/parts/ActivityBar/components/placeholder";
 import { USE_BATCH_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY } from "./useBatchGetActivityBarItemState";
 import { USE_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY } from "./useGetActivityBarItemState";
 

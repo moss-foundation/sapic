@@ -5,7 +5,7 @@ import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 
-import { ActivityBarButton } from "./ActivityBarButton";
+import { ActivityBarButton } from "./components/ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();

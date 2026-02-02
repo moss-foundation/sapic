@@ -1,6 +1,6 @@
 import { useGetLayout } from "@/workbench/adapters";
 
-import { useActivityBarFirstItems } from "../ActivityBar/useActivityBarFirstItems";
+import { useActivityBarFirstItems } from "../ActivityBar/hooks/useActivityBarFirstItems";
 
 interface SidebarHeaderProps {
   toolbar?: React.ReactNode;

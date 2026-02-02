@@ -9,10 +9,10 @@ import { swapListById } from "@/workbench/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ActivityBarButton } from "./ActivityBarButton";
-import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
+import { ActivityBarButton } from "./components/ActivityBarButton";
+import { ActivityBarButtonIndicator } from "./components/ActivityBarButtonIndicator";
+import { useActivityBarFirstItems } from "./hooks/useActivityBarFirstItems";
 import { ActivityBarButtonProps } from "./types";
-import { useActivityBarFirstItems } from "./useActivityBarFirstItems";
 
 export const ActivityBarFirstItems = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
