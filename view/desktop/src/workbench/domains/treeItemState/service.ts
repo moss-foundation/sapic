@@ -86,7 +86,6 @@ export const treeItemStateService: ITreeItemStateService = {
       scope
     );
 
-    console.log("treeItemStates", treeItemStates);
     treeItemStates.forEach((treeItemState) => {
       if (!projectSummariesCollection.has(treeItemState.id)) return;
 
