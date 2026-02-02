@@ -1,11 +1,12 @@
 import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 import { JsonValue } from "@repo/moss-bindingutils";
+import { defaultStates } from "./defaults";
 import { ActivityBarItemState } from "./types";
 
 const SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY = "workbench.activityBarItemState" as const;
 
 export interface IActivityBarItemStateService {
-  get: (activityBarId: string, workspaceId: string) => Promise<ActivityBarItemState | undefined>;
+  get: (activityBarId: string, workspaceId: string) => Promise<ActivityBarItemState>;
   put: (activityBarState: ActivityBarItemState, workspaceId: string) => Promise<void>;
   remove: (activityBarId: string, workspaceId: string) => Promise<void>;
 
@@ -18,16 +19,14 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
   get: async (activityBarId: string, workspaceId: string) => {
     const { value: output } = await sharedStorageIpc.getItem(
       constructActivityBarItemStateKey(activityBarId, workspaceId),
-      {
-        workspace: workspaceId ?? "application",
-      }
+      { workspace: workspaceId ?? "application" }
     );
 
-    if (output !== "none") {
-      return output.value as unknown as ActivityBarItemState;
+    if (output === "none") {
+      return defaultStates.find((state) => state.id === activityBarId)!;
     }
 
-    return undefined;
+    return output.value as unknown as ActivityBarItemState;
   },
   put: async (activityBarState: ActivityBarItemState, workspaceId: string) => {
     const { id, ...state } = activityBarState;
@@ -49,7 +48,7 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
 
     if (!output) return [];
 
-    return activityBarIds.map((activityBarId) => {
+    return activityBarIds.map((activityBarId): ActivityBarItemState => {
       const key = constructActivityBarItemStateKey(activityBarId, workspaceId);
       const itemValue = output[key];
 
@@ -60,7 +59,6 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
       return {
         id: activityBarId,
         order: 0,
-        isVisible: true,
       };
     });
   },

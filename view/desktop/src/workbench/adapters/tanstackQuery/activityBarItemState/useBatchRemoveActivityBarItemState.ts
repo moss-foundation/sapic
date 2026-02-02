@@ -15,8 +15,7 @@ export const useBatchRemoveActivityBarItemState = () => {
       ids.forEach((id) => {
         queryClient.removeQueries({ queryKey: [USE_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY, id, workspaceId] });
       });
-
-      queryClient.setQueryData([USE_BATCH_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY, ids, workspaceId], []);
+      queryClient.removeQueries({ queryKey: [USE_BATCH_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY, ids, workspaceId] });
     },
   });
 };
