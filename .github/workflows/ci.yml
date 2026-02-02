@@ -1,16 +1,14 @@
 name: CI
 
 on:
-  workflow_dispatch:
-
-  # push:
-  #   branches: ["main"]
-  # pull_request:
-  #   types:
-  #     - opened
-  #     - reopened
-  #     - synchronize
-  #     - ready_for_review
+  push:
+    branches: ["main"]
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -22,33 +20,7 @@ env:
   CARGO_PROFILE_DEV_DEBUG: 0
 
 jobs:
-  # When running from workflow dispatch, the base sha is not automatically set as it is for PRs
-  # We need to manually get the sha of the main branch for diffing to work correctly
-  get-main-sha:
-    runs-on: ubuntu-latest
-    outputs:
-      base_sha: ${{ steps.get-main-sha.outputs.main-sha }}
-    steps:
-      - name: Harden the runner (Audit all outbound calls)
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
-        with:
-          egress-policy: audit
-
-      - name: Check out code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-        with:
-          # To make `since_last_remote_commit` work on newly created PR
-          # https://github.com/tj-actions/changed-files/issues/2153
-          fetch-depth: 0
-
-      - name: Get main branch SHA
-        id: get-main-sha
-        run: |
-          MAIN_SHA=$(git rev-parse origin/main)
-          echo "main-sha=$MAIN_SHA" >> $GITHUB_OUTPUT
-
   check-modified-files:
-    needs: get-main-sha
     runs-on: ubuntu-latest
     outputs:
       rust: ${{ steps.changed-files.outputs.rust_any_changed }}
@@ -71,7 +43,6 @@ jobs:
         id: changed-files
         uses: tj-actions/changed-files@24d32ffd492484c1d75e0c0b894501ddb9d30d62 # v47.0.0
         with:
-          base_sha: ${{ needs.get-main-sha.outputs.base_sha }}
           # Only consider changed files in the latest commit when the PR is in draft
           since_last_remote_commit: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == true }}
           files_yaml: |
@@ -117,7 +88,6 @@ jobs:
   check-bindings:
     name: Check Bindings
     needs: check-modified-models
-    if: needs.check-modified-models.outputs.UPDATED_MODELS != '' && needs.check-modified-models.outputs.UPDATED_MODELS != '[]'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -451,11 +421,8 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Install Dependencies for desktop
-        #        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
+#        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
         run: cd view/desktop && pnpm install --frozen-lockfile
-
-      - name: Build TypeScript Dependencies
-        run: pnpm run build --filter=@repo/lezer-grammar
 
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
