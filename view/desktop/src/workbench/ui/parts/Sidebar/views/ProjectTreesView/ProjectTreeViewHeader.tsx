@@ -21,10 +21,11 @@ export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
   const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
-  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
   const { data: projectsWithResources } = useStreamedProjectsWithResources();
+
   const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
+  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
@@ -39,6 +40,8 @@ export const ProjectTreeViewHeader = () => {
     clearAllProjectResourcesCache();
   };
 
+  //TODO project and resource summaries that is linked to manipulating all states is broken for now
+  //until all the resources and projects summaries start using state from shared storage
   const areAllProjectsCollapsed = projectsWithResources.every((p) => !p.expanded);
   const areAllDirNodesCollapsed = projectsWithResources.every((p) => {
     return p.resources.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);

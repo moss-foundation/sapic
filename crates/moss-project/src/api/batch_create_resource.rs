@@ -2,8 +2,12 @@ use moss_applib::AppRuntime;
 
 use crate::{
     Project,
-    models::operations::{
-        BatchCreateResourceInput, BatchCreateResourceKind, BatchCreateResourceOutput,
+    models::{
+        operations::{
+            BatchCreateResourceInput, BatchCreateResourceKind, BatchCreateResourceOutput,
+        },
+        primitives::FrontendResourcePath,
+        types::AfterCreateResourceDescription,
     },
 };
 
@@ -16,7 +20,7 @@ impl Project {
         // Split directories from items and create directories first
         let mut items = Vec::new();
         let mut dirs = Vec::new();
-        let mut ids = Vec::new();
+        let mut resources = Vec::new();
         for entry in input.resources {
             match entry {
                 BatchCreateResourceKind::Item(item) => {
@@ -39,15 +43,27 @@ impl Project {
         });
 
         for dir in dirs {
+            let path = dir.path.clone();
+            let name = dir.name.clone();
             let output = self.create_dir_resource::<R>(ctx, dir).await?;
-            ids.push(output.id);
+            resources.push(AfterCreateResourceDescription {
+                id: output.id,
+                path: FrontendResourcePath::new(path.to_path_buf()),
+                name,
+            });
         }
 
         for item in items {
+            let path = item.path.clone();
+            let name = item.name.clone();
             let output = self.create_item_resource::<R>(ctx, item).await?;
-            ids.push(output.id);
+            resources.push(AfterCreateResourceDescription {
+                id: output.id,
+                path: FrontendResourcePath::new(path.to_path_buf()),
+                name,
+            });
         }
 
-        Ok(BatchCreateResourceOutput { ids })
+        Ok(BatchCreateResourceOutput { resources })
     }
 }

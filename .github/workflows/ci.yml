@@ -424,6 +424,9 @@ jobs:
 #        run: cd view/desktop && pnpm install --force # TODO: This is a hack to get around eslint issues
         run: cd view/desktop && pnpm install --frozen-lockfile
 
+      - name: Build lezer-grammar
+        run: cd packages/lezer-grammar && pnpm build
+
       - name: Install Playwright Browsers
         run: pnpm exec playwright install chromium --with-deps
 

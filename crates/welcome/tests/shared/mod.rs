@@ -5,14 +5,14 @@ use moss_fs::RealFileSystem;
 use moss_testutils::random_name::random_string;
 use sapic_core::context::ArcContext;
 use sapic_platform::{
-    environment::app_environment_service_fs::AppEnvironmentServiceFs,
+    environment::environment_service_fs::EnvironmentServiceFs,
     workspace::{
         workspace_edit_backend::WorkspaceFsEditBackend, workspace_service_fs::WorkspaceServiceFs,
     },
 };
 use sapic_runtime::app::kv_storage::AppStorage;
 use sapic_system::{
-    environment::app_environment_service::AppEnvironmentService,
+    environment::environment_service::EnvironmentService,
     workspace::{
         workspace_edit_service::WorkspaceEditService, workspace_service::WorkspaceService,
     },
@@ -80,12 +80,17 @@ pub async fn set_up_test_welcome_window() -> (
         storage.clone(),
     ));
 
-    let app_environment_service = AppEnvironmentService::new(AppEnvironmentServiceFs::new(
-        &delegate.workspaces_dir(),
-        fs.clone(),
+    let environment_service = Arc::new(EnvironmentService::new(
+        None,
+        None,
+        Arc::new(EnvironmentServiceFs::new(
+            delegate.workspaces_dir().to_path_buf(),
+            fs.clone(),
+        )),
+        storage.clone(),
     ));
 
-    let environment_ops = WelcomeWindowEnvironmentOps::new(Arc::new(app_environment_service));
+    let environment_ops = WelcomeWindowEnvironmentOps::new(environment_service);
 
     let welcome_window = WelcomeWindow::new(
         &delegate,

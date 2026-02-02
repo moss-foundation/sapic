@@ -1,4 +1,4 @@
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
@@ -19,10 +19,10 @@ const EndpointView = ({ params }: EndpointViewProps) => {
 
   if (!localResourceDetails) {
     return (
-      <PageWrapper>
-        <div className="flex flex-1 items-center justify-center">
+      <PageWrapper className="h-full">
+        <div className="flex h-full flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-(--moss-secondary-foreground) mb-4 text-sm">No endpoint selected</p>
+            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Loading endpoint details...</p>
           </div>
         </div>
       </PageWrapper>

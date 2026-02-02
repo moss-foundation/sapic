@@ -1,8 +1,8 @@
 import { useContext } from "react";
 
-import { useUpdateProject } from "@/adapters/tanstackQuery/project";
-import { useModal } from "@/hooks";
+import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
@@ -27,14 +27,16 @@ export const TreeRootControls = ({
   setIsAddingRootFolderNode,
   setIsRenamingRootNode,
 }: TreeRootControlsProps) => {
-  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, showOrders } = useContext(ProjectTreeContext);
+  const { currentWorkspaceId } = useCurrentWorkspace();
+
+  const { allFoldersAreExpanded, allFoldersAreCollapsed, id, showOrders, showRootNodeIds } =
+    useContext(ProjectTreeContext);
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { mutateAsync: updateProject } = useUpdateProject();
   const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
   const { refreshProject } = useRefreshProject(id);
-
+  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
   const handleRefresh = () => {
@@ -44,17 +46,17 @@ export const TreeRootControls = ({
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    await updateProject({
-      id,
-      expanded: !node.expanded,
+    await updateTreeItemState({
+      treeItemState: { id: node.id, order: node.order ?? 0, expanded: !node.expanded },
+      workspaceId: currentWorkspaceId,
     });
   };
 
   const handleLabelClick = async () => {
     if (!node.expanded) {
-      await updateProject({
-        id,
-        expanded: true,
+      await updateTreeItemState({
+        treeItemState: { id: node.id, order: node.order ?? 0, expanded: true },
+        workspaceId: currentWorkspaceId,
       });
     }
 
@@ -76,6 +78,7 @@ export const TreeRootControls = ({
           <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
           {showOrders && <Tree.RootNodeOrder order={node.order} />}
           <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />
+          {showRootNodeIds && <Tree.RootNodeLabel label={node.id} />}
         </Tree.RootNodeTriggers>
 
         <Tree.RootNodeActions>

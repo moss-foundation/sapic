@@ -1,3 +1,4 @@
+import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { projectIpc } from "@/infra/ipc/projectIpc";
 import {
   BatchUpdateProjectInput,
@@ -13,8 +14,11 @@ import {
   UpdateProjectOutput,
 } from "@repo/ipc";
 import { Channel } from "@tauri-apps/api/core";
+import {
+  batchUpdateProjectSummaryCollectionFromInput,
+  updateProjectSummaryCollectionFromInput,
+} from "./handlers/updateProjectSummaryDraftFromParams";
 
-// prettier-ignore
 interface IProjectService {
   batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
 
@@ -31,13 +35,34 @@ interface IProjectService {
 
 export const projectService: IProjectService = {
   batchUpdateProject: async (input) => {
-    return await projectIpc.batchUpdateProject(input);
+    const output = await projectIpc.batchUpdateProject(input);
+
+    batchUpdateProjectSummaryCollectionFromInput(input);
+
+    return output;
   },
   createProject: async (input) => {
-    return await projectIpc.createProject(input);
+    const output = await projectIpc.createProject(input);
+
+    projectSummariesCollection.insert({
+      id: output.id,
+      name: input.name,
+      archived: false,
+      branch: null,
+      iconPath: output.iconPath,
+
+      order: input.order,
+      expanded: output.expanded,
+    });
+
+    return output;
   },
   deleteProject: async (input) => {
-    return await projectIpc.deleteProject(input);
+    const output = await projectIpc.deleteProject(input);
+
+    projectSummariesCollection.delete(input.id);
+
+    return output;
   },
   importProject: async (input) => {
     return await projectIpc.importProject(input);
@@ -46,6 +71,10 @@ export const projectService: IProjectService = {
     return await projectIpc.streamProjects(channelEvent);
   },
   updateProject: async (input) => {
-    return await projectIpc.updateProject(input);
+    const output = await projectIpc.updateProject(input);
+
+    updateProjectSummaryCollectionFromInput(input);
+
+    return output;
   },
 };

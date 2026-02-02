@@ -54,7 +54,7 @@ async fn batch_create_entry_success() {
         .batch_create_resource::<MockAppRuntime>(&ctx, input)
         .await
         .unwrap();
-    assert_eq!(output.ids.len(), 2);
+    assert_eq!(output.resources.len(), 2);
 
     // Verify the directories were created
     let outer_dir = resources_dir.join(&entry_base_path).join(&outer_name);
@@ -118,7 +118,7 @@ async fn batch_create_entry_empty_input() {
         .await
         .unwrap();
 
-    assert_eq!(output.ids.len(), 0);
+    assert_eq!(output.resources.len(), 0);
 
     // Cleanup
     cleanup().await;

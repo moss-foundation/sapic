@@ -28,24 +28,24 @@ export const createNotificationContent = ({
       {onClose && (
         <button
           onClick={onClose}
-          className="absolute top-[10px] right-[8px] z-10 cursor-pointer p-1 font-sans text-base font-normal text-(--moss-notification-close) opacity-70 transition-opacity hover:text-(--moss-notification-close) hover:opacity-100"
+          className="text-(--moss-notification-close) hover:text-(--moss-notification-close) absolute right-[8px] top-[10px] z-10 cursor-pointer p-1 font-sans text-base font-normal opacity-70 transition-opacity hover:opacity-100"
         >
           <Icon icon="Close" />
         </button>
       )}
-      <div className="-mt-0.5 -ml-1.5 flex items-start gap-2 pr-4 font-sans text-base font-normal">
+      <div className="-ml-1.5 -mt-0.5 flex items-start gap-2 pr-4 font-sans text-base font-normal">
         <Icon icon={icon} className="mt-0.5 size-4 flex-shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="leading-5 font-medium text-(--moss-notification-foreground)">{title}</div>
+          <div className="text-(--moss-notification-foreground) font-medium leading-5">{title}</div>
           {description && (
             <div
-              className={`pt-0.5 leading-4 text-(--moss-notification-foreground) ${!(buttonText || linkText) ? "mb-1" : ""}`}
+              className={`text-(--moss-notification-foreground) pt-0.5 leading-4 ${!(buttonText || linkText) ? "mb-1" : ""}`}
             >
               {description}
             </div>
           )}
           {(buttonText || linkText) && (
-            <div className="mt-3 mb-1 flex items-center gap-3">
+            <div className="mb-1 mt-3 flex items-center gap-3">
               {buttonText && (
                 <Button
                   intent="outlined"

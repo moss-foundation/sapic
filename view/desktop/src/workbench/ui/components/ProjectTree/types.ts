@@ -48,5 +48,7 @@ export interface ProjectTreeProps {
   nodeOffset?: number;
   searchInput?: string;
   displayMode?: WorkspaceMode;
+
   showOrders?: boolean;
+  showRootNodeIds?: boolean;
 }

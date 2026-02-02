@@ -563,7 +563,7 @@
     },
     "moss.notification.foreground": {
       "type": "variable",
-      "value": "moss.gray.14"
+      "value": "moss.gray.1"
     },
     "moss.notification.button.outline": {
       "type": "variable",

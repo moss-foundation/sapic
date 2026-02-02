@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
-import { useGetLocalResourceDetails } from "@/db/resource/hooks/useGetLocalResourceDetails";
-import { resourceDetailsCollection } from "@/db/resource/resourceDetailsCollection";
+import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { Resizable, ResizablePanel } from "@/lib/ui";
 import { sortObjectsByOrder } from "@/utils";
 import { cn } from "@/utils/cn";
@@ -30,6 +30,17 @@ export const RunTab = () => {
 
   const handleUrlChange = useCallback(
     (url: string) => {
+      if (url === "") {
+        resourceDetailsCollection.update(resourceId, (draft) => {
+          if (!draft) return;
+          draft.metadata.isDirty = true;
+          draft.url = "";
+          draft.pathParams = [];
+          draft.queryParams = [];
+        });
+        return;
+      }
+
       // 1. UPDATE URL IMMEDIATELY
       // We must update the URL synchronously to keep the React state in sync with the CodeMirror instance.
       // If we wait for the async `parseUrl` to finish, the parent component will pass an outdated `url` prop
@@ -99,8 +110,13 @@ export const RunTab = () => {
           }
         })
         .catch((error) => {
-          //Technically it is normal for the parser to fail while the user is typing incomplete syntax.
           console.error(error);
+          resourceDetailsCollection.update(resourceId, (draft) => {
+            if (!draft) return;
+            draft.metadata.isDirty = true;
+            draft.pathParams = [];
+            draft.queryParams = [];
+          });
         });
     },
     [parseUrl, resourceId]

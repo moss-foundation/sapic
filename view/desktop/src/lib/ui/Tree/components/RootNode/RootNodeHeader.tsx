@@ -2,7 +2,7 @@ import { forwardRef, HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
 
-import { ActiveNodeIndicator } from "../ActiveNodeIndicator";
+import { NodeIndicator } from "../NodeIndicator";
 import { useTreeContext } from "../TreeContext";
 
 interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
@@ -18,7 +18,7 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
       <li
         ref={ref}
         className={cn(
-          "group/TreeRootNodeHeader relative flex w-full min-w-0 items-center justify-between py-0.75",
+          "group/TreeRootNodeHeader py-0.75 relative flex w-full min-w-0 items-center justify-between",
           className
         )}
         style={{
@@ -27,7 +27,7 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
         }}
         {...props}
       >
-        <ActiveNodeIndicator isActive={isActive} />
+        <NodeIndicator isActive={isActive} />
         {children}
       </li>
     );

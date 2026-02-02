@@ -1,12 +1,16 @@
 import { useDeleteProjectResource } from "@/adapters";
 import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
+import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import { useBatchRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchRemoveTreeItemState";
+import { useBatchUpdateTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchUpdateTreeItemState";
+import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
 import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
-import { siblingsAfterRemovalPayload } from "../utils";
+import { getAllNestedResources, siblingsAfterRemovalPayload } from "../utils";
 
 export const useDeleteAndUpdatePeers = (
   projectId: string,
@@ -15,8 +19,14 @@ export const useDeleteAndUpdatePeers = (
 ) => {
   const queryClient = useQueryClient();
 
+  const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
+
+  const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
+  const { mutateAsync: batchUpdateTreeItemState } = useBatchUpdateTreeItemState();
+  const { mutateAsync: batchRemoveTreeItemState } = useBatchRemoveTreeItemState();
 
   const deleteAndUpdatePeers = async () => {
     await deleteProjectResource({
@@ -24,6 +34,13 @@ export const useDeleteAndUpdatePeers = (
       input: {
         id: node.id,
       },
+    });
+
+    const allNestedChildren = getAllNestedResources(node);
+
+    await batchRemoveTreeItemState({
+      ids: allNestedChildren.map((child) => child.id),
+      workspaceId: currentWorkspaceId,
     });
 
     const sortedChildren = sortObjectsByOrder(parentNode.childNodes);
@@ -44,6 +61,7 @@ export const useDeleteAndUpdatePeers = (
     });
 
     if (result.status === "ok") {
+      //TODO: Remove this once we have a proper way to update the project resources(in the tanstack adapter)
       queryClient.setQueryData(
         [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, projectId],
         (cacheData: StreamResourcesEvent[]) => {
@@ -57,6 +75,20 @@ export const useDeleteAndUpdatePeers = (
           });
         }
       );
+
+      await batchUpdateTreeItemState({
+        treeItemStates: updatedParentNodeChildren.map((child) => ({
+          id: child.id,
+          order: child.order! - 1,
+          expanded: child.expanded,
+        })),
+        workspaceId: currentWorkspaceId,
+      });
+
+      await removeTreeItemState({
+        id: node.id,
+        workspaceId: currentWorkspaceId,
+      });
     }
   };
 
