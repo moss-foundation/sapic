@@ -1,6 +1,6 @@
 import { useGetLayout } from "@/workbench/adapters";
 
-import { useActivityBarFirstItems } from "../ActivityBar/hooks/useActivityBarFirstItems";
+import { useSyncedActivityBarFirstItems } from "../ActivityBar/hooks/useSyncedActivityBarFirstItems";
 
 interface SidebarHeaderProps {
   toolbar?: React.ReactNode;
@@ -8,7 +8,7 @@ interface SidebarHeaderProps {
 
 export const SidebarHeader = ({ toolbar }: SidebarHeaderProps) => {
   const { data: layout } = useGetLayout();
-  const { items } = useActivityBarFirstItems();
+  const { items } = useSyncedActivityBarFirstItems();
 
   const activeContainerId = layout?.activitybarState.activeContainerId;
   const activeItem = items.find((item) => item.id === activeContainerId);

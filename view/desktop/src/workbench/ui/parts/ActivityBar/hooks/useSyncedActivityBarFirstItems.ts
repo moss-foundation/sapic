@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { placeholderActivityBarFirstItems } from "../components/placeholder";
 import { ActivityBarItem } from "../types";
 
-export const useActivityBarFirstItems = () => {
+export const useSyncedActivityBarFirstItems = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: activityBarItemStates, isLoading: isLoadingActivityBarItemStates } = useBatchGetActivityBarItemState(

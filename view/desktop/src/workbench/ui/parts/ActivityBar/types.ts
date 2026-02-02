@@ -1,4 +1,5 @@
 import { ComponentPropsWithoutRef, ReactNode } from "react";
+import { ACTIVITY_BAR_BUTTON_DND_TYPE } from "./constants";
 
 export interface ActivityBarItemData {
   id: string;
@@ -18,4 +19,13 @@ export interface ActivityBarItem
 export interface ActivityBarButtonProps
   extends ActivityBarItem, ActivityBarItemState, Omit<ComponentPropsWithoutRef<"button">, "id" | "title"> {
   isDraggable: boolean;
+}
+
+export interface ActivityBarButtonDragData {
+  type: typeof ACTIVITY_BAR_BUTTON_DND_TYPE;
+  data: {
+    id: string;
+    order: number;
+  };
+  [key: string]: unknown;
 }

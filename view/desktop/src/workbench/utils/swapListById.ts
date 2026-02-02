@@ -36,9 +36,12 @@ export const swapListById = <T extends Identifiable>(
     }
   }
 
-  updatedItems.forEach((item, index) => {
-    item.order = index;
+  const updatedItemsWithOrder = updatedItems.map((item, index) => {
+    return {
+      ...item,
+      order: index + 1,
+    };
   });
 
-  return updatedItems;
+  return updatedItemsWithOrder;
 };
