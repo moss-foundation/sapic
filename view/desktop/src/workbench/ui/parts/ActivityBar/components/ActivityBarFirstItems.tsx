@@ -2,10 +2,10 @@ import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
 
-import { ActivityBarButton } from "./components/ActivityBarButton";
-import { ActivityBarButtonIndicator } from "./components/ActivityBarButtonIndicator";
-import { useMonitorActivityBarFirstItems } from "./hooks/useMonitorActivityBarFirstItems";
-import { useSyncedActivityBarFirstItems } from "./hooks/useSyncedActivityBarFirstItems";
+import { useMonitorActivityBarFirstItems } from "../hooks/useMonitorActivityBarFirstItems";
+import { useSyncedActivityBarFirstItems } from "../hooks/useSyncedActivityBarFirstItems";
+import { ActivityBarButton } from "./ActivityBarButton";
+import { ActivityBarButtonIndicator } from "./ActivityBarButtonIndicator";
 
 export const ActivityBarFirstItems = () => {
   const { data: layout } = useGetLayout();

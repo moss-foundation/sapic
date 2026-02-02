@@ -2,8 +2,8 @@ import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 
-import { ActivityBarFirstItems } from "./ActivityBarFirstItems";
-import { ActivityBarLastItems } from "./ActivityBarLastItems";
+import { ActivityBarFirstItems } from "./components/ActivityBarFirstItems";
+import { ActivityBarLastItems } from "./components/ActivityBarLastItems";
 
 export const ActivityBar = () => {
   const { data: layout } = useGetLayout();
