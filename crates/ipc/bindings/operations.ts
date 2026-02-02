@@ -145,7 +145,7 @@ export type DeleteWorkspaceOutput = { id: string };
 /**
  * @category Operation
  */
-export type DescribeEnvironmentInput = { projectId: string | null; environmentId: string };
+export type DescribeEnvironmentInput = { projectId?: string; environmentId: string };
 
 /**
  * @category Operation
