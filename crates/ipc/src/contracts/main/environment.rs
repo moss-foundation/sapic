@@ -39,6 +39,7 @@ pub struct StreamEnvironmentsEvent {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct DescribeEnvironmentInput {
+    #[ts(optional)]
     pub project_id: Option<ProjectId>,
     pub environment_id: EnvironmentId,
 }
@@ -95,6 +96,7 @@ pub struct CreateEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct CreateEnvironmentOutput {
     pub id: EnvironmentId,
+    #[ts(optional)]
     pub project_id: Option<ProjectId>,
     pub name: String,
     pub order: Option<isize>,
