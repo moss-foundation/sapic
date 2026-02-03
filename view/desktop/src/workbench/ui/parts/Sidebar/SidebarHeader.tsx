@@ -1,5 +1,6 @@
 import { useGetLayout } from "@/workbench/adapters";
-import { useActivityBarStore } from "@/workbench/store/activityBar";
+
+import { useSyncedActivityBarFirstItems } from "../ActivityBar/hooks/useSyncedActivityBarFirstItems";
 
 interface SidebarHeaderProps {
   toolbar?: React.ReactNode;
@@ -7,9 +8,9 @@ interface SidebarHeaderProps {
 
 export const SidebarHeader = ({ toolbar }: SidebarHeaderProps) => {
   const { data: layout } = useGetLayout();
-  const { items } = useActivityBarStore();
-  const activeContainerId = layout?.activitybarState.activeContainerId;
+  const { items } = useSyncedActivityBarFirstItems();
 
+  const activeContainerId = layout?.activitybarState.activeContainerId;
   const activeItem = items.find((item) => item.id === activeContainerId);
   const title = activeItem?.title || "";
 
@@ -18,6 +19,7 @@ export const SidebarHeader = ({ toolbar }: SidebarHeaderProps) => {
       <div className="text-(--moss-secondary-foreground) min-w-0 flex-1 overflow-hidden text-ellipsis whitespace-nowrap text-xs uppercase">
         {title}
       </div>
+
       {toolbar && (
         <div className="background-(--moss-primary-background) relative z-10 flex shrink-0 items-center gap-1 pl-2">
           {toolbar}

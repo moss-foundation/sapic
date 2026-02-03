@@ -8,9 +8,9 @@ import { ActionMenu } from "@/workbench/ui/components";
 import { ActivityBarButton } from "./ActivityBarButton";
 
 export const ActivityBarLastItems = () => {
+  const { data: layout } = useGetLayout();
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { data: layout } = useGetLayout();
   const activityBarPosition = layout?.activitybarState.position || ACTIVITYBAR_POSITION.DEFAULT;
 
   return (

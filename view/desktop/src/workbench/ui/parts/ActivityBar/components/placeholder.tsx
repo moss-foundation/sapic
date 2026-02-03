@@ -1,13 +1,14 @@
-import { TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_PROJECTS } from "@repo/moss-workspace";
+import {
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+} from "../constants";
 
-import type { ActivityBarItemProps } from "./types";
-
-export const defaultItems: ActivityBarItemProps[] = [
+//TODO this should be taken from the backend in the future
+export const placeholderActivityBarFirstItems = [
   {
-    "id": TREE_VIEW_GROUP_PROJECTS,
-    "title": "Home",
-    "order": 1,
-    "isVisible": true,
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
+    "title": "Projects",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -31,10 +32,8 @@ export const defaultItems: ActivityBarItemProps[] = [
     ),
   },
   {
-    "id": TREE_VIEW_GROUP_ENVIRONMENTS,
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
     "title": "Environments",
-    "order": 2,
-    "isVisible": true,
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -62,10 +61,8 @@ export const defaultItems: ActivityBarItemProps[] = [
     ),
   },
   {
-    "id": "5",
-    "title": "Commit",
-    "order": 5,
-    "isVisible": true,
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+    "title": "Source Control",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path
@@ -95,4 +92,4 @@ export const defaultItems: ActivityBarItemProps[] = [
       </svg>
     ),
   },
-];
+] as const;

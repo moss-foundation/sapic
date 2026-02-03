@@ -1,12 +1,11 @@
 import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
-import {
-  TREE_VIEW_GROUP_ENVIRONMENTS,
-  TREE_VIEW_GROUP_MOCK_SERVERS,
-  TREE_VIEW_GROUP_PROJECTS,
-} from "@repo/moss-workspace";
 
-import { SidebarHeader } from "./SidebarHeader";
+import {
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+} from "../ActivityBar/constants";
 import { EnvironmentsListView } from "./views/EnvironmentsListView";
 import { ProjectTreesView } from "./views/ProjectTreesView";
 import { SourceControlView } from "./views/SourceControlView";
@@ -28,41 +27,21 @@ export const SidebarContent = () => {
   }
 
   switch (activeContainerId) {
-    case TREE_VIEW_GROUP_PROJECTS:
+    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS:
       return (
         <div className="flex h-full flex-col">
           <ProjectTreesView />
         </div>
       );
 
-    case TREE_VIEW_GROUP_ENVIRONMENTS:
+    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS:
       return (
         <div className="flex h-full flex-col">
           <EnvironmentsListView />
         </div>
       );
 
-    case TREE_VIEW_GROUP_MOCK_SERVERS:
-      return (
-        <div className="flex h-full flex-col">
-          <SidebarHeader />
-          <div className="flex grow items-center justify-center p-2">
-            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
-          </div>
-        </div>
-      );
-
-    case "4":
-      return (
-        <div className="flex h-full flex-col">
-          <SidebarHeader />
-          <div className="flex grow items-center justify-center p-2">
-            <p className="mt-2 text-center text-sm text-gray-500">Under construction</p>
-          </div>
-        </div>
-      );
-
-    case "5":
+    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL:
       return (
         <div className="flex h-full flex-col">
           <SourceControlView />
