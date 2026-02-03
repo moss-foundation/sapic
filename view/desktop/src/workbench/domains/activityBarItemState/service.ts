@@ -1,25 +1,26 @@
 import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 import { JsonValue } from "@repo/moss-bindingutils";
+
 import { defaultStates } from "./defaults";
 import { ActivityBarItemState } from "./types";
 
 const SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY = "workbench.activityBarItemState" as const;
 
 export interface IActivityBarItemStateService {
-  get: (activityBarId: string, workspaceId: string) => Promise<ActivityBarItemState>;
-  put: (activityBarState: ActivityBarItemState, workspaceId: string) => Promise<void>;
-  remove: (activityBarId: string, workspaceId: string) => Promise<void>;
+  get: (activityBarId: string) => Promise<ActivityBarItemState>;
+  put: (activityBarState: ActivityBarItemState) => Promise<void>;
+  remove: (activityBarId: string) => Promise<void>;
 
-  batchGet: (activityBarIds: string[], workspaceId: string) => Promise<ActivityBarItemState[]>;
-  batchPut: (activityBarStates: ActivityBarItemState[], workspaceId: string) => Promise<void>;
-  batchRemove: (activityBarIds: string[], workspaceId: string) => Promise<void>;
+  batchGet: (activityBarIds: string[]) => Promise<ActivityBarItemState[]>;
+  batchPut: (activityBarStates: ActivityBarItemState[]) => Promise<void>;
+  batchRemove: (activityBarIds: string[]) => Promise<void>;
 }
 
 export const activityBarItemStateService: IActivityBarItemStateService = {
-  get: async (activityBarId: string, workspaceId: string) => {
+  get: async (activityBarId: string) => {
     const { value: output } = await sharedStorageIpc.getItem(
-      constructActivityBarItemStateKey(activityBarId, workspaceId),
-      { workspace: workspaceId ?? "application" }
+      constructActivityBarItemStateKey(activityBarId),
+      "application"
     );
 
     if (output === "none") {
@@ -28,28 +29,22 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
 
     return output.value as unknown as ActivityBarItemState;
   },
-  put: async (activityBarState: ActivityBarItemState, workspaceId: string) => {
+  put: async (activityBarState: ActivityBarItemState) => {
     const { id, ...state } = activityBarState;
-    await sharedStorageIpc.putItem(constructActivityBarItemStateKey(id, workspaceId), state, {
-      workspace: workspaceId ?? "application",
-    });
+    await sharedStorageIpc.putItem(constructActivityBarItemStateKey(id), state, "application");
   },
-  remove: async (activityBarId: string, workspaceId: string) => {
-    await sharedStorageIpc.removeItem(constructActivityBarItemStateKey(activityBarId, workspaceId), {
-      workspace: workspaceId ?? "application",
-    });
+  remove: async (activityBarId: string) => {
+    await sharedStorageIpc.removeItem(constructActivityBarItemStateKey(activityBarId), "application");
   },
 
-  batchGet: async (activityBarIds: string[], workspaceId: string) => {
-    const keys = activityBarIds.map((id) => constructActivityBarItemStateKey(id, workspaceId));
-    const { items: output } = await sharedStorageIpc.batchGetItem(keys, {
-      workspace: workspaceId ?? "application",
-    });
+  batchGet: async (activityBarIds: string[]) => {
+    const keys = activityBarIds.map((id) => constructActivityBarItemStateKey(id));
+    const { items: output } = await sharedStorageIpc.batchGetItem(keys, "application");
 
     if (!output) return [];
 
     return activityBarIds.map((activityBarId): ActivityBarItemState => {
-      const key = constructActivityBarItemStateKey(activityBarId, workspaceId);
+      const key = constructActivityBarItemStateKey(activityBarId);
       const itemValue = output[key];
 
       if (itemValue) {
@@ -62,16 +57,16 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
       };
     });
   },
-  batchPut: async (activityBarStates: ActivityBarItemState[], workspaceId: string) => {
+  batchPut: async (activityBarStates: ActivityBarItemState[]) => {
     const items = activityBarStates.map((activityBarState) => ({
-      key: constructActivityBarItemStateKey(activityBarState.id, workspaceId),
+      key: constructActivityBarItemStateKey(activityBarState.id),
       value: {
         order: activityBarState.order,
       },
-      scope: { workspace: workspaceId ?? "application" },
+      scope: "application",
     }));
 
-    const scope = { workspace: workspaceId ?? "application" };
+    const scope = "application";
 
     await sharedStorageIpc.batchPutItem(
       items.reduce(
@@ -84,13 +79,11 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
       scope
     );
   },
-  batchRemove: async (activityBarIds: string[], workspaceId: string) => {
-    await sharedStorageIpc.batchRemoveItem(activityBarIds, {
-      workspace: workspaceId ?? "application",
-    });
+  batchRemove: async (activityBarIds: string[]) => {
+    await sharedStorageIpc.batchRemoveItem(activityBarIds, "application");
   },
 };
 
-const constructActivityBarItemStateKey = (activityBarId: string, workspaceId: string) => {
-  return `${SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY}.${workspaceId}.${activityBarId}`;
+const constructActivityBarItemStateKey = (activityBarId: string) => {
+  return `${SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY}.${activityBarId}`;
 };

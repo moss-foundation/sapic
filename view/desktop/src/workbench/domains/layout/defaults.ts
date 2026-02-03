@@ -2,6 +2,7 @@ import { Orientation, SerializedDockview } from "moss-tabs";
 
 import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
 import { LayoutStateOutput } from "@/workbench/domains/layout/service";
+import { PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS } from "@/workbench/ui/parts/ActivityBar/constants";
 
 export const defaultSidebarPanelState = {
   position: SIDEBAR_POSITION.LEFT,
@@ -20,7 +21,7 @@ export const defaultBottomPanePanelState = {
 
 export const defaultActivityBarState = {
   position: ACTIVITYBAR_POSITION.DEFAULT,
-  activeContainerId: "workbench.view.projects",
+  activeContainerId: PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
 } as const;
 
 export const emptyGridState: SerializedDockview = {

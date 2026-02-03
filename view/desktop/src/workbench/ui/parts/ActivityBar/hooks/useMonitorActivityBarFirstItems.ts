@@ -1,6 +1,5 @@
 import { useEffect } from "react";
 
-import { useCurrentWorkspace } from "@/hooks";
 import { useBatchPutActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchPutActivityBarItemState";
 import { swapListById } from "@/workbench/utils";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
@@ -11,7 +10,6 @@ import { ActivityBarButtonDragData } from "../types";
 import { useSyncedActivityBarFirstItems } from "./useSyncedActivityBarFirstItems";
 
 export const useMonitorActivityBarFirstItems = () => {
-  const { currentWorkspaceId } = useCurrentWorkspace();
   const { items } = useSyncedActivityBarFirstItems();
   const { mutateAsync: batchPutActivityBarItemState } = useBatchPutActivityBarItemState();
 
@@ -45,9 +43,8 @@ export const useMonitorActivityBarFirstItems = () => {
 
         await batchPutActivityBarItemState({
           activityBarItemStates: itemsToUpdate.map((item) => ({ id: item.id, order: item.order })),
-          workspaceId: currentWorkspaceId,
         });
       },
     });
-  }, [batchPutActivityBarItemState, currentWorkspaceId, items]);
+  }, [batchPutActivityBarItemState, items]);
 };

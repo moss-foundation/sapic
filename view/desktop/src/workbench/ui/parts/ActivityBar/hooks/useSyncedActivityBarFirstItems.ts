@@ -1,15 +1,13 @@
-import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
-import { useBatchGetActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchGetActivityBarItemState";
 import { useMemo } from "react";
+
+import { useBatchGetActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchGetActivityBarItemState";
+
 import { placeholderActivityBarFirstItems } from "../components/placeholder";
 import { ActivityBarItem } from "../types";
 
 export const useSyncedActivityBarFirstItems = () => {
-  const { currentWorkspaceId } = useCurrentWorkspace();
-
   const { data: activityBarItemStates, isLoading: isLoadingActivityBarItemStates } = useBatchGetActivityBarItemState(
-    placeholderActivityBarFirstItems.map((item) => item.id),
-    currentWorkspaceId
+    placeholderActivityBarFirstItems.map((item) => item.id)
   );
 
   const items: ActivityBarItem[] = useMemo(() => {

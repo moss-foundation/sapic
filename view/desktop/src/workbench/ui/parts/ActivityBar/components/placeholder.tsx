@@ -1,9 +1,13 @@
-import { TREE_VIEW_GROUP_ENVIRONMENTS, TREE_VIEW_GROUP_PROJECTS } from "@repo/moss-workspace";
+import {
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
+  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+} from "../constants";
 
 //TODO this should be taken from the backend in the future
 export const placeholderActivityBarFirstItems = [
   {
-    "id": TREE_VIEW_GROUP_PROJECTS,
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
     "title": "Projects",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -28,7 +32,7 @@ export const placeholderActivityBarFirstItems = [
     ),
   },
   {
-    "id": TREE_VIEW_GROUP_ENVIRONMENTS,
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
     "title": "Environments",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -57,7 +61,7 @@ export const placeholderActivityBarFirstItems = [
     ),
   },
   {
-    "id": "workbench.view.sourceControl",
+    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
     "title": "Source Control",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
