@@ -1,6 +1,5 @@
 import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { useUpdateLayout } from "@/workbench/adapters";
-import { useBatchPutActivityBarItemState } from "@/workbench/adapters/tanstackQuery/activityBarItemState/useBatchPutActivityBarItemState";
 import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
 import { WorkspaceInfo } from "@repo/base";
 import { ListWorkspacesOutput, MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput } from "@repo/ipc";
@@ -18,7 +17,6 @@ export const useCreateWorkspace = () => {
   const queryClient = useQueryClient();
 
   const { mutateAsync: updateLayout } = useUpdateLayout();
-  const { mutateAsync: batchPutActivityBarItemState } = useBatchPutActivityBarItemState();
 
   return useMutation<MainWindow_CreateWorkspaceOutput, Error, MainWindow_CreateWorkspaceInput>({
     mutationKey: [USE_CREATE_WORKSPACE_MUTATION_KEY],
@@ -31,9 +29,6 @@ export const useCreateWorkspace = () => {
       };
 
       await updateLayout({ layout: defaultLayoutState, workspaceId: newWorkspace.id });
-      // await batchPutActivityBarItemState({
-      //   activityBarItemStates: defaultStates.map((state) => ({ ...state, workspaceId: newWorkspace.id })),
-      // });
 
       queryClient.setQueryData<ListWorkspacesOutput>([USE_LIST_WORKSPACES_QUERY_KEY], (oldData) => {
         if (!oldData) return [newWorkspace];
