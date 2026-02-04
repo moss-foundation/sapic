@@ -1,13 +1,13 @@
 import {
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+  ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
+  ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID,
+  ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
 } from "../constants";
 
 //TODO this should be taken from the backend in the future
 export const placeholderActivityBarFirstItems = [
   {
-    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
+    "id": ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID,
     "title": "Projects",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -32,7 +32,7 @@ export const placeholderActivityBarFirstItems = [
     ),
   },
   {
-    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
+    "id": ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
     "title": "Environments",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -61,7 +61,7 @@ export const placeholderActivityBarFirstItems = [
     ),
   },
   {
-    "id": PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+    "id": ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
     "title": "Source Control",
     "icon": (
       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">

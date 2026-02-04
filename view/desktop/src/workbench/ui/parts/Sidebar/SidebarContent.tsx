@@ -2,9 +2,9 @@ import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
 
 import {
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS,
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS,
-  PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL,
+  ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
+  ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID,
+  ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
 } from "../ActivityBar/constants";
 import { EnvironmentsListView } from "./views/EnvironmentsListView";
 import { ProjectTreesView } from "./views/ProjectTreesView";
@@ -27,21 +27,21 @@ export const SidebarContent = () => {
   }
 
   switch (activeContainerId) {
-    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_PROJECTS:
+    case ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID:
       return (
         <div className="flex h-full flex-col">
           <ProjectTreesView />
         </div>
       );
 
-    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS:
+    case ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID:
       return (
         <div className="flex h-full flex-col">
           <EnvironmentsListView />
         </div>
       );
 
-    case PLACEHOLDER_ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL:
+    case ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID:
       return (
         <div className="flex h-full flex-col">
           <SourceControlView />

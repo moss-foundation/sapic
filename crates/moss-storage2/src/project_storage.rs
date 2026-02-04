@@ -8,6 +8,7 @@ use tokio::sync::OnceCell;
 use crate::adapters::{Capabilities, KeyedStorage, Options, sqlite::SqliteStorage};
 
 const DEFAULT_DB_FILENAME: &str = "state.sqlite3";
+const DB_SEEDS: &str = include_str!("../seeds/project/defaults.sql");
 
 pub struct ProjectStorageBackend {
     db_path: PathBuf,
@@ -54,9 +55,13 @@ impl ProjectStorageBackend {
         let storage = self
             .storage
             .get_or_try_init(|| async {
-                SqliteStorage::new(&self.db_path, self.storage_options.clone().map(Into::into))
-                    .await
-                    .join_err::<()>("failed to open project storage")
+                SqliteStorage::new(
+                    &self.db_path,
+                    Some(DB_SEEDS),
+                    self.storage_options.clone().map(Into::into),
+                )
+                .await
+                .join_err::<()>("failed to open project storage")
             })
             .await?;
 
