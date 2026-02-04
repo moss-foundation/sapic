@@ -1,8 +1,8 @@
 BEGIN;
 
 INSERT OR IGNORE INTO kv(key, value) VALUES
-  ('1', CAST('A' AS BLOB)),
-  ('2', CAST('B' AS BLOB)),
-  ('3', CAST('C' AS BLOB));
+  ('workbench.activityBarItemState.placeholder.view.group.projects', CAST('{"order":1}' AS BLOB)),
+  ('workbench.activityBarItemState.placeholder.view.group.environments', CAST('{"order":2}' AS BLOB)),
+  ('workbench.activityBarItemState.placeholder.view.group.sourceControl', CAST('{"order":3}' AS BLOB));
 
 COMMIT;
