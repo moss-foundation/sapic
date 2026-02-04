@@ -5,4 +5,6 @@ CREATE TABLE IF NOT EXISTS kv (
   value BLOB NOT NULL
 );
 
+CREATE INDEX IF NOT EXISTS idx_key ON kv (key);
+
 PRAGMA user_version = 1;

@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use joinerror::ResultExt;
-use moss_logging::session;
 use sapic_core::{
     context,
     context::{AnyAsyncContext, ContextResultExt},
@@ -49,6 +48,7 @@ pub struct SqliteStorage {
 impl SqliteStorage {
     pub async fn new(
         path: impl AsRef<Path>,
+        seeds: Option<&str>,
         options: Option<SqliteStorageOptions>,
     ) -> joinerror::Result<Arc<Self>> {
         if path.as_ref().exists() {
@@ -91,6 +91,15 @@ impl SqliteStorage {
             .await
             .join_err::<()>("failed to run migrations")?;
 
+        if let Some(seeds) = seeds
+            && !seeds.is_empty()
+        {
+            sqlx::raw_sql(&seeds)
+                .execute(&pool)
+                .await
+                .join_err::<()>("failed to apply seeds")?;
+        }
+
         let mut cache = HashMap::new();
         if let Ok(rows) = sqlx::query("SELECT key, value FROM kv")
             .fetch_all(&pool)
@@ -103,7 +112,7 @@ impl SqliteStorage {
                 let value: JsonValue = match serde_json::from_slice(&value) {
                     Ok(value) => value,
                     Err(err) => {
-                        session::trace!("failed to deserialize value: {}", err.to_string());
+                        tracing::trace!("failed to deserialize value: {}", err.to_string());
                         continue;
                     }
                 };
@@ -111,7 +120,7 @@ impl SqliteStorage {
                 cache.insert(key, value);
             }
         } else {
-            session::error!("failed to fetch database cache");
+            tracing::error!("failed to fetch database cache");
         };
 
         Ok(Arc::new(Self {
@@ -559,6 +568,7 @@ mod tests {
         let temp_path = PathBuf::from(":memory:");
         let storage = SqliteStorage::new(
             temp_path,
+            None,
             Some(SqliteStorageOptions {
                 in_memory: true,
                 busy_timeout: Duration::from_secs(5),
