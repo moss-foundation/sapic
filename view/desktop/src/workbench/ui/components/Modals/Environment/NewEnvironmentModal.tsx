@@ -1,42 +1,47 @@
 import { useMemo, useRef, useState } from "react";
 
-import { useCreateEnvironment, useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
-import { useAllStreamedProjectEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllStreamedProjectEnvironments";
+import { useCreateEnvironment } from "@/adapters/tanstackQuery/environment";
 import { useStreamProjects } from "@/adapters/tanstackQuery/project";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useFocusInputOnMount, useValidateInput } from "@/hooks";
+import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
+import { useCurrentWorkspace, useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
+import { usePutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/usePutEnvironmentItemState";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
 
-import { useGroupedEnvironments } from "../../EnvironmentsLists/hooks/useGroupedEnvironments";
 import { ModalWrapperProps } from "../types";
 
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: workspaceEnvironments } = useStreamEnvironments();
-  const { allProjectEnvironments } = useAllStreamedProjectEnvironments();
-  const { refetchProjectEnvironments } = useGroupedEnvironments();
-  const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { data: projects } = useStreamProjects();
+  const { sortedWorkspaceEnvironmentsByOrder } = useGetWorkspaceEnvironments();
+
+  const { mutateAsync: createEnvironment } = useCreateEnvironment();
+  const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("New Environment");
   const [projectId, setProjectId] = useState<string | null>(null);
   const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
+  const { sortedProjectEnvironmentsByOrder } = useGetProjectEnvironments(projectId);
+
+  const restrictedNames = useMemo(() => {
+    const list = mode === "Workspace" ? sortedWorkspaceEnvironmentsByOrder : sortedProjectEnvironmentsByOrder;
+    return list?.map((env) => env.name) ?? [];
+  }, [mode, sortedWorkspaceEnvironmentsByOrder, sortedProjectEnvironmentsByOrder]);
+
   useFocusInputOnMount({
     inputRef,
     initialValue: name,
   });
-
-  const restrictedNames = useMemo(() => {
-    const list = mode === "Workspace" ? workspaceEnvironments : allProjectEnvironments;
-    return list?.map((env) => env.name) ?? [];
-  }, [mode, allProjectEnvironments, workspaceEnvironments]);
 
   const { isValid } = useValidateInput({
     value: name,
@@ -44,28 +49,40 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     inputRef,
   });
 
-  const getNextOrder = (list?: { length?: number } | null) => (list?.length ?? 0) + 1;
   const handleSubmit = async () => {
     if (!isValid) return;
 
+    const getNextOrder = (list?: { length?: number } | null) => (list?.length ?? 0) + 1;
+
     if (mode === "Workspace") {
-      await createEnvironment({
+      const environment = await createEnvironment({
         name,
-        order: getNextOrder(workspaceEnvironments),
+        order: getNextOrder(sortedWorkspaceEnvironmentsByOrder),
         variables: [],
       });
-    } else if (mode === "Project" && projectId) {
-      const projectEnvironmentsList = allProjectEnvironments?.filter(
-        (environment) => environment.projectId === projectId
-      );
 
-      await createEnvironment({
+      await putEnvironmentItemState({
+        environmentItemState: {
+          id: environment.id,
+          order: getNextOrder(sortedWorkspaceEnvironmentsByOrder),
+        },
+        workspaceId: currentWorkspaceId,
+      });
+    } else if (mode === "Project" && projectId) {
+      const environment = await createEnvironment({
         name,
-        order: getNextOrder(projectEnvironmentsList),
+        order: getNextOrder(sortedProjectEnvironmentsByOrder),
         variables: [],
         projectId,
       });
-      await refetchProjectEnvironments(projectId);
+
+      await putEnvironmentItemState({
+        environmentItemState: {
+          id: environment.id,
+          order: getNextOrder(sortedProjectEnvironmentsByOrder),
+        },
+        workspaceId: currentWorkspaceId,
+      });
     }
 
     closeModal();

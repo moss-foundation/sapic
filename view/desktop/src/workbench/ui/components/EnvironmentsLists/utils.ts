@@ -4,15 +4,7 @@ import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE, ENVIRONMENT_LIST_DRAG_TYPE } from "./constants";
-import {
-  DragEnvironmentItem,
-  DropEnvironmentItem,
-  DropOperation,
-  GlobalEnvironmentItem,
-  GroupedEnvironmentItem,
-  GroupedEnvironmentList,
-  GroupedEnvironments,
-} from "./types";
+import { DragEnvironmentItem, DropEnvironmentItem, DropOperation, EnvironmentListType } from "./types";
 
 //source
 export const getSourceEnvironmentItem = (source: ElementDragPayload): DragEnvironmentItem | null => {
@@ -96,7 +88,7 @@ export const getLocationEnvironmentItemData = (location: DragLocationHistory): D
     "data": {
       ...(location.current.dropTargets[0].data.data as DropEnvironmentItem["data"]),
     },
-    "type": location.current.dropTargets[0].data.type,
+    "type": location.current.dropTargets[0].data.type as unknown as EnvironmentListType,
     "instruction": instruction ?? undefined,
   };
 };

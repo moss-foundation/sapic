@@ -1,3 +1,4 @@
+import { environmentSummariesCollection } from "@/db/environmentsSummaries/environmentSummaries";
 import { environmentIpc } from "@/infra/ipc/environmentIpc";
 import {
   ActivateEnvironmentInput,
@@ -45,10 +46,30 @@ export const environmentService: IEnvironmentService = {
     return await environmentIpc.batchUpdateEnvironmentGroup(input);
   },
   createEnvironment: async (input) => {
-    return await environmentIpc.createEnvironment(input);
+    const output = await environmentIpc.createEnvironment(input);
+
+    environmentSummariesCollection.insert({
+      id: output.id,
+      projectId: output.projectId,
+      name: output.name,
+      color: output.color,
+
+      order: input.order,
+
+      isActive: false,
+      totalVariables: 0,
+
+      metadata: {
+        isDirty: false,
+      },
+    });
+
+    return output;
   },
   deleteEnvironment: async (input) => {
-    return await environmentIpc.deleteEnvironment(input);
+    const output = await environmentIpc.deleteEnvironment(input);
+    environmentSummariesCollection.delete(output.id);
+    return output;
   },
   streamEnvironments: async () => {
     const environments: StreamEnvironmentsEvent[] = [];

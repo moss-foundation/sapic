@@ -1,57 +1,62 @@
-import { useDeleteEnvironment, useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
-import { useAllStreamedProjectEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllStreamedProjectEnvironments";
-import { useBatchUpdateEnvironment } from "@/adapters/tanstackQuery/environment/useBatchUpdateEnvironment";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
+import { useDeleteEnvironment } from "@/adapters/tanstackQuery/environment";
+import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
+import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
+import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
 
 import { EnvironmentListType } from "../types";
 
 interface UseDeleteEnvironmentItemProps {
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
   type: EnvironmentListType;
 }
 
 export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnvironmentItemProps) => {
-  const { data: workspaceEnvironments } = useStreamEnvironments();
-  const { allProjectEnvironments } = useAllStreamedProjectEnvironments();
+  const { currentWorkspaceId } = useCurrentWorkspace();
+
+  const { sortedWorkspaceEnvironmentsByOrder } = useGetWorkspaceEnvironments();
+  const { sortedProjectEnvironmentsByOrder } = useGetProjectEnvironments(environment.projectId);
 
   const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
-  const { mutateAsync: batchUpdateEnvironment } = useBatchUpdateEnvironment();
+  const { mutateAsync: batchPutEnvironmentItemState } = useBatchPutEnvironmentItemState();
 
   const handleDeleteEnvironment = async () => {
     if (type === "GlobalEnvironmentItem") {
       await deleteEnvironment({ id: environment.id });
 
-      const environmentsAfterDeleted = workspaceEnvironments?.filter((env) => env.order! > environment.order!);
+      const environmentsAfterDeleted = sortedWorkspaceEnvironmentsByOrder?.filter(
+        (env) => env.order! > environment.order!
+      );
 
-      if (environmentsAfterDeleted) {
-        await batchUpdateEnvironment({
-          items: environmentsAfterDeleted.map((env) => ({
-            id: env.id,
-            order: env.order! - 1,
-            varsToAdd: [],
-            varsToUpdate: [],
-            varsToDelete: [],
-          })),
-        });
-      }
+      console.log("environmentsAfterDeleted", environmentsAfterDeleted);
+      if (!environmentsAfterDeleted || environmentsAfterDeleted.length === 0) return;
+
+      await batchPutEnvironmentItemState({
+        environmentItemStates: environmentsAfterDeleted.map((env) => ({
+          id: env.id,
+          order: (env.order ?? 0) - 1,
+        })),
+        workspaceId: currentWorkspaceId,
+      });
     }
 
     if (type === "GroupedEnvironmentItem") {
-      await deleteEnvironment({ id: environment.id, projectId: environment.projectId });
+      await deleteEnvironment({ id: environment.id, projectId: environment.projectId ?? undefined });
 
-      const environmentsAfterDeleted = allProjectEnvironments?.filter(
-        (env) => (env.order ?? 0) > (environment.order ?? 0)
-      );
+      const environmentsAfterDeleted = sortedProjectEnvironmentsByOrder?.filter((env) => {
+        return env.order && environment.order && env.order > environment.order;
+      });
+
+      if (!environmentsAfterDeleted || environmentsAfterDeleted.length === 0) return;
 
       if (environmentsAfterDeleted) {
-        await batchUpdateEnvironment({
-          items: environmentsAfterDeleted?.map((env) => ({
+        await batchPutEnvironmentItemState({
+          environmentItemStates: environmentsAfterDeleted.map((env) => ({
             id: env.id,
             order: (env.order ?? 0) - 1,
-            varsToAdd: [],
-            varsToUpdate: [],
-            varsToDelete: [],
           })),
+          workspaceId: currentWorkspaceId,
         });
       }
     }

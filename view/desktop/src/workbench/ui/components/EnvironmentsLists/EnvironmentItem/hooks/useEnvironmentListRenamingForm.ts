@@ -1,10 +1,10 @@
 import { useState } from "react";
 
 import { useUpdateEnvironment } from "@/adapters/tanstackQuery/environment";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 
 interface UseGlobalEnvironmentsListRenamingFormProps {
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
 }
 
 export const useGlobalEnvironmentsListRenamingForm = ({ environment }: UseGlobalEnvironmentsListRenamingFormProps) => {
@@ -14,7 +14,7 @@ export const useGlobalEnvironmentsListRenamingForm = ({ environment }: UseGlobal
   const handleRename = async (name: string) => {
     await updateEnvironment({
       id: environment.id,
-      projectId: environment.projectId,
+      projectId: environment.projectId ?? undefined,
       name,
       varsToAdd: [],
       varsToUpdate: [],

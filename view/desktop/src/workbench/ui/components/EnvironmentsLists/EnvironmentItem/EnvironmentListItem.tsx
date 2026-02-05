@@ -1,12 +1,11 @@
 import { useMemo, useRef } from "react";
 
 import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentListType } from "../types";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
@@ -14,7 +13,7 @@ import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList
 import { useGlobalEnvironmentsListRenamingForm } from "./hooks/useEnvironmentListRenamingForm";
 
 interface EnvironmentListItemProps {
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
   type: EnvironmentListType;
 }
 
@@ -40,7 +39,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
       title: environment.name,
       component: "DefaultView",
       params: {
-        tabIcon: type === ENVIRONMENT_ITEM_DRAG_TYPE.GLOBAL ? "Environment" : "GroupedEnvironment",
+        tabIcon: type === EnvironmentListType.GLOBAL ? "Environment" : "GroupedEnvironment",
       },
     });
   };

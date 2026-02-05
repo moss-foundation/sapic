@@ -7,9 +7,10 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { ENVIRONMENT_LIST_DRAG_TYPE } from "../constants";
-import { GroupedEnvironmentList, GroupedEnvironments } from "../types";
+import { GroupedEnvironmentList } from "../types";
 import {
   getSourceEnvironmentItem,
   getSourceGroupedEnvironmentListData,
@@ -20,12 +21,12 @@ import {
 
 interface UseDraggableGroupedEnvironmentsListProps {
   ref: RefObject<HTMLUListElement | null>;
-  groupWithEnvironments: GroupedEnvironments;
+  environments: StreamEnvironmentsEvent[];
 }
 
 export const useDraggableGroupedEnvironmentsList = ({
   ref,
-  groupWithEnvironments,
+  environments,
 }: UseDraggableGroupedEnvironmentsListProps) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -39,7 +40,7 @@ export const useDraggableGroupedEnvironmentsList = ({
         element,
         getInitialData: (): GroupedEnvironmentList => ({
           type: ENVIRONMENT_LIST_DRAG_TYPE.GROUPED,
-          data: { groupWithEnvironments },
+          data: { environments },
         }),
         onDragStart: () => setIsDragging(true),
         onDrop: () => setIsDragging(false),
@@ -52,7 +53,7 @@ export const useDraggableGroupedEnvironmentsList = ({
         getData: ({ input, source }) => {
           const data = {
             type: ENVIRONMENT_LIST_DRAG_TYPE.GROUPED,
-            data: { groupWithEnvironments },
+            data: { environments },
           };
 
           if (isSourceGroupedEnvironmentList(source)) {
@@ -74,13 +75,9 @@ export const useDraggableGroupedEnvironmentsList = ({
               element,
               operations: {
                 "reorder-before":
-                  sourceData.data.groupWithEnvironments.projectId === groupWithEnvironments.projectId
-                    ? "not-available"
-                    : "available",
+                  sourceData.data.environments.projectId === environments.projectId ? "not-available" : "available",
                 "reorder-after":
-                  sourceData.data.groupWithEnvironments.projectId === groupWithEnvironments.projectId
-                    ? "not-available"
-                    : "available",
+                  sourceData.data.environments.projectId === environments.projectId ? "not-available" : "available",
                 combine: "not-available",
               },
             });
@@ -106,7 +103,7 @@ export const useDraggableGroupedEnvironmentsList = ({
               operations: {
                 "reorder-before": "not-available",
                 "reorder-after": "not-available",
-                combine: hasSimilarEnv(groupWithEnvironments, sourceData.data.environment) ? "blocked" : "available",
+                combine: hasSimilarEnv(environments, sourceData.data.environment) ? "blocked" : "available",
               },
             });
           }

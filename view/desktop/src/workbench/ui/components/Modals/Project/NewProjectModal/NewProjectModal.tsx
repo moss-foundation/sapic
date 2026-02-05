@@ -23,6 +23,7 @@ interface NewProjectModalProps extends ModalWrapperProps {
 
 export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewProjectModalProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { data: projects } = useStreamProjects();
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: importProject } = useImportProject();
@@ -37,6 +38,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const [createParams, setCreateParams] = useState<CreateProjectGitParams | undefined>(undefined);
   const [importParams, setImportParams] = useState<ImportProjectSource | undefined>(undefined);
   const [tab, setTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(initialTab);
+
+  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -124,8 +127,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     },
     []
   );
-
-  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams });
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal} className="max-w-136 w-full">

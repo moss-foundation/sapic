@@ -1,14 +1,14 @@
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { EnvironmentListType } from "../types";
 
 interface EnvironmentListItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
   restrictedNames: string[];
   className?: string;
   type: EnvironmentListType;
