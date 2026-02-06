@@ -1,6 +1,7 @@
 import { useMemo, useRef } from "react";
 
 import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -20,7 +21,8 @@ interface EnvironmentItemProps {
 export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
-  const { data: environments } = useStreamEnvironments();
+  const { data: workspaceEnvironments } = useStreamEnvironments();
+  const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const { isEditing, setIsEditing, handleRename, handleCancel } = useEnvironmentItemRenamingForm({
@@ -45,9 +47,14 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
   };
 
   const restrictedNames = useMemo(() => {
-    if (!environments) return [];
-    return environments.map((environment) => environment.name) ?? [];
-  }, [environments]);
+    const { projectId } = environment;
+
+    if (!projectId) {
+      return workspaceEnvironments?.map((env) => env.name) ?? [];
+    }
+
+    return projectEnvironments?.filter((env) => env.projectId === projectId).map((env) => env.name) ?? [];
+  }, [environment, projectEnvironments, workspaceEnvironments]);
 
   return (
     <Tree.Node ref={environmentItemRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>

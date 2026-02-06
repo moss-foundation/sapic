@@ -26,13 +26,11 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
-  const { mutate: activateEnvironment } = useActivateEnvironment();
-
   const { activePanelId } = useTabbedPaneStore();
 
-  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
-
+  const { mutate: activateEnvironment } = useActivateEnvironment();
   const { handleDeleteEnvironment } = useDeleteEnvironmentItem({ environment, type });
+  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 

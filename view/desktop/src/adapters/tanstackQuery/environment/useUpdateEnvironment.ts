@@ -19,6 +19,7 @@ export const useUpdateEnvironment = () => {
 
       if (isWorkspaceEnvironment) {
         queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
+          if (!old || old.length === 0) return [];
           return old.map((environment) =>
             environment.id === variables.id
               ? {
@@ -35,6 +36,7 @@ export const useUpdateEnvironment = () => {
         queryClient.setQueryData(
           [USE_STREAMED_PROJECT_ENVIRONMENTS_QUERY_KEY, variables.projectId],
           (old: StreamEnvironmentsEvent[]) => {
+            if (!old || old.length === 0) return [];
             return old.map((oldEnv) => {
               if (oldEnv.projectId !== variables.projectId) return oldEnv;
 
