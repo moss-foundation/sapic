@@ -48,7 +48,7 @@ export const environmentItemStateService: IEnvironmentItemStateService = {
   },
   batchGet: async (environmentItemIds: string[], workspaceId: string) => {
     const keys = environmentItemIds.map((id) => constructEnvironmentItemStateKey(id, workspaceId));
-    console.log("batchGet environment item states", { keys, workspaceId });
+
     const { items: output } = await sharedStorageIpc.batchGetItem(keys, {
       workspace: workspaceId,
     });
@@ -61,7 +61,7 @@ export const environmentItemStateService: IEnvironmentItemStateService = {
       if (itemValue !== null && itemValue !== undefined) {
         return { id: environmentItemId, ...(itemValue as Omit<EnvironmentItemState, "id">) };
       }
-      return { id: environmentItemId, order: 0 } satisfies EnvironmentItemState;
+      return { id: environmentItemId, order: -1 } satisfies EnvironmentItemState;
     });
   },
   batchPut: async (environmentItemStates: EnvironmentItemState[], workspaceId: string) => {
