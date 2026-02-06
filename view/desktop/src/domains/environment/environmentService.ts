@@ -37,7 +37,36 @@ interface IEnvironmentService {
 
 export const environmentService: IEnvironmentService = {
   activateEnvironment: async (input) => {
-    return await environmentIpc.activateEnvironment(input);
+    const output = await environmentIpc.activateEnvironment(input);
+
+    const isWorkspaceEnvironment = input.projectId === null || input.projectId === undefined;
+    const isProjectEnvironment = input.projectId !== null && input.projectId !== undefined;
+
+    if (isWorkspaceEnvironment) {
+      environmentSummariesCollection.forEach((environment) => {
+        if (environment.projectId) return;
+
+        environmentSummariesCollection.update(environment.id, (draft) => {
+          draft.isActive = environment.id === input.environmentId;
+        });
+      });
+    }
+    if (isProjectEnvironment) {
+      environmentSummariesCollection.forEach((environment) => {
+        if (
+          environment.projectId === undefined ||
+          environment.projectId === null ||
+          environment.projectId !== input.projectId
+        )
+          return;
+
+        environmentSummariesCollection.update(environment.id, (draft) => {
+          draft.isActive = environment.id === input.environmentId;
+        });
+      });
+    }
+
+    return output;
   },
   batchUpdateEnvironment: async (input) => {
     return await environmentIpc.batchUpdateEnvironment(input);
