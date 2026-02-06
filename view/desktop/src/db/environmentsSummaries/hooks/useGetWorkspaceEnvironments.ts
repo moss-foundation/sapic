@@ -1,7 +1,4 @@
-import { useMemo } from "react";
-
 import { useCurrentWorkspace } from "@/hooks";
-import { sortObjectsByOrder } from "@/utils";
 import { isNull, isUndefined, or, useLiveQuery } from "@tanstack/react-db";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
