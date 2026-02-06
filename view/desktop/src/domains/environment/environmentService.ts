@@ -105,16 +105,14 @@ export const environmentService: IEnvironmentService = {
       if (input.projectId) draft.projectId = input.projectId;
 
       if (input.color) {
-        if (input.color === "REMOVE") {
-          draft.color = null;
-        } else if (typeof input.color === "object" && "UPDATE" in input.color) {
-          draft.color = input.color.UPDATE;
-        }
+        if (input.color === "REMOVE") draft.color = null;
+        else if (typeof input.color === "object" && "UPDATE" in input.color) draft.color = input.color.UPDATE;
       }
 
       if (input.varsToAdd.length > 0) draft.totalVariables += input.varsToAdd.length;
       if (input.varsToDelete.length > 0) draft.totalVariables -= input.varsToDelete.length;
     });
+
     return output;
   },
   updateEnvironmentGroup: async (input) => {
