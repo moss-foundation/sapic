@@ -10,7 +10,7 @@ import { EnvironmentListType } from "../types";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
 import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList";
-import { useGlobalEnvironmentsListRenamingForm } from "./hooks/useEnvironmentListRenamingForm";
+import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
 interface EnvironmentListItemProps {
   environment: EnvironmentSummary;
@@ -23,7 +23,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
   const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { isEditing, setIsEditing, handleRename, handleCancel } = useGlobalEnvironmentsListRenamingForm({
+  const { isEditing, setIsEditing, handleRename, handleCancel } = useEnvironmentItemRenamingForm({
     environment,
   });
 
