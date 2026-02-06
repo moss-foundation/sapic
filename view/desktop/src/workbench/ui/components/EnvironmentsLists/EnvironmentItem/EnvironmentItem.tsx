@@ -8,17 +8,17 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { EnvironmentListType } from "../types";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
-import { EnvironmentListItemRenamingForm } from "./EnvironmentListItemRenamingForm";
+import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
 import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
-interface EnvironmentListItemProps {
+interface EnvironmentItemProps {
   environment: EnvironmentSummary;
   type: EnvironmentListType;
 }
 
-export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemProps) => {
-  const EnvironmentListRef = useRef<HTMLLIElement>(null);
+export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => {
+  const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: environments } = useStreamEnvironments();
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -28,7 +28,7 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
   });
 
   const { isDragging, instruction } = useDraggableEnvironmentItem({
-    ref: EnvironmentListRef,
+    ref: environmentItemRef,
     environment,
     type,
   });
@@ -50,9 +50,9 @@ export const EnvironmentListItem = ({ environment, type }: EnvironmentListItemPr
   }, [environments]);
 
   return (
-    <Tree.Node ref={EnvironmentListRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>
+    <Tree.Node ref={environmentItemRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>
       {isEditing ? (
-        <EnvironmentListItemRenamingForm
+        <EnvironmentItemRenamingForm
           handleRename={handleRename}
           handleCancel={handleCancel}
           environment={environment}

@@ -10,10 +10,12 @@ import { environmentSummariesCollection } from "../environmentSummaries";
 export const useSyncEnvironments = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useStreamProjects();
-  const { data: workspaceEnvironments } = useStreamEnvironments();
+  const { data: projects, isLoading: isProjectsLoading } = useStreamProjects();
+  const { data: workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useStreamEnvironments();
 
   useEffect(() => {
+    if (isProjectsLoading || isWorkspaceEnvironmentsLoading) return;
+
     const insertEnvironments = async () => {
       if (!workspaceEnvironments || !projects) return;
 
@@ -61,5 +63,5 @@ export const useSyncEnvironments = () => {
     };
 
     insertEnvironments();
-  }, [currentWorkspaceId, projects, workspaceEnvironments]);
+  }, [currentWorkspaceId, isProjectsLoading, isWorkspaceEnvironmentsLoading, projects, workspaceEnvironments]);
 };

@@ -1,6 +1,6 @@
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 
-import { EnvironmentListItem } from "../EnvironmentItem/EnvironmentListItem";
+import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { EnvironmentListType } from "../types";
 
 export const WorkspaceEnvironmentsList = () => {
@@ -9,7 +9,7 @@ export const WorkspaceEnvironmentsList = () => {
   return (
     <ul>
       {sortedWorkspaceEnvironmentsByOrder?.map((environment) => (
-        <EnvironmentListItem
+        <EnvironmentItem
           key={environment.id}
           environment={{
             id: environment.id,

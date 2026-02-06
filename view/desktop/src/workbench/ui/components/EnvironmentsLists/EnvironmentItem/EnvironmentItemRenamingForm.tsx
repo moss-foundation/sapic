@@ -5,7 +5,7 @@ import { cn } from "@/utils/cn";
 
 import { EnvironmentListType } from "../types";
 
-interface EnvironmentListItemRenamingFormProps {
+interface EnvironmentItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;
   environment: EnvironmentSummary;
@@ -14,14 +14,14 @@ interface EnvironmentListItemRenamingFormProps {
   type: EnvironmentListType;
 }
 
-export const EnvironmentListItemRenamingForm = ({
+export const EnvironmentItemRenamingForm = ({
   className,
   handleRename,
   handleCancel,
   environment,
   restrictedNames,
   type,
-}: EnvironmentListItemRenamingFormProps) => {
+}: EnvironmentItemRenamingFormProps) => {
   return (
     <Tree.NodeControls depth={type === "GlobalEnvironmentItem" ? 0 : 1} className={cn("min-h-[22px] py-1", className)}>
       <Tree.NodeTriggers>

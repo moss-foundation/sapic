@@ -26,7 +26,7 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
-  const { mutate: activateEnvironment } = useActivateEnvironment();
+  //const { mutate: activateEnvironment } = useActivateEnvironment();
 
   const { activePanelId } = useTabbedPaneStore();
 
@@ -38,11 +38,11 @@ export const EnvironmentItemControls = ({
 
   const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-    if (environment.projectId) {
+    /* if (environment.projectId) {
       activateEnvironment({ environmentId: environment.id, projectId: environment.projectId });
     } else {
       activateEnvironment({ environmentId: environment.id });
-    }
+    } */
   };
 
   const handleDeleteEnvironmentClick = async () => {

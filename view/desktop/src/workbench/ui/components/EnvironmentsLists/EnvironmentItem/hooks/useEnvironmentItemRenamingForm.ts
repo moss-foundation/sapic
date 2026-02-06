@@ -9,6 +9,7 @@ interface UseGlobalEnvironmentsListRenamingFormProps {
 
 export const useEnvironmentItemRenamingForm = ({ environment }: UseGlobalEnvironmentsListRenamingFormProps) => {
   const { mutateAsync: updateEnvironment } = useUpdateEnvironment();
+
   const [isEditing, setIsEditing] = useState(false);
 
   const handleRename = async (name: string) => {

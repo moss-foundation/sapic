@@ -1,7 +1,7 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 
-import { EnvironmentListItem } from "../EnvironmentItem/EnvironmentListItem";
+import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { EnvironmentListType } from "../types";
 
 interface ProjectEnvironmentsListChildrenProps {
@@ -12,7 +12,7 @@ export const ProjectEnvironmentsListChildren = ({ environments }: ProjectEnviron
   return (
     <Tree.RootNodeChildren hideDirDepthIndicator>
       {environments.map((environment) => (
-        <EnvironmentListItem key={environment.id} environment={environment} type={EnvironmentListType.GROUPED} />
+        <EnvironmentItem key={environment.id} environment={environment} type={EnvironmentListType.GROUPED} />
       ))}
     </Tree.RootNodeChildren>
   );
