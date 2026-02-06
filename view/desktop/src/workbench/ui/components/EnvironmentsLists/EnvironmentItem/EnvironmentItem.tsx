@@ -36,6 +36,8 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
   });
 
   const onClick = () => {
+    if (isEditing) return;
+
     addOrFocusPanel({
       id: environment.id,
       title: environment.name,
