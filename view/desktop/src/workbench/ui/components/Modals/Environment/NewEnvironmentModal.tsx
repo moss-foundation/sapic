@@ -19,7 +19,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: projects } = useStreamProjects();
-  const { sortedWorkspaceEnvironmentsByOrder } = useGetWorkspaceEnvironments();
+  const { workspaceEnvironments } = useGetWorkspaceEnvironments();
 
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
@@ -31,12 +31,12 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { sortedProjectEnvironmentsByOrder } = useGetProjectEnvironments(projectId);
+  const { projectEnvironments } = useGetProjectEnvironments(projectId);
 
   const restrictedNames = useMemo(() => {
-    const list = mode === "Workspace" ? sortedWorkspaceEnvironmentsByOrder : sortedProjectEnvironmentsByOrder;
+    const list = mode === "Workspace" ? workspaceEnvironments : projectEnvironments;
     return list?.map((env) => env.name) ?? [];
-  }, [mode, sortedWorkspaceEnvironmentsByOrder, sortedProjectEnvironmentsByOrder]);
+  }, [mode, workspaceEnvironments, projectEnvironments]);
 
   useFocusInputOnMount({
     inputRef,
@@ -57,21 +57,21 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     if (mode === "Workspace") {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(sortedWorkspaceEnvironmentsByOrder),
+        order: getNextOrder(workspaceEnvironments),
         variables: [],
       });
 
       await putEnvironmentItemState({
         environmentItemState: {
           id: environment.id,
-          order: getNextOrder(sortedWorkspaceEnvironmentsByOrder),
+          order: getNextOrder(workspaceEnvironments),
         },
         workspaceId: currentWorkspaceId,
       });
     } else if (mode === "Project" && projectId) {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(sortedProjectEnvironmentsByOrder),
+        order: getNextOrder(projectEnvironments),
         variables: [],
         projectId,
       });
@@ -79,7 +79,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
       await putEnvironmentItemState({
         environmentItemState: {
           id: environment.id,
-          order: getNextOrder(sortedProjectEnvironmentsByOrder),
+          order: getNextOrder(projectEnvironments),
         },
         workspaceId: currentWorkspaceId,
       });

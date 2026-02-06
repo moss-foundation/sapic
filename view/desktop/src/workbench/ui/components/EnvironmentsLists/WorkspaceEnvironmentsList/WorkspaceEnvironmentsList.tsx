@@ -4,11 +4,11 @@ import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { EnvironmentListType } from "../types";
 
 export const WorkspaceEnvironmentsList = () => {
-  const { sortedWorkspaceEnvironmentsByOrder } = useGetWorkspaceEnvironments();
+  const { workspaceEnvironments } = useGetWorkspaceEnvironments();
 
   return (
     <ul>
-      {sortedWorkspaceEnvironmentsByOrder?.map((environment) => (
+      {workspaceEnvironments?.map((environment) => (
         <EnvironmentItem
           key={environment.id}
           environment={{

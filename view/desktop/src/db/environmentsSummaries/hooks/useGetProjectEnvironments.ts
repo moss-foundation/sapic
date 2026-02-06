@@ -1,26 +1,25 @@
 import { useMemo } from "react";
 
+import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils";
 import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
 
 export const useGetProjectEnvironments = (projectId?: string | null) => {
+  const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { data: projectEnvironments, isLoading } = useLiveQuery(
     (q) => {
       if (!projectId) return undefined;
 
       return q
         .from({ collection: environmentSummariesCollection })
-        .where((env) => eq(env.collection.projectId, projectId));
+        .where((env) => eq(env.collection.projectId, projectId))
+        .orderBy((env) => env.collection.order);
     },
-    [projectId]
+    [projectId, currentWorkspaceId]
   );
 
-  const sortedProjectEnvironmentsByOrder = useMemo(() => {
-    if (!projectEnvironments) return undefined;
-    return sortObjectsByOrder(projectEnvironments);
-  }, [projectEnvironments]);
-
-  return { projectEnvironments, sortedProjectEnvironmentsByOrder, isLoading };
+  return { projectEnvironments, isLoading };
 };

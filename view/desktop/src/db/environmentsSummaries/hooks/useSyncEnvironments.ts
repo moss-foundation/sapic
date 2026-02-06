@@ -39,11 +39,7 @@ export const useSyncEnvironments = () => {
       allEnvironments.forEach((env) => {
         const envState = envStates.find((state) => state.id === env.id);
 
-        if (environmentSummariesCollection.has(env.id)) {
-          environmentSummariesCollection.update(env.id, (draft) => {
-            draft.order = envState?.order ?? -1;
-          });
-        } else {
+        if (!environmentSummariesCollection.has(env.id)) {
           environmentSummariesCollection.insert({
             id: env.id,
             projectId: env.projectId,

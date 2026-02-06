@@ -20,13 +20,13 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
 
   const { data: projects } = useStreamProjects();
-  const { sortedProjectEnvironmentsByOrder } = useGetProjectEnvironments(projectId);
+  const { projectEnvironments } = useGetProjectEnvironments(projectId);
   const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
   const project = projects?.find((project) => project.id === projectId);
   const expanded = projectEnvironmentListItemState?.expanded ?? false;
 
-  if (!project || sortedProjectEnvironmentsByOrder?.length === 0) return null;
+  if (!project || projectEnvironments?.length === 0) return null;
 
   return (
     <Tree.RootNode
@@ -40,7 +40,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
         <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
       </Tree.RootNodeHeader>
 
-      {expanded && <ProjectEnvironmentsListChildren environments={sortedProjectEnvironmentsByOrder ?? []} />}
+      {expanded && <ProjectEnvironmentsListChildren environments={projectEnvironments ?? []} />}
     </Tree.RootNode>
   );
 };

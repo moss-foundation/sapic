@@ -15,8 +15,8 @@ interface UseDeleteEnvironmentItemProps {
 export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnvironmentItemProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { sortedWorkspaceEnvironmentsByOrder } = useGetWorkspaceEnvironments();
-  const { sortedProjectEnvironmentsByOrder } = useGetProjectEnvironments(environment.projectId);
+  const { workspaceEnvironments } = useGetWorkspaceEnvironments();
+  const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
 
   const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
   const { mutateAsync: batchPutEnvironmentItemState } = useBatchPutEnvironmentItemState();
@@ -25,9 +25,7 @@ export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnviron
     if (type === "GlobalEnvironmentItem") {
       await deleteEnvironment({ id: environment.id });
 
-      const environmentsAfterDeleted = sortedWorkspaceEnvironmentsByOrder?.filter(
-        (env) => env.order! > environment.order!
-      );
+      const environmentsAfterDeleted = workspaceEnvironments?.filter((env) => env.order! > environment.order!);
 
       console.log("environmentsAfterDeleted", environmentsAfterDeleted);
       if (!environmentsAfterDeleted || environmentsAfterDeleted.length === 0) return;
@@ -44,7 +42,7 @@ export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnviron
     if (type === "GroupedEnvironmentItem") {
       await deleteEnvironment({ id: environment.id, projectId: environment.projectId ?? undefined });
 
-      const environmentsAfterDeleted = sortedProjectEnvironmentsByOrder?.filter((env) => {
+      const environmentsAfterDeleted = projectEnvironments?.filter((env) => {
         return env.order && environment.order && env.order > environment.order;
       });
 

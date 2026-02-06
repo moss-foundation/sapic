@@ -14,12 +14,11 @@ import { EnvironmentsListViewHeader } from "./EnvironmentsListViewHeader";
 export const EnvironmentsListView = () => {
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { sortedWorkspaceEnvironmentsByOrder, isLoading: isWorkspaceEnvironmentsLoading } =
-    useGetWorkspaceEnvironments();
-  const { sortedProjectEnvironmentsByOrder, isLoading: isProjectEnvironmentsLoading } = useGetAllProjectEnvironments();
+  const { workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useGetWorkspaceEnvironments();
+  const { projectEnvironments, isLoading: isProjectEnvironmentsLoading } = useGetAllProjectEnvironments();
 
-  const noWorkspaceEnvironments = sortedWorkspaceEnvironmentsByOrder?.length === 0;
-  const noProjectEnvironments = sortedProjectEnvironmentsByOrder?.length === 0;
+  const noWorkspaceEnvironments = workspaceEnvironments?.length === 0;
+  const noProjectEnvironments = projectEnvironments?.length === 0;
 
   const noEnvironments =
     noWorkspaceEnvironments &&
@@ -55,15 +54,11 @@ export const EnvironmentsListView = () => {
           </div>
         ) : (
           <>
-            {sortedWorkspaceEnvironmentsByOrder && sortedWorkspaceEnvironmentsByOrder.length > 0 && (
-              <EnvironmentsListViewDivider />
-            )}
+            {workspaceEnvironments && workspaceEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
             <WorkspaceEnvironmentsList />
 
-            {sortedProjectEnvironmentsByOrder && sortedProjectEnvironmentsByOrder.length > 0 && (
-              <EnvironmentsListViewDivider />
-            )}
+            {projectEnvironments && projectEnvironments.length > 0 && <EnvironmentsListViewDivider />}
 
             <ProjectEnvironmentsList />
           </>
