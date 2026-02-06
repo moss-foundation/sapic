@@ -6,6 +6,7 @@ import { useStreamProjects } from "@/adapters/tanstackQuery/project/useStreamPro
 import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
+import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
 import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
@@ -29,6 +30,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const { mutateAsync: importProject } = useImportProject();
 
   const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
+  const { mutateAsync: putEnvironmentListItemState } = usePutEnvironmentListItemState();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -62,6 +64,14 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         workspaceId: currentWorkspaceId,
       });
 
+      await putEnvironmentListItemState({
+        environmentListItemState: {
+          id: result.id,
+          expanded: true,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+
       closeModal();
 
       if (openAutomatically) {
@@ -88,6 +98,14 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         treeItemState: {
           id: result.id,
           order: newOrder,
+          expanded: true,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+
+      await putEnvironmentListItemState({
+        environmentListItemState: {
+          id: result.id,
           expanded: true,
         },
         workspaceId: currentWorkspaceId,

@@ -17,7 +17,7 @@ export const useGetProjectEnvironmentListItems = () => {
       const projectEnvironments = environmentListItemStates?.filter((state) => state.id === project.id);
       return {
         ...project,
-        expanded: projectEnvironments?.some((state) => state.expanded) ?? false,
+        expanded: projectEnvironments?.some((state) => state.expanded) ?? true,
       };
     }) ?? []
   );
