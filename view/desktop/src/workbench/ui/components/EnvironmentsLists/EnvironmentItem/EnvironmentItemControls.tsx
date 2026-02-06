@@ -1,6 +1,7 @@
 import { MouseEvent, useState } from "react";
 
 import { useActivateEnvironment } from "@/adapters/tanstackQuery/environment/useActivateEnvironment";
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useModal } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -8,13 +9,12 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
 import { EnvironmentListType } from "../types";
 
 interface EnvironmentItemControlsProps {
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
   setIsEditing: (isEditing: boolean) => void;
   instruction: Instruction | null;
   type: EnvironmentListType;
@@ -26,18 +26,17 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
-  const { mutate: activateEnvironment } = useActivateEnvironment();
-
   const { activePanelId } = useTabbedPaneStore();
 
-  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
-
+  const { mutate: activateEnvironment } = useActivateEnvironment();
   const { handleDeleteEnvironment } = useDeleteEnvironmentItem({ environment, type });
+  const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
 
   const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
+
     if (environment.projectId) {
       activateEnvironment({ environmentId: environment.id, projectId: environment.projectId });
     } else {
@@ -60,6 +59,7 @@ export const EnvironmentItemControls = ({
         dropIndicatorFullWidth
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
+          <Tree.NodeOrder order={environment.order} />
           <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />

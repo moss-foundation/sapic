@@ -1,27 +1,27 @@
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
-import { StreamEnvironmentsEvent } from "@repo/ipc";
 
 import { EnvironmentListType } from "../types";
 
-interface EnvironmentListItemRenamingFormProps {
+interface EnvironmentItemRenamingFormProps {
   handleRename: (name: string) => void;
   handleCancel: () => void;
-  environment: StreamEnvironmentsEvent;
+  environment: EnvironmentSummary;
   restrictedNames: string[];
   className?: string;
   type: EnvironmentListType;
 }
 
-export const EnvironmentListItemRenamingForm = ({
+export const EnvironmentItemRenamingForm = ({
   className,
   handleRename,
   handleCancel,
   environment,
   restrictedNames,
   type,
-}: EnvironmentListItemRenamingFormProps) => {
+}: EnvironmentItemRenamingFormProps) => {
   return (
     <Tree.NodeControls depth={type === "GlobalEnvironmentItem" ? 0 : 1} className={cn("min-h-[22px] py-1", className)}>
       <Tree.NodeTriggers>

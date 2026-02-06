@@ -1,6 +1,6 @@
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 
-export const GroupedEnvironmentsListRootActions = () => {
+export const ProjectEnvironmentsListRootActions = () => {
   return (
     <div className="z-10 flex items-center gap-2">
       <div className="transition-discrete hidden items-center opacity-0 transition-[display,opacity] duration-100 group-hover/GroupedEnvironmentsListRoot:flex group-hover/GroupedEnvironmentsListRoot:opacity-100">

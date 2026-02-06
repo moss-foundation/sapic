@@ -10,12 +10,12 @@ interface NodeRenamingFormProps {
   currentName: string;
 }
 
-export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
-  const isMac = platform() === "macos";
-  const isLinux = platform() === "linux";
-  // HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.
-  const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
+const isMac = platform() === "macos";
+const isLinux = platform() === "linux";
+// HACK: Adding leading-[19px] class for Linux and macOS to prevent slight shifting of list items during edit mode.
+const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
 
+export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [value, setValue] = useState(String(currentName));
@@ -57,9 +57,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   };
 
   useClickOutside(containerRef, () => {
-    if (isMac) {
-      finishEditing();
-    }
+    if (isMac) finishEditing();
   });
 
   useEffect(() => {
@@ -85,7 +83,7 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
           autoFocus
           minLength={1}
           maxLength={100}
-          className={`z-1 flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 rounded-xs bg-white outline outline-offset-1 outline-(--moss-primary) ${leadingClass}`}
+          className={`z-1 rounded-xs outline-(--moss-primary) flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 bg-white outline outline-offset-1 ${leadingClass}`}
           onKeyUp={handleKeyUp}
           onBlur={isMac ? undefined : handleBlur}
           required
