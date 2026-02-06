@@ -2,7 +2,7 @@ use joinerror::{OptionExt, ResultExt};
 use moss_project::models::{events::*, operations::*};
 use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::{
-    main::{OpenInTarget, project::*, workspace::*},
+    main::{OpenInTarget, environment::*, project::*, workspace::*},
     other::CancelRequestInput,
 };
 use sapic_runtime::errors::Unavailable;
@@ -158,6 +158,7 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
     .await
 }
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_projects<'a, R: tauri::Runtime>(
@@ -177,6 +178,30 @@ pub async fn stream_projects<'a, R: tauri::Runtime>(
                 .stream_projects(&ctx, channel)
                 .await
                 .join_err::<()>("failed to stream projects")
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__list_projects<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> joinerror::Result<ListProjectsOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move {
+            window
+                .list_projects(&ctx)
+                .await
+                .join_err::<()>("failed to list projects")
         },
     )
     .await
@@ -206,6 +231,7 @@ pub async fn create_project<'a, R: tauri::Runtime>(
     .await
 }
 
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_project_resources<'a, R: tauri::Runtime>(
@@ -230,6 +256,55 @@ pub async fn stream_project_resources<'a, R: tauri::Runtime>(
                 .stream_resources(&ctx, &app_delegate, channel, input)
                 .await
                 .join_err::<()>("failed to create project")
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__list_project_environments<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: ListProjectEnvironmentsInput,
+    options: Options,
+) -> joinerror::Result<ListProjectEnvironmentsOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move {
+            window
+                .list_project_environments(&ctx, input)
+                .await
+                .join_err::<()>("failed to list projects")
+        },
+    )
+    .await
+}
+
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__list_workspace_environments<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    options: Options,
+) -> joinerror::Result<ListWorkspaceEnvironmentsOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move {
+            window
+                .list_workspace_environments(&ctx)
+                .await
+                .join_err::<()>("failed to list workspace environments")
         },
     )
     .await

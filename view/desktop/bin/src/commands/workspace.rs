@@ -1,33 +1,17 @@
-use crate::commands::primitives::*;
 use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::operations::*;
-use sapic_ipc::contracts::main::{
-    environment::{
-        ActivateEnvironmentInput, ActivateEnvironmentOutput, BatchUpdateEnvironmentGroupInput,
-        BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput, CreateEnvironmentInput,
-        CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput,
-        DescribeEnvironmentInput, DescribeEnvironmentOutput, StreamEnvironmentsEvent,
-        StreamEnvironmentsOutput, StreamProjectEnvironmentsInput, StreamProjectEnvironmentsOutput,
-        UpdateEnvironmentGroupInput, UpdateEnvironmentInput, UpdateEnvironmentOutput,
-    },
-    project::{
-        ArchiveProjectInput, ArchiveProjectOutput, BatchUpdateProjectInput,
-        BatchUpdateProjectOutput, DeleteProjectInput, DeleteProjectOutput, DescribeProjectInput,
-        DescribeProjectOutput, ExportProjectInput, ExportProjectOutput, ImportProjectInput,
-        ImportProjectOutput, UnarchiveProjectInput, UnarchiveProjectOutput, UpdateProjectInput,
-        UpdateProjectOutput,
-    },
-};
-use tauri::{Window, ipc::Channel as TauriChannel};
-// Project
+use sapic_ipc::contracts::main::{environment::*, project::*};
+use tauri::{Window as TauriWindow, ipc::Channel as TauriChannel};
+
+use crate::commands::primitives::*;
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn describe_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: DescribeProjectInput,
     options: Options,
 ) -> joinerror::Result<DescribeProjectOutput> {
@@ -46,7 +30,7 @@ pub async fn describe_project<'a, R: tauri::Runtime>(
 pub async fn import_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: ImportProjectInput,
     options: Options,
 ) -> joinerror::Result<ImportProjectOutput> {
@@ -65,7 +49,7 @@ pub async fn import_project<'a, R: tauri::Runtime>(
 pub async fn export_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: ExportProjectInput,
     options: Options,
 ) -> joinerror::Result<ExportProjectOutput> {
@@ -84,7 +68,7 @@ pub async fn export_project<'a, R: tauri::Runtime>(
 pub async fn delete_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: DeleteProjectInput,
     options: Options,
 ) -> joinerror::Result<DeleteProjectOutput> {
@@ -108,7 +92,7 @@ pub async fn delete_project<'a, R: tauri::Runtime>(
 pub async fn update_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: UpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<UpdateProjectOutput> {
@@ -132,7 +116,7 @@ pub async fn update_project<'a, R: tauri::Runtime>(
 pub async fn archive_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: ArchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<ArchiveProjectOutput> {
@@ -151,7 +135,7 @@ pub async fn archive_project<'a, R: tauri::Runtime>(
 pub async fn unarchive_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: UnarchiveProjectInput,
     options: Options,
 ) -> joinerror::Result<UnarchiveProjectOutput> {
@@ -170,7 +154,7 @@ pub async fn unarchive_project<'a, R: tauri::Runtime>(
 pub async fn batch_update_project<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: BatchUpdateProjectInput,
     options: Options,
 ) -> joinerror::Result<BatchUpdateProjectOutput> {
@@ -194,7 +178,7 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
 pub async fn list_changes<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     options: Options,
 ) -> joinerror::Result<ListChangesOutput> {
     super::with_workspace_timeout(
@@ -211,13 +195,13 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
     .await
 }
 
-// Environment
+// DEPRECATED
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn stream_environments<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
 ) -> joinerror::Result<StreamEnvironmentsOutput> {
@@ -236,7 +220,7 @@ pub async fn stream_environments<'a, R: tauri::Runtime>(
 pub async fn stream_project_environments<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: StreamProjectEnvironmentsInput,
     channel: TauriChannel<StreamEnvironmentsEvent>,
     options: Options,
@@ -260,7 +244,7 @@ pub async fn stream_project_environments<'a, R: tauri::Runtime>(
 pub async fn activate_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: ActivateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<ActivateEnvironmentOutput> {
@@ -279,7 +263,7 @@ pub async fn activate_environment<'a, R: tauri::Runtime>(
 pub async fn create_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: CreateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<CreateEnvironmentOutput> {
@@ -298,7 +282,7 @@ pub async fn create_environment<'a, R: tauri::Runtime>(
 pub async fn update_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: UpdateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<UpdateEnvironmentOutput> {
@@ -317,7 +301,7 @@ pub async fn update_environment<'a, R: tauri::Runtime>(
 pub async fn batch_update_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: BatchUpdateEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<BatchUpdateEnvironmentOutput> {
@@ -336,7 +320,7 @@ pub async fn batch_update_environment<'a, R: tauri::Runtime>(
 pub async fn delete_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: DeleteEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<DeleteEnvironmentOutput> {
@@ -355,7 +339,7 @@ pub async fn delete_environment<'a, R: tauri::Runtime>(
 pub async fn describe_environment<'a, R: tauri::Runtime>(
     ctx: AsyncContext<'a>,
     app: App<'a, R>,
-    window: Window<R>,
+    window: TauriWindow<R>,
     input: DescribeEnvironmentInput,
     options: Options,
 ) -> joinerror::Result<DescribeEnvironmentOutput> {
@@ -375,7 +359,7 @@ pub async fn describe_environment<'a, R: tauri::Runtime>(
 pub async fn update_environment_group<'a, R: tauri::Runtime>(
     _ctx: AsyncContext<'a>,
     _app: App<'a, R>,
-    _window: Window<R>,
+    _window: TauriWindow<R>,
     _input: UpdateEnvironmentGroupInput,
     _options: Options,
 ) -> joinerror::Result<()> {
@@ -388,7 +372,7 @@ pub async fn update_environment_group<'a, R: tauri::Runtime>(
 pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
     _ctx: AsyncContext<'a>,
     _app: App<'a, R>,
-    _window: Window<R>,
+    _window: TauriWindow<R>,
     _input: BatchUpdateEnvironmentGroupInput,
     _options: Options,
 ) -> joinerror::Result<()> {

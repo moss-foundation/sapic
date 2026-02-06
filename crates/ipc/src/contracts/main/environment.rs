@@ -12,6 +12,7 @@ use std::{path::PathBuf, sync::Arc};
 use ts_rs::TS;
 use validator::Validate;
 
+// DEPRECATED
 // Stream Environment
 /// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
@@ -33,7 +34,59 @@ pub struct StreamEnvironmentsEvent {
     pub total_variables: usize,
 }
 
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ListEnvironmentItem {
+    pub id: EnvironmentId,
+    pub is_active: bool,
+    pub name: String,
+    #[ts(optional)]
+    pub color: Option<String>,
+    pub total_variables: usize,
+}
+
+//
+// List Workspace Environments
+//
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListWorkspaceEnvironmentsOutput {
+    pub items: Vec<ListEnvironmentItem>,
+}
+
+//
+// List Project Environments
+//
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListProjectEnvironmentsInput {
+    pub project_id: ProjectId,
+}
+
+/// @category Operation
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListProjectEnvironmentsOutput {
+    pub items: Vec<ListEnvironmentItem>,
+}
+
+//
 // Describe Environment
+//
+
 /// @category Operation
 #[derive(Debug, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -56,7 +109,10 @@ pub struct DescribeEnvironmentOutput {
     pub variables: Vec<VariableInfo>,
 }
 
+//
 // Activate Environment
+//
+
 #[derive(Debug, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
@@ -73,8 +129,9 @@ pub struct ActivateEnvironmentOutput {
     pub environment_id: EnvironmentId,
 }
 
+//
 // Create Environment
-// FIXME: Should this be refactored to use an inner params?
+//
 
 /// @category Operation
 #[derive(Clone, Debug, Deserialize, Serialize, Validate, TS)]
@@ -108,8 +165,11 @@ pub struct CreateEnvironmentOutput {
     pub abs_path: PathBuf,
 }
 
+//
 // Update Environment
+//
 
+// DEPRECATED
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -156,7 +216,10 @@ pub struct UpdateEnvironmentInput {
 pub struct UpdateEnvironmentOutput {
     pub id: EnvironmentId,
 }
+
+//
 // Batch Update Environment
+//
 
 /// @category Operation
 #[derive(Debug, Deserialize, TS, Validate)]
@@ -176,7 +239,10 @@ pub struct BatchUpdateEnvironmentOutput {
     pub ids: Vec<EnvironmentId>,
 }
 
+//
 // Delete Environment
+//
+
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -196,8 +262,11 @@ pub struct DeleteEnvironmentOutput {
     pub id: EnvironmentId,
 }
 
+//
 // Stream Environments
+//
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -210,8 +279,11 @@ pub struct StreamEnvironmentsOutput {
     pub total_returned: usize,
 }
 
+//
 // Stream Project Environments
+//
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -229,6 +301,7 @@ pub struct StreamProjectEnvironmentsOutput {
     pub total_returned: usize,
 }
 
+// DEPRECATED
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -240,7 +313,11 @@ pub struct EnvironmentGroup {
     pub order: Option<isize>,
 }
 
+//
 // Update Environment Group
+//
+
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]
@@ -250,7 +327,11 @@ pub struct UpdateEnvironmentGroupInput {
     pub inner: UpdateEnvironmentGroupParams,
 }
 
+//
 // Batch Update Environment Group
+//
+
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS, Validate)]
 #[serde(rename_all = "camelCase")]

@@ -110,6 +110,31 @@ pub struct StreamProjectsOutput {
 }
 
 //
+// List Projects
+//
+
+/// @category Type
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
+#[ts(export, export_to = "types.ts")]
+pub struct ListProjectItem {
+    pub id: ProjectId,
+    pub name: String,
+    pub branch: Option<BranchInfo>,
+    pub icon_path: Option<PathBuf>,
+    pub archived: bool,
+}
+
+/// @category Operation
+#[derive(Debug, Deserialize, Serialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "operations.ts")]
+pub struct ListProjectsOutput {
+    pub items: Vec<ListProjectItem>,
+}
+
+//
 // Create Project
 //
 

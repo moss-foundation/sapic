@@ -278,6 +278,9 @@ pub async fn run<R: TauriRuntime>() {
             commands::main__create_workspace,
             commands::main__open_workspace,
             commands::main__close_workspace,
+            commands::main__list_projects,
+            commands::main__list_workspace_environments,
+            commands::main__list_project_environments,
             //
             // Onboarding
             //
@@ -308,7 +311,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::create_environment,
             commands::update_environment,
             commands::batch_update_environment,
-            commands::stream_environments,
             commands::stream_project_environments,
             commands::delete_environment,
             commands::update_environment_group,
