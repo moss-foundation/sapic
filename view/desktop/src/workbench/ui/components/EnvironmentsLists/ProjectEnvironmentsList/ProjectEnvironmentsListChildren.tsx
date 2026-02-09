@@ -1,7 +1,7 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../EnvironmentItem/constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 
 interface ProjectEnvironmentsListChildrenProps {

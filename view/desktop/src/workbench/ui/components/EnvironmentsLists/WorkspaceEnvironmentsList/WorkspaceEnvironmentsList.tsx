@@ -1,6 +1,6 @@
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../EnvironmentItem/constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 
 export const WorkspaceEnvironmentsList = () => {

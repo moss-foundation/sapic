@@ -7,10 +7,10 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "./constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
+import { useDraggableEnvironmentItem } from "./dnd/hooks/useDraggableEnvironmentItem";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
-import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentItem";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
 interface EnvironmentItemProps {

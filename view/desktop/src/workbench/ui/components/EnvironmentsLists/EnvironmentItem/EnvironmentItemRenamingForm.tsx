@@ -3,7 +3,7 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "./constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 
 interface EnvironmentItemRenamingFormProps {
   handleRename: (name: string) => void;

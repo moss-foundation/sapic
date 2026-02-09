@@ -5,7 +5,7 @@ import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../EnvironmentItem/constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 
 interface UseDeleteEnvironmentItemProps {
   environment: EnvironmentSummary;

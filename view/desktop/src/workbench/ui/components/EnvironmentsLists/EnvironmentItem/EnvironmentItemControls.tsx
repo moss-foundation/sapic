@@ -11,7 +11,7 @@ import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "./constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 
 interface EnvironmentItemControlsProps {
   environment: EnvironmentSummary;

@@ -8,7 +8,7 @@ import {
   DeleteEnvironmentOutput,
 } from "@repo/ipc";
 
-import { DragEnvironmentItem, DropEnvironmentItem } from "../../types.dnd";
+import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 interface HandleMoveProjectEnvToProjectEnvProps {
   sourceData: DragEnvironmentItem;

@@ -1,7 +1,7 @@
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../constants";
 
 export const isSourceEnvironmentItem = (source: ElementDragPayload): boolean => {
   return (

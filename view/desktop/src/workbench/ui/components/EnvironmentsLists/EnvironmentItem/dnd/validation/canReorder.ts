@@ -1,8 +1,8 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../constants";
-import { DragEnvironmentItem } from "../../types.dnd";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
+import { DragEnvironmentItem } from "../types.dnd";
 
 export const canReorder = (
   sourceData: DragEnvironmentItem,

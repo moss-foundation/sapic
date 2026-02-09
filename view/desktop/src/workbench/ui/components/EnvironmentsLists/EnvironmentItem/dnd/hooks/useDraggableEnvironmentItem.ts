@@ -7,11 +7,11 @@ import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pr
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
-import { getSourceEnvironmentItemData } from "../dnd/getters";
-import { isSourceEnvironmentItem } from "../dnd/validation";
-import { canReorder } from "../dnd/validation/canReorder";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
+import { getSourceEnvironmentItemData } from "../getters";
 import { DragEnvironmentItem } from "../types.dnd";
+import { isSourceEnvironmentItem } from "../validation";
+import { canReorder } from "../validation/canReorder";
 
 interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;

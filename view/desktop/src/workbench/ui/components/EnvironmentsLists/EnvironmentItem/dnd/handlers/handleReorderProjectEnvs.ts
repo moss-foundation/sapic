@@ -2,7 +2,7 @@ import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { EnvironmentItemState } from "@/workbench/domains/environmentItemState/types";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DragEnvironmentItem, DropEnvironmentItem } from "../../types.dnd";
+import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 interface HandleReorderProjectEnvsProps {
   sourceData: DragEnvironmentItem;
