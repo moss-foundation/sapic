@@ -11,13 +11,13 @@ import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { useDeleteEnvironmentItem } from "../actions/useDeleteEnvironmentItem";
-import { EnvironmentListType } from "../types";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "./constants";
 
 interface EnvironmentItemControlsProps {
   environment: EnvironmentSummary;
   setIsEditing: (isEditing: boolean) => void;
   instruction: Instruction | null;
-  type: EnvironmentListType;
+  type: ENVIRONMENT_ITEM_DRAG_TYPE;
 }
 
 export const EnvironmentItemControls = ({
@@ -55,12 +55,12 @@ export const EnvironmentItemControls = ({
         isActive={activePanelId === environment.id}
         instruction={instruction}
         hideDragHandle
-        depth={type === "GlobalEnvironmentItem" ? 0 : 1}
+        depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
         dropIndicatorFullWidth
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
           <Tree.NodeOrder order={environment.order} />
-          <Icon icon={type === "GlobalEnvironmentItem" ? "Environment" : "GroupedEnvironment"} />
+          <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />
         </Tree.NodeTriggers>

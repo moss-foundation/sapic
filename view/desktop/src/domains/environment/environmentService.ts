@@ -97,7 +97,7 @@ export const environmentService: IEnvironmentService = {
   },
   deleteEnvironment: async (input) => {
     const output = await environmentIpc.deleteEnvironment(input);
-    environmentSummariesCollection.delete(output.id);
+    environmentSummariesCollection.delete(input.id);
     return output;
   },
   streamEnvironments: async () => {

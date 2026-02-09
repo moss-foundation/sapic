@@ -35,6 +35,10 @@ export const environmentItemStateService: IEnvironmentItemStateService = {
       workspace: workspaceId,
     });
 
+    console.log(
+      "environmentSummariesCollection.has(environmentItemState.id)",
+      environmentSummariesCollection.has(environmentItemState.id)
+    );
     if (environmentSummariesCollection.has(environmentItemState.id)) {
       environmentSummariesCollection.update(environmentItemState.id, (draft) => {
         draft.order = environmentItemState.order;

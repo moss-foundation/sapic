@@ -7,15 +7,15 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
-import { EnvironmentListType } from "../types";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "./constants";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";
 import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
-import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentList";
+import { useDraggableEnvironmentItem } from "./hooks/useDraggableEnvironmentItem";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
 interface EnvironmentItemProps {
   environment: EnvironmentSummary;
-  type: EnvironmentListType;
+  type: ENVIRONMENT_ITEM_DRAG_TYPE;
 }
 
 export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => {
@@ -24,29 +24,6 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
   const { data: workspaceEnvironments } = useStreamEnvironments();
   const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
-
-  const { isEditing, setIsEditing, handleRename, handleCancel } = useEnvironmentItemRenamingForm({
-    environment,
-  });
-
-  const { isDragging, instruction } = useDraggableEnvironmentItem({
-    ref: environmentItemRef,
-    environment,
-    type,
-  });
-
-  const onClick = () => {
-    if (isEditing) return;
-
-    addOrFocusPanel({
-      id: environment.id,
-      title: environment.name,
-      component: "DefaultView",
-      params: {
-        tabIcon: type === EnvironmentListType.GLOBAL ? "Environment" : "GroupedEnvironment",
-      },
-    });
-  };
 
   const restrictedNames = useMemo(() => {
     const { projectId } = environment;
@@ -58,22 +35,46 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
     return projectEnvironments?.filter((env) => env.projectId === projectId).map((env) => env.name) ?? [];
   }, [environment, projectEnvironments, workspaceEnvironments]);
 
+  const { isEditing, setIsEditing, handleRename, handleCancel } = useEnvironmentItemRenamingForm({
+    environment,
+  });
+
+  const { isDragging, instruction } = useDraggableEnvironmentItem({
+    ref: environmentItemRef,
+    environment,
+    type,
+    canDrag: !isEditing,
+  });
+
+  const onClick = () => {
+    if (isEditing) return;
+
+    addOrFocusPanel({
+      id: environment.id,
+      title: environment.name,
+      component: "DefaultView",
+      params: {
+        tabIcon: type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment",
+      },
+    });
+  };
+
   return (
     <Tree.Node ref={environmentItemRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>
       {isEditing ? (
         <EnvironmentItemRenamingForm
-          handleRename={handleRename}
-          handleCancel={handleCancel}
+          type={type}
           environment={environment}
           restrictedNames={restrictedNames}
-          type={type}
+          handleRename={handleRename}
+          handleCancel={handleCancel}
         />
       ) : (
         <EnvironmentItemControls
-          environment={environment}
-          setIsEditing={setIsEditing}
           type={type}
+          environment={environment}
           instruction={instruction}
+          setIsEditing={setIsEditing}
         />
       )}
     </Tree.Node>

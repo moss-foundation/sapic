@@ -6,10 +6,15 @@ import { USE_GET_ENVIRONMENT_ITEM_STATE_QUERY_KEY } from "./useGetEnvironmentIte
 
 export const USE_BATCH_PUT_ENVIRONMENT_ITEM_STATE_MUTATION_KEY = "batchPutEnvironmentItemState" as const;
 
+interface UseBatchPutEnvironmentItemStateProps {
+  environmentItemStates: EnvironmentItemState[];
+  workspaceId: string;
+}
+
 export const useBatchPutEnvironmentItemState = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { environmentItemStates: EnvironmentItemState[]; workspaceId: string }>({
+  return useMutation<void, Error, UseBatchPutEnvironmentItemStateProps>({
     mutationKey: [USE_BATCH_PUT_ENVIRONMENT_ITEM_STATE_MUTATION_KEY],
 
     mutationFn: ({ environmentItemStates, workspaceId }) =>

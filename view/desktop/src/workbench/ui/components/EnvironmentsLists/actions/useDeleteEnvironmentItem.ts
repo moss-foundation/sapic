@@ -5,11 +5,11 @@ import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useCurrentWorkspace } from "@/hooks/workspace/derived/useCurrentWorkspace";
 import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
 
-import { EnvironmentListType } from "../types";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../EnvironmentItem/constants";
 
 interface UseDeleteEnvironmentItemProps {
   environment: EnvironmentSummary;
-  type: EnvironmentListType;
+  type: ENVIRONMENT_ITEM_DRAG_TYPE;
 }
 
 export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnvironmentItemProps) => {
@@ -22,12 +22,11 @@ export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnviron
   const { mutateAsync: batchPutEnvironmentItemState } = useBatchPutEnvironmentItemState();
 
   const handleDeleteEnvironment = async () => {
-    if (type === "GlobalEnvironmentItem") {
+    if (type === ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE) {
       await deleteEnvironment({ id: environment.id });
 
       const environmentsAfterDeleted = workspaceEnvironments?.filter((env) => env.order! > environment.order!);
 
-      console.log("environmentsAfterDeleted", environmentsAfterDeleted);
       if (!environmentsAfterDeleted || environmentsAfterDeleted.length === 0) return;
 
       await batchPutEnvironmentItemState({
@@ -39,7 +38,7 @@ export const useDeleteEnvironmentItem = ({ environment, type }: UseDeleteEnviron
       });
     }
 
-    if (type === "GroupedEnvironmentItem") {
+    if (type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT) {
       await deleteEnvironment({ id: environment.id, projectId: environment.projectId ?? undefined });
 
       const environmentsAfterDeleted = projectEnvironments?.filter((env) => {
