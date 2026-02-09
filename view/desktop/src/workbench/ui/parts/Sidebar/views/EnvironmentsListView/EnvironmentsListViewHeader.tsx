@@ -1,7 +1,6 @@
 import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 import { useModal } from "@/hooks";
 import { ActionButton } from "@/workbench/ui/components";
-import { useGroupedEnvironments } from "@/workbench/ui/components/EnvironmentsLists/hooks/useGroupedEnvironments";
 import { NewEnvironmentModal } from "@/workbench/ui/components/Modals/Environment/NewEnvironmentModal";
 import { SidebarHeader } from "@/workbench/ui/parts/Sidebar/SidebarHeader";
 
@@ -13,11 +12,11 @@ export const EnvironmentsListViewHeader = () => {
   } = useModal();
 
   const { refetch: refetchWorkspaceEnvironments } = useStreamEnvironments();
-  const { fetchAllProjectEnvironments } = useGroupedEnvironments();
+  // const { fetchAllProjectEnvironments } = useGroupedEnvironments();
 
   const handleRefresh = () => {
     refetchWorkspaceEnvironments();
-    fetchAllProjectEnvironments();
+    // fetchAllProjectEnvironments();
   };
 
   return (

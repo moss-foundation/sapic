@@ -1,10 +1,7 @@
-import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
-import { Availability, extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { EnvironmentsDropOperations } from "../../types";
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
-import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 export const isSourceEnvironmentItem = (source: ElementDragPayload): boolean => {
   return (
