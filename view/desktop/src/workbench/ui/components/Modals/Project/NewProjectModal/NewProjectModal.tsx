@@ -6,6 +6,7 @@ import { useStreamProjects } from "@/adapters/tanstackQuery/project/useStreamPro
 import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
+import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
 import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
@@ -23,11 +24,13 @@ interface NewProjectModalProps extends ModalWrapperProps {
 
 export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewProjectModalProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { data: projects } = useStreamProjects();
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: importProject } = useImportProject();
 
   const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
+  const { mutateAsync: putEnvironmentListItemState } = usePutEnvironmentListItemState();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -37,6 +40,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const [createParams, setCreateParams] = useState<CreateProjectGitParams | undefined>(undefined);
   const [importParams, setImportParams] = useState<ImportProjectSource | undefined>(undefined);
   const [tab, setTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(initialTab);
+
+  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,6 +59,14 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         treeItemState: {
           id: result.id,
           order: newOrder,
+          expanded: true,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+
+      await putEnvironmentListItemState({
+        environmentListItemState: {
+          id: result.id,
           expanded: true,
         },
         workspaceId: currentWorkspaceId,
@@ -85,6 +98,14 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         treeItemState: {
           id: result.id,
           order: newOrder,
+          expanded: true,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+
+      await putEnvironmentListItemState({
+        environmentListItemState: {
+          id: result.id,
           expanded: true,
         },
         workspaceId: currentWorkspaceId,
@@ -124,8 +145,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     },
     []
   );
-
-  const isSubmitDisabled = calculateIsSubmitDisabled({ name, tab, createParams, importParams });
 
   return (
     <Modal onBackdropClick={handleCancel} showModal={showModal} className="max-w-136 w-full">

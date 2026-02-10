@@ -1,5 +1,2 @@
-import { GroupedEnvironment } from "@/assets/icons";
-
-import { GroupedEnvironmentsList } from "./GroupedEnvironmentsList/GroupedEnvironmentsList";
-
-export { GroupedEnvironment, GroupedEnvironmentsList };
+export { ProjectEnvironmentsList } from "./ProjectEnvironmentsList/ProjectEnvironmentsList";
+export { WorkspaceEnvironmentsList } from "./WorkspaceEnvironmentsList/WorkspaceEnvironmentsList";
