@@ -3,15 +3,15 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../constants";
 
-export type EnvironmentsDropOperations =
-  | "ReorderWorkspaceEnvs"
-  | "ReorderProjectEnvs"
-  | "MoveWorkspaceEnvToProjectEnvs"
-  | "MoveProjectEnvToWorkspaceEnvs"
-  | "MoveProjectEnvToProjectEnv"
-  | "CombineWorkspaceEnvToProjectList"
-  | "CombineProjectEnvToProjectList"
-  | null;
+export enum EnvironmentsDropOperations {
+  ReorderWorkspaceEnvs = "ReorderWorkspaceEnvs",
+  ReorderProjectEnvs = "ReorderProjectEnvs",
+  MoveWorkspaceEnvToProjectEnvs = "MoveWorkspaceEnvToProjectEnvs",
+  MoveProjectEnvToWorkspaceEnvs = "MoveProjectEnvToWorkspaceEnvs",
+  MoveProjectEnvToProjectEnv = "MoveProjectEnvToProjectEnv",
+  CombineWorkspaceEnvToProjectList = "CombineWorkspaceEnvToProjectList",
+  CombineProjectEnvToProjectList = "CombineProjectEnvToProjectList",
+}
 
 export interface DragEnvironmentItem {
   type: ENVIRONMENT_ITEM_DRAG_TYPE;

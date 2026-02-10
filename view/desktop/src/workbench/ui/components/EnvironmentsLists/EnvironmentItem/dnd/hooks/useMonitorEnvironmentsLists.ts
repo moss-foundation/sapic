@@ -15,6 +15,7 @@ import { handleMoveProjectEnvToWorkspaceEnvs } from "../handlers/handleMoveProje
 import { handleMoveWorkspaceEnvToProjectEnvs } from "../handlers/handleMoveWorkspaceEnvToProjectEnvs";
 import { handleReorderProjectEnvs } from "../handlers/handleReorderProjectEnvs";
 import { handleReorderWorkspaceEnvs } from "../handlers/handleReorderWorkspaceEnvs";
+import { EnvironmentsDropOperations } from "../types.dnd";
 import { isSourceEnvironmentItem } from "../validation";
 import { calculateDropType } from "../validation/calculateDropType";
 
@@ -49,7 +50,7 @@ export const useMonitorEnvironmentsLists = () => {
 
         const dropType = calculateDropType(sourceData, locationData);
         switch (dropType) {
-          case "ReorderWorkspaceEnvs":
+          case EnvironmentsDropOperations.ReorderWorkspaceEnvs:
             handleReorderWorkspaceEnvs({
               sourceData,
               locationData,
@@ -59,7 +60,7 @@ export const useMonitorEnvironmentsLists = () => {
               batchPutEnvironmentItemState,
             });
             break;
-          case "ReorderProjectEnvs":
+          case EnvironmentsDropOperations.ReorderProjectEnvs:
             handleReorderProjectEnvs({
               sourceData,
               locationData,
@@ -69,7 +70,7 @@ export const useMonitorEnvironmentsLists = () => {
               batchPutEnvironmentItemState,
             });
             break;
-          case "MoveWorkspaceEnvToProjectEnvs":
+          case EnvironmentsDropOperations.MoveWorkspaceEnvToProjectEnvs:
             handleMoveWorkspaceEnvToProjectEnvs({
               sourceData,
               locationData,
@@ -83,7 +84,7 @@ export const useMonitorEnvironmentsLists = () => {
               createEnvironment,
             });
             break;
-          case "MoveProjectEnvToWorkspaceEnvs":
+          case EnvironmentsDropOperations.MoveProjectEnvToWorkspaceEnvs:
             handleMoveProjectEnvToWorkspaceEnvs({
               sourceData,
               locationData,
@@ -97,7 +98,7 @@ export const useMonitorEnvironmentsLists = () => {
               createEnvironment,
             });
             break;
-          case "MoveProjectEnvToProjectEnv":
+          case EnvironmentsDropOperations.MoveProjectEnvToProjectEnv:
             handleMoveProjectEnvToProjectEnv({
               sourceData,
               locationData,
@@ -110,9 +111,9 @@ export const useMonitorEnvironmentsLists = () => {
               createEnvironment,
             });
             break;
-          case "CombineWorkspaceEnvToProjectList":
+          case EnvironmentsDropOperations.CombineWorkspaceEnvToProjectList:
             break;
-          case "CombineProjectEnvToProjectList":
+          case EnvironmentsDropOperations.CombineProjectEnvToProjectList:
             break;
           default:
             break;

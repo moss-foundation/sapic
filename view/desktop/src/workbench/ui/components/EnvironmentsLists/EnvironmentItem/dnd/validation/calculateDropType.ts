@@ -6,7 +6,7 @@ import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentsDropOperations } 
 export const calculateDropType = (
   sourceData: DragEnvironmentItem,
   locationData: DropEnvironmentItem
-): EnvironmentsDropOperations => {
+): EnvironmentsDropOperations | null => {
   const instruction = extractInstruction(locationData);
 
   if (!instruction) {
@@ -18,7 +18,7 @@ export const calculateDropType = (
     sourceData.type === ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE &&
     locationData.type === ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE
   ) {
-    return "ReorderWorkspaceEnvs";
+    return EnvironmentsDropOperations.ReorderWorkspaceEnvs;
   }
 
   if (
@@ -26,9 +26,9 @@ export const calculateDropType = (
     locationData.type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT
   ) {
     if (sourceData.data.projectId === locationData.data.projectId) {
-      return "ReorderProjectEnvs";
+      return EnvironmentsDropOperations.ReorderProjectEnvs;
     } else {
-      return "MoveProjectEnvToProjectEnv";
+      return EnvironmentsDropOperations.MoveProjectEnvToProjectEnv;
     }
   }
 
@@ -36,14 +36,14 @@ export const calculateDropType = (
     sourceData.type === ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE &&
     locationData.type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT
   ) {
-    return "MoveWorkspaceEnvToProjectEnvs";
+    return EnvironmentsDropOperations.MoveWorkspaceEnvToProjectEnvs;
   }
 
   if (
     sourceData.type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT &&
     locationData.type === ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE
   ) {
-    return "MoveProjectEnvToWorkspaceEnvs";
+    return EnvironmentsDropOperations.MoveProjectEnvToWorkspaceEnvs;
   }
 
   //combine to environment project list
