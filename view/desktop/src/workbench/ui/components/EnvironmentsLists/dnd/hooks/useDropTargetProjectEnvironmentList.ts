@@ -4,13 +4,13 @@ import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ENVIRONMENT_LIST_DRAG_TYPE } from "../../../constants";
-import { getSourceEnvironmentItemData } from "../../../EnvironmentItem/dnd/getters";
-import { DropProjectEnvironmentList } from "../../../EnvironmentItem/dnd/types.dnd";
-import { canCombineToEnvironmentList } from "../../../EnvironmentItem/dnd/validation/canCombineToEnvironmentList";
-import { isLocationEnvironmentItem } from "../../../EnvironmentItem/dnd/validation/isLocationEnvironmentItem";
-import { isLocationProjectEnvironmentList } from "../../../EnvironmentItem/dnd/validation/isLocationProjectEnvironmentList";
-import { isSourceEnvironmentItem } from "../../../EnvironmentItem/dnd/validation/isSourceEnvironmentItem";
+import { ENVIRONMENT_LIST_DRAG_TYPE } from "../../constants";
+import { getSourceEnvironmentItemData } from "../getters";
+import { DropProjectEnvironmentList } from "../types.dnd";
+import { canCombineToEnvironmentList } from "../validation/canCombineToEnvironmentList";
+import { isLocationEnvironmentItem } from "../validation/isLocationEnvironmentItem";
+import { isLocationProjectEnvironmentList } from "../validation/isLocationProjectEnvironmentList";
+import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 interface UseDropTargetProjectEnvironmentListProps {
   refList: RefObject<HTMLUListElement | null>;

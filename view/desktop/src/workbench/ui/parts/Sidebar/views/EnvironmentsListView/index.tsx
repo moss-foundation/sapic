@@ -4,7 +4,7 @@ import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/us
 import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnvironments";
 import { Icon, Scrollbar } from "@/lib/ui";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/EnvironmentItem/dnd/hooks/useMonitorEnvironmentsLists";
+import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
 import { ProjectEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsList";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components/EnvironmentsLists/WorkspaceEnvironmentsList/WorkspaceEnvironmentsList";
 

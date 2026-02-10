@@ -9,7 +9,7 @@ import { useRemoveEnvironmentItemState } from "@/workbench/adapters/tanstackQuer
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { EnvironmentsDropOperations } from "../../../constants";
+import { EnvironmentsDropOperations } from "../../constants";
 import { getLocationEnvironmentItemData, getSourceEnvironmentItemData } from "../getters";
 import { handleCombineProjectEnvToProjectList } from "../handlers/handleCombineProjectEnvToProjectList";
 import { handleCombineProjectEnvToWorkspaceList } from "../handlers/handleCombineProjectEnvToWorkspaceList";

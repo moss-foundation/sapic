@@ -1,10 +1,10 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../constants";
 import { DragEnvironmentItem } from "../types.dnd";
 
-export const canReorder = (
+export const canReorderEnvironmentList = (
   sourceData: DragEnvironmentItem,
   locationData: DragEnvironmentItem,
   workspaceEnvironments: EnvironmentSummary[],
@@ -44,10 +44,6 @@ export const canReorder = (
     const hasConflict = hasSameNameOrId(workspaceEnvironments, sourceData.data.name, sourceData.data.id);
     return hasConflict ? "not-available" : "available";
   }
-
-  //Workspace -> Project List
-
-  //Project -> Workspace List
 
   return "not-available";
 };

@@ -11,6 +11,7 @@ export enum ENVIRONMENT_LIST_DRAG_TYPE {
 export enum EnvironmentsDropOperations {
   ReorderWorkspaceEnvs = "ReorderWorkspaceEnvs",
   ReorderProjectEnvs = "ReorderProjectEnvs",
+
   MoveWorkspaceEnvToProjectEnvs = "MoveWorkspaceEnvToProjectEnvs",
   MoveProjectEnvToWorkspaceEnvs = "MoveProjectEnvToWorkspaceEnvs",
   MoveProjectEnvToProjectEnv = "MoveProjectEnvToProjectEnv",

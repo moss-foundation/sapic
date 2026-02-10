@@ -7,10 +7,10 @@ import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pr
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
+import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../constants";
 import { getSourceEnvironmentItemData } from "../getters";
 import { DragEnvironmentItem } from "../types.dnd";
-import { canReorder } from "../validation/canReorder";
+import { canReorderEnvironmentList } from "../validation/canReorderEnvironmentList";
 import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 interface UseDraggableEnvironmentItemProps {
@@ -62,7 +62,12 @@ export const useDraggableEnvironmentItem = ({
             data: environment,
           };
           const sourceData = getSourceEnvironmentItemData(source);
-          const canReorderResult = canReorder(sourceData, locationData, workspaceEnvironments, allProjectEnvironments);
+          const canReorderResult = canReorderEnvironmentList(
+            sourceData,
+            locationData,
+            workspaceEnvironments,
+            allProjectEnvironments
+          );
 
           return attachInstruction(locationData, {
             input,
