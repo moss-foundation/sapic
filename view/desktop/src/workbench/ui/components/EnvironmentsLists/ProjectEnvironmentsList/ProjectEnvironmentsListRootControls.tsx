@@ -8,13 +8,11 @@ import { StreamProjectsEvent } from "@repo/ipc";
 interface ProjectEnvironmentsListRootControlsProps {
   project: StreamProjectsEvent;
   expanded: boolean;
-  count: number;
 }
 
 export const ProjectEnvironmentsListRootControls = ({
   project,
   expanded,
-  count,
 }: ProjectEnvironmentsListRootControlsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 

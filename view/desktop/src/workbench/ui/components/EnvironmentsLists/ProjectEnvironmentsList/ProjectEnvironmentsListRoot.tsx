@@ -38,11 +38,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
       <Tree.RootNodeHeader className="cursor-pointer">
-        <ProjectEnvironmentsListRootControls
-          project={project}
-          expanded={expanded}
-          count={projectEnvironments?.length ?? 0}
-        />
+        <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
       </Tree.RootNodeHeader>
 
       {expanded && (
