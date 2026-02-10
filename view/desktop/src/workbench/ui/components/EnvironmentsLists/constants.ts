@@ -14,6 +14,8 @@ export enum EnvironmentsDropOperations {
   MoveWorkspaceEnvToProjectEnvs = "MoveWorkspaceEnvToProjectEnvs",
   MoveProjectEnvToWorkspaceEnvs = "MoveProjectEnvToWorkspaceEnvs",
   MoveProjectEnvToProjectEnv = "MoveProjectEnvToProjectEnv",
+
   CombineWorkspaceEnvToProjectList = "CombineWorkspaceEnvToProjectList",
   CombineProjectEnvToProjectList = "CombineProjectEnvToProjectList",
+  CombineProjectEnvToWorkspaceList = "CombineProjectEnvToWorkspaceList",
 }

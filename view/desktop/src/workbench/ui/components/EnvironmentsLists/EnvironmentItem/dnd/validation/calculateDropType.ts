@@ -50,8 +50,8 @@ export const calculateDropType = (
   if (instruction.operation === "combine") {
     if (isWorkspaceSource && target.type === ListType.PROJECT) return Operations.CombineWorkspaceEnvToProjectList;
 
-    if (isProjectSource && target.type === ListType.WORKSPACE) return Operations.MoveProjectEnvToWorkspaceEnvs;
-    if (isProjectSource && target.type === ListType.PROJECT) return Operations.MoveProjectEnvToProjectEnv;
+    if (isProjectSource && target.type === ListType.WORKSPACE) return Operations.CombineProjectEnvToWorkspaceList;
+    if (isProjectSource && target.type === ListType.PROJECT) return Operations.CombineProjectEnvToProjectList;
   }
 
   return null;
