@@ -19,6 +19,10 @@ export const useSyncEnvironments = () => {
     const insertEnvironments = async () => {
       if (!workspaceEnvironments || !projects) return;
 
+      environmentSummariesCollection.forEach((env) => {
+        environmentSummariesCollection.delete(env.id);
+      });
+
       const allEnvironments = [...workspaceEnvironments];
 
       //get project environments
