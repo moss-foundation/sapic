@@ -11,6 +11,7 @@ import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/ad
 
 import { EnvironmentsDropOperations } from "../../../constants";
 import { getLocationEnvironmentItemData, getSourceEnvironmentItemData } from "../getters";
+import { handleCombineWorkspaceEnvToProjectList } from "../handlers/handleCombineWorkspaceEnvToProjectList";
 import { handleMoveProjectEnvToProjectEnv } from "../handlers/handleMoveProjectEnvToProjectEnv";
 import { handleMoveProjectEnvToWorkspaceEnvs } from "../handlers/handleMoveProjectEnvToWorkspaceEnvs";
 import { handleMoveWorkspaceEnvToProjectEnvs } from "../handlers/handleMoveWorkspaceEnvToProjectEnvs";
@@ -112,6 +113,17 @@ export const useMonitorEnvironmentsLists = () => {
             });
             break;
           case EnvironmentsDropOperations.CombineWorkspaceEnvToProjectList:
+            handleCombineWorkspaceEnvToProjectList({
+              sourceData,
+              locationData,
+              workspaceEnvironments,
+              projectEnvironments: allProjectEnvironments ?? [],
+              currentWorkspaceId,
+              batchPutEnvironmentItemState,
+              removeEnvironmentItemState,
+              deleteEnvironment,
+              createEnvironment,
+            });
             break;
           case EnvironmentsDropOperations.CombineProjectEnvToProjectList:
             break;

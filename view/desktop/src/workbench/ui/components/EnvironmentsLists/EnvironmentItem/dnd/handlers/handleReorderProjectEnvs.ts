@@ -35,7 +35,7 @@ export const handleReorderProjectEnvs = async ({
   const targetIndex = projectEnvironmentsByProjectId.findIndex((env) => env.id === locationData.data.id);
   const dropOrder = instruction.operation === "reorder-before" ? targetIndex : targetIndex + 1;
 
-  const environmentsToUpdate = [
+  const envsStatesToUpdate = [
     ...projectEnvironmentsByProjectId.slice(0, dropOrder).filter((env) => env.id !== sourceData.data.id),
     sourceData.data,
     ...projectEnvironmentsByProjectId.slice(dropOrder).filter((env) => env.id !== sourceData.data.id),
@@ -46,7 +46,7 @@ export const handleReorderProjectEnvs = async ({
 
   await batchPutEnvironmentItemState({
     workspaceId: currentWorkspaceId,
-    environmentItemStates: environmentsToUpdate.map((env) => ({
+    environmentItemStates: envsStatesToUpdate.map((env) => ({
       id: env.id,
       order: env.order,
     })),

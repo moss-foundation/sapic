@@ -7,11 +7,13 @@ export const getSourceEnvironmentItemData = (source: ElementDragPayload): DragEn
 };
 
 export const getLocationEnvironmentItemData = (location: DragLocationHistory): DropEnvironmentItem | null => {
+  if (location.current.dropTargets.length === 0) return null;
   return location.current.dropTargets[0].data as unknown as DropEnvironmentItem;
 };
 
 export const getLocationProjectEnvironmentListData = (
   location: DragLocationHistory
 ): DropProjectEnvironmentList | null => {
+  if (location.current.dropTargets.length === 0) return null;
   return location.current.dropTargets[0].data as unknown as DropProjectEnvironmentList;
 };

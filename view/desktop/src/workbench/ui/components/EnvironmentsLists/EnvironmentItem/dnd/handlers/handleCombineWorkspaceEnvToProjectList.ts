@@ -1,6 +1,5 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { EnvironmentItemState } from "@/workbench/domains/environmentItemState/types";
-import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import {
   CreateEnvironmentInput,
   CreateEnvironmentOutput,
@@ -10,12 +9,11 @@ import {
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
-interface HandleMoveWorkspaceEnvToProjectEnvsProps {
+interface HandleCombineWorkspaceEnvToProjectListProps {
   sourceData: DragEnvironmentItem;
   locationData: DropEnvironmentItem;
   workspaceEnvironments: EnvironmentSummary[];
   projectEnvironments: EnvironmentSummary[];
-  instruction: Instruction;
   currentWorkspaceId: string;
   batchPutEnvironmentItemState: (props: {
     environmentItemStates: EnvironmentItemState[];
@@ -26,44 +24,33 @@ interface HandleMoveWorkspaceEnvToProjectEnvsProps {
   createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
 }
 
-export const handleMoveWorkspaceEnvToProjectEnvs = async ({
+export const handleCombineWorkspaceEnvToProjectList = async ({
   sourceData,
   locationData,
   workspaceEnvironments,
   projectEnvironments,
-  instruction,
   currentWorkspaceId,
   batchPutEnvironmentItemState,
   removeEnvironmentItemState,
   deleteEnvironment,
   createEnvironment,
-}: HandleMoveWorkspaceEnvToProjectEnvsProps) => {
+}: HandleCombineWorkspaceEnvToProjectListProps) => {
   const projectId = locationData.data.projectId;
   if (!projectId) {
-    console.error("Project ID not found while moving workspace environment to project environments", { locationData });
+    console.error("Project ID not found while combining workspace environment to project list", { locationData });
     return;
   }
 
   const projectEnvironmentsByProjectId = projectEnvironments.filter((env) => env.projectId === projectId);
-  const targetIndex = projectEnvironmentsByProjectId.findIndex((env) => env.id === locationData.data.id);
-  const dropOrder = instruction.operation === "reorder-before" ? targetIndex : targetIndex + 1;
+  const newOrder = projectEnvironmentsByProjectId.length + 1;
 
   const newEnvironment = await createEnvironment({
     projectId,
     name: sourceData.data.name,
-    order: dropOrder,
+    order: newOrder,
     color: sourceData.data.color ?? undefined,
     variables: [],
   });
-
-  const projectEnvsStatesToUpdate = [
-    ...projectEnvironmentsByProjectId.slice(0, dropOrder),
-    newEnvironment,
-    ...projectEnvironmentsByProjectId.slice(dropOrder),
-  ].map((env, index) => ({
-    id: env.id,
-    order: index + 1,
-  }));
 
   const workspaceEnvsStatesToUpdate =
     workspaceEnvironments
@@ -73,7 +60,13 @@ export const handleMoveWorkspaceEnvToProjectEnvs = async ({
         order: env.order! - 1,
       })) ?? [];
 
-  const allEnvsStatesToUpdate = [...projectEnvsStatesToUpdate, ...workspaceEnvsStatesToUpdate];
+  const allEnvsStatesToUpdate = [
+    ...workspaceEnvsStatesToUpdate,
+    {
+      id: newEnvironment.id,
+      order: newOrder,
+    },
+  ];
 
   await batchPutEnvironmentItemState({
     environmentItemStates: allEnvsStatesToUpdate,
