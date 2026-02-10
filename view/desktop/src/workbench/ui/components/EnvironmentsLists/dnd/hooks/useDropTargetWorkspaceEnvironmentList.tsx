@@ -6,23 +6,21 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ENVIRONMENT_LIST_DRAG_TYPE } from "../../constants";
 import { getSourceEnvironmentItemData } from "../getters";
-import { DropProjectEnvironmentList } from "../types.dnd";
+import { DropWorkspaceEnvironmentList } from "../types.dnd";
 import { canCombineToEnvironmentList } from "../validation/canCombineToEnvironmentList";
 import { isLocationEnvironmentItem } from "../validation/isLocationEnvironmentItem";
-import { isLocationProjectEnvironmentList } from "../validation/isLocationProjectEnvironmentList";
+import { isLocationWorkspaceEnvironmentList } from "../validation/isLocationWorkspaceEnvironmentList";
 import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
-interface UseDropTargetProjectEnvironmentListProps {
+interface UseDropTargetWorkspaceEnvironmentListProps {
   refList: RefObject<HTMLUListElement | null>;
-  projectId: string;
-  projectEnvironments: EnvironmentSummary[];
+  workspaceEnvironments: EnvironmentSummary[];
 }
 
-export const useDropTargetProjectEnvironmentList = ({
+export const useDropTargetWorkspaceEnvironmentList = ({
   refList,
-  projectId,
-  projectEnvironments,
-}: UseDropTargetProjectEnvironmentListProps) => {
+  workspaceEnvironments,
+}: UseDropTargetWorkspaceEnvironmentListProps) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
@@ -36,12 +34,9 @@ export const useDropTargetProjectEnvironmentList = ({
       },
       getData({ input, element, source }) {
         const sourceData = getSourceEnvironmentItemData(source);
-        const locationData: DropProjectEnvironmentList = {
-          type: ENVIRONMENT_LIST_DRAG_TYPE.PROJECT,
-          data: {
-            projectId,
-            projectEnvironments,
-          },
+        const locationData: DropWorkspaceEnvironmentList = {
+          type: ENVIRONMENT_LIST_DRAG_TYPE.WORKSPACE,
+          data: { workspaceEnvironments },
         };
 
         return attachInstruction(locationData, {
@@ -50,14 +45,14 @@ export const useDropTargetProjectEnvironmentList = ({
           operations: {
             "reorder-before": "not-available",
             "reorder-after": "not-available",
-            combine: canCombineToEnvironmentList({ environments: projectEnvironments, sourceData }),
+            combine: canCombineToEnvironmentList({ environments: workspaceEnvironments, sourceData }),
           },
         });
       },
       onDrag({ self, location }) {
         const instruction = extractInstruction(self.data);
 
-        if (isLocationProjectEnvironmentList(location)) {
+        if (isLocationWorkspaceEnvironmentList(location)) {
           setInstruction(instruction);
         }
 
@@ -72,7 +67,7 @@ export const useDropTargetProjectEnvironmentList = ({
         setInstruction(null);
       },
     });
-  }, [instruction, projectEnvironments, projectId, refList]);
+  }, [instruction, refList, workspaceEnvironments]);
 
   return {
     instruction,

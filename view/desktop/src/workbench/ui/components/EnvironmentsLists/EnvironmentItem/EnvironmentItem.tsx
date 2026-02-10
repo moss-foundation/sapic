@@ -15,15 +15,16 @@ import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenami
 
 interface EnvironmentItemProps {
   environment: EnvironmentSummary;
-  type: ENVIRONMENT_ITEM_DRAG_TYPE;
 }
 
-export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => {
+export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useStreamEnvironments();
   const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
+
+  const envType = environment.projectId ? ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT : ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE;
 
   const restrictedNames = useMemo(() => {
     const { projectId } = environment;
@@ -42,7 +43,7 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
   const { isDragging, instruction } = useDraggableEnvironmentItem({
     ref: environmentItemRef,
     environment,
-    type,
+    type: envType,
     canDrag: !isEditing,
   });
 
@@ -54,7 +55,7 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
       title: environment.name,
       component: "DefaultView",
       params: {
-        tabIcon: type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment",
+        tabIcon: envType === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment",
       },
     });
   };
@@ -63,7 +64,7 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
     <Tree.Node ref={environmentItemRef} className={cn("cursor-pointer", isDragging && "opacity-50")} onClick={onClick}>
       {isEditing ? (
         <EnvironmentItemRenamingForm
-          type={type}
+          type={envType}
           environment={environment}
           restrictedNames={restrictedNames}
           handleRename={handleRename}
@@ -71,7 +72,7 @@ export const EnvironmentItem = ({ environment, type }: EnvironmentItemProps) => 
         />
       ) : (
         <EnvironmentItemControls
-          type={type}
+          type={envType}
           environment={environment}
           instruction={instruction}
           setIsEditing={setIsEditing}

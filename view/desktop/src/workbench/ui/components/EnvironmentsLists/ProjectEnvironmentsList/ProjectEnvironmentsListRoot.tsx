@@ -8,7 +8,7 @@ import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
-import { ProjectEnvironmentsListChildren } from "./ProjectEnvironmentsListChildren";
+import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
 
 interface ProjectEnvironmentsListRootProps {
@@ -19,7 +19,6 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
-  const projectEnvironmentsListHeaderRef = useRef<HTMLLIElement>(null);
 
   const { data: projects } = useStreamProjects();
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
@@ -30,7 +29,6 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
-    refListHeader: projectEnvironmentsListHeaderRef,
     projectId,
     projectEnvironments: projectEnvironments ?? [],
   });
@@ -39,11 +37,21 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
 
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader className="cursor-pointer" ref={projectEnvironmentsListHeaderRef}>
-        <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
+      <Tree.RootNodeHeader className="cursor-pointer">
+        <ProjectEnvironmentsListRootControls
+          project={project}
+          expanded={expanded}
+          count={projectEnvironments?.length ?? 0}
+        />
       </Tree.RootNodeHeader>
 
-      {expanded && <ProjectEnvironmentsListChildren environments={projectEnvironments ?? []} />}
+      {expanded && (
+        <Tree.RootNodeChildren hideDirDepthIndicator>
+          {projectEnvironments?.map((environment) => (
+            <EnvironmentItem key={environment.id} environment={environment} />
+          ))}
+        </Tree.RootNodeChildren>
+      )}
     </Tree.RootNode>
   );
 };

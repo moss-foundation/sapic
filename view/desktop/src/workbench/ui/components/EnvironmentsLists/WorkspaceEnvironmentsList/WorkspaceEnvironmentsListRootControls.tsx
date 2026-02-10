@@ -3,19 +3,14 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
-import { StreamProjectsEvent } from "@repo/ipc";
 
-interface ProjectEnvironmentsListRootControlsProps {
-  project: StreamProjectsEvent;
+import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
+
+interface WorkspaceEnvironmentsListRootControlsProps {
   expanded: boolean;
-  count: number;
 }
 
-export const ProjectEnvironmentsListRootControls = ({
-  project,
-  expanded,
-  count,
-}: ProjectEnvironmentsListRootControlsProps) => {
+export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnvironmentsListRootControlsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutate: updateEnvironmentListItemState } = usePutEnvironmentListItemState();
@@ -25,7 +20,7 @@ export const ProjectEnvironmentsListRootControls = ({
 
     updateEnvironmentListItemState({
       environmentListItemState: {
-        id: project.id,
+        id: WORKSPACE_ENVIRONMENTS_LIST_ID,
         expanded: true,
       },
       workspaceId: currentWorkspaceId,
@@ -36,7 +31,7 @@ export const ProjectEnvironmentsListRootControls = ({
     e.stopPropagation();
     updateEnvironmentListItemState({
       environmentListItemState: {
-        id: project.id,
+        id: WORKSPACE_ENVIRONMENTS_LIST_ID,
         expanded: !expanded,
       },
       workspaceId: currentWorkspaceId,
@@ -52,9 +47,8 @@ export const ProjectEnvironmentsListRootControls = ({
         >
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
-        <div className="flex items-center gap-1">
-          <Tree.RootNodeLabel label={project.name} />
-        </div>
+
+        <Tree.RootNodeLabel label="Workspace Environments" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>
   );

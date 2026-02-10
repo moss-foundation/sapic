@@ -1,3 +1,5 @@
+export const WORKSPACE_ENVIRONMENTS_LIST_ID = "workspaceEnvironmentsList" as const;
+
 export enum ENVIRONMENT_ITEM_DRAG_TYPE {
   PROJECT = "ProjectEnvironmentItem",
   WORKSPACE = "WorkspaceEnvironmentItem",

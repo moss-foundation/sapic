@@ -51,6 +51,11 @@ export const useMonitorEnvironmentsLists = () => {
           return;
         }
 
+        if (instruction.blocked) {
+          console.warn("Blocked operation for environments lists", { instruction });
+          return;
+        }
+
         const dropOperation = resolveDropOperation(sourceData, locationData);
         switch (dropOperation) {
           case EnvironmentsDropOperations.ReorderWorkspaceEnvs:
