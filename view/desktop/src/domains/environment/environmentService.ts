@@ -39,8 +39,8 @@ export const environmentService: IEnvironmentService = {
   activateEnvironment: async (input) => {
     const output = await environmentIpc.activateEnvironment(input);
 
-    const isWorkspaceEnvironment = input.projectId === null || input.projectId === undefined;
-    const isProjectEnvironment = input.projectId !== null && input.projectId !== undefined;
+    const isWorkspaceEnvironment = !input.projectId;
+    const isProjectEnvironment = !!input.projectId;
 
     if (isWorkspaceEnvironment) {
       environmentSummariesCollection.forEach((environment) => {
@@ -51,14 +51,10 @@ export const environmentService: IEnvironmentService = {
         });
       });
     }
+
     if (isProjectEnvironment) {
       environmentSummariesCollection.forEach((environment) => {
-        if (
-          environment.projectId === undefined ||
-          environment.projectId === null ||
-          environment.projectId !== input.projectId
-        )
-          return;
+        if (!environment.projectId || environment.projectId !== input.projectId) return;
 
         environmentSummariesCollection.update(environment.id, (draft) => {
           draft.isActive = environment.id === input.environmentId;
