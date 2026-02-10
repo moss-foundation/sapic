@@ -81,7 +81,6 @@ export const EnvironmentItemControls = ({
         dropIndicatorFullWidth
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
-          <Tree.NodeOrder order={environment.order} />
           <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />
