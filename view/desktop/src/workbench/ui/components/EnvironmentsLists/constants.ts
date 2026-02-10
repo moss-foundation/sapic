@@ -1,8 +1,24 @@
+export const WORKSPACE_ENVIRONMENTS_LIST_ID = "workspaceEnvironmentsList" as const;
+
 export enum ENVIRONMENT_ITEM_DRAG_TYPE {
-  GLOBAL = "GlobalEnvironmentItem",
-  GROUPED = "GroupedEnvironmentItem",
+  PROJECT = "ProjectEnvironmentItem",
+  WORKSPACE = "WorkspaceEnvironmentItem",
 }
 
 export enum ENVIRONMENT_LIST_DRAG_TYPE {
-  GROUPED = "GroupedEnvironmentsList",
+  PROJECT = "ProjectEnvironmentList",
+  WORKSPACE = "WorkspaceEnvironmentList",
+}
+
+export enum EnvironmentsDropOperations {
+  ReorderWorkspaceEnvs = "ReorderWorkspaceEnvs",
+  ReorderProjectEnvs = "ReorderProjectEnvs",
+
+  MoveWorkspaceEnvToProjectEnvs = "MoveWorkspaceEnvToProjectEnvs",
+  MoveProjectEnvToWorkspaceEnvs = "MoveProjectEnvToWorkspaceEnvs",
+  MoveProjectEnvToProjectEnv = "MoveProjectEnvToProjectEnv",
+
+  CombineWorkspaceEnvToProjectList = "CombineWorkspaceEnvToProjectList",
+  CombineProjectEnvToProjectList = "CombineProjectEnvToProjectList",
+  CombineProjectEnvToWorkspaceList = "CombineProjectEnvToWorkspaceList",
 }

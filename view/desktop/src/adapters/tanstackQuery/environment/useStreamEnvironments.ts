@@ -7,6 +7,5 @@ export const useStreamEnvironments = () => {
   return useQuery({
     queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY],
     queryFn: environmentService.streamEnvironments,
-    placeholderData: [],
   });
 };

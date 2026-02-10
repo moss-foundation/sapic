@@ -9,10 +9,12 @@ export const useDeleteEnvironment = () => {
 
   return useMutation<DeleteEnvironmentOutput, Error, DeleteEnvironmentInput>({
     mutationFn: (input) => environmentService.deleteEnvironment(input),
-    onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
-        return old.filter((environment) => environment.id !== data.id);
-      });
+    onSuccess: (data, variables) => {
+      if (!variables.projectId) {
+        queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
+          return old.filter((environment) => environment.id !== data.id);
+        });
+      }
     },
   });
 };

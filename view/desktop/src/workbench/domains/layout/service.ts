@@ -15,7 +15,7 @@ interface ILayoutService {
 export const layoutService: ILayoutService = {
   getLayout: async (workspaceId: string) => {
     const { value: output } = await sharedStorageIpc.getItem(SHARED_STORAGE_LAYOUT_KEY, {
-      workspace: workspaceId ?? "application",
+      workspace: workspaceId,
     });
 
     if (output !== "none") {
@@ -26,12 +26,12 @@ export const layoutService: ILayoutService = {
   },
   updateLayout: async (input, workspaceId) => {
     await sharedStorageIpc.putItem(SHARED_STORAGE_LAYOUT_KEY, input as unknown as JsonValue, {
-      workspace: workspaceId ?? "application",
+      workspace: workspaceId,
     });
   },
   removeLayout: async (workspaceId: string) => {
     await sharedStorageIpc.removeItem(SHARED_STORAGE_LAYOUT_KEY, {
-      workspace: workspaceId ?? "application",
+      workspace: workspaceId,
     });
   },
 };

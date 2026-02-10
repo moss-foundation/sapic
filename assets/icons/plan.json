@@ -104,9 +104,6 @@
   "Env": {
     "identical": true
   },
-  "Environment": {
-    "identical": false
-  },
   "EnvironmentSelection": {
     "identical": true
   },
@@ -136,9 +133,6 @@
   },
   "GreenCheckmark": {
     "identical": true
-  },
-  "GroupedEnvironment": {
-    "identical": false
   },
   "Headers": {
     "identical": false
@@ -225,6 +219,9 @@
     "identical": true
   },
   "Project": {
+    "identical": false
+  },
+  "ProjectEnvironment": {
     "identical": false
   },
   "Put": {
@@ -315,6 +312,9 @@
     "identical": true
   },
   "Workspace": {
+    "identical": false
+  },
+  "WorkspaceEnvironment": {
     "identical": false
   }
 }

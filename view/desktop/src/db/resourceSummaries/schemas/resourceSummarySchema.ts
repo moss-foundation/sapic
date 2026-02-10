@@ -10,6 +10,7 @@ export const resourceSummarySchema = z.object({
   class: streamResourcesEventSchema.shape.class,
   kind: streamResourcesEventSchema.shape.kind,
   protocol: streamResourcesEventSchema.shape.protocol,
+
   order: streamResourcesEventSchema.shape.order,
   expanded: streamResourcesEventSchema.shape.expanded,
 });
