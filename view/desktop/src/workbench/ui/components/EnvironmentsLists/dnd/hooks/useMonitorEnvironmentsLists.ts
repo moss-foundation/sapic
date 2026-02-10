@@ -19,8 +19,8 @@ import { handleMoveProjectEnvToWorkspaceEnvs } from "../handlers/handleMoveProje
 import { handleMoveWorkspaceEnvToProjectEnvs } from "../handlers/handleMoveWorkspaceEnvToProjectEnvs";
 import { handleReorderProjectEnvs } from "../handlers/handleReorderProjectEnvs";
 import { handleReorderWorkspaceEnvs } from "../handlers/handleReorderWorkspaceEnvs";
-import { calculateDropType } from "../validation/calculateDropType";
 import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
+import { resolveDropOperation } from "../validation/resolveDropOperation";
 
 export const useMonitorEnvironmentsLists = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -51,8 +51,8 @@ export const useMonitorEnvironmentsLists = () => {
           return;
         }
 
-        const dropType = calculateDropType(sourceData, locationData);
-        switch (dropType) {
+        const dropOperation = resolveDropOperation(sourceData, locationData);
+        switch (dropOperation) {
           case EnvironmentsDropOperations.ReorderWorkspaceEnvs:
             handleReorderWorkspaceEnvs({
               sourceData,

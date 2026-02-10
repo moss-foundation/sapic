@@ -13,7 +13,7 @@ const Operations = EnvironmentsDropOperations;
 const ItemType = ENVIRONMENT_ITEM_DRAG_TYPE;
 const ListType = ENVIRONMENT_LIST_DRAG_TYPE;
 
-export const calculateDropType = (
+export const resolveDropOperation = (
   source: DragEnvironmentItem,
   target: DropEnvironmentItem | DropProjectEnvironmentList | DropWorkspaceEnvironmentList
 ): EnvironmentsDropOperations | null => {
