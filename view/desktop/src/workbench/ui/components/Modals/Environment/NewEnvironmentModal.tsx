@@ -20,7 +20,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
 
   const { data: projects } = useListProjects();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
-
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
 

@@ -1,3 +1,4 @@
+import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
 import { useModal } from "@/hooks";
 import { ActionButton } from "@/workbench/ui/components";
 import { NewEnvironmentModal } from "@/workbench/ui/components/Modals/Environment/NewEnvironmentModal";
@@ -10,11 +11,11 @@ export const EnvironmentsListViewHeader = () => {
     openModal: openCreateEnvironmentModal,
   } = useModal();
 
-  //const { refetch: refetchWorkspaceEnvironments } = useStreamEnvironments();
+  const { refetch: refetchWorkspaceEnvironments } = useListWorkspaceEnvironments();
   // const { fetchAllProjectEnvironments } = useGroupedEnvironments();
 
   const handleRefresh = () => {
-    // refetchWorkspaceEnvironments();
+    refetchWorkspaceEnvironments();
     // fetchAllProjectEnvironments();
   };
 
