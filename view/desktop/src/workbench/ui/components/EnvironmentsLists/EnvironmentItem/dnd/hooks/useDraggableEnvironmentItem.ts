@@ -10,8 +10,8 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
 import { getSourceEnvironmentItemData } from "../getters";
 import { DragEnvironmentItem } from "../types.dnd";
-import { isSourceEnvironmentItem } from "../validation";
 import { canReorder } from "../validation/canReorder";
+import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 interface UseDraggableEnvironmentItemProps {
   ref: RefObject<HTMLLIElement | null>;

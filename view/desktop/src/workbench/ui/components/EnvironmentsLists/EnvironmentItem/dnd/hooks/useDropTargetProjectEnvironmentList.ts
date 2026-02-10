@@ -2,22 +2,15 @@ import { RefObject, useEffect, useState } from "react";
 
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE, ENVIRONMENT_LIST_DRAG_TYPE } from "../../constants";
-import {
-  getLocationEnvironmentItemData,
-  getLocationProjectEnvironmentListData,
-  getSourceEnvironmentItemData,
-} from "../../EnvironmentItem/dnd/getters";
-import { DropProjectEnvironmentList } from "../../EnvironmentItem/dnd/types.dnd";
-import {
-  isLocationEnvironmentItem,
-  isLocationProjectEnvironmentList,
-  isSourceEnvironmentItem,
-} from "../../EnvironmentItem/dnd/validation";
-import { canCombineToEnvironmentList } from "../../EnvironmentItem/dnd/validation/canCombineToEnvironmentList";
+import { ENVIRONMENT_LIST_DRAG_TYPE } from "../../../constants";
+import { getSourceEnvironmentItemData } from "../../../EnvironmentItem/dnd/getters";
+import { DropProjectEnvironmentList } from "../../../EnvironmentItem/dnd/types.dnd";
+import { canCombineToEnvironmentList } from "../../../EnvironmentItem/dnd/validation/canCombineToEnvironmentList";
+import { isLocationEnvironmentItem } from "../../../EnvironmentItem/dnd/validation/isLocationEnvironmentItem";
+import { isLocationProjectEnvironmentList } from "../../../EnvironmentItem/dnd/validation/isLocationProjectEnvironmentList";
+import { isSourceEnvironmentItem } from "../../../EnvironmentItem/dnd/validation/isSourceEnvironmentItem";
 
 interface UseDropTargetProjectEnvironmentListProps {
   refList: RefObject<HTMLUListElement | null>;

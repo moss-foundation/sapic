@@ -19,8 +19,8 @@ import { handleMoveProjectEnvToWorkspaceEnvs } from "../handlers/handleMoveProje
 import { handleMoveWorkspaceEnvToProjectEnvs } from "../handlers/handleMoveWorkspaceEnvToProjectEnvs";
 import { handleReorderProjectEnvs } from "../handlers/handleReorderProjectEnvs";
 import { handleReorderWorkspaceEnvs } from "../handlers/handleReorderWorkspaceEnvs";
-import { isSourceEnvironmentItem } from "../validation";
 import { calculateDropType } from "../validation/calculateDropType";
+import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 export const useMonitorEnvironmentsLists = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();

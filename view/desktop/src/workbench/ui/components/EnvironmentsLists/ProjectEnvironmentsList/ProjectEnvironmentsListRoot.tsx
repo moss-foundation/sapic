@@ -7,7 +7,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
-import { useDropTargetProjectEnvironmentList } from "./hooks/useDropTargetProjectEnvironmentList";
+import { useDropTargetProjectEnvironmentList } from "../EnvironmentItem/dnd/hooks/useDropTargetProjectEnvironmentList";
 import { ProjectEnvironmentsListChildren } from "./ProjectEnvironmentsListChildren";
 import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
 
