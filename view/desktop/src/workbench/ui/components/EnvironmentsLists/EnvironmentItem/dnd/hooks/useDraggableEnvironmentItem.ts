@@ -56,7 +56,6 @@ export const useDraggableEnvironmentItem = ({
         canDrop: ({ source }) => {
           return isSourceEnvironmentItem(source);
         },
-        getIsSticky: () => true,
         getData: ({ input, element, source }) => {
           const locationData: DragEnvironmentItem = {
             type,

@@ -1,7 +1,7 @@
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 
-import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../../../constants";
-import { DragEnvironmentItem, DropEnvironmentItem, EnvironmentsDropOperations } from "../types.dnd";
+import { ENVIRONMENT_ITEM_DRAG_TYPE, EnvironmentsDropOperations } from "../../../constants";
+import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 export const calculateDropType = (
   sourceData: DragEnvironmentItem,

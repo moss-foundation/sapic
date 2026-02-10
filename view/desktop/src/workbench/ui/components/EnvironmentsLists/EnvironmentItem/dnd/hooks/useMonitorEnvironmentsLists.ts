@@ -9,13 +9,13 @@ import { useRemoveEnvironmentItemState } from "@/workbench/adapters/tanstackQuer
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { EnvironmentsDropOperations } from "../../../constants";
 import { getLocationEnvironmentItemData, getSourceEnvironmentItemData } from "../getters";
 import { handleMoveProjectEnvToProjectEnv } from "../handlers/handleMoveProjectEnvToProjectEnv";
 import { handleMoveProjectEnvToWorkspaceEnvs } from "../handlers/handleMoveProjectEnvToWorkspaceEnvs";
 import { handleMoveWorkspaceEnvToProjectEnvs } from "../handlers/handleMoveWorkspaceEnvToProjectEnvs";
 import { handleReorderProjectEnvs } from "../handlers/handleReorderProjectEnvs";
 import { handleReorderWorkspaceEnvs } from "../handlers/handleReorderWorkspaceEnvs";
-import { EnvironmentsDropOperations } from "../types.dnd";
 import { isSourceEnvironmentItem } from "../validation";
 import { calculateDropType } from "../validation/calculateDropType";
 

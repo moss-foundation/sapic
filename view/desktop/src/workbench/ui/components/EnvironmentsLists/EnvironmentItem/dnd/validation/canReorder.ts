@@ -44,7 +44,11 @@ export const canReorder = (
     const hasConflict = hasSameNameOrId(workspaceEnvironments, sourceData.data.name, sourceData.data.id);
     return hasConflict ? "not-available" : "available";
   }
+
   //Workspace -> Project List
+
+  //Project -> Workspace List
+
   return "not-available";
 };
 

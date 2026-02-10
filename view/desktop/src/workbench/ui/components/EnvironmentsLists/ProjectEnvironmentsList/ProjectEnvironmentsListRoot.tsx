@@ -7,6 +7,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
+import { useDropTargetProjectEnvironmentList } from "./hooks/useDropTargetProjectEnvironmentList";
 import { ProjectEnvironmentsListChildren } from "./ProjectEnvironmentsListChildren";
 import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
 
@@ -18,6 +19,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
+  const projectEnvironmentsListHeaderRef = useRef<HTMLLIElement>(null);
 
   const { data: projects } = useStreamProjects();
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
@@ -26,17 +28,18 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const project = projects?.find((project) => project.id === projectId);
   const expanded = projectEnvironmentListItemState?.expanded ?? false;
 
+  const { instruction } = useDropTargetProjectEnvironmentList({
+    refList: projectEnvironmentsListRef,
+    refListHeader: projectEnvironmentsListHeaderRef,
+    projectId,
+    projectEnvironments: projectEnvironments ?? [],
+  });
+
   if (!project || projectEnvironments?.length === 0) return null;
 
   return (
-    <Tree.RootNode
-      ref={projectEnvironmentsListRef}
-      //   instruction={instruction}
-      //   combineInstruction={instruction}
-      className={cn("cursor-pointer")}
-      //   isDragging={isDragging}
-    >
-      <Tree.RootNodeHeader isActive={false} className="cursor-pointer">
+    <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
+      <Tree.RootNodeHeader className="cursor-pointer" ref={projectEnvironmentsListHeaderRef}>
         <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
       </Tree.RootNodeHeader>
 
