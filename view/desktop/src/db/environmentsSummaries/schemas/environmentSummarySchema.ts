@@ -10,8 +10,4 @@ export const environmentSummarySchema = z.object({
 
   order: z.number(),
   expanded: z.boolean().optional(),
-
-  metadata: z.object({
-    isDirty: z.boolean().default(false),
-  }),
 });

@@ -87,10 +87,6 @@ export const environmentService: IEnvironmentService = {
 
       isActive: false,
       totalVariables: 0,
-
-      metadata: {
-        isDirty: false,
-      },
     });
 
     return output;

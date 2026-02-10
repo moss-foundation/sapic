@@ -53,10 +53,6 @@ export const useSyncEnvironments = () => {
             totalVariables: env.totalVariables,
 
             order: envState?.order ?? -1,
-
-            metadata: {
-              isDirty: false,
-            },
           });
         }
       });
