@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { useStreamProjects } from "@/adapters";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchGetTreeItemState";
@@ -10,9 +10,9 @@ export const useSyncProjectSummaries = () => {
   const hasSyncedRef = useRef(false);
   const lastWorkspaceIdRef = useRef<string | undefined>(currentWorkspaceId);
 
-  const { data: projects, isLoading } = useStreamProjects();
+  const { data: projects, isLoading } = useListProjects();
   const { data: treeItemStates } = useBatchGetTreeItemState(
-    projects?.map((project) => project.id) ?? [],
+    projects?.items.map((project) => project.id) ?? [],
     currentWorkspaceId
   );
 
@@ -26,12 +26,12 @@ export const useSyncProjectSummaries = () => {
 
   useEffect(() => {
     // Only sync on initial load when data is available
-    if (hasSyncedRef.current || !projects || projects.length === 0 || !treeItemStates) {
+    if (hasSyncedRef.current || !projects || projects.items.length === 0 || !treeItemStates) {
       return;
     }
 
     const updateLocalProjects = async () => {
-      for (const project of projects) {
+      for (const project of projects.items) {
         const treeItemState = treeItemStates.find((treeItemState) => treeItemState.id === project.id);
 
         if (projectSummariesCollection.has(project.id)) {

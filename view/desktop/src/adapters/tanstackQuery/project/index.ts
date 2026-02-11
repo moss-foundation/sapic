@@ -11,6 +11,6 @@ export * from "./useDeleteProject";
 
 export * from "./useImportProject";
 
-export * from "./useStreamProjects";
+export * from "./useListProjects";
 
 export * from "./useUpdateProject";

@@ -9,11 +9,11 @@ import {
   DeleteProjectOutput,
   ImportProjectInput,
   ImportProjectOutput,
-  StreamProjectsEvent,
+  ListProjectsOutput,
   UpdateProjectInput,
   UpdateProjectOutput,
 } from "@repo/ipc";
-import { Channel } from "@tauri-apps/api/core";
+
 import {
   batchUpdateProjectSummaryCollectionFromInput,
   updateProjectSummaryCollectionFromInput,
@@ -28,7 +28,7 @@ interface IProjectService {
 
   importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
-  streamProjects: (channelEvent: Channel<StreamProjectsEvent>) => Promise<StreamProjectsEvent[]>;
+  listProjects: () => Promise<ListProjectsOutput>;
 
   updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
 }
@@ -67,8 +67,10 @@ export const projectService: IProjectService = {
   importProject: async (input) => {
     return await projectIpc.importProject(input);
   },
-  streamProjects: async (channelEvent) => {
-    return await projectIpc.streamProjects(channelEvent);
+  listProjects: async () => {
+    const output = await projectIpc.listProjects();
+    console.log("listProjects", output);
+    return output;
   },
   updateProject: async (input) => {
     const output = await projectIpc.updateProject(input);

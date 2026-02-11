@@ -51,7 +51,8 @@ export type TauriIpcCommand =
   | "describe_project"
   | "create_project"
   | "delete_project"
-  | "stream_projects"
+  | "stream_projects" // DEPRECATED
+  | "list_projects"
   | "update_project"
   | "archive_project"
   | "unarchive_project"
@@ -59,13 +60,15 @@ export type TauriIpcCommand =
   | "list_changes"
   | "import_project"
   | "export_project"
-  | "stream_environments"
+  | "stream_environments" // DEPRECATED
+  | "list_project_environments"
+  | "list_workspace_environments"
   | "create_environment"
   | "update_environment"
   | "batch_update_environment"
   | "delete_environment"
-  | "update_environment_group"
-  | "batch_update_environment_group"
+  | "update_environment_group" // DEPRECATED
+  | "batch_update_environment_group" // DEPRECATED
   | "activate_environment"
   | "describe_environment"
   //
@@ -74,7 +77,7 @@ export type TauriIpcCommand =
   | "create_project_resource"
   | "delete_project_resource"
   | "update_project_resource"
-  | "stream_project_resources"
+  | "stream_project_resources" // DEPRECATED
   | "describe_project_resource"
   | "batch_update_project_resource"
   | "batch_create_project_resource"

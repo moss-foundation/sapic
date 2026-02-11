@@ -1,17 +1,20 @@
 import { useEffect } from "react";
 
-import { useStreamEnvironments, useStreamProjects } from "@/adapters";
+import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { environmentService } from "@/domains/environment/environmentService";
 import { useCurrentWorkspace } from "@/hooks";
 import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { ListEnvironmentItem } from "@repo/ipc";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
+import { EnvironmentSummary } from "../types";
 
 export const useSyncEnvironments = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects, isLoading: isProjectsLoading } = useStreamProjects();
-  const { data: workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useStreamEnvironments();
+  const { data: projects, isLoading: isProjectsLoading } = useListProjects();
+  const { data: workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
 
   useEffect(() => {
     if (isProjectsLoading || isWorkspaceEnvironmentsLoading) return;
@@ -23,21 +26,38 @@ export const useSyncEnvironments = () => {
         environmentSummariesCollection.delete(env.id);
       });
 
-      const allEnvironments = [...workspaceEnvironments];
-
+      const projectEnvironments: ListEnvironmentItem[] = [];
       //get project environments
-      for await (const project of projects) {
-        const projectEnvironments = await environmentService.streamProjectEnvironments({
+      for await (const project of projects.items) {
+        const listProjectEnvironmentsOutput = await environmentService.listProjectEnvironments({
           projectId: project.id,
         });
-        allEnvironments.push(...projectEnvironments);
+        projectEnvironments.push(
+          ...listProjectEnvironmentsOutput.items.map((env) => ({
+            ...env,
+            projectId: project.id,
+          }))
+        );
       }
 
       //get all environments states
       const envStates = await environmentItemStateService.batchGet(
-        allEnvironments.map((env) => env.id),
+        [...workspaceEnvironments.items, ...projectEnvironments].map((env) => env.id),
         currentWorkspaceId
       );
+
+      //TODO make it more readable
+      const allEnvironments: EnvironmentSummary[] = [
+        ...workspaceEnvironments.items.map((env) => ({
+          ...env,
+          projectId: undefined,
+          order: -1,
+        })),
+        ...projectEnvironments.map((env) => ({
+          ...env,
+          order: -1,
+        })),
+      ];
 
       //all environments
       allEnvironments.forEach((env) => {
@@ -46,7 +66,7 @@ export const useSyncEnvironments = () => {
         if (!environmentSummariesCollection.has(env.id)) {
           environmentSummariesCollection.insert({
             id: env.id,
-            projectId: env.projectId,
+            projectId: env.projectId ?? undefined,
             isActive: env.isActive,
             name: env.name,
             color: env.color,

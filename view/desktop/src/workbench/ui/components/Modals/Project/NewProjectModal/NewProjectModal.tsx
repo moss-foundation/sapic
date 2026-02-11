@@ -2,7 +2,7 @@ import { FormEvent, useCallback, useState } from "react";
 
 import { useCreateProject } from "@/adapters/tanstackQuery/project/useCreateProject";
 import { useImportProject } from "@/adapters/tanstackQuery/project/useImportProject";
-import { useStreamProjects } from "@/adapters/tanstackQuery/project/useStreamProjects";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
@@ -25,7 +25,7 @@ interface NewProjectModalProps extends ModalWrapperProps {
 export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewProjectModalProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useStreamProjects();
+  const { data: projects } = useListProjects();
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: importProject } = useImportProject();
 
@@ -46,7 +46,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const newOrder = projects?.length ? projects.length + 1 : 1;
+    const newOrder = projects?.items.length ? projects.items.length + 1 : 1;
 
     if (tab === CREATE_TAB) {
       const result = await createProject({

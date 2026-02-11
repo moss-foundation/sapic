@@ -1,8 +1,8 @@
 import { projectService } from "@/domains/project/projectService";
-import { CreateProjectInput, CreateProjectOutput, StreamProjectsEvent } from "@repo/ipc";
+import { CreateProjectInput, CreateProjectOutput, ListProjectItem, ListProjectsOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAM_PROJECTS_QUERY_KEY } from "./useStreamProjects";
+import { USE_LIST_PROJECTS_QUERY_KEY } from "./useListProjects";
 
 export const useCreateProject = () => {
   const queryClient = useQueryClient();
@@ -10,7 +10,7 @@ export const useCreateProject = () => {
   return useMutation<CreateProjectOutput, Error, CreateProjectInput>({
     mutationFn: (input) => projectService.createProject(input),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([USE_STREAM_PROJECTS_QUERY_KEY], (old: StreamProjectsEvent[]) => {
+      queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput[]) => {
         return [
           ...old,
           {
@@ -22,7 +22,7 @@ export const useCreateProject = () => {
   });
 };
 
-const inputToEvent = (input: CreateProjectInput, data: CreateProjectOutput): StreamProjectsEvent => {
+const inputToEvent = (input: CreateProjectInput, data: CreateProjectOutput): ListProjectItem => {
   const { iconPath } = input;
 
   return {

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { useStreamProjects } from "@/adapters";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
@@ -20,11 +20,11 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
 
   const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
 
-  const { data: projects } = useStreamProjects();
+  const { data: projects } = useListProjects();
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
   const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
-  const project = projects?.find((project) => project.id === projectId);
+  const project = projects?.items.find((project) => project.id === projectId);
   const expanded = projectEnvironmentListItemState?.expanded ?? false;
 
   const { instruction } = useDropTargetProjectEnvironmentList({

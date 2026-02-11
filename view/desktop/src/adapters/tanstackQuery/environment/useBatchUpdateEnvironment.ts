@@ -1,8 +1,9 @@
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { environmentService } from "@/domains/environment/environmentService";
-import { BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput, StreamEnvironmentsEvent } from "@repo/ipc";
+import { BatchUpdateEnvironmentInput, BatchUpdateEnvironmentOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "./useStreamEnvironments";
+import { USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY } from "./useListWorkspaceEnvironments";
 
 const BATCH_UPDATE_ENVIRONMENT_QUERY_KEY = "batchUpdateEnvironment";
 
@@ -13,7 +14,7 @@ export const useBatchUpdateEnvironment = () => {
     mutationKey: [BATCH_UPDATE_ENVIRONMENT_QUERY_KEY],
     mutationFn: (input) => environmentService.batchUpdateEnvironment(input),
     onSuccess: (_, variables) => {
-      queryClient.setQueryData([USE_STREAMED_ENVIRONMENTS_QUERY_KEY], (old: StreamEnvironmentsEvent[]) => {
+      queryClient.setQueryData([USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY], (old: EnvironmentSummary[]) => {
         return old.map((oldEnv) => {
           const updatedEnv = variables.items.find((updatedEnv) => updatedEnv.id === oldEnv.id);
           if (updatedEnv) {

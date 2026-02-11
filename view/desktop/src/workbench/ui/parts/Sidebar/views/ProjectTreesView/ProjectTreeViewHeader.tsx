@@ -1,13 +1,11 @@
 import { useState } from "react";
 
-import {
-  useClearAllProjectResources,
-  useStreamedProjectsWithResources,
-  useStreamProjects,
-} from "@/adapters/tanstackQuery/project";
+import { useClearAllProjectResources, useStreamedProjectsWithResources } from "@/adapters/tanstackQuery/project";
 import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
+import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useModal } from "@/hooks";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constansts";
@@ -20,9 +18,10 @@ import { SidebarHeader } from "../../SidebarHeader";
 export const ProjectTreeViewHeader = () => {
   const queryClient = useQueryClient();
 
-  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
+  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useListProjects();
   const { data: projectsWithResources } = useStreamedProjectsWithResources();
 
+  const resourceSummaries = useGetAllLocalResourceSummaries();
   const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
   const { clearAllProjectResourcesCache } = useClearAllProjectResources();
@@ -42,9 +41,9 @@ export const ProjectTreeViewHeader = () => {
 
   //TODO project and resource summaries that is linked to manipulating all states is broken for now
   //until all the resources and projects summaries start using state from shared storage
-  const areAllProjectsCollapsed = projectsWithResources.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = projectsWithResources.every((p) => {
-    return p.resources.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
+  const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = resourceSummaries?.every((p) => {
+    return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
   });
 
   const handleCollapseAll = async () => {
@@ -53,7 +52,7 @@ export const ProjectTreeViewHeader = () => {
   };
 
   const collapseExpandedProjects = async () => {
-    const openedProjects = projectsWithResources.filter((p) => p.expanded);
+    const openedProjects = resourceSummaries?.filter((p) => p.expanded);
 
     if (openedProjects.length === 0) return;
 
@@ -69,7 +68,7 @@ export const ProjectTreeViewHeader = () => {
     const projectsWithExpandedDirs = projectsWithResources
       .map((p) => ({
         projectId: p.id,
-        resources: p.resources.filter((resource) => resource.kind === "Dir" && resource.expanded),
+        resources: resourceSummaries?.filter((resource) => resource.kind === "Dir" && resource.expanded),
       }))
       .filter((p) => p.resources.length > 0);
 

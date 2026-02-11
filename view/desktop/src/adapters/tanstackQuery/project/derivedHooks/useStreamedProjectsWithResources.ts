@@ -1,24 +1,28 @@
 import { useMemo } from "react";
 
-import { StreamProjectsEvent } from "@repo/ipc";
-import { StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectItem } from "@repo/ipc";
 import { useQueries } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
 import { startStreamingProjectResources } from "../queries/startStreamingProjectResources";
-import { useStreamProjects } from "../useStreamProjects";
+import { useListProjects } from "../useListProjects";
 
-export interface ProjectWithResources extends StreamProjectsEvent {
-  resources: StreamResourcesEvent[];
+export interface ProjectWithResources extends ListProjectItem {
+  resources: ListProjectItem[];
   areResourcesLoading: boolean;
   resourcesError?: Error | null;
 }
 
 export const useStreamedProjectsWithResources = () => {
-  const { data: projects = [], isLoading: areProjectsLoading, error: projectsError, ...query } = useStreamProjects();
+  const {
+    data: projects = { items: [] },
+    isLoading: areProjectsLoading,
+    error: projectsError,
+    ...query
+  } = useListProjects();
 
   const resourcesQueries = useQueries({
-    queries: projects.map((project) => ({
+    queries: projects?.items.map((project) => ({
       queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, project.id],
       queryFn: () => startStreamingProjectResources(project.id),
       placeholderData: [],
@@ -34,7 +38,7 @@ export const useStreamedProjectsWithResources = () => {
   });
 
   const projectsWithResources = useMemo((): ProjectWithResources[] => {
-    return projects.map((project, index) => {
+    return projects?.items.map((project, index) => {
       const resourcesResult = resourcesQueries.results[index];
       return {
         ...project,
@@ -43,7 +47,7 @@ export const useStreamedProjectsWithResources = () => {
         resourcesError: resourcesResult?.error || null,
       };
     });
-  }, [projects, resourcesQueries.results]);
+  }, [projects?.items, resourcesQueries.results]);
 
   return {
     data: projectsWithResources,

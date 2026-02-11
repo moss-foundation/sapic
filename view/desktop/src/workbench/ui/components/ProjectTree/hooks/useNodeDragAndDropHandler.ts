@@ -496,7 +496,6 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      console.log(allResources);
       for (const resource of allResources) {
         if (resourceSummariesCollection.has(resource.id)) {
           resourceSummariesCollection.delete(resource.id);

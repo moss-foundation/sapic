@@ -1,10 +1,10 @@
 import { projectService } from "@/domains/project/projectService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { DeleteProjectInput, DeleteProjectOutput, StreamProjectsEvent } from "@repo/ipc";
+import { DeleteProjectInput, DeleteProjectOutput, ListProjectsOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useStreamedProjectsWithResources } from "./derivedHooks/useStreamedProjectsWithResources";
-import { USE_STREAM_PROJECTS_QUERY_KEY } from "./useStreamProjects";
+import { USE_LIST_PROJECTS_QUERY_KEY } from "./useListProjects";
 
 export interface UseDeleteProjectInput {
   id: string;
@@ -19,8 +19,10 @@ export const useDeleteProject = () => {
   return useMutation<DeleteProjectOutput, Error, DeleteProjectInput>({
     mutationFn: (input) => projectService.deleteProject(input),
     onSuccess: (data) => {
-      queryClient.setQueryData([USE_STREAM_PROJECTS_QUERY_KEY], (old: StreamProjectsEvent[]) => {
-        return old.filter((project) => project.id !== data.id);
+      queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
+        return {
+          items: old?.items.filter((project) => project.id !== data.id) ?? [],
+        };
       });
 
       projectsWithResources?.forEach((project) => {

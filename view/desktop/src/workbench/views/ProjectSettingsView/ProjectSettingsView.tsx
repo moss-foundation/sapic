@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useStreamProjects } from "@/adapters/tanstackQuery/project";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { useRenameProjectForm } from "@/workbench/hooks/useRenameProjectForm";
@@ -22,8 +22,8 @@ export type ProjectSettingsViewProps = DefaultViewProps<{
 export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
   const { projectId } = props.params;
 
-  const { data: streamedProjects } = useStreamProjects();
-  const project = streamedProjects?.find((p) => p.id === projectId);
+  const { data: streamedProjects } = useListProjects();
+  const project = streamedProjects?.items.find((p) => p.id === projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 

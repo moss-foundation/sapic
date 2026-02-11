@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useCreateProject, useCreateProjectResource, useDeleteProjectResource, useStreamProjects } from "@/adapters";
+import { useCreateProjectResource, useDeleteProjectResource } from "@/adapters";
+import { useCreateProject } from "@/adapters/tanstackQuery/project/useCreateProject";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { cn } from "@/utils";
 import { IconInline } from "@/workbench/ui/components/IconInline";
 import {
@@ -20,7 +22,7 @@ export const ProjectCreationZone = () => {
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
-  const { data: projects } = useStreamProjects();
+  const { data: projects } = useListProjects();
 
   useEffect(() => {
     const element = ref.current;
@@ -57,7 +59,7 @@ export const ProjectCreationZone = () => {
 
         const newProject = await createProject({
           name: rootResource.name,
-          order: (projects?.length ?? 0) + 1,
+          order: (projects?.items.length ?? 0) + 1,
         });
 
         try {
@@ -99,7 +101,7 @@ export const ProjectCreationZone = () => {
         }
       },
     });
-  }, [projects?.length, createProject, createProjectResource, deleteProjectResource]);
+  }, [projects?.items.length, createProject, createProjectResource, deleteProjectResource]);
 
   return (
     <div

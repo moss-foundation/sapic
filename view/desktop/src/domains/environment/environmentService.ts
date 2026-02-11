@@ -3,36 +3,31 @@ import { environmentIpc } from "@/infra/ipc/environmentIpc";
 import {
   ActivateEnvironmentInput,
   ActivateEnvironmentOutput,
-  BatchUpdateEnvironmentGroupInput,
   BatchUpdateEnvironmentInput,
   BatchUpdateEnvironmentOutput,
   CreateEnvironmentInput,
   CreateEnvironmentOutput,
   DeleteEnvironmentInput,
   DeleteEnvironmentOutput,
-  StreamEnvironmentsEvent,
-  StreamProjectEnvironmentsInput,
-  UpdateEnvironmentGroupInput,
+  ListProjectEnvironmentsInput,
+  ListProjectEnvironmentsOutput,
+  ListWorkspaceEnvironmentsOutput,
   UpdateEnvironmentInput,
   UpdateEnvironmentOutput,
 } from "@repo/ipc";
-import { Channel } from "@tauri-apps/api/core";
 
 interface IEnvironmentService {
   activateEnvironment: (input: ActivateEnvironmentInput) => Promise<ActivateEnvironmentOutput>;
 
-  batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
-  batchUpdateEnvironmentGroup: (input: BatchUpdateEnvironmentGroupInput) => Promise<BatchUpdateEnvironmentOutput>;
-
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
 
-  deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-
-  streamEnvironments: () => Promise<StreamEnvironmentsEvent[]>;
-  streamProjectEnvironments: (input: StreamProjectEnvironmentsInput) => Promise<StreamEnvironmentsEvent[]>;
+  listWorkspaceEnvironments: () => Promise<ListWorkspaceEnvironmentsOutput>;
+  listProjectEnvironments: (input: ListProjectEnvironmentsInput) => Promise<ListProjectEnvironmentsOutput>;
 
   updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
-  updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;
+  batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
+
+  deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
 }
 
 export const environmentService: IEnvironmentService = {
@@ -64,12 +59,6 @@ export const environmentService: IEnvironmentService = {
 
     return output;
   },
-  batchUpdateEnvironment: async (input) => {
-    return await environmentIpc.batchUpdateEnvironment(input);
-  },
-  batchUpdateEnvironmentGroup: async (input) => {
-    return await environmentIpc.batchUpdateEnvironmentGroup(input);
-  },
   createEnvironment: async (input) => {
     const output = await environmentIpc.createEnvironment(input);
 
@@ -87,34 +76,11 @@ export const environmentService: IEnvironmentService = {
 
     return output;
   },
-  deleteEnvironment: async (input) => {
-    const output = await environmentIpc.deleteEnvironment(input);
-    environmentSummariesCollection.delete(input.id);
-    return output;
+  listWorkspaceEnvironments: async () => {
+    return await environmentIpc.listWorkspaceEnvironments();
   },
-  streamEnvironments: async () => {
-    const environments: StreamEnvironmentsEvent[] = [];
-
-    const environmentsEvent = new Channel<StreamEnvironmentsEvent>();
-    environmentsEvent.onmessage = (environmentGroup) => {
-      environments.push(environmentGroup);
-    };
-
-    await environmentIpc.streamEnvironments(environmentsEvent);
-
-    return environments;
-  },
-  streamProjectEnvironments: async (input) => {
-    const projectEnvironments: StreamEnvironmentsEvent[] = [];
-
-    const environmentsEvent = new Channel<StreamEnvironmentsEvent>();
-    environmentsEvent.onmessage = (environmentGroup) => {
-      projectEnvironments.push(environmentGroup);
-    };
-
-    await environmentIpc.streamProjectEnvironments(input, environmentsEvent);
-
-    return projectEnvironments;
+  listProjectEnvironments: async (input) => {
+    return await environmentIpc.listProjectEnvironments(input);
   },
   updateEnvironment: async (input) => {
     const output = await environmentIpc.updateEnvironment(input);
@@ -136,7 +102,12 @@ export const environmentService: IEnvironmentService = {
 
     return output;
   },
-  updateEnvironmentGroup: async (input) => {
-    return await environmentIpc.updateEnvironmentGroup(input);
+  batchUpdateEnvironment: async (input) => {
+    return await environmentIpc.batchUpdateEnvironment(input);
+  },
+  deleteEnvironment: async (input) => {
+    const output = await environmentIpc.deleteEnvironment(input);
+    environmentSummariesCollection.delete(input.id);
+    return output;
   },
 };

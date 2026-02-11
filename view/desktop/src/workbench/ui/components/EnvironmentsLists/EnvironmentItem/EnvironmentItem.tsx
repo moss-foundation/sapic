@@ -1,6 +1,6 @@
 import { useMemo, useRef } from "react";
 
-import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
+import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
@@ -20,7 +20,7 @@ interface EnvironmentItemProps {
 export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
-  const { data: workspaceEnvironments } = useStreamEnvironments();
+  const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
   const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -30,7 +30,7 @@ export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
     const { projectId } = environment;
 
     if (!projectId) {
-      return workspaceEnvironments?.map((env) => env.name) ?? [];
+      return workspaceEnvironments?.items.map((env) => env.name) ?? [];
     }
 
     return projectEnvironments?.filter((env) => env.projectId === projectId).map((env) => env.name) ?? [];
