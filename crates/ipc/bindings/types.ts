@@ -121,6 +121,22 @@ export type ImportProjectSource =
   | { "disk": ImportDiskParams };
 
 /**
+ * @category Type
+ */
+export type ListEnvironmentItem = {
+  id: string;
+  isActive: boolean;
+  name: string;
+  color?: string;
+  totalVariables: number;
+};
+
+/**
+ * @category Type
+ */
+export type ListProjectItem = { id: string; name: string; branch?: BranchInfo; iconPath?: string; archived: boolean };
+
+/**
  * Configuration options for API operations.
  *
  * This struct provides configurable parameters that affect the behavior of API operations,

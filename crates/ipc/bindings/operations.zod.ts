@@ -18,6 +18,8 @@ import {
   createProjectGitParamsSchema,
   environmentGroupSchema,
   importProjectSourceSchema,
+  listEnvironmentItemSchema,
+  listProjectItemSchema,
   updateEnvironmentGroupParamsSchema,
   updateEnvironmentParamsSchema,
   updateProjectParamsSchema,
@@ -136,6 +138,10 @@ export const importProjectOutputSchema = z.object({
   iconPath: z.string().optional(),
 });
 
+export const listProjectEnvironmentsInputSchema = z.object({
+  projectId: z.string(),
+});
+
 export const removeUserAccountInputSchema = z.object({
   id: z.string(),
 });
@@ -246,8 +252,20 @@ export const listExtensionsOutputSchema = z.array(extensionInfoSchema);
 
 export const listLanguagesOutputSchema = z.array(languageInfoSchema);
 
+export const listProjectEnvironmentsOutputSchema = z.object({
+  items: z.array(listEnvironmentItemSchema),
+});
+
+export const listProjectsOutputSchema = z.object({
+  items: z.array(listProjectItemSchema),
+});
+
 export const listUserAccountsOutputSchema = z.object({
   accounts: z.array(accountInfoSchema),
+});
+
+export const listWorkspaceEnvironmentsOutputSchema = z.object({
+  items: z.array(listEnvironmentItemSchema),
 });
 
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);

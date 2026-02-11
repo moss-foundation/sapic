@@ -16,6 +16,8 @@ import type {
   CreateProjectGitParams,
   EnvironmentGroup,
   ImportProjectSource,
+  ListEnvironmentItem,
+  ListProjectItem,
   UpdateEnvironmentGroupParams,
   UpdateEnvironmentParams,
   UpdateProjectParams,
@@ -238,7 +240,27 @@ export type ListLanguagesOutput = LanguageInfo[];
 /**
  * @category Operation
  */
+export type ListProjectEnvironmentsInput = { projectId: string };
+
+/**
+ * @category Operation
+ */
+export type ListProjectEnvironmentsOutput = { items: Array<ListEnvironmentItem> };
+
+/**
+ * @category Operation
+ */
+export type ListProjectsOutput = { items: Array<ListProjectItem> };
+
+/**
+ * @category Operation
+ */
 export type ListUserAccountsOutput = { accounts: AccountInfo[] };
+
+/**
+ * @category Operation
+ */
+export type ListWorkspaceEnvironmentsOutput = { items: Array<ListEnvironmentItem> };
 
 /**
  * @category Operation

@@ -99,6 +99,22 @@ export const importProjectSourceSchema = z.union([
   }),
 ]);
 
+export const listEnvironmentItemSchema = z.object({
+  id: z.string(),
+  isActive: z.boolean(),
+  name: z.string(),
+  color: z.string().optional(),
+  totalVariables: z.number(),
+});
+
+export const listProjectItemSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  branch: branchInfoSchema.optional(),
+  iconPath: z.string().optional(),
+  archived: z.boolean(),
+});
+
 export const optionsSchema = z.object({
   request_id: z.string().optional(),
   timeout: z.bigint().optional(),
