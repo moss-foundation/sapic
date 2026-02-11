@@ -42,7 +42,7 @@ export const ProjectTreeViewHeader = () => {
   //TODO project and resource summaries that is linked to manipulating all states is broken for now
   //until all the resources and projects summaries start using state from shared storage
   const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = resourceSummaries?.every((p) => {
+  const areAllDirNodesCollapsed = resourceSummaries?.every(() => {
     return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
   });
 

@@ -6,6 +6,8 @@ import { StreamResourcesEvent } from "@repo/moss-project";
 import { ProjectDragType } from "./constants";
 
 export interface ProjectTreeRootNode extends ListProjectItem {
+  order: number;
+  expanded: boolean;
   childNodes: ProjectTreeNode[];
 }
 

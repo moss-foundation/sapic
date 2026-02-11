@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 
 import { ListProjectItem } from "@repo/ipc";
+import { StreamResourcesEvent } from "@repo/moss-project";
 import { useQueries } from "@tanstack/react-query";
 
 import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
@@ -8,7 +9,7 @@ import { startStreamingProjectResources } from "../queries/startStreamingProject
 import { useListProjects } from "../useListProjects";
 
 export interface ProjectWithResources extends ListProjectItem {
-  resources: ListProjectItem[];
+  resources: StreamResourcesEvent[];
   areResourcesLoading: boolean;
   resourcesError?: Error | null;
 }
