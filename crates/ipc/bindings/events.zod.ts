@@ -49,8 +49,6 @@ export const activityEventSchema = z.union([
 export const streamProjectsEventSchema = z.object({
   id: z.string(),
   name: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean(),
   branch: branchInfoSchema.optional(),
   iconPath: z.string().optional(),
   archived: z.boolean(),

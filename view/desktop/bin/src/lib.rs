@@ -281,6 +281,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::main__list_projects,
             commands::main__list_workspace_environments,
             commands::main__list_project_environments,
+            commands::main__list_project_resources,
             //
             // Onboarding
             //

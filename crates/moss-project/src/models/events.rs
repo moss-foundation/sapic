@@ -1,9 +1,9 @@
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::{ResourceId, *};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
 use crate::models::{
-    primitives::{FrontendResourcePath, ResourceClass, ResourceKind, ResourceProtocol},
+    primitives::FrontendResourcePath,
     types::{AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription},
 };
 
@@ -31,17 +31,16 @@ pub struct StreamResourcesEvent {
 
     /// HTTP protocol/method used by this resource, if applicable (GET, POST, PUT, DELETE, WebSocket, GraphQL, gRPC)
     pub protocol: Option<ResourceProtocol>,
+    // /// Determines the display position of this resource among others in the same group.
+    // /// Resources are sorted in ascending order; lower values appear before higher ones.
+    // /// Negative values are allowed and will be placed before positive values.
+    // /// If multiple resources have the same order, they are sorted alphabetically.
+    // /// If not specified, the resource appears last and is sorted alphabetically
+    // /// among unspecified items.
+    // pub order: Option<isize>,
 
-    /// Determines the display position of this resource among others in the same group.
-    /// Resources are sorted in ascending order; lower values appear before higher ones.
-    /// Negative values are allowed and will be placed before positive values.
-    /// If multiple resources have the same order, they are sorted alphabetically.
-    /// If not specified, the resource appears last and is sorted alphabetically
-    /// among unspecified items.
-    pub order: Option<isize>,
-
-    /// Whether this resource is expanded in the tree view (applies to directories)
-    pub expanded: bool,
+    // /// Whether this resource is expanded in the tree view (applies to directories)
+    // pub expanded: bool,
 }
 
 /// @category Event

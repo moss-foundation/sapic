@@ -84,6 +84,7 @@ pub struct Contributor {
 // Stream Projects
 //
 
+// DEPRECATED
 /// @category Event
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
@@ -92,13 +93,12 @@ pub struct Contributor {
 pub struct StreamProjectsEvent {
     pub id: ProjectId,
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub branch: Option<BranchInfo>,
     pub icon_path: Option<PathBuf>,
     pub archived: bool,
 }
 
+// DEPRECATED
 /// @category Operation
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
@@ -233,8 +233,6 @@ pub struct CreateProjectInput {
 pub struct CreateProjectOutput {
     pub id: ProjectId,
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub icon_path: Option<PathBuf>,
 
     #[serde(skip)]
@@ -338,8 +336,6 @@ pub struct ImportProjectOutput {
     // FIXME: Maybe we should remove the name field until we have local display name
     // Since a cloned/imported project already has a name
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub icon_path: Option<PathBuf>,
 
     #[serde(skip)]

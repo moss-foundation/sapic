@@ -29,8 +29,6 @@ impl<R: AppRuntime> MainWindow<R> {
             let event = StreamProjectsEvent {
                 id: project.id.clone(),
                 name: details.name,
-                order: project.order,
-                expanded: true, // HACK: hardcoded value
                 branch: vcs.map(|vcs| vcs.branch),
                 icon_path: None, // HACK: hardcoded value
                 archived: details.archived,

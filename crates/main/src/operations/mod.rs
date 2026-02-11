@@ -13,6 +13,7 @@ pub mod describe_project;
 pub mod export_project;
 pub mod import_project;
 pub mod list_project_environments;
+pub mod list_project_resources;
 pub mod list_projects;
 pub mod list_workspace_environments;
 pub mod open_workspace;

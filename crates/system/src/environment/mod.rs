@@ -31,7 +31,6 @@ pub struct EnvironmentItemDescription {
     pub project_id: Option<ProjectId>,
     pub is_active: bool,
     pub display_name: String,
-    pub order: Option<isize>,
     pub color: Option<String>,
     pub abs_path: Arc<Path>,
     pub total_variables: usize,

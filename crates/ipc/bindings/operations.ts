@@ -96,7 +96,7 @@ export type CreateEnvironmentInput = {
 /**
  * @category Operation
  */
-export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; order?: number; color?: string };
+export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; color?: string };
 
 /**
  * @category Operation
@@ -112,7 +112,7 @@ export type CreateProjectInput = {
 /**
  * @category Operation
  */
-export type CreateProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type CreateProjectOutput = { id: string; name: string; iconPath?: string };
 
 /**
  * @category Operation
@@ -218,7 +218,7 @@ export type ImportProjectInput = { name: string; order: number; source: ImportPr
 /**
  * @category Operation
  */
-export type ImportProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type ImportProjectOutput = { id: string; name: string; iconPath?: string };
 
 /**
  * @category Operation

@@ -3,21 +3,7 @@ import { z } from "zod";
 
 export const httpMethodSchema = z.union([z.literal("GET"), z.literal("POST"), z.literal("PUT"), z.literal("DELETE")]);
 
-export const resourceClassSchema = z.union([z.literal("endpoint"), z.literal("component"), z.literal("schema")]);
-
-export const resourceKindSchema = z.union([z.literal("Dir"), z.literal("Item"), z.literal("Case")]);
-
 export const resourcePathSchema = z.object({
   raw: z.string(),
   segments: z.array(z.string()),
 });
-
-export const resourceProtocolSchema = z.union([
-  z.literal("Get"),
-  z.literal("Post"),
-  z.literal("Put"),
-  z.literal("Delete"),
-  z.literal("WebSocket"),
-  z.literal("Graphql"),
-  z.literal("Grpc"),
-]);

@@ -2,7 +2,7 @@ use joinerror::{OptionExt, ResultExt};
 use moss_project::models::{events::*, operations::*};
 use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::{
-    main::{OpenInTarget, environment::*, project::*, workspace::*},
+    main::{OpenInTarget, environment::*, project::*, resource::*, workspace::*},
     other::CancelRequestInput,
 };
 use sapic_runtime::errors::Unavailable;
@@ -286,6 +286,25 @@ pub async fn main__list_project_environments<'a, R: tauri::Runtime>(
     .await
 }
 
+#[allow(non_snake_case)]
+#[tauri::command(async)]
+#[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
+pub async fn main__list_project_resources<'a, R: tauri::Runtime>(
+    ctx: AsyncContext<'a>,
+    app: App<'a, R>,
+    window: TauriWindow<R>,
+    input: ListProjectResourcesInput,
+    options: Options,
+) -> joinerror::Result<ListProjectResourcesOutput> {
+    super::with_main_window_timeout(
+        ctx.inner(),
+        app,
+        window,
+        options,
+        |ctx, _, _, window| async move { window.list_project_resources(&ctx, input).await },
+    )
+    .await
+}
 #[allow(non_snake_case)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]

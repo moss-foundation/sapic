@@ -22,7 +22,7 @@ use crate::{
     },
     project::OnDidChangeEvent,
     storage::{KEY_EXPANDED_ENTRIES, KEY_RESOURCE_PREFIX},
-    worktree::entry::EntryDescription,
+    worktree::entry::ScannedEntry,
 };
 
 impl Project {
@@ -33,7 +33,7 @@ impl Project {
         channel: TauriChannel<StreamResourcesEvent>,
         input: StreamResourcesInput,
     ) -> joinerror::Result<StreamResourcesOutput> {
-        let (tx, mut rx) = mpsc::unbounded_channel::<EntryDescription>();
+        let (tx, mut rx) = mpsc::unbounded_channel::<ScannedEntry>();
         let (done_tx, mut done_rx) = oneshot::channel::<()>();
 
         let mut handles = Vec::new();
@@ -88,10 +88,10 @@ impl Project {
                     let _ = worktree_service_clone
                         .scan(
                             ctx,
-                            app_handle_clone,
+                            // app_handle_clone,
                             &dir,
-                            expanded_entries_clone,
-                            all_entry_keys_clone,
+                            // expanded_entries_clone,
+                            // all_entry_keys_clone,
                             entries_tx_clone,
                         )
                         .await;
@@ -120,8 +120,8 @@ impl Project {
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: entry.order,
-                                expanded: entry.expanded,
+                                // order: entry.order,
+                                // expanded: entry.expanded,
                             });
                         }
                     }
@@ -138,8 +138,8 @@ impl Project {
                                 class: entry.class,
                                 kind: entry.kind,
                                 protocol: entry.protocol,
-                                order: entry.order,
-                                expanded: entry.expanded,
+                                // order: entry.order,
+                                // expanded: entry.expanded,
                             });
                         }
                         break;

@@ -4,14 +4,13 @@ use moss_hcl::{
     Block, LabeledBlock, deserialize_expression, expression,
     heredoc::serialize_option_string_as_heredoc, serialize_expression,
 };
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::{ResourceClass, ResourceId, ResourceProtocol};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde_json::Value as JsonValue;
 use std::path::PathBuf;
 
 use crate::models::primitives::{
-    FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceClass, ResourceProtocol,
-    UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
 };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

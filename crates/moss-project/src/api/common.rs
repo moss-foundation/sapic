@@ -6,7 +6,7 @@ use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::models::primitives::StorageScope;
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::{ResourceClass, ResourceId, ResourceProtocol};
 use sapic_core::context::AnyAsyncContext;
 use sapic_ipc::ValidationResultExt;
 use std::collections::HashMap;
@@ -18,7 +18,7 @@ use crate::{
         operations::CreateResourceOutput,
         primitives::{
             FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId,
-            ResourceClass, ResourceProtocol, UrlencodedParamId,
+            UrlencodedParamId,
         },
         types::{
             AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription,

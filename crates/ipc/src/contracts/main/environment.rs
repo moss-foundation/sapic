@@ -157,7 +157,6 @@ pub struct CreateEnvironmentOutput {
     #[ts(optional)]
     pub project_id: Option<ProjectId>,
     pub name: String,
-    pub order: Option<isize>,
     pub color: Option<String>,
 
     #[serde(skip)]

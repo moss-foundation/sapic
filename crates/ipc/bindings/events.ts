@@ -50,8 +50,6 @@ export type StreamEnvironmentsEvent = {
 export type StreamProjectsEvent = {
   id: string;
   name: string;
-  order?: number;
-  expanded: boolean;
   branch?: BranchInfo;
   iconPath?: string;
   archived: boolean;

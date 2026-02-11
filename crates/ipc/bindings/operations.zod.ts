@@ -61,15 +61,12 @@ export const createEnvironmentOutputSchema = z.object({
   id: z.string(),
   projectId: z.string().optional(),
   name: z.string(),
-  order: z.number().optional(),
   color: z.string().optional(),
 });
 
 export const createProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean(),
   iconPath: z.string().optional(),
 });
 
@@ -133,8 +130,6 @@ export const getTranslationNamespaceInputSchema = z.object({
 export const importProjectOutputSchema = z.object({
   id: z.string(),
   name: z.string(),
-  order: z.number().optional(),
-  expanded: z.boolean(),
   iconPath: z.string().optional(),
 });
 
