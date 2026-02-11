@@ -577,8 +577,8 @@ export const useNodeDragAndDropHandler = () => {
       batchUpdateProjectResource,
       batchCreateProjectResource,
       batchPutTreeItemState,
-      currentWorkspaceId,
       fetchResourcesForPath,
+      currentWorkspaceId,
     ]
   );
 

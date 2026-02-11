@@ -51,7 +51,6 @@ export type TauriIpcCommand =
   | "describe_project"
   | "create_project"
   | "delete_project"
-  | "stream_projects" // DEPRECATED
   | "list_projects"
   | "update_project"
   | "archive_project"
@@ -60,15 +59,12 @@ export type TauriIpcCommand =
   | "list_changes"
   | "import_project"
   | "export_project"
-  | "stream_environments" // DEPRECATED
   | "list_project_environments"
   | "list_workspace_environments"
   | "create_environment"
   | "update_environment"
   | "batch_update_environment"
   | "delete_environment"
-  | "update_environment_group" // DEPRECATED
-  | "batch_update_environment_group" // DEPRECATED
   | "activate_environment"
   | "describe_environment"
   //
