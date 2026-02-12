@@ -3,4 +3,4 @@
 /**
  * @category Primitive
  */
-export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+export type ResourcePath = { raw: string; segments: Array<string> };

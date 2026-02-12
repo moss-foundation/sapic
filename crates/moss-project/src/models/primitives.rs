@@ -1,7 +1,6 @@
 use moss_id_macro::ids;
 use sapic_base::resource::types::primitives::*;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 
 ids!([
@@ -11,26 +10,6 @@ ids!([
     FormDataParamId,
     UrlencodedParamId,
 ]);
-
-/// @category Primitive
-#[derive(Debug, Clone, Serialize, Deserialize, TS)]
-#[serde(rename = "ResourcePath", rename_all = "camelCase")]
-#[ts(export, export_to = "primitives.ts")]
-pub struct FrontendResourcePath {
-    pub raw: PathBuf,
-    pub segments: Vec<String>,
-}
-
-impl FrontendResourcePath {
-    pub fn new(raw: PathBuf) -> Self {
-        let segments = raw
-            .iter()
-            .map(|s| s.to_string_lossy().to_string())
-            .collect();
-
-        Self { raw, segments }
-    }
-}
 
 impl From<&HttpMethod> for ResourceProtocol {
     fn from(method: &HttpMethod) -> Self {

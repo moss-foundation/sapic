@@ -1,11 +1,9 @@
 use sapic_base::resource::types::primitives::{ResourceId, *};
+use sapic_ipc::contracts::main::resource::FrontendResourcePath;
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
-use crate::models::{
-    primitives::FrontendResourcePath,
-    types::{AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription},
-};
+use crate::models::types::{AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription};
 
 /// @category Event
 #[derive(Clone, Debug, Serialize, Deserialize, TS)]

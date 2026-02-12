@@ -2,6 +2,7 @@ pub mod http;
 
 use http::*;
 use sapic_base::resource::types::primitives::{ResourceId, *};
+use sapic_ipc::contracts::main::resource::FrontendResourcePath;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
@@ -9,7 +10,7 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
 };
 
 /// @category Type

@@ -2,8 +2,3 @@
 import { z } from "zod";
 
 export const httpMethodSchema = z.union([z.literal("GET"), z.literal("POST"), z.literal("PUT"), z.literal("DELETE")]);
-
-export const resourcePathSchema = z.object({
-  raw: z.string(),
-  segments: z.array(z.string()),
-});

@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use sapic_base::{project::types::primitives::ProjectId, resource::types::ResourceSummary};
+use sapic_base::{
+    project::types::primitives::ProjectId,
+    resource::types::{ResourceSummary, primitives::*},
+};
 use serde::{Deserialize, Serialize};
 use ts_rs::TS;
 
@@ -26,11 +29,56 @@ pub struct ListProjectResourcesInput {
     pub mode: ListProjectResourcesMode,
 }
 
+/// @category Primitive
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename = "ResourcePath", rename_all = "camelCase")]
+#[ts(export, export_to = "main/types.ts")]
+pub struct FrontendResourcePath {
+    pub raw: PathBuf,
+    pub segments: Vec<String>,
+}
+
+impl FrontendResourcePath {
+    pub fn new(raw: PathBuf) -> Self {
+        let segments = raw
+            .iter()
+            .map(|s| s.to_string_lossy().to_string())
+            .collect();
+
+        Self { raw, segments }
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, TS)]
+#[serde(rename_all = "camelCase")]
+#[ts(export, export_to = "main/types.ts")]
+pub struct ListProjectResourceItem {
+    pub id: ResourceId,
+    pub name: String,
+    pub path: FrontendResourcePath,
+    pub class: ResourceClass,
+    pub kind: ResourceKind,
+    pub protocol: Option<ResourceProtocol>,
+}
+
+impl From<ResourceSummary> for ListProjectResourceItem {
+    fn from(summary: ResourceSummary) -> Self {
+        Self {
+            id: summary.id,
+            name: summary.name,
+            path: FrontendResourcePath::new(summary.path),
+            class: summary.class,
+            kind: summary.kind,
+            protocol: summary.protocol,
+        }
+    }
+}
+
 /// @category Operation
 #[derive(Debug, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "main/operations.ts")]
 pub struct ListProjectResourcesOutput {
     #[ts(type = "ResourceSummary[]")]
-    pub items: Vec<ResourceSummary>,
+    pub items: Vec<ListProjectResourceItem>,
 }

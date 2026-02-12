@@ -8,7 +8,7 @@ use moss_logging::session;
 use moss_storage2::models::primitives::StorageScope;
 use sapic_base::resource::types::primitives::{ResourceClass, ResourceId, ResourceProtocol};
 use sapic_core::context::AnyAsyncContext;
-use sapic_ipc::ValidationResultExt;
+use sapic_ipc::{ValidationResultExt, contracts::main::resource::FrontendResourcePath};
 use std::collections::HashMap;
 use validator::Validate;
 
@@ -16,10 +16,7 @@ use crate::{
     Project,
     models::{
         operations::CreateResourceOutput,
-        primitives::{
-            FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId,
-            UrlencodedParamId,
-        },
+        primitives::{FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId},
         types::{
             AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription,
             CreateDirResourceParams, CreateItemResourceParams, UpdateDirResourceParams,
