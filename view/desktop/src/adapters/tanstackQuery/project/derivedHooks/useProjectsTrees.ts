@@ -49,6 +49,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
               } else {
                 const newNode: ProjectTreeNode = {
                   ...resource,
+                  expanded: false,
+                  order: undefined,
                   childNodes: [],
                 };
                 childNodes.push(newNode);
@@ -98,6 +100,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
             } else {
               const newNode: ProjectTreeNode = {
                 ...resource,
+                order: undefined,
+                expanded: false,
                 childNodes: [],
               };
               targetArray.push(newNode);

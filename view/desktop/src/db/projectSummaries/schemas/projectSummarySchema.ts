@@ -9,6 +9,6 @@ export const projectSummarySchema = z.object({
   iconPath: z.string().optional().nullable(),
   archived: z.boolean(),
 
-  order: z.number(),
+  order: z.number().optional(),
   expanded: z.boolean(),
 });

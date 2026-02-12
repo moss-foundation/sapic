@@ -1,12 +1,12 @@
 import { useDeleteProjectResource } from "@/adapters";
 import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useListProjectResources";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
+import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
 import { useBatchRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchRemoveTreeItemState";
-import { useBatchUpdateTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchUpdateTreeItemState";
 import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
-import { StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
@@ -25,7 +25,7 @@ export const useDeleteAndUpdatePeers = (
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
 
   const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
-  const { mutateAsync: batchUpdateTreeItemState } = useBatchUpdateTreeItemState();
+  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
   const { mutateAsync: batchRemoveTreeItemState } = useBatchRemoveTreeItemState();
 
   const deleteAndUpdatePeers = async () => {
@@ -63,8 +63,8 @@ export const useDeleteAndUpdatePeers = (
     if (result.status === "ok") {
       //TODO: Remove this once we have a proper way to update the project resources(in the tanstack adapter)
       queryClient.setQueryData(
-        [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, projectId],
-        (cacheData: StreamResourcesEvent[]) => {
+        [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, projectId],
+        (cacheData: ListProjectResourceItem[]) => {
           return cacheData.map((cacheResource) => {
             if (updatedParentNodeChildren.some((resource) => resource.id === cacheResource.id)) {
               const updatedResource = updatedParentNodeChildren.find((resource) => resource.id === cacheResource.id);
@@ -76,7 +76,7 @@ export const useDeleteAndUpdatePeers = (
         }
       );
 
-      await batchUpdateTreeItemState({
+      await batchPutTreeItemState({
         treeItemStates: updatedParentNodeChildren.map((child) => ({
           id: child.id,
           order: child.order! - 1,

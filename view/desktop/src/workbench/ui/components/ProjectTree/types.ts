@@ -1,17 +1,18 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { WorkspaceMode } from "@repo/base";
-import { ListProjectItem } from "@repo/ipc";
-import { StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectItem, ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "./constants";
 
 export interface ProjectTreeRootNode extends ListProjectItem {
-  order: number;
+  order?: number | undefined;
   expanded: boolean;
   childNodes: ProjectTreeNode[];
 }
 
-export interface ProjectTreeNode extends StreamResourcesEvent {
+export interface ProjectTreeNode extends ListProjectResourceItem {
+  order?: number | undefined;
+  expanded: boolean;
   childNodes: ProjectTreeNode[];
 }
 

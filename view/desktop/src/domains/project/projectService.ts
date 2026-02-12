@@ -52,7 +52,7 @@ export const projectService: IProjectService = {
       iconPath: output.iconPath,
 
       order: input.order,
-      expanded: output.expanded,
+      expanded: true,
     });
 
     return output;

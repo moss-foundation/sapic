@@ -12,8 +12,8 @@ import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsC
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -319,7 +319,7 @@ export const useNodeDragAndDropHandler = () => {
               name: resource.name,
               path: newResourcePath,
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
               class: "endpoint",
             });
@@ -454,7 +454,7 @@ export const useNodeDragAndDropHandler = () => {
               name: resource.name,
               path: newResourcePath,
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
               class: "endpoint",
             });
@@ -529,7 +529,7 @@ export const useNodeDragAndDropHandler = () => {
               path: newResourcePath,
               class: "endpoint",
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
             });
           }

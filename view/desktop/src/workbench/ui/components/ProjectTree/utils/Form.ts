@@ -1,10 +1,5 @@
-import {
-  BatchCreateResourceKind,
-  CreateResourceInput,
-  ResourceClass,
-  ResourceProtocol,
-  StreamResourcesEvent,
-} from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
+import { BatchCreateResourceKind, CreateResourceInput, ResourceClass, ResourceProtocol } from "@repo/moss-project";
 
 interface CreateResourceKindProps {
   name: string;
@@ -49,7 +44,7 @@ export const createResourceKind = ({
 };
 
 export const convertResourceInfoToCreateInput = (
-  resource: StreamResourcesEvent,
+  resource: ListProjectResourceItem,
   newProjectPath: string = ""
 ): CreateResourceInput => {
   if (resource.kind === "Dir") {
@@ -58,7 +53,7 @@ export const convertResourceInfoToCreateInput = (
         name: resource.name,
         path: newProjectPath,
         class: resource.class,
-        order: resource.order ?? 0,
+        order: -1,
       },
     };
   } else {
@@ -67,8 +62,8 @@ export const convertResourceInfoToCreateInput = (
         name: resource.name,
         path: newProjectPath,
         class: resource.class,
-        order: resource.order ?? 0,
         protocol: resource.protocol ?? "Get",
+        order: -1,
         headers: [],
         queryParams: [],
         pathParams: [],

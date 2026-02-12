@@ -7,14 +7,14 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
 import { ModalWrapperProps } from "../../types";
 import { Divider } from "./components/Divider";
 import { ModeRadioGroup } from "./components/ModeRadioGroup";
-import { CREATE_TAB, IMPORT_TAB } from "./constansts";
+import { CREATE_TAB, IMPORT_TAB } from "./constants";
 import { CreateSection, FooterActions, ImportSection } from "./Sections";
 import { calculateIsSubmitDisabled } from "./utils";
 

@@ -1,20 +1,19 @@
 import { useMemo } from "react";
 
-import { ListProjectItem } from "@repo/ipc";
-import { StreamResourcesEvent } from "@repo/moss-project";
+import { resourceService } from "@/domains/resource/resourceService";
+import { ListProjectItem, ListProjectResourceItem } from "@repo/ipc";
 import { useQueries } from "@tanstack/react-query";
 
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useStreamProjectResources";
-import { startStreamingProjectResources } from "../queries/startStreamingProjectResources";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "../../resource/useListProjectResources";
 import { useListProjects } from "../useListProjects";
 
 export interface ProjectWithResources extends ListProjectItem {
-  resources: StreamResourcesEvent[];
+  resources: ListProjectResourceItem[];
   areResourcesLoading: boolean;
   resourcesError?: Error | null;
 }
 
-export const useStreamedProjectsWithResources = () => {
+export const useProjectsWithResources = () => {
   const {
     data: projects = { items: [] },
     isLoading: areProjectsLoading,
@@ -24,13 +23,13 @@ export const useStreamedProjectsWithResources = () => {
 
   const resourcesQueries = useQueries({
     queries: projects?.items.map((project) => ({
-      queryKey: [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, project.id],
-      queryFn: () => startStreamingProjectResources(project.id),
-      placeholderData: [],
+      queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, project.id],
+      queryFn: () => resourceService.list({ projectId: project.id, mode: "LOAD_ROOT" }),
+      placeholderData: { items: [] },
     })),
     combine: (results) => {
       return {
-        data: results.map((result) => result.data || []),
+        data: results.map((result) => result.data?.items || []),
         isLoading: results.some((result) => result.isPending),
         hasError: results.some((result) => result.error),
         results: results,
@@ -41,9 +40,10 @@ export const useStreamedProjectsWithResources = () => {
   const projectsWithResources = useMemo((): ProjectWithResources[] => {
     return projects?.items.map((project, index) => {
       const resourcesResult = resourcesQueries.results[index];
+
       return {
         ...project,
-        resources: resourcesResult?.data || [],
+        resources: resourcesResult?.data?.items || [],
         areResourcesLoading: resourcesResult?.isPending || false,
         resourcesError: resourcesResult?.error || null,
       };

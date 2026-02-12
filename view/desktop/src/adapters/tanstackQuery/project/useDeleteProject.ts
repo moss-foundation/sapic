@@ -3,7 +3,7 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { DeleteProjectInput, DeleteProjectOutput, ListProjectsOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { useStreamedProjectsWithResources } from "./derivedHooks/useStreamedProjectsWithResources";
+import { useProjectsWithResources } from "./derivedHooks/useProjectsWithResources";
 import { USE_LIST_PROJECTS_QUERY_KEY } from "./useListProjects";
 
 export interface UseDeleteProjectInput {
@@ -14,7 +14,7 @@ export const useDeleteProject = () => {
   const queryClient = useQueryClient();
 
   const { api } = useTabbedPaneStore();
-  const { data: projectsWithResources } = useStreamedProjectsWithResources();
+  const { data: projectsWithResources } = useProjectsWithResources();
 
   return useMutation<DeleteProjectOutput, Error, DeleteProjectInput>({
     mutationFn: (input) => projectService.deleteProject(input),

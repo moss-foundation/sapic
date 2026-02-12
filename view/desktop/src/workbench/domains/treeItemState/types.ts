@@ -1,5 +1,5 @@
 export interface TreeItemState {
   id: string;
-  expanded: boolean;
-  order: number;
+  expanded?: boolean;
+  order?: number;
 }

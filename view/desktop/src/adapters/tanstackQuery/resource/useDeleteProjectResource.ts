@@ -1,9 +1,10 @@
 import { resourceService } from "@/domains/resource/resourceService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { DeleteResourceInput, DeleteResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
+import { DeleteResourceInput, DeleteResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "./useStreamProjectResources";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "./useListProjectResources";
 
 export interface UseDeleteProjectResourceInput {
   projectId: string;
@@ -18,8 +19,8 @@ export const useDeleteProjectResource = () => {
     mutationFn: ({ projectId, input }) => resourceService.delete(projectId, input),
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
-        [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
-        (old: StreamResourcesEvent[]) => {
+        [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
+        (old: ListProjectResourceItem[]) => {
           const deletedResource = old.find((resource) => resource.id === data.id);
 
           if (!deletedResource) {
