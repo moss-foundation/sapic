@@ -8,6 +8,7 @@ pub mod primitives;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "resource/types.ts")]
 pub struct ResourceSummary {
     pub id: ResourceId,

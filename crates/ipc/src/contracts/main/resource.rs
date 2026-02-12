@@ -51,13 +51,17 @@ impl FrontendResourcePath {
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]
+#[ts(optional_fields)]
 #[ts(export, export_to = "main/types.ts")]
 pub struct ListProjectResourceItem {
     pub id: ResourceId,
     pub name: String,
     pub path: FrontendResourcePath,
+    #[ts(type = "ResourceClass")]
     pub class: ResourceClass,
+    #[ts(type = "ResourceKind")]
     pub kind: ResourceKind,
+    #[ts(optional, type = "ResourceProtocol")]
     pub protocol: Option<ResourceProtocol>,
 }
 
