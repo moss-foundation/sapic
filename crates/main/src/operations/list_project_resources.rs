@@ -26,6 +26,8 @@ impl<R: AppRuntime> MainWindow<R> {
 
         let items = project.resources(ctx, dirs).await?;
 
-        Ok(ListProjectResourcesOutput { items })
+        Ok(ListProjectResourcesOutput {
+            items: items.into_iter().map(|item| item.into()).collect(),
+        })
     }
 }
