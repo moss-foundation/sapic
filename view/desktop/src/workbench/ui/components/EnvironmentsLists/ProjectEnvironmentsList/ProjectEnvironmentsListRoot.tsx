@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
 import { useStreamProjects } from "@/adapters";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
@@ -7,6 +7,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
@@ -33,12 +34,16 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
     projectEnvironments: projectEnvironments ?? [],
   });
 
-  if (!project || projectEnvironments?.length === 0) return null;
+  if (!project) return null;
 
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
       <Tree.RootNodeHeader className="cursor-pointer">
-        <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
+        <ProjectEnvironmentsListRootControls
+          project={project}
+          expanded={expanded}
+          count={projectEnvironments?.length ?? 0}
+        />
       </Tree.RootNodeHeader>
 
       {expanded && (

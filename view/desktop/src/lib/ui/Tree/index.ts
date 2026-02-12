@@ -23,7 +23,7 @@ import { RootNodeOrder } from "./components/RootNode/RootNodeOrder";
 import { RootNodeTriggers } from "./components/RootNode/RootNodeTriggers";
 import { Tree } from "./Tree";
 
-interface TreeWithSubcomponents {
+interface TreeWithSubComponents {
   (props: React.ComponentProps<typeof Tree>): React.ReactElement;
   RootNode: typeof RootNode;
   RootNodeActions: typeof RootNodeActions;
@@ -53,7 +53,7 @@ interface TreeWithSubcomponents {
   ActionLabel: typeof ActionLabel;
 }
 
-const TreeWithSubs = Tree as TreeWithSubcomponents;
+const TreeWithSubs = Tree as TreeWithSubComponents;
 
 TreeWithSubs.RootNode = RootNode;
 TreeWithSubs.RootNodeActions = RootNodeActions;

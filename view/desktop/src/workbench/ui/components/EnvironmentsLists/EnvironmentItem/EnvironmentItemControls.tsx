@@ -1,4 +1,4 @@
-import { MouseEvent, useState } from "react";
+import { MouseEvent, useContext, useState } from "react";
 
 import { useDeleteEnvironment } from "@/adapters";
 import { useActivateEnvironment } from "@/adapters/tanstackQuery/environment/useActivateEnvironment";
@@ -13,6 +13,7 @@ import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 
 interface EnvironmentItemControlsProps {
@@ -28,6 +29,7 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
+  const { treePaddingLeft, nodeOffset } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { activePanelId } = useTabbedPaneStore();
 
@@ -80,7 +82,10 @@ export const EnvironmentItemControls = ({
         depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
         dropIndicatorFullWidth
       >
-        <Tree.NodeTriggers className="cursor-pointer overflow-hidden">
+        <Tree.NodeTriggers
+          className="cursor-pointer overflow-hidden"
+          style={{ paddingLeft: treePaddingLeft + nodeOffset }}
+        >
           <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />

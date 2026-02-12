@@ -1,5 +1,6 @@
-import { createContext } from "react";
+import { createContext, useContext } from "react";
 
+import { TreeContext } from "@/lib/ui/Tree/components/TreeContext";
 import { WorkspaceMode } from "@repo/base";
 
 import { BaseTreeContextProps } from "../../../../lib/ui/Tree/types";
@@ -27,3 +28,17 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   showOrders: false,
   showRootNodeIds: false,
 });
+
+export const TreeContextBridge = ({ children }: { children: React.ReactNode }) => {
+  const projectCtx = useContext(ProjectTreeContext);
+  const baseProps: BaseTreeContextProps = {
+    id: projectCtx.id,
+    name: projectCtx.name,
+    order: projectCtx.order,
+    treePaddingLeft: projectCtx.treePaddingLeft,
+    treePaddingRight: projectCtx.treePaddingRight,
+    nodeOffset: projectCtx.nodeOffset,
+    showOrders: projectCtx.showOrders,
+  };
+  return <TreeContext.Provider value={baseProps}>{children}</TreeContext.Provider>;
+};

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useContext, useMemo, useRef } from "react";
 
 import { useStreamEnvironments } from "@/adapters/tanstackQuery/environment";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
@@ -7,6 +7,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { useDraggableEnvironmentItem } from "../dnd/hooks/useDraggableEnvironmentItem";
 import { EnvironmentItemControls } from "./EnvironmentItemControls";

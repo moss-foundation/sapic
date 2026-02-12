@@ -2,6 +2,9 @@ import { createContext, useContext } from "react";
 
 import { BaseTreeContextProps } from "../types";
 
+/**
+ * @deprecated Lib Tree should have context, because it cannot be extended to
+ */
 export const TreeContext = createContext<BaseTreeContextProps>({
   id: "",
   name: "",
