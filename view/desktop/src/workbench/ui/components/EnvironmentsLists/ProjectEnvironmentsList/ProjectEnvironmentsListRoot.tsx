@@ -1,4 +1,4 @@
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 
 import { useStreamProjects } from "@/adapters";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
@@ -7,7 +7,6 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
-import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";

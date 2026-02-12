@@ -6,7 +6,6 @@ import { cn } from "@/utils";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
-import { calculateShouldRenderRootChildNodes } from "../utils/TreeRoot";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 
 interface TreeRootResourcesListProps {
