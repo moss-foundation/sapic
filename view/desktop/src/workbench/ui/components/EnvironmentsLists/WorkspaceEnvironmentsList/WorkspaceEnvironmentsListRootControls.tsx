@@ -48,7 +48,7 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
 
-        <Tree.RootNodeLabel label="Workspace Environments" />
+        <Tree.RootNodeLabel label="Environments" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>
   );

@@ -1,6 +1,7 @@
 import { useProjectsTrees } from "@/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
+import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/projectListItemState/useGetProjectListState";
 import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListItemState/usePutProjectListState";
@@ -45,9 +46,14 @@ export const ProjectTreesHeader = () => {
   };
 
   return (
-    <button onClick={handleToggleProjectList} className="flex cursor-pointer items-center gap-1 pl-2">
-      <Icon icon="ChevronRight" className={cn(projectListState?.expanded && "rotate-90")} />
-      <span>Projects</span>
-    </button>
+    <Tree.RootNodeControls>
+      <Tree.RootNodeTriggers
+        onClick={handleToggleProjectList}
+        className="hover:background-(--moss-list-background-hover) flex cursor-pointer items-center gap-1 py-[5px] pl-2"
+      >
+        <Icon icon="ChevronRight" className={cn(projectListState?.expanded && "rotate-90")} />
+        <Tree.RootNodeLabel label="Projects" />
+      </Tree.RootNodeTriggers>
+    </Tree.RootNodeControls>
   );
 };
