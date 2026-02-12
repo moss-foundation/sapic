@@ -83,6 +83,6 @@ impl From<ResourceSummary> for ListProjectResourceItem {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "main/operations.ts")]
 pub struct ListProjectResourcesOutput {
-    #[ts(type = "ResourceSummary[]")]
+    #[ts(type = "ListProjectResourceItem[]")]
     pub items: Vec<ListProjectResourceItem>,
 }
