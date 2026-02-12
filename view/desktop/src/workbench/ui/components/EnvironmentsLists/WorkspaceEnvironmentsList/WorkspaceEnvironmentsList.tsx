@@ -1,5 +1,5 @@
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { EnvironmentsListItemPlaceholder } from "@/workbench/ui/parts/Sidebar/views/EnvironmentsListView/EnvironmentsListItemPlaceholder";
+import { EnvironmentsListItemPlaceholder } from "@/workbench/ui/components/EnvironmentsLists/EnvironmentsListItemPlaceholder";
 
 import { WorkspaceEnvironmentsListRoot } from "./WorkspaceEnvironmentsListRoot";
 

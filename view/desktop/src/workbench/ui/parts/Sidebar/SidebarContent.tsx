@@ -2,11 +2,9 @@ import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout } from "@/workbench/adapters";
 
 import {
-  ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
   ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID,
   ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
 } from "../ActivityBar/constants";
-import { EnvironmentsListView } from "./views/EnvironmentsListView";
 import { ProjectTreesView } from "./views/ProjectTreesView";
 import { SourceControlView } from "./views/SourceControlView";
 
@@ -31,13 +29,6 @@ export const SidebarContent = () => {
       return (
         <div className="flex h-full flex-col">
           <ProjectTreesView />
-        </div>
-      );
-
-    case ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID:
-      return (
-        <div className="flex h-full flex-col">
-          <EnvironmentsListView />
         </div>
       );
 

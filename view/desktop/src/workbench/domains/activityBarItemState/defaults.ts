@@ -1,5 +1,4 @@
 import {
-  ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
   ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID,
   ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
 } from "@/workbench/ui/parts/ActivityBar/constants";
@@ -12,11 +11,7 @@ export const defaultStates = [
     order: 1,
   },
   {
-    id: ACTIVITY_BAR_VIEW_GROUP_ENVIRONMENTS_ID,
-    order: 2,
-  },
-  {
     id: ACTIVITY_BAR_VIEW_GROUP_SOURCE_CONTROL_ID,
-    order: 3,
+    order: 2,
   },
 ] as const satisfies ActivityBarItemState[];

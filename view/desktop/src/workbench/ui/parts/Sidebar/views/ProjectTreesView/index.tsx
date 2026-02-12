@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnvironments";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
@@ -17,6 +18,8 @@ export const ProjectTreesView = () => {
 
   useProjectDragAndDropHandler();
   useNodeDragAndDropHandler();
+
+  useSyncEnvironments();
 
   const [showProjectCreationZone, setShowProjectCreationZone] = useState<boolean>(false);
 
