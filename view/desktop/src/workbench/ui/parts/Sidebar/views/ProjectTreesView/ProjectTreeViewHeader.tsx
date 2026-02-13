@@ -28,6 +28,13 @@ export const ProjectTreeViewHeader = () => {
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
+  //TODO project and resource summaries that is linked to manipulating all states is broken for now
+  //until all the resources and projects summaries start using state from shared storage
+  const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = resourceSummaries?.every(() => {
+    return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
+  });
+
   const {
     showModal: showNewProjectModal,
     closeModal: closeNewProjectModal,
@@ -38,13 +45,6 @@ export const ProjectTreeViewHeader = () => {
     clearProjectsCacheAndRefetch();
     clearAllProjectResourcesCache();
   };
-
-  //TODO project and resource summaries that is linked to manipulating all states is broken for now
-  //until all the resources and projects summaries start using state from shared storage
-  const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = resourceSummaries?.every(() => {
-    return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
-  });
 
   const handleCollapseAll = async () => {
     await collapseExpandedProjects();

@@ -1,27 +1,25 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
+import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnvironments";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
-import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
-import { ProjectTree } from "@/workbench/ui/components";
+import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
 import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
 import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectCreationZone } from "./ProjectCreationZone";
+import { ProjectTreesList } from "./ProjectTreesList";
 import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
-
-  const { displayMode } = useWorkspaceModeStore();
-
   useProjectDragAndDropHandler();
   useNodeDragAndDropHandler();
+
+  useSyncEnvironments();
 
   const [showProjectCreationZone, setShowProjectCreationZone] = useState<boolean>(false);
 
@@ -62,10 +60,9 @@ export const ProjectTreesView = () => {
             <Input intent="outlined" contrast={true} placeholder="Search" shortcut="⌘+S" />
           </div>
 
-          <div className="flex h-full flex-col">
-            {!isLoading &&
-              projectsTreesSortedByOrder.map((p) => <ProjectTree key={p.id} tree={p} displayMode={displayMode} />)}
-          </div>
+          <WorkspaceEnvironmentsList />
+
+          <ProjectTreesList />
 
           {showProjectCreationZone && (
             <div className="mt-auto p-2">

@@ -84,7 +84,7 @@
   ],
   "prettier.requireConfig": true,
   "prettier.ignorePath": ".prettierignore",
-  "prettier.configPath": ".prettierrc",   
+  "prettier.configPath": ".prettierrc", 
   "editor.codeActionsOnSave": {
     "source.organizeImports": "explicit"
   }

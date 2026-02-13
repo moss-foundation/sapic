@@ -1,3 +1,5 @@
+import { useContext } from "react";
+
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -5,15 +7,20 @@ import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
 import { ListProjectItem } from "@repo/ipc";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
+
 interface ProjectEnvironmentsListRootControlsProps {
   project: ListProjectItem;
   expanded: boolean;
+  count: number;
 }
 
 export const ProjectEnvironmentsListRootControls = ({
   project,
   expanded,
+  count,
 }: ProjectEnvironmentsListRootControlsProps) => {
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutate: updateEnvironmentListItemState } = usePutEnvironmentListItemState();
@@ -42,16 +49,19 @@ export const ProjectEnvironmentsListRootControls = ({
   };
 
   return (
-    <Tree.RootNodeControls>
-      <Tree.RootNodeTriggers className="overflow-hidden py-[2px]" onClick={onHeaderClick}>
-        <button
-          onClick={onIconClick}
-          className="hover:background-(--moss-list-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
-        >
+    <Tree.RootNodeControls className="cursor-pointer text-sm">
+      <Tree.RootNodeTriggers
+        className="overflow-hidden py-[2px]"
+        onClick={onHeaderClick}
+        style={{ paddingLeft: treePaddingLeft }}
+      >
+        <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
+
         <div className="flex items-center gap-1">
-          <Tree.RootNodeLabel label={project.name} />
+          <Tree.RootNodeLabel label="Environments" className="text-sm" />
+          <Tree.NodeDirCount count={count} />
         </div>
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>

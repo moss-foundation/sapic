@@ -1,19 +1,23 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
 import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
+import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsListRoot";
+import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
 import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootControls } from "./TreeRootControls";
-import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
+import { TreeRootResourcesList } from "./TreeRootResourcesList";
 
 export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
+  const { id } = useContext(ProjectTreeContext);
+
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const dropTargetRootRef = useRef<HTMLUListElement>(null);
 
@@ -43,12 +47,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
     isRenamingNode: isRenamingRootNode,
   });
 
-  const shouldRenderRootChildNodes = calculateShouldRenderRootChildNodes(
-    node,
-    isAddingRootFileNode,
-    isRenamingRootNode
-  );
-
+  const shouldRenderLists = calculateShouldRenderRootChildNodes(node, isAddingRootFileNode, isRenamingRootNode);
   const restrictedNames = projects?.items.map((project) => project.name) ?? [];
 
   return (
@@ -62,7 +61,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
             node={node}
-            shouldRenderChildNodes={shouldRenderRootChildNodes}
+            shouldRenderChildNodes={shouldRenderLists}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
@@ -77,14 +76,18 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
         )}
       </Tree.RootNodeHeader>
 
-      {shouldRenderRootChildNodes && (
-        <TreeRootNodeChildren
-          node={node}
-          isAddingRootFileNode={isAddingRootFileNode}
-          isAddingRootFolderNode={isAddingRootFolderNode}
-          handleAddFormRootSubmit={handleRootAddFormSubmit}
-          handleAddFormRootCancel={handleRootAddFormCancel}
-        />
+      {shouldRenderLists && (
+        <div className="flex flex-col gap-1">
+          <ProjectEnvironmentsListRoot projectId={id} />
+
+          <TreeRootResourcesList
+            tree={node}
+            isAddingRootFileNode={isAddingRootFileNode}
+            isAddingRootFolderNode={isAddingRootFolderNode}
+            handleRootAddFormSubmit={handleRootAddFormSubmit}
+            handleRootAddFormCancel={handleRootAddFormCancel}
+          />
+        </div>
       )}
     </Tree.RootNode>
   );

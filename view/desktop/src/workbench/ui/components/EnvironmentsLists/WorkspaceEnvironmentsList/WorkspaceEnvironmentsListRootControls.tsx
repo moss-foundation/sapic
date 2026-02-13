@@ -41,14 +41,11 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
   return (
     <Tree.RootNodeControls>
       <Tree.RootNodeTriggers className="overflow-hidden py-[2px]" onClick={onHeaderClick}>
-        <button
-          onClick={onIconClick}
-          className="hover:background-(--moss-list-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
-        >
+        <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
 
-        <Tree.RootNodeLabel label="Workspace Environments" />
+        <Tree.RootNodeLabel label="Globals" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>
   );

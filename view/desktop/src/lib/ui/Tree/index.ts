@@ -1,6 +1,7 @@
 import { ActionLabel } from "./components/ActionLabel";
 import { ActionsHover } from "./components/ActionsHover";
 import { ActionsPersistent } from "./components/ActionsPersistent";
+import { Decorator } from "./components/Decorator";
 import { Node } from "./components/Node/Node";
 import { NodeActions } from "./components/Node/NodeActions";
 import { NodeChildren } from "./components/Node/NodeChildren";
@@ -23,7 +24,7 @@ import { RootNodeOrder } from "./components/RootNode/RootNodeOrder";
 import { RootNodeTriggers } from "./components/RootNode/RootNodeTriggers";
 import { Tree } from "./Tree";
 
-interface TreeWithSubcomponents {
+interface TreeWithSubComponents {
   (props: React.ComponentProps<typeof Tree>): React.ReactElement;
   RootNode: typeof RootNode;
   RootNodeActions: typeof RootNodeActions;
@@ -51,9 +52,11 @@ interface TreeWithSubcomponents {
   ActionsPersistent: typeof ActionsPersistent;
   ActionsHover: typeof ActionsHover;
   ActionLabel: typeof ActionLabel;
+
+  Decorator: typeof Decorator;
 }
 
-const TreeWithSubs = Tree as TreeWithSubcomponents;
+const TreeWithSubs = Tree as TreeWithSubComponents;
 
 TreeWithSubs.RootNode = RootNode;
 TreeWithSubs.RootNodeActions = RootNodeActions;
@@ -81,5 +84,7 @@ TreeWithSubs.NodeRenamingForm = NodeRenamingForm;
 TreeWithSubs.ActionsPersistent = ActionsPersistent;
 TreeWithSubs.ActionsHover = ActionsHover;
 TreeWithSubs.ActionLabel = ActionLabel;
+
+TreeWithSubs.Decorator = Decorator;
 
 export { TreeWithSubs as Tree };

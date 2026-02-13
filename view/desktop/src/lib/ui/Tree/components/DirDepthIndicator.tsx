@@ -1,12 +1,15 @@
 import { useContext } from "react";
 
+import { ProjectTreeContext } from "@/workbench/ui/components/ProjectTree/ProjectTreeContext";
+
 import { TreeContext } from "./TreeContext";
 
 export const DirDepthIndicator = ({ depth }: { depth: number }) => {
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
   const { nodeOffset } = useContext(TreeContext);
 
   const iconSize = 16;
-  const left = depth * nodeOffset + iconSize + 1;
+  const left = depth * nodeOffset + treePaddingLeft + iconSize + 1;
 
   return (
     <div

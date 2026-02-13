@@ -1,12 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
+import { useSyncResourceSummaries } from "@/db/resourceSummaries/hooks/useSyncResourceSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ProjectTreeNode, ProjectTreeRootNode } from "@/workbench/ui/components/ProjectTree/types";
-import { useSyncProjectSummaries } from "@/workbench/ui/parts/ProjectTreesView/hooks/useSyncProjectSummaries";
-import { useSyncResourceSummaries } from "@/workbench/ui/parts/ProjectTreesView/hooks/useSyncResourceSummaries";
 
 export interface UseProjectsTreesProps {
   projectsTrees: ProjectTreeRootNode[];

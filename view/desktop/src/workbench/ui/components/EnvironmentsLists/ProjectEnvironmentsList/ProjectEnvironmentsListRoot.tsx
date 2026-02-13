@@ -22,9 +22,9 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
 
   const { data: projects } = useListProjects();
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
-  const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
   const project = projects?.items.find((project) => project.id === projectId);
+  const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
   const expanded = projectEnvironmentListItemState?.expanded ?? false;
 
   const { instruction } = useDropTargetProjectEnvironmentList({
@@ -33,12 +33,16 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
     projectEnvironments: projectEnvironments ?? [],
   });
 
-  if (!project || projectEnvironments?.length === 0) return null;
+  if (!project) return null;
 
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader className="cursor-pointer">
-        <ProjectEnvironmentsListRootControls project={project} expanded={expanded} />
+      <Tree.RootNodeHeader disableIndicator={true}>
+        <ProjectEnvironmentsListRootControls
+          project={project}
+          expanded={expanded}
+          count={projectEnvironments?.length ?? 0}
+        />
       </Tree.RootNodeHeader>
 
       {expanded && (
