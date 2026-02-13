@@ -1,6 +1,4 @@
-use sapic_base::resource::types::primitives::{ResourceId, *};
-use sapic_ipc::contracts::main::resource::FrontendResourcePath;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use ts_rs::TS;
 
 use crate::models::types::{AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription};

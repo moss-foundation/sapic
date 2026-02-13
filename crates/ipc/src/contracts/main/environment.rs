@@ -8,31 +8,9 @@ use sapic_base::{
     project::types::primitives::ProjectId,
 };
 use serde::{Deserialize, Serialize};
-use std::{path::PathBuf, sync::Arc};
+use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
-
-// DEPRECATED
-// Stream Environment
-/// @category Event
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "events.ts")]
-pub struct StreamEnvironmentsEvent {
-    pub id: EnvironmentId,
-
-    /// The id of the project that the environment belongs to.
-    /// If the environment is global, this will be `None`.
-    pub project_id: Option<ProjectId>,
-    pub is_active: bool,
-
-    pub name: String,
-    pub color: Option<String>,
-
-    pub order: Option<isize>,
-    pub total_variables: usize,
-}
 
 /// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
@@ -259,83 +237,4 @@ pub struct DeleteEnvironmentInput {
 #[ts(export, export_to = "operations.ts")]
 pub struct DeleteEnvironmentOutput {
     pub id: EnvironmentId,
-}
-
-//
-// Stream Environments
-//
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamEnvironmentsOutput {
-    pub groups: Vec<EnvironmentGroup>,
-
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
-}
-
-//
-// Stream Project Environments
-//
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectEnvironmentsInput {
-    pub project_id: ProjectId,
-}
-
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectEnvironmentsOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
-}
-
-// DEPRECATED
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct EnvironmentGroup {
-    pub project_id: Arc<String>,
-    pub expanded: bool,
-    pub order: Option<isize>,
-}
-
-//
-// Update Environment Group
-//
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct UpdateEnvironmentGroupInput {
-    #[serde(flatten)]
-    pub inner: UpdateEnvironmentGroupParams,
-}
-
-//
-// Batch Update Environment Group
-//
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct BatchUpdateEnvironmentGroupInput {
-    #[validate(nested)]
-    pub items: Vec<UpdateEnvironmentGroupParams>,
 }

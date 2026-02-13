@@ -1,12 +1,10 @@
 use joinerror::{OptionExt, ResultExt};
-use moss_project::models::{events::*, operations::*};
-use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::{
     main::{OpenInTarget, environment::*, project::*, resource::*, workspace::*},
     other::CancelRequestInput,
 };
 use sapic_runtime::errors::Unavailable;
-use tauri::{Window as TauriWindow, ipc::Channel as TauriChannel};
+use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
 

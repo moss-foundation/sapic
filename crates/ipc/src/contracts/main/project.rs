@@ -81,35 +81,6 @@ pub struct Contributor {
 }
 
 //
-// Stream Projects
-//
-
-// DEPRECATED
-/// @category Event
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "events.ts")]
-pub struct StreamProjectsEvent {
-    pub id: ProjectId,
-    pub name: String,
-    pub branch: Option<BranchInfo>,
-    pub icon_path: Option<PathBuf>,
-    pub archived: bool,
-}
-
-// DEPRECATED
-/// @category Operation
-#[derive(Debug, Deserialize, Serialize, TS)]
-#[serde(rename_all = "camelCase")]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectsOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
-}
-
-//
 // List Projects
 //
 

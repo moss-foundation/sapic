@@ -311,8 +311,6 @@ pub async fn run<R: TauriRuntime>() {
             commands::update_environment,
             commands::batch_update_environment,
             commands::delete_environment,
-            commands::update_environment_group,
-            commands::batch_update_environment_group,
             commands::describe_environment,
             //
             // Project

@@ -1,6 +1,5 @@
 use sapic_base::resource::types::primitives::*;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 

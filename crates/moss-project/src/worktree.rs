@@ -237,8 +237,6 @@ impl Worktree {
         &self,
         ctx: Arc<dyn AnyAsyncContext>, // TODO: use ctx ctx.done() to cancel the scan if needed
         path: &Path,
-        // expanded_entries: Arc<HashSet<ResourceId>>,
-        // all_entry_keys: Arc<HashMap<String, JsonValue>>,
         sender: mpsc::UnboundedSender<ScannedEntry>,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
@@ -268,8 +266,6 @@ impl Worktree {
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
-            // let expanded_entries = expanded_entries.clone();
-            // let all_entry_keys = all_entry_keys.clone();
 
             // activity_handle.emit_progress(Some(localize!(
             //     NO_TRANSLATE_KEY,
@@ -281,25 +277,10 @@ impl Worktree {
                 let mut new_jobs = Vec::new();
                 let ctx_clone = ctx_clone.clone();
                 if !job.path.as_os_str().is_empty() {
-                    match process_entry(
-                        ctx_clone.clone(),
-                        job.path.clone(),
-                        // &all_entry_keys,
-                        // &expanded_entries,
-                        &fs,
-                        &job.abs_path,
-                    )
-                    .await
+                    match process_entry(ctx_clone.clone(), job.path.clone(), &fs, &job.abs_path)
+                        .await
                     {
                         Ok(Some((entry, desc))) => {
-                            // if desc.expanded {
-                            //     state
-                            //         .write()
-                            //         .await
-                            //         .expanded_entries
-                            //         .insert(entry.id.clone());
-                            // }
-
                             if let Err(e) = sender.send(desc) {
                                 session::debug!(format!(
                                     "failed to send EntryDescription to tokio mpsc channel: {}",
@@ -318,8 +299,9 @@ impl Worktree {
                         }
                         Err(err) => {
                             session::error!(format!(
-                                "error processing dir: {}",
-                                job.abs_path.display()
+                                "error processing dir {}: {}",
+                                job.abs_path.display(),
+                                err,
                             ));
                             // let _ = app_delegate.emit_oneshot(ToLocation::Toast {
                             //     activity_id: "worktree_scan_process_entry_error",

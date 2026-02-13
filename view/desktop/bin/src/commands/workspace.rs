@@ -2,7 +2,7 @@ use joinerror::ResultExt;
 use moss_applib::TauriAppRuntime;
 use moss_workspace::models::operations::*;
 use sapic_ipc::contracts::main::{environment::*, project::*};
-use tauri::{Window as TauriWindow, ipc::Channel as TauriChannel};
+use tauri::Window as TauriWindow;
 
 use crate::commands::primitives::*;
 
@@ -307,30 +307,4 @@ pub async fn describe_environment<'a, R: tauri::Runtime>(
         |ctx, _, _, window| async move { window.describe_environment(&ctx, &input).await },
     )
     .await
-}
-
-// TODO: This command will be removed once the frontend gets rid of it
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
-pub async fn update_environment_group<'a, R: tauri::Runtime>(
-    _ctx: AsyncContext<'a>,
-    _app: App<'a, R>,
-    _window: TauriWindow<R>,
-    _input: UpdateEnvironmentGroupInput,
-    _options: Options,
-) -> joinerror::Result<()> {
-    Ok(())
-}
-
-// TODO: This command will be removed once the frontend gets rid of it
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(_app), fields(window = _window.label()))]
-pub async fn batch_update_environment_group<'a, R: tauri::Runtime>(
-    _ctx: AsyncContext<'a>,
-    _app: App<'a, R>,
-    _window: TauriWindow<R>,
-    _input: BatchUpdateEnvironmentGroupInput,
-    _options: Options,
-) -> joinerror::Result<()> {
-    Ok(())
 }
