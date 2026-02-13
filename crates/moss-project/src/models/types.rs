@@ -67,8 +67,6 @@ pub struct UpdateItemResourceParams {
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
 
     pub protocol: Option<ResourceProtocol>,
     pub url: Option<String>,

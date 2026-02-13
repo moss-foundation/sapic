@@ -21,7 +21,6 @@ async fn describe_project_internal() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -55,7 +54,6 @@ async fn describe_project_external() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: Some(external_path.clone()),
                     git_params: None,
                     icon_path: None,

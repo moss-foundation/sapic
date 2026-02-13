@@ -13,7 +13,6 @@ use validator::Validate;
 
 use crate::MainWindow;
 
-// FIXME: Where should I put this?
 const PREDEFINED_ENVIRONMENTS: LazyCell<Vec<PredefinedEnvironment>> = LazyCell::new(|| {
     vec![PredefinedEnvironment {
         name: "Globals".to_string(),
@@ -40,7 +39,6 @@ impl<R: AppRuntime> MainWindow<R> {
                         env_id: EnvironmentId::new(),
                         project_id: None,
                         name: env.name.clone(),
-                        order: 0,
                         color: env.color.clone(),
                         variables: vec![],
                     },

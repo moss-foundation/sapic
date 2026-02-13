@@ -255,7 +255,6 @@ impl RuntimeProject {
                     env_id: id.clone(),
                     project_id: input.project_id.clone(),
                     name: input.name.clone(),
-                    order: input.order.clone(),
                     color: input.color.clone(),
                     variables: input.variables.clone(),
                 },

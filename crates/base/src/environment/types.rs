@@ -20,7 +20,6 @@ pub struct VariableInfo {
     pub local_value: Option<JsonValue>,
     pub disabled: bool,
     // pub kind: VariableKind,
-    pub order: Option<isize>,
     pub desc: Option<String>,
 }
 

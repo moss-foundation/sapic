@@ -19,7 +19,6 @@ pub async fn activate_environment_workspace_success() {
     let create_input = CreateEnvironmentInput {
         project_id: None,
         name: "New Environment".to_string(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -100,7 +99,6 @@ pub async fn activate_environment_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -114,7 +112,6 @@ pub async fn activate_environment_project_success() {
     let create_input = CreateEnvironmentInput {
         project_id: Some(project_id.clone()),
         name: "New Environment".to_string(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -196,7 +193,6 @@ pub async fn activate_environment_project_nonexistent_environment() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,

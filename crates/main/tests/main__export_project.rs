@@ -22,7 +22,6 @@ async fn export_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -59,7 +58,6 @@ async fn export_project_success() {
             &ImportProjectInput {
                 inner: ImportProjectParams {
                     name: "Imported".to_string(),
-                    order: 0,
                     source: ImportProjectSource::Archive(ImportArchiveParams { archive_path }),
                     icon_path: None,
                 },

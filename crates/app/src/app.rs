@@ -199,7 +199,6 @@ impl<R: AppRuntime> App<R> {
             workspace_id.clone(),
             ProjectServiceFs::new(self.fs.clone(), projects_path.clone()),
             self.fs.clone(),
-            self.storage.clone(),
         );
 
         let environments_path = abs_path.join("environments");
@@ -285,7 +284,6 @@ impl<R: AppRuntime> App<R> {
             workspace_id.clone(),
             ProjectServiceFs::new(self.fs.clone(), projects_path.clone()),
             self.fs.clone(),
-            self.storage.clone(),
         );
 
         let environments_path = abs_path.join("environments");

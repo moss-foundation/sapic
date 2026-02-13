@@ -22,7 +22,6 @@ async fn list_project_resources_empty_project() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Test Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -59,7 +58,6 @@ async fn list_project_resources_single_entry() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Test Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -116,7 +114,6 @@ async fn list_project_resources_multiple_entries_same_directory() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Test Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -170,7 +167,6 @@ async fn list_project_resources_multiple_directories() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Test Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,

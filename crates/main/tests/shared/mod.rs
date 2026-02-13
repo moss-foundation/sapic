@@ -166,7 +166,6 @@ pub async fn set_up_test_main_window() -> (
             workspace_id.clone(),
             ProjectServiceFs::new(fs.clone(), workspace_projects_path),
             fs.clone(),
-            storage.clone(),
         );
 
         let environment_service = EnvironmentService::new(

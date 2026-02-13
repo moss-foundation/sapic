@@ -179,7 +179,6 @@ pub struct CreateProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: isize,
     pub external_path: Option<PathBuf>,
 
     pub git_params: Option<CreateProjectGitParams>,
@@ -236,7 +235,6 @@ pub struct ImportProjectInput {
 pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
-    pub order: isize,
     pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
@@ -404,8 +402,6 @@ pub struct UpdateProjectParams {
     // TODO: add validation
     #[ts(optional, type = "ChangePath")]
     pub icon_path: Option<ChangePath>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
 }
 
 /// @category Operation

@@ -97,8 +97,6 @@ struct ScanJob {
 
 pub struct ModifyParams {
     pub name: Option<String>,
-    pub expanded: Option<bool>,
-    pub order: Option<isize>,
     pub path: Option<PathBuf>,
 
     pub protocol: Option<ResourceProtocol>,
@@ -603,44 +601,6 @@ impl Worktree {
 
         let path = entry.path_rx.borrow().clone();
 
-        let mut batch_input = vec![];
-        let order_key = key_resource_order(&id);
-
-        if let Some(order) = params.order {
-            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
-        }
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
-            } else {
-                state_lock.expanded_entries.remove(id);
-            }
-            batch_input.push((
-                KEY_EXPANDED_ENTRIES,
-                serde_json::to_value(&state_lock.expanded_entries)?,
-            ));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(path);
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Project(self.project_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update database after updating dir entry: {}",
-                e
-            ));
-        }
-
         Ok(path)
     }
 
@@ -702,44 +662,6 @@ impl Worktree {
             .await?;
 
         let path = entry.path_rx.borrow().clone();
-
-        let mut batch_input = vec![];
-        let order_key = key_resource_order(&id);
-
-        if let Some(order) = params.order {
-            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
-        }
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
-            } else {
-                state_lock.expanded_entries.remove(id);
-            }
-            batch_input.push((
-                KEY_EXPANDED_ENTRIES,
-                serde_json::to_value(&state_lock.expanded_entries)?,
-            ));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(path);
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Project(self.project_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update database after updating dir entry: {}",
-                e
-            ));
-        }
 
         Ok(path)
     }

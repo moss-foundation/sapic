@@ -115,8 +115,6 @@ impl Project {
                     name: input.name,
                     protocol: input.protocol,
                     url: input.url,
-                    expanded: input.expanded,
-                    order: input.order,
                     path: input.path,
 
                     query_params_to_add: input.query_params_to_add,
@@ -156,8 +154,6 @@ impl Project {
                 &input.id,
                 ModifyParams {
                     name: input.name,
-                    order: input.order,
-                    expanded: input.expanded,
                     protocol: None,
                     url: None,
                     path: input.path,

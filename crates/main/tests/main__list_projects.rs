@@ -27,7 +27,6 @@ async fn list_projects_one() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.clone(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -59,7 +58,6 @@ async fn list_projects_multiple() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Internal".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -78,7 +76,6 @@ async fn list_projects_multiple() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "External".to_string(),
-                    order: 0,
                     external_path: Some(external_path.clone()),
                     git_params: None,
                     icon_path: None,

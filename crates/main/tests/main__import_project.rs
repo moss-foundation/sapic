@@ -24,7 +24,6 @@ async fn import_external_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: Some(external_path.clone()),
                     git_params: None,
                     icon_path: None,
@@ -41,7 +40,6 @@ async fn import_external_project_success() {
             &ImportProjectInput {
                 inner: ImportProjectParams {
                     name: "Imported".to_string(),
-                    order: 0,
                     source: ImportProjectSource::Disk(ImportDiskParams { external_path }),
                     icon_path: None,
                 },

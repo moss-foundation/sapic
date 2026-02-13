@@ -27,7 +27,6 @@ async fn create_environment_workspace_success() {
     let create_input = CreateEnvironmentInput {
         project_id: None,
         name: random_environment_name(),
-        order: 0,
         color: None,
         variables: vec![var_params.clone()],
     };
@@ -88,7 +87,6 @@ async fn create_environment_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Test Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -110,7 +108,6 @@ async fn create_environment_project_success() {
     let create_input = CreateEnvironmentInput {
         project_id: Some(project_id.clone()),
         name: random_environment_name(),
-        order: 0,
         color: None,
         variables: vec![var_params.clone()],
     };
@@ -168,7 +165,6 @@ async fn create_environment_project_nonexistent_project() {
     let create_input = CreateEnvironmentInput {
         project_id: Some(ProjectId::new()),
         name: random_environment_name(),
-        order: 0,
         color: None,
         variables: vec![],
     };

@@ -19,7 +19,6 @@ async fn rename_project_nochange() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: old_project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -39,8 +38,6 @@ async fn rename_project_nochange() {
                     id: id.clone(),
                     name: None,
                     icon_path: None,
-                    order: None,
-                    expanded: None,
                 },
             },
         )
@@ -60,8 +57,6 @@ async fn rename_project_nochange() {
                     id: id.clone(),
                     name: Some(old_project_name.to_string()),
                     icon_path: None,
-                    order: None,
-                    expanded: None,
                 },
             },
         )
@@ -85,7 +80,6 @@ async fn rename_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: old_project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -105,8 +99,6 @@ async fn rename_project_success() {
                     id,
                     name: Some(new_project_name.clone()),
                     icon_path: None,
-                    order: None,
-                    expanded: None,
                 },
             },
         )

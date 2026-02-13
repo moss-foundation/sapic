@@ -1,8 +1,6 @@
 use joinerror::ResultExt;
 use moss_fs::FileSystem;
 use moss_git::{repository::Repository, url::GitUrl};
-use moss_storage2::{KvStorage, models::primitives::StorageScope};
-use rustc_hash::FxHashMap;
 use sapic_base::{
     other::GitProviderKind,
     project::{config::ProjectConfig, manifest::ProjectManifest, types::primitives::ProjectId},
@@ -23,27 +21,18 @@ use crate::{
     user::account::Account,
 };
 
-pub static KEY_PROJECT_PREFIX: &'static str = "project";
-
-pub fn key_project_order(id: &ProjectId) -> String {
-    format!("{KEY_PROJECT_PREFIX}.{id}.order")
-}
-
 pub struct ProjectItem {
     pub id: ProjectId,
     pub internal_abs_path: PathBuf,
     pub manifest: ProjectManifest,
     pub config: ProjectConfig,
-
-    // DEPRECATED: we will get rid of this field in the future
-    pub order: Option<isize>,
 }
 
 pub struct ProjectService {
+    #[allow(unused)]
     workspace_id: WorkspaceId,
     backend: Arc<dyn ProjectServiceFs>,
     _fs: Arc<dyn FileSystem>,
-    storage: Arc<dyn KvStorage>,
 }
 
 impl ProjectService {
@@ -51,13 +40,11 @@ impl ProjectService {
         workspace_id: WorkspaceId,
         backend: Arc<dyn ProjectServiceFs>,
         fs: Arc<dyn FileSystem>,
-        storage: Arc<dyn KvStorage>,
     ) -> Self {
         Self {
             workspace_id,
             backend,
             _fs: fs,
-            storage,
         }
     }
 
@@ -65,7 +52,6 @@ impl ProjectService {
         &self,
         ctx: &dyn AnyAsyncContext,
         name: String,
-        order: isize,
         external_abs_path: Option<PathBuf>,
         git_params: Option<CreateProjectGitParams>,
         icon_path: Option<PathBuf>,
@@ -94,7 +80,6 @@ impl ProjectService {
             internal_abs_path,
             manifest,
             config,
-            order: Some(order),
         })
     }
 
@@ -136,7 +121,6 @@ impl ProjectService {
             internal_abs_path,
             manifest,
             config,
-            order: None,
         };
 
         Ok((project_item, repository))
@@ -169,7 +153,6 @@ impl ProjectService {
             internal_abs_path,
             manifest,
             config,
-            order: None,
         };
 
         Ok(project_item)
@@ -202,7 +185,6 @@ impl ProjectService {
             internal_abs_path,
             manifest,
             config,
-            order: None,
         };
 
         Ok(project_item)
@@ -240,24 +222,6 @@ impl ProjectService {
     // In WorkspaceService::workspaces we don't need them
     // I'll keep them for now and if needed we can change it
     pub async fn projects(&self, ctx: &dyn AnyAsyncContext) -> joinerror::Result<Vec<ProjectItem>> {
-        let metadata = self
-            .storage
-            .get_batch_by_prefix(
-                ctx,
-                StorageScope::Workspace(self.workspace_id.inner()),
-                KEY_PROJECT_PREFIX,
-            )
-            .await
-            .unwrap_or_else(|e| {
-                tracing::warn!(
-                    "failed to fetch metadata from database when listing projects: {}",
-                    e
-                );
-                Vec::new()
-            })
-            .into_iter()
-            .collect::<FxHashMap<_, _>>();
-
         let discovered_projects = self
             .backend
             .lookup_projects(ctx)
@@ -271,9 +235,6 @@ impl ProjectService {
                 internal_abs_path: discovered.abs_path,
                 manifest: discovered.manifest,
                 config: discovered.config,
-                order: metadata
-                    .get(&key_project_order(&discovered.id))
-                    .and_then(|v| serde_json::from_value(v.clone()).ok()),
             })
             .collect();
 

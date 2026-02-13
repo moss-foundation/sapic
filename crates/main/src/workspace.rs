@@ -457,7 +457,6 @@ impl Workspace for RuntimeWorkspace {
             .create_project(
                 ctx,
                 params.name.clone(),
-                params.order,
                 params.external_path,
                 git_params.clone(),
                 params.icon_path.clone(),
@@ -996,7 +995,6 @@ impl Workspace for RuntimeWorkspace {
                     env_id: id.clone(),
                     project_id: input.project_id.clone(),
                     name: input.name.clone(),
-                    order: input.order.clone(),
                     color: input.color.clone(),
                     variables: input.variables.clone(),
                 },

@@ -120,7 +120,6 @@ pub struct CreateEnvironmentInput {
     pub project_id: Option<ProjectId>,
     #[validate(length(min = 1))]
     pub name: String,
-    pub order: isize,
     pub color: Option<String>,
     pub variables: Vec<AddVariableParams>,
 }
@@ -146,18 +145,6 @@ pub struct CreateEnvironmentOutput {
 // Update Environment
 //
 
-// DEPRECATED
-/// @category Type
-#[derive(Debug, Serialize, Deserialize, TS, Validate)]
-#[serde(rename_all = "camelCase")]
-#[ts(optional_fields)]
-#[ts(export, export_to = "types.ts")]
-pub struct UpdateEnvironmentGroupParams {
-    pub project_id: ProjectId,
-    pub expanded: Option<bool>,
-    pub order: Option<isize>,
-}
-
 /// @category Type
 #[derive(Clone, Debug, Deserialize, Validate, TS)]
 #[ts(optional_fields)]
@@ -167,10 +154,8 @@ pub struct UpdateEnvironmentParams {
     pub project_id: Option<ProjectId>,
     pub id: EnvironmentId,
     pub name: Option<String>,
-    pub order: Option<isize>,
     #[ts(optional, type = "ChangeString")]
     pub color: Option<ChangeString>,
-    pub expanded: Option<bool>,
     pub vars_to_add: Vec<AddVariableParams>,
     pub vars_to_update: Vec<UpdateVariableParams>,
     pub vars_to_delete: Vec<VariableId>,
