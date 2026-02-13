@@ -1,10 +1,11 @@
 import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceService } from "@/domains/resource/resourceService";
-import { StreamResourcesEvent, UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
+import { UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_DESCRIBE_PROJECT_RESOURCE_QUERY_KEY } from "./useDescribeProjectResource";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "./useStreamProjectResources";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "./useListProjectResources";
 
 export interface UseUpdateProjectResourceInput {
   projectId: string;
@@ -21,8 +22,8 @@ export const useUpdateProjectResource = () => {
 
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
-        [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
-        (old: StreamResourcesEvent[]) => {
+        [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
+        (old: ListProjectResourceItem[]) => {
           return old.map((oldResource) => {
             const resourceDataFromBackend = "ITEM" in data ? data.ITEM : data.DIR;
             const updatedResourceData =

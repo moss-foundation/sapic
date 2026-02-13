@@ -5,10 +5,10 @@ use moss_project::{
     constants, dirs,
     models::{
         operations::{BatchCreateResourceInput, BatchCreateResourceKind},
-        primitives::ResourceClass,
         types::{CreateDirResourceParams, CreateItemResourceParams},
     },
 };
+use sapic_base::resource::types::primitives::ResourceClass;
 use std::path::PathBuf;
 
 use crate::shared::{RESOURCES_ROOT_DIR, create_test_project, random_entry_name};

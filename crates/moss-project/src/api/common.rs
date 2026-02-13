@@ -6,9 +6,9 @@ use moss_common::continue_if_err;
 use moss_hcl::{Block, json_to_hcl};
 use moss_logging::session;
 use moss_storage2::models::primitives::StorageScope;
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::{ResourceClass, ResourceId, ResourceProtocol};
 use sapic_core::context::AnyAsyncContext;
-use sapic_ipc::ValidationResultExt;
+use sapic_ipc::{ValidationResultExt, contracts::main::resource::FrontendResourcePath};
 use std::collections::HashMap;
 use validator::Validate;
 
@@ -16,10 +16,7 @@ use crate::{
     Project,
     models::{
         operations::CreateResourceOutput,
-        primitives::{
-            FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId,
-            ResourceClass, ResourceProtocol, UrlencodedParamId,
-        },
+        primitives::{FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId},
         types::{
             AfterUpdateDirResourceDescription, AfterUpdateItemResourceDescription,
             CreateDirResourceParams, CreateItemResourceParams, UpdateDirResourceParams,
@@ -118,8 +115,6 @@ impl Project {
                     name: input.name,
                     protocol: input.protocol,
                     url: input.url,
-                    expanded: input.expanded,
-                    order: input.order,
                     path: input.path,
 
                     query_params_to_add: input.query_params_to_add,
@@ -159,8 +154,6 @@ impl Project {
                 &input.id,
                 ModifyParams {
                     name: input.name,
-                    order: input.order,
-                    expanded: input.expanded,
                     protocol: None,
                     url: None,
                     path: input.path,

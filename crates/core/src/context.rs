@@ -271,6 +271,9 @@ pub trait AnyAsyncContext: AwaitCancel + Send + Sync + 'static {
 
     /// Get a canceller handle to trigger cancellation.
     fn get_canceller(&self) -> Canceller;
+
+    /// Produce an owned `Arc<dyn AnyAsyncContext>` for use in spawned tasks.
+    fn clone_arc(&self) -> Arc<dyn AnyAsyncContext>;
 }
 
 /// Internal context structure (not directly exposed).
@@ -313,6 +316,11 @@ impl AnyAsyncContext for ArcContext {
 
     fn get_canceller(&self) -> Canceller {
         self.0.get_canceller()
+    }
+
+    fn clone_arc(&self) -> Arc<dyn AnyAsyncContext> {
+        let arc: Arc<dyn AnyAsyncContext> = Arc::new(self.clone());
+        arc
     }
 }
 

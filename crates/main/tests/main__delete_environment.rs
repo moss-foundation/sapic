@@ -1,4 +1,4 @@
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::{set_up_test_main_window, test_list_environments};
 use moss_testutils::random_name::random_environment_name;
 use sapic_base::{
     environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
@@ -18,7 +18,6 @@ async fn delete_environment_workspace_success() {
     let create_input = CreateEnvironmentInput {
         project_id: None,
         name: random_environment_name(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -41,7 +40,7 @@ async fn delete_environment_workspace_success() {
         .unwrap();
 
     // Check that no environment exists
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert_eq!(environments.len(), 0);
 
@@ -78,7 +77,6 @@ async fn delete_environment_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -91,7 +89,6 @@ async fn delete_environment_project_success() {
     let create_input = CreateEnvironmentInput {
         project_id: Some(project_id.clone()),
         name: random_environment_name(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -114,7 +111,7 @@ async fn delete_environment_project_success() {
         .unwrap();
 
     // Check that no environment exists
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert_eq!(environments.len(), 0);
 
@@ -151,7 +148,6 @@ async fn delete_environment_project_nonexistent_environment() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: "Project".to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,

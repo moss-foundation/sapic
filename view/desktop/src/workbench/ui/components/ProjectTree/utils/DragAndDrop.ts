@@ -9,7 +9,7 @@ import {
   DropTargetRecord,
   ElementDragPayload,
 } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
-import { StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "../constants";
 import { DragNode, DropNode, DropRootNode, ProjectTreeNode } from "../types";
@@ -85,18 +85,16 @@ export const doesLocationHasProjectTreeNode = (location: DragLocationHistory): b
   return location.current.dropTargets[0].data.type === ProjectDragType.NODE;
 };
 
-export const getAllNestedResources = (node: ProjectTreeNode): StreamResourcesEvent[] => {
-  const result: StreamResourcesEvent[] = [];
+export const getAllNestedResources = (node: ProjectTreeNode): ListProjectResourceItem[] => {
+  const result: ListProjectResourceItem[] = [];
 
   result.push({
     id: node.id,
     name: node.name,
     kind: node.kind,
-    order: node.order,
     class: node.class,
     path: node.path,
     protocol: node.protocol,
-    expanded: node.expanded,
   });
 
   for (const child of node.childNodes) {

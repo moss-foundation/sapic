@@ -5,5 +5,4 @@ pub mod create_resource;
 pub mod delete_resource;
 pub mod describe_resource;
 mod execute_vcs_operation;
-pub mod stream_resources;
 pub mod update_resource;

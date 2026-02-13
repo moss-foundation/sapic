@@ -18,10 +18,8 @@ export const projectIpc: IProjectIpc = {
     return await invoke("import_project", { input });
   },
 
-  streamProjects: async (channelEvent) => {
-    return await invoke("stream_projects", {
-      channel: channelEvent,
-    });
+  listProjects: async () => {
+    return await invoke("main__list_projects");
   },
 
   updateProject: async (input) => {

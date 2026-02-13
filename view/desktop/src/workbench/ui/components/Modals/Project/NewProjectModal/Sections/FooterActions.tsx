@@ -1,7 +1,7 @@
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 
-import { CREATE_TAB, IMPORT_TAB } from "../constansts";
+import { CREATE_TAB, IMPORT_TAB } from "../constants";
 
 interface FooterActionsProps {
   openAutomatically: boolean;

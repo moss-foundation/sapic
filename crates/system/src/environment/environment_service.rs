@@ -30,7 +30,6 @@ pub struct CreateEnvironmentItemParams {
     pub env_id: EnvironmentId,
     pub project_id: Option<ProjectId>,
     pub name: String,
-    pub order: isize,
     pub color: Option<String>,
     pub variables: Vec<AddVariableParams>,
 }
@@ -268,7 +267,6 @@ impl EnvironmentService {
                         global_value: Some(global_value),
                         local_value,
                         disabled: var.options.disabled,
-                        order: None, // TODO: REMOVE
                         desc: var.description.clone(),
                     },
                 );

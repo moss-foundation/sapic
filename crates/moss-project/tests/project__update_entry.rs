@@ -8,7 +8,6 @@ use moss_project::{
     dirs,
     models::{
         operations::{CreateResourceInput, UpdateResourceInput},
-        primitives::{ResourceClass, ResourceProtocol},
         types::{
             BodyInfo, CreateItemResourceParams, UpdateBodyParams, UpdateDirResourceParams,
             UpdateItemResourceParams,
@@ -21,13 +20,10 @@ use moss_project::{
             },
         },
     },
-    storage::{KEY_EXPANDED_ENTRIES, key_resource_order},
 };
-use moss_storage2::models::primitives::StorageScope;
 use moss_testutils::fs_specific::FILENAME_SPECIAL_CHARS;
 use moss_text::sanitized::sanitize;
-use sapic_base::resource::types::primitives::ResourceId;
-use sapic_runtime::globals::GlobalKvStorage;
+use sapic_base::resource::types::primitives::{ResourceClass, ResourceProtocol};
 use serde_json::{Value as JsonValue, json};
 use std::path::{Path, PathBuf};
 
@@ -176,111 +172,6 @@ async fn rename_dir_entry_special_chars_in_name() {
         assert!(expected_dir.is_dir());
     }
 
-    // Cleanup
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn update_dir_entry_order() {
-    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
-
-    let entry_name = random_entry_name();
-
-    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
-
-    let _ = project
-        .update_resource::<MockAppRuntime>(
-            &ctx,
-            &app_delegate,
-            UpdateResourceInput::Dir(UpdateDirResourceParams {
-                id: id.clone(),
-                path: None,
-                name: None,
-                order: Some(42),
-                expanded: None,
-            }),
-        )
-        .await
-        .unwrap();
-
-    let storage = GlobalKvStorage::get(&app_delegate);
-    let storage_scope = StorageScope::Project(project.id().inner());
-
-    // Check order was updated
-    let order_value = storage
-        .get(&ctx, storage_scope, &key_resource_order(&id))
-        .await
-        .unwrap()
-        .unwrap();
-
-    let order: isize = serde_json::from_value(order_value).unwrap();
-
-    assert_eq!(order, 42);
-
-    // Cleanup
-    cleanup().await;
-}
-
-#[tokio::test]
-async fn expand_and_collapse_dir_entry() {
-    let (ctx, app_delegate, _, mut project, cleanup) = create_test_project().await;
-
-    let entry_name = random_entry_name();
-
-    let id = create_test_component_dir_entry(&ctx, &mut project, &entry_name).await;
-
-    let storage = GlobalKvStorage::get(&app_delegate);
-    let storage_scope = StorageScope::Project(project.id().inner());
-
-    // Expanding the entry
-    let _ = project
-        .update_resource::<MockAppRuntime>(
-            &ctx,
-            &app_delegate,
-            UpdateResourceInput::Dir(UpdateDirResourceParams {
-                id: id.clone(),
-                path: None,
-                name: None,
-                order: None,
-                expanded: Some(true),
-            }),
-        )
-        .await
-        .unwrap();
-
-    // Check expanded_items contains the entry id
-    let expanded_items_value = storage
-        .get(&ctx, storage_scope.clone(), KEY_EXPANDED_ENTRIES)
-        .await
-        .unwrap()
-        .unwrap();
-    let expanded_items: Vec<ResourceId> = serde_json::from_value(expanded_items_value).unwrap();
-    assert!(expanded_items.contains(&id));
-
-    // Collapsing the entry
-    let _ = project
-        .update_resource::<MockAppRuntime>(
-            &ctx,
-            &app_delegate,
-            UpdateResourceInput::Dir(UpdateDirResourceParams {
-                id: id.clone(),
-                path: None,
-                name: None,
-                order: None,
-                expanded: Some(false),
-            }),
-        )
-        .await
-        .unwrap();
-
-    // Check expanded_items no longer contains the entry id
-    let expanded_items_value = storage
-        .get(&ctx, storage_scope.clone(), KEY_EXPANDED_ENTRIES)
-        .await
-        .unwrap()
-        .unwrap();
-    let expanded_items: Vec<ResourceId> = serde_json::from_value(expanded_items_value).unwrap();
-    assert!(!expanded_items.contains(&id));
     // Cleanup
     cleanup().await;
 }
@@ -454,8 +345,6 @@ async fn update_item_entry_endpoint_headers() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -506,8 +395,6 @@ async fn update_item_entry_endpoint_headers() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -540,8 +427,6 @@ async fn update_item_entry_endpoint_headers() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![AddHeaderParams {
@@ -632,8 +517,6 @@ async fn update_item_entry_endpoint_path_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -683,8 +566,6 @@ async fn update_item_entry_endpoint_path_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -717,8 +598,6 @@ async fn update_item_entry_endpoint_path_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -809,8 +688,6 @@ async fn update_item_entry_endpoint_query_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -860,8 +737,6 @@ async fn update_item_entry_endpoint_query_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -894,8 +769,6 @@ async fn update_item_entry_endpoint_query_params() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -981,8 +854,6 @@ async fn test_item_entry_endpoint_remove_body() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1042,8 +913,6 @@ async fn test_item_entry_endpoint_update_text() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1105,8 +974,6 @@ async fn test_item_entry_endpoint_update_json() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1165,8 +1032,6 @@ async fn test_item_entry_endpoint_update_xml() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1230,8 +1095,6 @@ async fn test_item_entry_endpoint_update_binary() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1303,8 +1166,6 @@ async fn test_item_entry_endpoint_update_urlencoded() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1368,8 +1229,6 @@ async fn test_item_entry_endpoint_update_urlencoded() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1419,8 +1278,6 @@ async fn test_item_entry_endpoint_update_urlencoded() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1502,8 +1359,6 @@ async fn test_item_entry_endpoint_update_formdata() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1567,8 +1422,6 @@ async fn test_item_entry_endpoint_update_formdata() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1618,8 +1471,6 @@ async fn test_item_entry_endpoint_update_formdata() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],
@@ -1688,8 +1539,6 @@ async fn test_item_entry_endpoint_update_change_body_type() {
                 id: id.clone(),
                 path: None,
                 name: None,
-                order: None,
-                expanded: None,
                 protocol: None,
                 url: None,
                 headers_to_add: vec![],

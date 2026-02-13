@@ -1,7 +1,8 @@
 pub mod http;
 
 use http::*;
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::{ResourceId, *};
+use sapic_ipc::contracts::main::resource::FrontendResourcePath;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::path::{Path, PathBuf};
@@ -9,8 +10,7 @@ use ts_rs::TS;
 use validator::{Validate, ValidationError};
 
 use crate::models::primitives::{
-    FormDataParamId, FrontendResourcePath, HeaderId, PathParamId, QueryParamId, ResourceClass,
-    ResourceProtocol, UrlencodedParamId,
+    FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId,
 };
 
 /// @category Type
@@ -67,8 +67,6 @@ pub struct UpdateItemResourceParams {
 
     #[validate(length(min = 1))]
     pub name: Option<String>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
 
     pub protocol: Option<ResourceProtocol>,
     pub url: Option<String>,

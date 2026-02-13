@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent } from "react";
 
-import { useStreamedProjectsWithResources } from "@/adapters";
+import { useProjectsWithResources } from "@/adapters";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchGetTreeItemState";
@@ -8,7 +8,7 @@ import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/tre
 export const useSyncResourceSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projectsWithResources, isLoading } = useStreamedProjectsWithResources();
+  const { data: projectsWithResources, isLoading } = useProjectsWithResources();
 
   const { data: treeItemStates } = useBatchGetTreeItemState(
     projectsWithResources.flatMap((project) => project.resources.map((resource) => resource.id)),
@@ -32,8 +32,8 @@ export const useSyncResourceSummaries = () => {
               ...resource,
               protocol: resource.protocol ?? undefined,
 
-              order: treeItemState?.order ?? resource.order,
-              expanded: treeItemState?.expanded ?? resource.expanded,
+              order: treeItemState?.order ?? draft.order,
+              expanded: treeItemState?.expanded ?? draft.expanded,
             });
           });
         } else {
@@ -46,8 +46,8 @@ export const useSyncResourceSummaries = () => {
             kind: resource.kind,
             protocol: resource.protocol ?? undefined,
 
-            order: treeItemState?.order ?? resource.order,
-            expanded: treeItemState?.expanded ?? resource.expanded,
+            order: treeItemState?.order,
+            expanded: treeItemState?.expanded,
           });
         }
       });

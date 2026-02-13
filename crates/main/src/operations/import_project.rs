@@ -60,8 +60,6 @@ impl<R: AppRuntime> MainWindow<R> {
         Ok(ImportProjectOutput {
             id: project.id.clone(),
             name: details.name,
-            order: project.order,
-            expanded: true, // HACK: hardcoded value
             icon_path: project.handle.icon_path(),
             abs_path: project.handle.internal_abs_path().to_owned(),
             external_path: project.handle.external_abs_path().map(|p| p.to_path_buf()),

@@ -1,7 +1,7 @@
 import { useDeleteProject } from "@/adapters/tanstackQuery/project";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
-import { useBatchUpdateTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchUpdateTreeItemState";
+import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
 import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
@@ -14,7 +14,7 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
   const localProjectSummaries = useGetAllLocalProjectSummaries();
 
   const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
-  const { mutateAsync: batchUpdateTreeItemState } = useBatchUpdateTreeItemState();
+  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
 
   const { removePanel } = useTabbedPaneStore();
 
@@ -33,10 +33,12 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
         workspaceId: currentWorkspaceId,
       });
 
-      const projectsAfterDeleted = localProjectSummaries?.filter((p) => p.order > projectToDelete.order);
+      const projectsAfterDeleted = localProjectSummaries?.filter(
+        (p) => p.order && p.order > (projectToDelete.order ?? 0)
+      );
 
       if (projectsAfterDeleted) {
-        await batchUpdateTreeItemState({
+        await batchPutTreeItemState({
           treeItemStates: projectsAfterDeleted.map((project) => ({
             id: project.id,
             order: project.order! - 1,

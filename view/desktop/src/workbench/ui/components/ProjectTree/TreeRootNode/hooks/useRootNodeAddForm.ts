@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { useCreateProjectResource } from "@/adapters";
 import { useCurrentWorkspace } from "@/hooks";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../../types";

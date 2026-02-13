@@ -17,7 +17,5 @@ pub struct ColorThemeInfo {
     pub display_name: String,
     #[ts(type = "ThemeMode")]
     pub mode: ThemeMode,
-    pub order: Option<isize>, // DEPRECATED
     pub source: PathBuf,
-    pub is_default: Option<bool>, // DEPRECATED
 }

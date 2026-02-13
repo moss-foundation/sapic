@@ -6,7 +6,7 @@ import { ActionButton } from "@/workbench/ui/components/ActionButton";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
 import { useRefreshProject } from "../actions/useRefreshProject";
-import { useToggleAllNodes } from "../actions/useToggleAllNodes";
+import { useToggleAllTreeNodes } from "../actions/useToggleAllTreeNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
 
@@ -31,7 +31,7 @@ export const TreeRootNodeActions = ({
 
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
-  const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
+  const { expandAllNodes, collapseAllNodes } = useToggleAllTreeNodes(id);
   const { refreshProject } = useRefreshProject(id);
 
   const handleRefresh = () => {

@@ -1,16 +1,16 @@
 import { z } from "zod";
 
-import { streamResourcesEventSchema } from "@repo/moss-project";
+import { listProjectResourceItemSchema } from "@repo/ipc";
 
 export const resourceSummarySchema = z.object({
   projectId: z.string(),
-  id: streamResourcesEventSchema.shape.id,
-  name: streamResourcesEventSchema.shape.name,
-  path: streamResourcesEventSchema.shape.path,
-  class: streamResourcesEventSchema.shape.class,
-  kind: streamResourcesEventSchema.shape.kind,
-  protocol: streamResourcesEventSchema.shape.protocol,
+  id: listProjectResourceItemSchema.shape.id,
+  name: listProjectResourceItemSchema.shape.name,
+  path: listProjectResourceItemSchema.shape.path,
+  class: listProjectResourceItemSchema.shape.class,
+  kind: listProjectResourceItemSchema.shape.kind,
+  protocol: listProjectResourceItemSchema.shape.protocol,
 
-  order: streamResourcesEventSchema.shape.order,
-  expanded: streamResourcesEventSchema.shape.expanded,
+  order: z.number().optional(),
+  expanded: z.boolean().optional(),
 });

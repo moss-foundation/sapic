@@ -1,6 +1,6 @@
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
-import { CREATE_TAB, IMPORT_TAB } from "./constansts";
+import { CREATE_TAB, IMPORT_TAB } from "./constants";
 
 interface CalculateIsSubmitDisabledProps {
   name: string;

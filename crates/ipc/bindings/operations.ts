@@ -14,9 +14,9 @@ import type {
   AddVariableParams,
   Contributor,
   CreateProjectGitParams,
-  EnvironmentGroup,
   ImportProjectSource,
-  UpdateEnvironmentGroupParams,
+  ListEnvironmentItem,
+  ListProjectItem,
   UpdateEnvironmentParams,
   UpdateProjectParams,
   UpdateVariableParams,
@@ -53,11 +53,6 @@ export type ArchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
-export type BatchUpdateEnvironmentGroupInput = { items: Array<UpdateEnvironmentGroupParams> };
-
-/**
- * @category Operation
- */
 export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams> };
 
 /**
@@ -86,7 +81,6 @@ export type CancelRequestInput = { request_id: string };
 export type CreateEnvironmentInput = {
   projectId?: string;
   name: string;
-  order: number;
   color?: string;
   variables: Array<AddVariableParams>;
 };
@@ -94,14 +88,13 @@ export type CreateEnvironmentInput = {
 /**
  * @category Operation
  */
-export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; order?: number; color?: string };
+export type CreateEnvironmentOutput = { id: string; projectId?: string; name: string; color?: string };
 
 /**
  * @category Operation
  */
 export type CreateProjectInput = {
   name: string;
-  order: number;
   externalPath?: string;
   gitParams?: CreateProjectGitParams;
   iconPath?: string;
@@ -110,7 +103,7 @@ export type CreateProjectInput = {
 /**
  * @category Operation
  */
-export type CreateProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type CreateProjectOutput = { id: string; name: string; iconPath?: string };
 
 /**
  * @category Operation
@@ -211,12 +204,12 @@ export type GetTranslationNamespaceOutput = { contents: JsonValue };
 /**
  * @category Operation
  */
-export type ImportProjectInput = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
+export type ImportProjectInput = { name: string; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Operation
  */
-export type ImportProjectOutput = { id: string; name: string; order?: number; expanded: boolean; iconPath?: string };
+export type ImportProjectOutput = { id: string; name: string; iconPath?: string };
 
 /**
  * @category Operation
@@ -238,7 +231,27 @@ export type ListLanguagesOutput = LanguageInfo[];
 /**
  * @category Operation
  */
+export type ListProjectEnvironmentsInput = { projectId: string };
+
+/**
+ * @category Operation
+ */
+export type ListProjectEnvironmentsOutput = { items: Array<ListEnvironmentItem> };
+
+/**
+ * @category Operation
+ */
+export type ListProjectsOutput = { items: Array<ListProjectItem> };
+
+/**
+ * @category Operation
+ */
 export type ListUserAccountsOutput = { accounts: AccountInfo[] };
+
+/**
+ * @category Operation
+ */
+export type ListWorkspaceEnvironmentsOutput = { items: Array<ListEnvironmentItem> };
 
 /**
  * @category Operation
@@ -253,23 +266,6 @@ export type RemoveUserAccountInput = { id: string };
 /**
  * @category Operation
  */
-export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
-
-/**
- * @category Operation
- */
-export type StreamProjectEnvironmentsInput = { projectId: string };
-
-export type StreamProjectEnvironmentsOutput = {};
-
-/**
- * @category Operation
- */
-export type StreamProjectsOutput = {};
-
-/**
- * @category Operation
- */
 export type UnarchiveProjectInput = { id: string };
 
 /**
@@ -280,18 +276,11 @@ export type UnarchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateEnvironmentGroupInput = { projectId: string; expanded?: boolean; order?: number };
-
-/**
- * @category Operation
- */
 export type UpdateEnvironmentInput = {
   projectId?: string;
   id: string;
   name?: string;
-  order?: number;
   color?: ChangeString;
-  expanded?: boolean;
   varsToAdd: Array<AddVariableParams>;
   varsToUpdate: Array<UpdateVariableParams>;
   varsToDelete: Array<string>;
@@ -305,13 +294,7 @@ export type UpdateEnvironmentOutput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateProjectInput = {
-  id: string;
-  name?: string;
-  iconPath?: ChangePath;
-  order?: number;
-  expanded?: boolean;
-};
+export type UpdateProjectInput = { id: string; name?: string; iconPath?: ChangePath };
 
 /**
  * @category Operation

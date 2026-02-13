@@ -3,10 +3,10 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
-import { StreamProjectsEvent } from "@repo/ipc";
+import { ListProjectItem } from "@repo/ipc";
 
 interface ProjectEnvironmentsListRootControlsProps {
-  project: StreamProjectsEvent;
+  project: ListProjectItem;
   expanded: boolean;
 }
 

@@ -7,7 +7,7 @@ use sapic_ipc::contracts::main::{
     project::{CreateProjectInput, CreateProjectParams},
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::{set_up_test_main_window, test_list_environments};
 
 #[cfg(feature = "integration-tests")]
 mod shared;
@@ -19,7 +19,6 @@ pub async fn activate_environment_workspace_success() {
     let create_input = CreateEnvironmentInput {
         project_id: None,
         name: "New Environment".to_string(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -32,7 +31,7 @@ pub async fn activate_environment_workspace_success() {
 
     // By default, newly created environment is not activated.
     // The frontend will send a separate activate_environment operation after creation when necessary
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(!environments.get(&id).unwrap().is_active);
 
@@ -48,7 +47,7 @@ pub async fn activate_environment_workspace_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(environments.get(&id).unwrap().is_active);
 
@@ -64,7 +63,7 @@ pub async fn activate_environment_workspace_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(environments.get(&id).unwrap().is_active);
 
@@ -100,7 +99,6 @@ pub async fn activate_environment_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -114,7 +112,6 @@ pub async fn activate_environment_project_success() {
     let create_input = CreateEnvironmentInput {
         project_id: Some(project_id.clone()),
         name: "New Environment".to_string(),
-        order: 0,
         color: None,
         variables: vec![],
     };
@@ -127,7 +124,7 @@ pub async fn activate_environment_project_success() {
 
     // By default, newly created environment is not activated.
     // The frontend will send a separate activate_environment operation after creation when necessary
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(!environments.get(&environment_id).unwrap().is_active);
 
@@ -143,7 +140,7 @@ pub async fn activate_environment_project_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(environments.get(&environment_id).unwrap().is_active);
 
@@ -160,7 +157,7 @@ pub async fn activate_environment_project_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(environments.get(&environment_id).unwrap().is_active);
 
@@ -196,7 +193,6 @@ pub async fn activate_environment_project_nonexistent_environment() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,

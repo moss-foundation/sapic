@@ -28,7 +28,6 @@ impl<R: AppRuntime> MainWindow<R> {
             id: result.id,
             project_id: result.project_id,
             name: result.display_name,
-            order: result.order,
             color: result.color,
             abs_path: result.abs_path.to_path_buf(),
         })

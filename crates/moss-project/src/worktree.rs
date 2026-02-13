@@ -19,8 +19,10 @@ use moss_storage2::{KvStorage, models::primitives::StorageScope};
 use moss_text::sanitized::{desanitize, sanitize};
 
 use sapic_base::{
-    language::i18n::NO_TRANSLATE_KEY, localize, project::types::primitives::ProjectId,
-    resource::types::primitives::ResourceId,
+    language::i18n::NO_TRANSLATE_KEY,
+    localize,
+    project::types::primitives::ProjectId,
+    resource::types::primitives::{ResourceId, ResourceKind, ResourceProtocol},
 };
 use sapic_core::context::AnyAsyncContext;
 use serde_json::{Value as JsonValue, json};
@@ -42,10 +44,7 @@ use crate::{
     errors::{ErrorAlreadyExists, ErrorInvalidInput, ErrorNotFound},
     models::{
         operations::DescribeResourceOutput,
-        primitives::{
-            FormDataParamId, HeaderId, PathParamId, QueryParamId, ResourceKind, ResourceProtocol,
-            UrlencodedParamId,
-        },
+        primitives::{FormDataParamId, HeaderId, PathParamId, QueryParamId, UrlencodedParamId},
         types::{
             BodyInfo, FormDataParamInfo, HeaderInfo, PathParamInfo, QueryParamInfo,
             UpdateBodyParams, UrlencodedParamInfo,
@@ -63,7 +62,7 @@ use crate::{
         key_resource_query_param, key_resource_query_param_order,
     },
     worktree::entry::{
-        Entry, EntryDescription, EntryMetadata,
+        Entry, EntryMetadata, ScannedEntry,
         edit::EntryEditing,
         model::{
             BodyKind, BodySpec, EntryModel, FormDataParamSpec, FormDataParamSpecOptions,
@@ -96,10 +95,8 @@ struct ScanJob {
     scan_queue: mpsc::UnboundedSender<ScanJob>,
 }
 
-pub(crate) struct ModifyParams {
+pub struct ModifyParams {
     pub name: Option<String>,
-    pub expanded: Option<bool>,
-    pub order: Option<isize>,
     pub path: Option<PathBuf>,
 
     pub protocol: Option<ResourceProtocol>,
@@ -126,7 +123,7 @@ struct WorktreeState {
     expanded_entries: HashSet<ResourceId>,
 }
 
-pub(crate) struct Worktree {
+pub struct Worktree {
     storage: Arc<dyn KvStorage>,
     // Used for storage scope
     project_id: ProjectId,
@@ -145,7 +142,7 @@ impl Debug for Worktree {
 }
 
 impl Worktree {
-    pub fn absolutize(&self, path: &Path) -> joinerror::Result<PathBuf> {
+    pub(crate) fn absolutize(&self, path: &Path) -> joinerror::Result<PathBuf> {
         debug_assert!(path.is_relative());
 
         if path
@@ -234,14 +231,11 @@ impl Worktree {
         Ok(())
     }
 
-    pub async fn scan<R: AppRuntime>(
+    pub async fn scan(
         &self,
         ctx: Arc<dyn AnyAsyncContext>, // TODO: use ctx ctx.done() to cancel the scan if needed
-        app_delegate: AppDelegate<R>,
         path: &Path,
-        expanded_entries: Arc<HashSet<ResourceId>>,
-        all_entry_keys: Arc<HashMap<String, JsonValue>>,
-        sender: mpsc::UnboundedSender<EntryDescription>,
+        sender: mpsc::UnboundedSender<ScannedEntry>,
     ) -> joinerror::Result<()> {
         debug_assert!(path.is_relative());
 
@@ -259,50 +253,32 @@ impl Worktree {
 
         drop(job_tx);
 
-        let activity_handle = app_delegate.emit_continual(ToLocation::Window {
-            activity_id: "scan_worktree",
-            title: localize!("workbench.activity.scanning", "Scanning"),
-            detail: None,
-        })?;
+        // let activity_handle = app_delegate.emit_continual(ToLocation::Window {
+        //     activity_id: "scan_worktree",
+        //     title: localize!("workbench.activity.scanning", "Scanning"),
+        //     detail: None,
+        // })?;
 
         let mut handles = Vec::new();
         while let Some(job) = job_rx.recv().await {
             let sender = sender.clone();
             let fs = self.fs.clone();
             let state = self.state.clone();
-            let app_delegate = app_delegate.clone();
-            let expanded_entries = expanded_entries.clone();
-            let all_entry_keys = all_entry_keys.clone();
 
-            activity_handle.emit_progress(Some(localize!(
-                NO_TRANSLATE_KEY,
-                job.path.display().to_string()
-            )))?;
+            // activity_handle.emit_progress(Some(localize!(
+            //     NO_TRANSLATE_KEY,
+            //     job.path.display().to_string()
+            // )))?;
 
             let ctx_clone = ctx.clone();
             let handle = tokio::spawn(async move {
                 let mut new_jobs = Vec::new();
                 let ctx_clone = ctx_clone.clone();
                 if !job.path.as_os_str().is_empty() {
-                    match process_entry(
-                        ctx_clone.clone(),
-                        job.path.clone(),
-                        &all_entry_keys,
-                        &expanded_entries,
-                        &fs,
-                        &job.abs_path,
-                    )
-                    .await
+                    match process_entry(ctx_clone.clone(), job.path.clone(), &fs, &job.abs_path)
+                        .await
                     {
                         Ok(Some((entry, desc))) => {
-                            if desc.expanded {
-                                state
-                                    .write()
-                                    .await
-                                    .expanded_entries
-                                    .insert(entry.id.clone());
-                            }
-
                             if let Err(e) = sender.send(desc) {
                                 session::debug!(format!(
                                     "failed to send EntryDescription to tokio mpsc channel: {}",
@@ -321,24 +297,25 @@ impl Worktree {
                         }
                         Err(err) => {
                             session::error!(format!(
-                                "error processing dir: {}",
-                                job.abs_path.display()
+                                "error processing dir {}: {}",
+                                job.abs_path.display(),
+                                err,
                             ));
-                            let _ = app_delegate.emit_oneshot(ToLocation::Toast {
-                                activity_id: "worktree_scan_process_entry_error",
-                                title: localize!(
-                                    "workbench.activity.error_processing_dir",
-                                    "Error processing dir"
-                                ),
-                                detail: Some(localize!(
-                                    "workbench.activity.error_processing_dir_detail",
-                                    format!(
-                                        "Error processing dir {}: {}",
-                                        job.abs_path.display(),
-                                        err
-                                    )
-                                )),
-                            });
+                            // let _ = app_delegate.emit_oneshot(ToLocation::Toast {
+                            //     activity_id: "worktree_scan_process_entry_error",
+                            //     title: localize!(
+                            //         "workbench.activity.error_processing_dir",
+                            //         "Error processing dir"
+                            //     ),
+                            //     detail: Some(localize!(
+                            //         "workbench.activity.error_processing_dir_detail",
+                            //         format!(
+                            //             "Error processing dir {}: {}",
+                            //             job.abs_path.display(),
+                            //             err
+                            //         )
+                            //     )),
+                            // });
                             return;
                         }
                     }
@@ -367,8 +344,8 @@ impl Worktree {
                             process_entry(
                                 ctx_clone.clone(),
                                 child_path.clone(),
-                                &all_entry_keys,
-                                &expanded_entries,
+                                // &all_entry_keys,
+                                // &expanded_entries,
                                 &fs,
                                 &child_abs_path
                             )
@@ -425,7 +402,7 @@ impl Worktree {
             }
         }
 
-        activity_handle.emit_finish()?;
+        // activity_handle.emit_finish()?;
 
         Ok(())
     }
@@ -624,44 +601,6 @@ impl Worktree {
 
         let path = entry.path_rx.borrow().clone();
 
-        let mut batch_input = vec![];
-        let order_key = key_resource_order(&id);
-
-        if let Some(order) = params.order {
-            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
-        }
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
-            } else {
-                state_lock.expanded_entries.remove(id);
-            }
-            batch_input.push((
-                KEY_EXPANDED_ENTRIES,
-                serde_json::to_value(&state_lock.expanded_entries)?,
-            ));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(path);
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Project(self.project_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update database after updating dir entry: {}",
-                e
-            ));
-        }
-
         Ok(path)
     }
 
@@ -723,44 +662,6 @@ impl Worktree {
             .await?;
 
         let path = entry.path_rx.borrow().clone();
-
-        let mut batch_input = vec![];
-        let order_key = key_resource_order(&id);
-
-        if let Some(order) = params.order {
-            batch_input.push((order_key.as_str(), serde_json::to_value(order)?));
-        }
-
-        if let Some(expanded) = params.expanded {
-            if expanded {
-                state_lock.expanded_entries.insert(id.to_owned());
-            } else {
-                state_lock.expanded_entries.remove(id);
-            }
-            batch_input.push((
-                KEY_EXPANDED_ENTRIES,
-                serde_json::to_value(&state_lock.expanded_entries)?,
-            ));
-        }
-
-        if batch_input.is_empty() {
-            return Ok(path);
-        }
-
-        if let Err(e) = self
-            .storage
-            .put_batch(
-                ctx,
-                StorageScope::Project(self.project_id.inner()),
-                &batch_input,
-            )
-            .await
-        {
-            session::warn!(format!(
-                "failed to update database after updating dir entry: {}",
-                e
-            ));
-        }
 
         Ok(path)
     }
@@ -2475,11 +2376,11 @@ fn update_path_parent(path: &Path, new_parent: &Path) -> anyhow::Result<PathBuf>
 async fn process_entry(
     ctx: Arc<dyn AnyAsyncContext>,
     path: Arc<Path>,
-    all_entry_keys: &HashMap<String, JsonValue>,
-    expanded_entries: &HashSet<ResourceId>,
+    // all_entry_keys: &HashMap<String, JsonValue>,
+    // expanded_entries: &HashSet<ResourceId>,
     fs: &Arc<dyn FileSystem>,
     abs_path: &Path,
-) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
+) -> joinerror::Result<Option<(Entry, ScannedEntry)>> {
     let dir_config_path = abs_path.join(constants::DIR_CONFIG_FILENAME);
     let item_config_path = abs_path.join(constants::ITEM_CONFIG_FILENAME);
 
@@ -2511,17 +2412,17 @@ async fn process_entry(
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse dir configuration")?;
 
         let id = model.id().clone();
-        let desc = EntryDescription {
+        let desc = ScannedEntry {
             id: id.clone(),
             name: desanitize(&name),
             path: path.clone(),
             class: model.class(),
             kind: ResourceKind::Dir,
             protocol: None,
-            order: all_entry_keys
-                .get(&key_resource_order(&id))
-                .and_then(|value| serde_json::from_value(value.clone()).ok()),
-            expanded: expanded_entries.contains(&id),
+            // order: all_entry_keys
+            //     .get(&key_resource_order(&id))
+            //     .and_then(|value| serde_json::from_value(value.clone()).ok()),
+            // expanded: expanded_entries.contains(&id),
         };
         let (path_tx, path_rx) = watch::channel(desanitize_path(&path, None)?.into());
 
@@ -2543,17 +2444,17 @@ async fn process_entry(
             hcl::from_reader(&mut rdr).join_err::<()>("failed to parse item configuration")?;
 
         let id = model.id().clone();
-        let desc = EntryDescription {
+        let desc = ScannedEntry {
             id: id.clone(),
             name: desanitize(&name),
             path: path.clone(),
             class: model.class(),
             kind: ResourceKind::Item,
             protocol: model.protocol(),
-            order: all_entry_keys
-                .get(&key_resource_order(&id))
-                .and_then(|value| serde_json::from_value(value.clone()).ok()),
-            expanded: expanded_entries.contains(&id),
+            // order: all_entry_keys
+            //     .get(&key_resource_order(&id))
+            //     .and_then(|value| serde_json::from_value(value.clone()).ok()),
+            // expanded: expanded_entries.contains(&id),
         };
 
         let (path_tx, path_rx) = watch::channel(desanitize_path(&path, None)?.into());
@@ -2582,7 +2483,7 @@ async fn process_file(
     _path: &Arc<Path>,
     _fs: &Arc<dyn FileSystem>,
     _abs_path: &Path,
-) -> joinerror::Result<Option<(Entry, EntryDescription)>> {
+) -> joinerror::Result<Option<(Entry, ScannedEntry)>> {
     // TODO: implement
     Ok(None)
 }

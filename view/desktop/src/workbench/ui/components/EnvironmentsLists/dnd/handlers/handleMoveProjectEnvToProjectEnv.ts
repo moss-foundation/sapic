@@ -57,7 +57,6 @@ export const handleMoveProjectEnvToProjectEnv = async ({
   const newEnvironment = await createEnvironment({
     projectId: targetProjectId,
     name: sourceData.data.name,
-    order: dropOrder,
     variables: [],
   });
 

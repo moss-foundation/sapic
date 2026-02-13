@@ -1,3 +1,4 @@
+import { ListProjectResourcesInput, ListProjectResourcesOutput } from "@repo/ipc";
 import {
   BatchCreateResourceInput,
   BatchCreateResourceOutput,
@@ -9,7 +10,6 @@ import {
   DeleteResourceInput,
   DeleteResourceOutput,
   DescribeResourceOutput,
-  StreamResourcesEvent,
   UpdateResourceInput,
   UpdateResourceOutput,
 } from "@repo/moss-project";
@@ -22,7 +22,7 @@ export interface IResourceIpc {
 
   describe: (id: string, projectId: string) => Promise<DescribeResourceOutput>;
 
-  stream: (projectId: string, channel: Channel<StreamResourcesEvent>, path?: string) => Promise<void>;
+  list: (input: ListProjectResourcesInput) => Promise<ListProjectResourcesOutput>;
 
   update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput>;
 

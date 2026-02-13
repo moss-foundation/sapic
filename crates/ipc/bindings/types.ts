@@ -28,16 +28,10 @@ export type CreateProjectGitParams = { "gitHub": GitHubCreateParams } | { "gitLa
 
 export type CreateProjectParams = {
   name: string;
-  order: number;
   externalPath?: string;
   gitParams?: CreateProjectGitParams;
   iconPath?: string;
 };
-
-/**
- * @category Type
- */
-export type EnvironmentGroup = { projectId: string; expanded: boolean; order?: number };
 
 export type ExportProjectParams = {
   id: string;
@@ -109,7 +103,7 @@ export type ImportGitLabParams = {
   branch?: string;
 };
 
-export type ImportProjectParams = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
+export type ImportProjectParams = { name: string; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Type
@@ -119,6 +113,22 @@ export type ImportProjectSource =
   | { "gitLab": ImportGitLabParams }
   | { "archive": ImportArchiveParams }
   | { "disk": ImportDiskParams };
+
+/**
+ * @category Type
+ */
+export type ListEnvironmentItem = {
+  id: string;
+  isActive: boolean;
+  name: string;
+  color?: string;
+  totalVariables: number;
+};
+
+/**
+ * @category Type
+ */
+export type ListProjectItem = { id: string; name: string; branch?: BranchInfo; iconPath?: string; archived: boolean };
 
 /**
  * Configuration options for API operations.
@@ -152,18 +162,11 @@ export type Options = {
 /**
  * @category Type
  */
-export type UpdateEnvironmentGroupParams = { projectId: string; expanded?: boolean; order?: number };
-
-/**
- * @category Type
- */
 export type UpdateEnvironmentParams = {
   projectId?: string;
   id: string;
   name?: string;
-  order?: number;
   color?: ChangeString;
-  expanded?: boolean;
   varsToAdd: Array<AddVariableParams>;
   varsToUpdate: Array<UpdateVariableParams>;
   varsToDelete: Array<string>;
@@ -172,13 +175,7 @@ export type UpdateEnvironmentParams = {
 /**
  * @category Type
  */
-export type UpdateProjectParams = {
-  id: string;
-  name?: string;
-  iconPath?: ChangePath;
-  order?: number;
-  expanded?: boolean;
-};
+export type UpdateProjectParams = { id: string; name?: string; iconPath?: ChangePath };
 
 /**
  * @category Type

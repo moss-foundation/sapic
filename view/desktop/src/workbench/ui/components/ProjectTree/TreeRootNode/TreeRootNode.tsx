@@ -1,6 +1,6 @@
 import { useRef } from "react";
 
-import { useStreamProjects } from "@/adapters/tanstackQuery/project";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
@@ -17,7 +17,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const dropTargetRootRef = useRef<HTMLUListElement>(null);
 
-  const { data: streamedProjects } = useStreamProjects();
+  const { data: projects } = useListProjects();
   const { activePanelId } = useTabbedPaneStore();
 
   const {
@@ -49,7 +49,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
     isRenamingRootNode
   );
 
-  const restrictedNames = streamedProjects?.map((project) => project.name) ?? [];
+  const restrictedNames = projects?.items.map((project) => project.name) ?? [];
 
   return (
     <Tree.RootNode

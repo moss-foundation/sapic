@@ -7,11 +7,10 @@ import {
   DeleteProjectOutput,
   ImportProjectInput,
   ImportProjectOutput,
-  StreamProjectsEvent,
+  ListProjectsOutput,
   UpdateProjectInput,
   UpdateProjectOutput,
 } from "@repo/ipc";
-import { Channel } from "@tauri-apps/api/core";
 
 export interface IProjectIpc {
   batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
@@ -21,7 +20,7 @@ export interface IProjectIpc {
 
   importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
-  streamProjects: (channel: Channel<StreamProjectsEvent>) => Promise<StreamProjectsEvent[]>;
+  listProjects: () => Promise<ListProjectsOutput>;
 
   updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
 }

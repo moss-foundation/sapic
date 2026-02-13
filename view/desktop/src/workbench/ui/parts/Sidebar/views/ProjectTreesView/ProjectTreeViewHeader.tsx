@@ -1,31 +1,30 @@
 import { useState } from "react";
 
-import {
-  useClearAllProjectResources,
-  useStreamedProjectsWithResources,
-  useStreamProjects,
-} from "@/adapters/tanstackQuery/project";
-import { useBatchUpdateProject } from "@/adapters/tanstackQuery/project/useBatchUpdateProject";
-import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
-import { useModal } from "@/hooks";
+import { useClearAllProjectResources } from "@/adapters/tanstackQuery/project";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
+import { useCurrentWorkspace, useModal } from "@/hooks";
+import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
-import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constansts";
+import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constants";
 import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
-import { StreamResourcesEvent } from "@repo/moss-project";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { SidebarHeader } from "../../SidebarHeader";
 
 export const ProjectTreeViewHeader = () => {
-  const queryClient = useQueryClient();
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useStreamProjects();
-  const { data: projectsWithResources } = useStreamedProjectsWithResources();
+  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useListProjects();
 
-  const { mutateAsync: batchUpdateProject } = useBatchUpdateProject();
-  const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
   const { clearAllProjectResourcesCache } = useClearAllProjectResources();
+
+  const { mutateAsync: putTreeItemState } = usePutTreeItemState();
+  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
+
+  const projectSummaries = useGetAllLocalProjectSummaries();
+  const resourceSummaries = useGetAllLocalResourceSummaries();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
@@ -42,9 +41,9 @@ export const ProjectTreeViewHeader = () => {
 
   //TODO project and resource summaries that is linked to manipulating all states is broken for now
   //until all the resources and projects summaries start using state from shared storage
-  const areAllProjectsCollapsed = projectsWithResources.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = projectsWithResources.every((p) => {
-    return p.resources.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
+  const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
+  const areAllDirNodesCollapsed = resourceSummaries?.every(() => {
+    return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
   });
 
   const handleCollapseAll = async () => {
@@ -53,59 +52,55 @@ export const ProjectTreeViewHeader = () => {
   };
 
   const collapseExpandedProjects = async () => {
-    const openedProjects = projectsWithResources.filter((p) => p.expanded);
+    const openedProjectSummaries = projectSummaries?.filter((p) => p.expanded);
 
-    if (openedProjects.length === 0) return;
+    if (openedProjectSummaries.length === 0) return;
 
-    await batchUpdateProject({
-      items: openedProjects.map((p) => ({
-        id: p.id,
-        expanded: false,
-      })),
-    });
+    if (openedProjectSummaries.length === 1) {
+      await putTreeItemState({
+        treeItemState: {
+          id: openedProjectSummaries[0].id,
+          expanded: false,
+          order: openedProjectSummaries[0].order,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+    } else {
+      await batchPutTreeItemState({
+        treeItemStates: openedProjectSummaries.map((p) => ({
+          id: p.id,
+          expanded: false,
+          order: p.order,
+        })),
+        workspaceId: currentWorkspaceId,
+      });
+    }
   };
 
   const collapseExpandedDirResources = async () => {
-    const projectsWithExpandedDirs = projectsWithResources
-      .map((p) => ({
-        projectId: p.id,
-        resources: p.resources.filter((resource) => resource.kind === "Dir" && resource.expanded),
-      }))
-      .filter((p) => p.resources.length > 0);
+    const expandedDirResources = resourceSummaries?.filter((resource) => resource.kind === "Dir" && resource.expanded);
 
-    if (projectsWithExpandedDirs.length === 0) return;
+    if (expandedDirResources.length === 0) return;
 
-    const promises = projectsWithExpandedDirs.map(async (p) => {
-      const preparedResources = p.resources.map((resource) => ({
-        DIR: {
+    if (expandedDirResources.length === 1) {
+      await putTreeItemState({
+        treeItemState: {
+          id: expandedDirResources[0].id,
+          expanded: false,
+          order: expandedDirResources[0].order ?? undefined,
+        },
+        workspaceId: currentWorkspaceId,
+      });
+    } else {
+      await batchPutTreeItemState({
+        treeItemStates: expandedDirResources.map((resource) => ({
           id: resource.id,
           expanded: false,
-        },
-      }));
-
-      const res = await batchUpdateProjectResource({
-        projectId: p.projectId,
-        resources: {
-          resources: preparedResources,
-        },
+          order: resource.order ?? undefined,
+        })),
+        workspaceId: currentWorkspaceId,
       });
-
-      if (res.status === "ok") {
-        queryClient.setQueryData(
-          [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, p.projectId],
-          (old: StreamResourcesEvent[]) => {
-            return old.map((resource) => {
-              const shouldCollapse = preparedResources.some(
-                (preparedResource) => preparedResource.DIR.id === resource.id
-              );
-              return shouldCollapse ? { ...resource, expanded: false } : resource;
-            });
-          }
-        );
-      }
-    });
-
-    await Promise.all(promises);
+    }
   };
 
   return (

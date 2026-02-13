@@ -22,12 +22,8 @@ export const resourceIpc: IResourceIpc = {
     return await invoke("describe_project_resource", { projectId, resourceId });
   },
 
-  stream: async (projectId, channelEvent, path) => {
-    return await invoke("stream_project_resources", {
-      projectId,
-      channel: channelEvent,
-      input: path ? { "RELOAD_PATH": path } : "LOAD_ROOT",
-    });
+  list: async (input) => {
+    return await invoke("main__list_project_resources", { input });
   },
 
   update: async (projectId, input) => {

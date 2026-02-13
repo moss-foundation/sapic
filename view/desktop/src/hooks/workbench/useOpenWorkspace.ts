@@ -1,4 +1,5 @@
-import { USE_STREAM_PROJECTS_QUERY_KEY, USE_STREAMED_ENVIRONMENTS_QUERY_KEY } from "@/adapters";
+import { USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
+import { USE_LIST_PROJECTS_QUERY_KEY } from "@/adapters/tanstackQuery/project/useListProjects";
 import { mainRouter } from "@/main/router/router";
 import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { OpenInTargetEnum } from "@/main/types";
@@ -20,8 +21,8 @@ export const useOpenWorkspace = () => {
         mainRouter.navigate({ to: "/$workspaceId", params: { workspaceId: id } });
 
         queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
-        queryClient.invalidateQueries({ queryKey: [USE_STREAM_PROJECTS_QUERY_KEY] });
-        queryClient.invalidateQueries({ queryKey: [USE_STREAMED_ENVIRONMENTS_QUERY_KEY] });
+        queryClient.invalidateQueries({ queryKey: [USE_LIST_PROJECTS_QUERY_KEY] });
+        queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY] });
       }
     },
   });
