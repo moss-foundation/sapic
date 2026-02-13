@@ -31,7 +31,7 @@ export const WorkspaceEnvironmentsListRoot = () => {
 
   return (
     <Tree.RootNode ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader className="cursor-pointer text-sm" disableIndicator={true}>
+      <Tree.RootNodeHeader className="text-(--moss-gray-6) cursor-pointer text-sm" disableIndicator={true}>
         <WorkspaceEnvironmentsListRootControls expanded={expanded} />
       </Tree.RootNodeHeader>
 
