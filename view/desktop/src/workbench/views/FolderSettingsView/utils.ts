@@ -7,11 +7,9 @@ export const getFolderIcon = (): Icons => {
 
 export const findNodeInProject = (project: ProjectTreeRootNode, searchId: string) => {
   // Search in all categories
-
   for (const category of project.childNodes) {
     if (category.id === searchId) return category;
 
-    // Recursively search child nodes
     const findInChildren = (node: ProjectTreeNode): ProjectTreeNode | undefined => {
       if (node.id === searchId) return node;
       for (const child of node.childNodes) {

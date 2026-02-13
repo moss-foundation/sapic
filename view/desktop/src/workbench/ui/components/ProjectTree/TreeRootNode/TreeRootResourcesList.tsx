@@ -6,8 +6,6 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { useGetResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/useGetResourcesListState";
 import { usePutResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/usePutResourcesListState";
-import { useGetWorkspaceListState } from "@/workbench/adapters/tanstackQuery/workspaceListState/useGetWorkspaceListState";
-import { usePutWorkspaceListState } from "@/workbench/adapters/tanstackQuery/workspaceListState/usePutWorkspaceListItemState";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";

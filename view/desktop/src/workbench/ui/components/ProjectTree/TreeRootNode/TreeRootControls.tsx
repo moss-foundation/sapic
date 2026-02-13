@@ -2,14 +2,14 @@ import { useContext } from "react";
 
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
 import { useRefreshProject } from "../actions/useRefreshProject";
-import { useToggleAllNodes } from "../actions/useToggleAllNodes";
+import { useToggleAllTreeNodes } from "../actions/useToggleAllTreeNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
 import { TreeRootNodeBranchIcon } from "./TreeRootNodeBranchIcon";
@@ -34,7 +34,7 @@ export const TreeRootControls = ({
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
-  const { expandAllNodes, collapseAllNodes } = useToggleAllNodes(node);
+  const { expandAllNodes, collapseAllNodes } = useToggleAllTreeNodes(id);
   const { refreshProject } = useRefreshProject(id);
   const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();

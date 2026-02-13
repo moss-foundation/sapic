@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import { useStreamProjects, useUpdateProject } from "@/adapters/tanstackQuery/project";
+import { useUpdateProject } from "@/adapters/tanstackQuery/project";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useModal } from "@/hooks";
 import Input from "@/lib/ui/Input";
@@ -11,10 +12,10 @@ import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 import { ProjectSummarySection } from "../ProjectSummarySection";
 
 export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsViewProps) => {
-  const { data: streamedProjects } = useStreamProjects();
+  const { data: projects } = useListProjects();
   const { mutateAsync: updateProject } = useUpdateProject();
 
-  const project = streamedProjects?.find((p) => p.id === params.projectId);
+  const project = projects?.items.find((p) => p.id === params.projectId);
 
   const { showModal, closeModal, openModal } = useModal();
 
@@ -30,7 +31,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     }
   }, [project, containerApi]);
 
-  const handleUpdateprojectName = async () => {
+  const handleUpdateProjectName = async () => {
     if (!project) return;
 
     if (!name || name === project.name) {
@@ -48,7 +49,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     }
   };
   const handleNameBlur = () => {
-    handleUpdateprojectName();
+    handleUpdateProjectName();
   };
 
   const handleUpdateProjectRepository = async () => {
@@ -100,7 +101,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     e.preventDefault();
-                    handleUpdateprojectName();
+                    handleUpdateProjectName();
                     e.currentTarget.blur();
                   }
                 }}

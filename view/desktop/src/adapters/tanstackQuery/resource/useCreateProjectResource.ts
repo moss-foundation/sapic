@@ -1,9 +1,10 @@
 import { resourceService } from "@/domains/resource/resourceService";
-import { CreateResourceInput, CreateResourceOutput, StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
+import { CreateResourceInput, CreateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { createProjectResourceForCache } from "../project/utils";
-import { USE_STREAM_PROJECT_RESOURCES_QUERY_KEY } from "./useStreamProjectResources";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "./useListProjectResources";
 
 export interface UseCreateProjectResourceInputProps {
   projectId: string;
@@ -19,8 +20,8 @@ export const useCreateProjectResource = () => {
       const newResource = await createProjectResourceForCache(data.id, variables.input);
 
       queryClient.setQueryData(
-        [USE_STREAM_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
-        (old: StreamResourcesEvent[]) => {
+        [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
+        (old: ListProjectResourceItem[]) => {
           return [...old, newResource];
         }
       );

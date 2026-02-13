@@ -1,5 +1,6 @@
 pub mod environment;
 pub mod project;
+pub mod resource;
 pub mod workspace;
 
 use serde::{Deserialize, Serialize};

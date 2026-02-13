@@ -9,7 +9,6 @@ use moss_project::{
     builder::ProjectCreateParams,
     models::{
         operations::CreateResourceInput,
-        primitives::ResourceClass,
         types::{CreateDirResourceParams, CreateItemResourceParams},
     },
     project::Project,
@@ -19,7 +18,7 @@ use moss_testutils::random_name::{random_project_name, random_string};
 use nanoid::nanoid;
 use sapic_base::{
     project::{config::ProjectConfig, types::primitives::ProjectId},
-    resource::types::primitives::ResourceId,
+    resource::types::primitives::{ResourceClass, ResourceId},
 };
 use sapic_core::context::{AsyncContext, MutableContext};
 use sapic_runtime::{

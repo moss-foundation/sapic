@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useStreamProjectResources } from "@/adapters/tanstackQuery/resource/useStreamProjectResources";
+import { useListProjectResources } from "@/adapters/tanstackQuery/resource/useListProjectResources";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";
@@ -17,8 +17,8 @@ export type FolderSettingsViewProps = DefaultViewProps<{
 }>;
 
 export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
-  const { data: streamedResources } = useStreamProjectResources(props.params?.projectId);
-  const node = streamedResources?.find((resource) => resource.id === props.params?.node?.id);
+  const { data: resources } = useListProjectResources(props.params?.projectId);
+  const node = resources?.items.find((resource) => resource.id === props.params?.node?.id);
 
   const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
     useRenameResourceForm(props?.params?.node, props?.params?.projectId);

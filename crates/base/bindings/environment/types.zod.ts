@@ -8,7 +8,6 @@ export const variableInfoSchema = z.object({
   globalValue: jsonValueSchema.optional(),
   localValue: jsonValueSchema.optional(),
   disabled: z.boolean(),
-  order: z.number().optional(),
   desc: z.string().optional(),
 });
 

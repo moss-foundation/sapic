@@ -16,7 +16,6 @@ export const OverviewTabContent = ({ params }: FolderSettingsViewProps) => {
       </div>
     );
   }
-
   return (
     <PageContent className="flex flex-col gap-1">
       <div className="border-(--moss-border) rounded-lg border p-4">

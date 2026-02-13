@@ -1,37 +1,28 @@
 import {
   ActivateEnvironmentInput,
   ActivateEnvironmentOutput,
-  BatchUpdateEnvironmentGroupInput,
   BatchUpdateEnvironmentInput,
   BatchUpdateEnvironmentOutput,
   CreateEnvironmentInput,
   CreateEnvironmentOutput,
   DeleteEnvironmentInput,
   DeleteEnvironmentOutput,
-  StreamEnvironmentsEvent,
-  StreamEnvironmentsOutput,
-  StreamProjectEnvironmentsInput,
-  StreamProjectEnvironmentsOutput,
-  UpdateEnvironmentGroupInput,
+  ListProjectEnvironmentsInput,
+  ListProjectEnvironmentsOutput,
+  ListWorkspaceEnvironmentsOutput,
   UpdateEnvironmentInput,
   UpdateEnvironmentOutput,
 } from "@repo/ipc";
-import { Channel } from "@tauri-apps/api/core";
 
 export interface IEnvironmentIpc {
   activateEnvironment: (input: ActivateEnvironmentInput) => Promise<ActivateEnvironmentOutput>;
 
+  listWorkspaceEnvironments: () => Promise<ListWorkspaceEnvironmentsOutput>;
+  listProjectEnvironments: (input: ListProjectEnvironmentsInput) => Promise<ListProjectEnvironmentsOutput>;
+
+  updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
   batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
-  batchUpdateEnvironmentGroup: (input: BatchUpdateEnvironmentGroupInput) => Promise<BatchUpdateEnvironmentOutput>;
 
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  streamEnvironments: (channelEvent: Channel<StreamEnvironmentsEvent>) => Promise<StreamEnvironmentsOutput>;
-  streamProjectEnvironments: (
-    input: StreamProjectEnvironmentsInput,
-    channelEvent: Channel<StreamEnvironmentsEvent>
-  ) => Promise<StreamProjectEnvironmentsOutput>;
-
-  updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
-  updateEnvironmentGroup: (input: UpdateEnvironmentGroupInput) => Promise<void>;
 }

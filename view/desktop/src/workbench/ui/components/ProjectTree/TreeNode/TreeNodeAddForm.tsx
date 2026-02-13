@@ -36,15 +36,14 @@ const TreeNodeAddForm = ({
           id: "Placeholder_AddingNodeId",
           name: "Placeholder_AddingNodeName",
           kind: isAddingFolderNode ? "Dir" : "Item",
-          protocol: undefined,
-          expanded: true,
-          order: Infinity,
           class: "endpoint",
-          childNodes: [],
+          order: undefined,
+          expanded: false,
           path: {
-            raw: "",
             segments: [],
+            raw: "",
           },
+          protocol: "Get",
         }}
         className={cn("ml-auto", {
           "opacity-0": !isAddingFolderNode,

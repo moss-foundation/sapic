@@ -1,4 +1,5 @@
 use moss_applib::AppRuntime;
+use sapic_ipc::contracts::main::resource::FrontendResourcePath;
 
 use crate::{
     Project,
@@ -6,7 +7,6 @@ use crate::{
         operations::{
             BatchCreateResourceInput, BatchCreateResourceKind, BatchCreateResourceOutput,
         },
-        primitives::FrontendResourcePath,
         types::AfterCreateResourceDescription,
     },
 };

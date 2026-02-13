@@ -1,12 +1,13 @@
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { BatchUpdateResourceKind, StreamResourcesEvent } from "@repo/moss-project";
+import { ListProjectResourceItem } from "@repo/ipc";
+import { BatchUpdateResourceKind } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 
 export const getPathWithoutName = async (
-  node: ProjectTreeNode | StreamResourcesEvent
-): Promise<StreamResourcesEvent["path"]> => {
+  node: ProjectTreeNode | ListProjectResourceItem
+): Promise<ListProjectResourceItem["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
 
@@ -17,9 +18,9 @@ export const getPathWithoutName = async (
 };
 
 export const getPathWithoutParentPath = async (
-  path: StreamResourcesEvent["path"],
-  parentPath: StreamResourcesEvent["path"]
-): Promise<StreamResourcesEvent["path"]> => {
+  path: ListProjectResourceItem["path"],
+  parentPath: ListProjectResourceItem["path"]
+): Promise<ListProjectResourceItem["path"]> => {
   const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
   const newRaw = await join(...newSegments);
 
@@ -29,7 +30,7 @@ export const getPathWithoutParentPath = async (
   };
 };
 
-export const removePathBeforeName = async (path: StreamResourcesEvent["path"], name: string) => {
+export const removePathBeforeName = async (path: ListProjectResourceItem["path"], name: string) => {
   const nameIndex = path.segments.findIndex((segment) => segment === name);
 
   if (nameIndex === -1) {
@@ -49,11 +50,11 @@ export const removePathBeforeName = async (path: StreamResourcesEvent["path"], n
 };
 
 export const prepareNestedDirResourcesForDrop = async (
-  resources: StreamResourcesEvent[]
-): Promise<StreamResourcesEvent[]> => {
+  resources: ListProjectResourceItem[]
+): Promise<ListProjectResourceItem[]> => {
   const rootResourceName = resources[0].name;
 
-  const resourcesPreparedForDrop: StreamResourcesEvent[] = [];
+  const resourcesPreparedForDrop: ListProjectResourceItem[] = [];
 
   for await (const resource of resources) {
     const newResourcePath = await removePathBeforeName(resource.path, rootResourceName);
@@ -79,11 +80,11 @@ export const prepareNestedDirResourcesForDrop = async (
 };
 
 export const prepareResourcesForCreation = async (
-  resources: StreamResourcesEvent[]
-): Promise<StreamResourcesEvent[]> => {
+  resources: ListProjectResourceItem[]
+): Promise<ListProjectResourceItem[]> => {
   const rootResourceName = resources[0].name;
 
-  const resourcesPreparedForDrop: StreamResourcesEvent[] = [];
+  const resourcesPreparedForDrop: ListProjectResourceItem[] = [];
 
   for await (const resource of resources) {
     const newResourcePath = await removePathBeforeName(resource.path, rootResourceName);

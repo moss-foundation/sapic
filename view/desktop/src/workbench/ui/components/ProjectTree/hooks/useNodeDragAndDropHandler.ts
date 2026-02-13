@@ -12,8 +12,8 @@ import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsC
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
 import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
+import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
 import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useUpdateTreeItemState";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { join } from "@tauri-apps/api/path";
@@ -128,7 +128,6 @@ export const useNodeDragAndDropHandler = () => {
             await updateTreeItemState({
               treeItemState: {
                 id: resource.ITEM.id,
-                order: resource.ITEM.order!,
                 expanded: sourceTreeNodeData.node.expanded,
               },
               workspaceId: currentWorkspaceId,
@@ -175,7 +174,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -238,7 +236,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -268,7 +265,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -319,7 +315,7 @@ export const useNodeDragAndDropHandler = () => {
               name: resource.name,
               path: newResourcePath,
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
               class: "endpoint",
             });
@@ -420,7 +416,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -454,7 +449,7 @@ export const useNodeDragAndDropHandler = () => {
               name: resource.name,
               path: newResourcePath,
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
               class: "endpoint",
             });
@@ -496,7 +491,6 @@ export const useNodeDragAndDropHandler = () => {
         input: { id: sourceTreeNodeData.node.id },
       });
 
-      console.log(allResources);
       for (const resource of allResources) {
         if (resourceSummariesCollection.has(resource.id)) {
           resourceSummariesCollection.delete(resource.id);
@@ -530,7 +524,7 @@ export const useNodeDragAndDropHandler = () => {
               path: newResourcePath,
               class: "endpoint",
               isAddingFolder: resource.kind === "Dir",
-              order: resource.order!,
+              order: -1,
               protocol: resource.protocol,
             });
           }
@@ -578,8 +572,8 @@ export const useNodeDragAndDropHandler = () => {
       batchUpdateProjectResource,
       batchCreateProjectResource,
       batchPutTreeItemState,
-      currentWorkspaceId,
       fetchResourcesForPath,
+      currentWorkspaceId,
     ]
   );
 

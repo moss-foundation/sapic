@@ -6,7 +6,7 @@ use sapic_ipc::contracts::main::project::{
     ImportProjectParams, ImportProjectSource,
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -24,7 +24,6 @@ async fn import_external_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: Some(external_path.clone()),
                     git_params: None,
                     icon_path: None,
@@ -41,7 +40,6 @@ async fn import_external_project_success() {
             &ImportProjectInput {
                 inner: ImportProjectParams {
                     name: "Imported".to_string(),
-                    order: 0,
                     source: ImportProjectSource::Disk(ImportDiskParams { external_path }),
                     icon_path: None,
                 },
@@ -50,7 +48,7 @@ async fn import_external_project_success() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects.len(), 2);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items.len(), 2);
     cleanup().await;
 }

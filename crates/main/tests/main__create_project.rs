@@ -3,7 +3,7 @@
 use moss_testutils::random_name::random_project_name;
 use sapic_ipc::contracts::main::project::{CreateProjectInput, CreateProjectParams};
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -22,7 +22,6 @@ async fn create_project_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: None,
                     git_params: None,
                     icon_path: None,
@@ -33,10 +32,10 @@ async fn create_project_success() {
         .unwrap()
         .id;
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects.len(), 1);
-    assert_eq!(projects[0].id, id);
-    assert_eq!(projects[0].name, project_name);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items.len(), 1);
+    assert_eq!(output.items[0].id, id);
+    assert_eq!(output.items[0].name, project_name);
     cleanup().await;
 }
 
@@ -53,7 +52,6 @@ async fn create_project_external_success() {
             &CreateProjectInput {
                 inner: CreateProjectParams {
                     name: project_name.to_string(),
-                    order: 0,
                     external_path: Some(external_path.clone()),
                     git_params: None,
                     icon_path: None,
@@ -64,10 +62,10 @@ async fn create_project_external_success() {
         .unwrap()
         .id;
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects.len(), 1);
-    assert_eq!(projects[0].id, id);
-    assert_eq!(projects[0].name, project_name);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items.len(), 1);
+    assert_eq!(output.items[0].id, id);
+    assert_eq!(output.items[0].name, project_name);
 
     cleanup().await;
 }

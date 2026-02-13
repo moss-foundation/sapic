@@ -1,6 +1,8 @@
 pub mod environment;
 pub mod environment_ops;
 pub mod operations;
+pub mod project;
+pub mod resource;
 pub mod workspace;
 pub mod workspace_ops;
 

@@ -81,19 +81,17 @@ pub struct Contributor {
 }
 
 //
-// Stream Projects
+// List Projects
 //
 
-/// @category Event
+/// @category Type
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(optional_fields)]
-#[ts(export, export_to = "events.ts")]
-pub struct StreamProjectsEvent {
+#[ts(export, export_to = "types.ts")]
+pub struct ListProjectItem {
     pub id: ProjectId,
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub branch: Option<BranchInfo>,
     pub icon_path: Option<PathBuf>,
     pub archived: bool,
@@ -103,10 +101,8 @@ pub struct StreamProjectsEvent {
 #[derive(Debug, Deserialize, Serialize, TS)]
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
-pub struct StreamProjectsOutput {
-    #[serde(skip)]
-    #[ts(skip)]
-    pub total_returned: usize,
+pub struct ListProjectsOutput {
+    pub items: Vec<ListProjectItem>,
 }
 
 //
@@ -183,7 +179,6 @@ pub struct CreateProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
 
-    pub order: isize,
     pub external_path: Option<PathBuf>,
 
     pub git_params: Option<CreateProjectGitParams>,
@@ -208,8 +203,6 @@ pub struct CreateProjectInput {
 pub struct CreateProjectOutput {
     pub id: ProjectId,
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub icon_path: Option<PathBuf>,
 
     #[serde(skip)]
@@ -242,7 +235,6 @@ pub struct ImportProjectInput {
 pub struct ImportProjectParams {
     #[validate(length(min = 1))]
     pub name: String,
-    pub order: isize,
     pub source: ImportProjectSource,
     pub icon_path: Option<PathBuf>,
 }
@@ -313,8 +305,6 @@ pub struct ImportProjectOutput {
     // FIXME: Maybe we should remove the name field until we have local display name
     // Since a cloned/imported project already has a name
     pub name: String,
-    pub order: Option<isize>,
-    pub expanded: bool,
     pub icon_path: Option<PathBuf>,
 
     #[serde(skip)]
@@ -412,8 +402,6 @@ pub struct UpdateProjectParams {
     // TODO: add validation
     #[ts(optional, type = "ChangePath")]
     pub icon_path: Option<ChangePath>,
-    pub order: Option<isize>,
-    pub expanded: Option<bool>,
 }
 
 /// @category Operation

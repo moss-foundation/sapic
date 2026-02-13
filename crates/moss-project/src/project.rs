@@ -105,7 +105,7 @@ impl Project {
 }
 
 impl Project {
-    pub(crate) async fn worktree(&self) -> &Arc<Worktree> {
+    pub async fn worktree(&self) -> &Arc<Worktree> {
         self.worktree
             .get_or_init(|| async {
                 Arc::new(Worktree::new(

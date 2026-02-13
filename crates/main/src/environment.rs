@@ -14,5 +14,4 @@ pub struct RuntimeEnvironment {
     #[deref]
     pub handle: Arc<Environment>,
     pub(crate) edit: EnvironmentEditService,
-    pub order: Option<isize>,
 }

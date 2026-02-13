@@ -1,4 +1,5 @@
 import { resourceIpc } from "@/infra/ipc/resourceIpc";
+import { ListProjectResourcesInput, ListProjectResourcesOutput } from "@repo/ipc";
 import {
   BatchCreateResourceInput,
   BatchCreateResourceOutput,
@@ -10,7 +11,6 @@ import {
   DeleteResourceInput,
   DeleteResourceOutput,
   DescribeResourceOutput,
-  StreamResourcesEvent,
   UpdateResourceInput,
   UpdateResourceOutput,
 } from "@repo/moss-project";
@@ -27,7 +27,7 @@ interface IResourceService {
 
   describe: (projectId: string, resourceId: string) => Promise<DescribeResourceOutput>;
 
-  stream: (projectId: string, channelEvent: Channel<StreamResourcesEvent>, path?: string) => Promise<void>;
+  list: (input: ListProjectResourcesInput) => Promise<ListProjectResourcesOutput>;
 
   update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput >;
 }
@@ -48,8 +48,8 @@ export const resourceService: IResourceService = {
   describe: async (id, projectId) => {
     return await resourceIpc.describe(id, projectId);
   },
-  stream: async (projectId, channelEvent, path) => {
-    return await resourceIpc.stream(projectId, channelEvent, path);
+  list: async (input) => {
+    return await resourceIpc.list(input);
   },
   update: async (projectId, input) => {
     return await resourceIpc.update(projectId, input);

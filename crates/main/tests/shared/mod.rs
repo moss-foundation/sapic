@@ -1,5 +1,7 @@
 #![cfg(feature = "integration-tests")]
 
+#[allow(unused_imports)]
+use main::workspace::Workspace;
 use main::{
     MainWindow, environment_ops::MainWindowEnvironmentOps, workspace::RuntimeWorkspace,
     workspace_ops::MainWindowWorkspaceOps,
@@ -8,17 +10,20 @@ use moss_app_delegate::AppDelegate;
 use moss_applib::{AppRuntime, mock::MockAppRuntime};
 use moss_fs::RealFileSystem;
 use moss_keyring::KeyringClientImpl;
+use moss_project::models::{operations::CreateResourceInput, types::CreateDirResourceParams};
 use moss_storage2::SubstoreManager;
 use moss_testutils::random_name::random_string;
 use reqwest::ClientBuilder as HttpClientBuilder;
 use sapic_base::{
-    environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
+    environment::types::primitives::EnvironmentId,
+    project::types::primitives::ProjectId,
+    resource::types::primitives::{ResourceClass, ResourceId},
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::ArcContext;
 use sapic_ipc::contracts::main::{
-    environment::{StreamEnvironmentsEvent, StreamProjectEnvironmentsInput},
-    project::{StreamProjectsEvent, StreamProjectsOutput},
+    environment::{ListEnvironmentItem, ListProjectEnvironmentsInput},
+    project::ListProjectsOutput,
 };
 use sapic_platform::{
     environment::environment_service_fs::EnvironmentServiceFs,
@@ -40,14 +45,7 @@ use sapic_system::{
     },
 };
 use sapic_window::OldSapicWindowBuilder;
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    pin::Pin,
-    sync::{Arc, Mutex},
-    time::Duration,
-};
-use tauri::ipc::{Channel, InvokeResponseBody};
+use std::{collections::HashMap, path::PathBuf, pin::Pin, sync::Arc, time::Duration};
 
 pub type CleanupFn = Box<dyn FnOnce() -> Pin<Box<dyn Future<Output = ()> + Send>> + Send>;
 pub fn random_test_dir_path() -> PathBuf {
@@ -168,7 +166,6 @@ pub async fn set_up_test_main_window() -> (
             workspace_id.clone(),
             ProjectServiceFs::new(fs.clone(), workspace_projects_path),
             fs.clone(),
-            storage.clone(),
         );
 
         let environment_service = EnvironmentService::new(
@@ -250,62 +247,125 @@ pub async fn set_up_test_main_window() -> (
 }
 
 #[allow(unused)]
-pub async fn test_stream_projects(
+pub async fn test_list_projects(
     window: &MainWindow<MockAppRuntime>,
     ctx: &ArcContext,
-) -> (StreamProjectsOutput, Vec<StreamProjectsEvent>) {
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
-
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamProjectsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    let output = window.stream_projects(ctx, channel).await.unwrap();
-
-    (output, received_events.lock().unwrap().clone())
+) -> ListProjectsOutput {
+    window.list_projects(ctx).await.unwrap()
 }
 
 #[allow(unused)]
-pub async fn test_stream_environments<R: AppRuntime>(
+pub async fn test_list_environments<R: AppRuntime>(
     ctx: &R::AsyncContext,
     window: &MainWindow<R>,
     project_id: Option<ProjectId>,
-) -> HashMap<EnvironmentId, StreamEnvironmentsEvent> {
-    let received_events = Arc::new(Mutex::new(Vec::new()));
-    let received_events_clone = received_events.clone();
-
-    let channel = Channel::new(move |body: InvokeResponseBody| {
-        if let InvokeResponseBody::Json(json_str) = body {
-            if let Ok(event) = serde_json::from_str::<StreamEnvironmentsEvent>(&json_str) {
-                received_events_clone.lock().unwrap().push(event);
-            }
-        }
-        Ok(())
-    });
-
-    if let Some(project_id) = project_id {
+) -> HashMap<EnvironmentId, ListEnvironmentItem> {
+    let items = if let Some(project_id) = project_id {
         window
-            .stream_project_environments(
-                ctx,
-                StreamProjectEnvironmentsInput { project_id },
-                channel,
-            )
+            .list_project_environments(ctx, ListProjectEnvironmentsInput { project_id })
             .await
-            .unwrap();
+            .unwrap()
+            .items
     } else {
-        window.stream_environments(ctx, channel).await.unwrap();
-    }
-
-    received_events
-        .lock()
-        .unwrap()
-        .iter()
-        .map(|event| (event.id.clone(), event.clone()))
+        window.list_workspace_environments(ctx).await.unwrap().items
+    };
+    items
+        .into_iter()
+        .map(|item| (item.id.clone(), item))
         .collect()
+}
+
+#[allow(unused)]
+pub async fn create_test_endpoint_dir_entry(
+    window: &MainWindow<MockAppRuntime>,
+    ctx: &ArcContext,
+    project_id: &ProjectId,
+    name: &str,
+) -> ResourceId {
+    let project = window
+        .workspace
+        .load()
+        .get()
+        .project(ctx, project_id)
+        .await
+        .unwrap();
+    project
+        .handle
+        .create_resource::<MockAppRuntime>(
+            ctx,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Endpoint,
+                path: PathBuf::from(""),
+                name: name.to_string(),
+                order: 0,
+            }),
+        )
+        .await
+        .unwrap()
+        .id
+}
+
+#[allow(unused)]
+pub async fn create_test_component_dir_entry(
+    window: &MainWindow<MockAppRuntime>,
+    ctx: &ArcContext,
+    project_id: &ProjectId,
+    name: &str,
+) -> ResourceId {
+    let project = window
+        .workspace
+        .load()
+        .get()
+        .project(ctx, project_id)
+        .await
+        .unwrap();
+    project
+        .handle
+        .create_resource::<MockAppRuntime>(
+            ctx,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Component,
+                path: PathBuf::from(""),
+                name: name.to_string(),
+                order: 0,
+            }),
+        )
+        .await
+        .unwrap()
+        .id
+}
+
+#[allow(unused)]
+pub async fn create_test_schema_dir_entry(
+    window: &MainWindow<MockAppRuntime>,
+    ctx: &ArcContext,
+    project_id: &ProjectId,
+    name: &str,
+) -> ResourceId {
+    let project = window
+        .workspace
+        .load()
+        .get()
+        .project(ctx, project_id)
+        .await
+        .unwrap();
+    project
+        .handle
+        .create_resource::<MockAppRuntime>(
+            ctx,
+            CreateResourceInput::Dir(CreateDirResourceParams {
+                class: ResourceClass::Schema,
+                path: PathBuf::from(""),
+                name: name.to_string(),
+                order: 0,
+            }),
+        )
+        .await
+        .unwrap()
+        .id
+}
+
+#[allow(unused)]
+pub fn random_entry_name() -> String {
+    format!("Test_{}_Entry", random_string(10))
 }

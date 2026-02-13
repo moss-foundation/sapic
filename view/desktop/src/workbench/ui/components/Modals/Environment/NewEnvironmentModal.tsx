@@ -1,7 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 
 import { useCreateEnvironment } from "@/adapters/tanstackQuery/environment";
-import { useStreamProjects } from "@/adapters/tanstackQuery/project";
+import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
@@ -18,9 +18,8 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useStreamProjects();
+  const { data: projects } = useListProjects();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
-
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
   const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
 
@@ -57,7 +56,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     if (mode === "Workspace") {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(workspaceEnvironments),
         variables: [],
       });
 
@@ -71,7 +69,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     } else if (mode === "Project" && projectId) {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(projectEnvironments),
         variables: [],
         projectId,
       });
@@ -149,8 +146,8 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
                   value="Project"
                   checked={mode === "Project"}
                   onClick={() => setMode("Project")}
-                  disabled={!projects || projects.length === 0}
-                  options={projects?.map((project) => ({
+                  disabled={!projects || projects.items.length === 0}
+                  options={projects?.items.map((project) => ({
                     label: project.name,
                     value: project.id,
                   }))}

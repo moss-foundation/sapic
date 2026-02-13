@@ -1,17 +1,13 @@
-use sapic_base::resource::types::primitives::ResourceId;
+use sapic_base::resource::types::primitives::*;
 use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use ts_rs::TS;
 use validator::Validate;
 
-use crate::models::{
-    primitives::{ResourceClass, ResourceKind, ResourceProtocol},
-    types::{
-        AfterCreateResourceDescription, AfterUpdateDirResourceDescription,
-        AfterUpdateItemResourceDescription, BodyInfo, CreateDirResourceParams,
-        CreateItemResourceParams, HeaderInfo, PathParamInfo, QueryParamInfo,
-        UpdateDirResourceParams, UpdateItemResourceParams, VcsOperation,
-    },
+use crate::models::types::{
+    AfterCreateResourceDescription, AfterUpdateDirResourceDescription,
+    AfterUpdateItemResourceDescription, BodyInfo, CreateDirResourceParams,
+    CreateItemResourceParams, HeaderInfo, PathParamInfo, QueryParamInfo, UpdateDirResourceParams,
+    UpdateItemResourceParams, VcsOperation,
 };
 // ########################################################
 // ###                Create Resource                   ###
@@ -139,27 +135,6 @@ pub enum BatchUpdateResourceOutputKind {
 #[serde(rename_all = "camelCase")]
 #[ts(export, export_to = "operations.ts")]
 pub struct BatchUpdateResourceOutput {}
-
-// ########################################################
-// ###                Stream Resources                  ###
-// ########################################################
-
-/// @category Operation
-#[derive(Clone, Debug, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub enum StreamResourcesInput {
-    #[serde(rename = "LOAD_ROOT")]
-    LoadRoot,
-    #[serde(rename = "RELOAD_PATH")]
-    ReloadPath(PathBuf),
-}
-
-/// @category Operation
-#[derive(Clone, Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamResourcesOutput {
-    // TODO: count total?
-}
 
 // ########################################################
 // ###               Describe Resource                  ###

@@ -1,7 +1,7 @@
 export * from "./derivedHooks/useClearAllProjectResources";
 export * from "./derivedHooks/useFetchResourceForPath";
 export * from "./derivedHooks/useProjectsTrees";
-export * from "./derivedHooks/useStreamedProjectsWithResources";
+export * from "./derivedHooks/useProjectsWithResources";
 
 export * from "./useBatchUpdateProject";
 
@@ -11,6 +11,6 @@ export * from "./useDeleteProject";
 
 export * from "./useImportProject";
 
-export * from "./useStreamProjects";
+export * from "./useListProjects";
 
 export * from "./useUpdateProject";

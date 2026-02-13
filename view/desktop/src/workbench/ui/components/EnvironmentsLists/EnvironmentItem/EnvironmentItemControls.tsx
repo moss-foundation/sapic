@@ -5,7 +5,6 @@ import { useActivateEnvironment } from "@/adapters/tanstackQuery/environment/use
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useCurrentWorkspace, useModal } from "@/hooks";
-import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";

@@ -51,7 +51,6 @@ export const handleMoveProjectEnvToWorkspaceEnvs = async ({
 
   const newEnvironment = await createEnvironment({
     name: sourceData.data.name,
-    order: dropOrder,
     color: sourceData.data.color ?? undefined,
     variables: [],
   });

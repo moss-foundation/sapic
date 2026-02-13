@@ -2,10 +2,11 @@ import { useState } from "react";
 
 import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { StreamResourcesEvent } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-export const useRenameResourceForm = (resource: StreamResourcesEvent, projectId: string) => {
+import { ProjectTreeNode } from "../ui/components/ProjectTree/types";
+
+export const useRenameResourceForm = (resource: ProjectTreeNode, projectId: string) => {
   const { fetchResourcesForPath } = useFetchResourcesForPath();
   const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { api } = useTabbedPaneStore();

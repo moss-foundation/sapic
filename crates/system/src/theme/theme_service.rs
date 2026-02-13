@@ -31,9 +31,7 @@ impl ThemeService {
                         identifier: item.id,
                         display_name: item.display_name,
                         mode: item.mode,
-                        order: None, // FIXME
                         source: item.path,
-                        is_default: None, // FIXME
                     },
                 )
             })

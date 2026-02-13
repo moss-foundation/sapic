@@ -5,12 +5,12 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
-import { StreamProjectsEvent } from "@repo/ipc";
+import { ListProjectItem } from "@repo/ipc";
 
 import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 
 interface ProjectEnvironmentsListRootControlsProps {
-  project: StreamProjectsEvent;
+  project: ListProjectItem;
   expanded: boolean;
   count: number;
 }

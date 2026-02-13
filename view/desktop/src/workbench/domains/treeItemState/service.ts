@@ -1,7 +1,7 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
-
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
+import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
 import { JsonValue } from "@repo/moss-bindingutils";
+
 import { TreeItemState } from "./types";
 
 const SHARED_STORAGE_TREE_ITEM_STATE_KEY = "workbench.treeItemState" as const;
@@ -36,8 +36,8 @@ export const treeItemStateService: ITreeItemStateService = {
 
     if (projectSummariesCollection.has(treeItemState.id)) {
       projectSummariesCollection.update(treeItemState.id, (draft) => {
-        draft.order = treeItemState.order;
-        draft.expanded = treeItemState.expanded;
+        draft.order = treeItemState.order ?? undefined;
+        draft.expanded = treeItemState.expanded ?? false;
       });
     }
   },
@@ -91,7 +91,7 @@ export const treeItemStateService: ITreeItemStateService = {
 
       projectSummariesCollection.update(treeItemState.id, (draft) => {
         draft.order = treeItemState.order;
-        draft.expanded = treeItemState.expanded;
+        draft.expanded = treeItemState.expanded ?? false;
       });
     });
   },
