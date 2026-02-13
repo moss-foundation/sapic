@@ -2,12 +2,12 @@ use moss_environment::models::types::{AddVariableParams, VariableOptions};
 use moss_testutils::random_name::random_environment_name;
 use sapic_base::project::types::primitives::ProjectId;
 use sapic_ipc::contracts::main::{
-    environment::{CreateEnvironmentInput, DescribeEnvironmentInput, StreamEnvironmentsEvent},
+    environment::{CreateEnvironmentInput, DescribeEnvironmentInput, ListEnvironmentItem},
     project::{CreateProjectInput, CreateProjectParams},
 };
 use serde_json::Value as JsonValue;
 
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::{set_up_test_main_window, test_list_environments};
 
 #[cfg(feature = "integration-tests")]
 mod shared;
@@ -38,19 +38,17 @@ async fn create_environment_workspace_success() {
         .unwrap()
         .id;
 
-    // Check the environment is returned in stream
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    // Check the environment is returned in list
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert_eq!(environments.len(), 1);
     assert_eq!(
         environments.get(&env_id).unwrap(),
-        &StreamEnvironmentsEvent {
+        &ListEnvironmentItem {
             id: env_id.clone(),
-            project_id: None,
             is_active: false,
             name: create_input.name.clone(),
             color: None,
-            order: None,
             total_variables: 1,
         }
     );
@@ -123,19 +121,17 @@ async fn create_environment_project_success() {
         .unwrap()
         .id;
 
-    // Check the environment is returned in stream
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    // Check the environment is returned in list
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert_eq!(environments.len(), 1);
     assert_eq!(
         environments.get(&env_id).unwrap(),
-        &StreamEnvironmentsEvent {
+        &ListEnvironmentItem {
             id: env_id.clone(),
-            project_id: Some(project_id.clone()),
             is_active: false,
             name: create_input.name.clone(),
             color: None,
-            order: None,
             total_variables: 1,
         }
     );

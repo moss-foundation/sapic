@@ -1,4 +1,4 @@
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::{set_up_test_main_window, test_list_environments};
 use moss_testutils::random_name::random_environment_name;
 use sapic_base::{
     environment::types::primitives::EnvironmentId, project::types::primitives::ProjectId,
@@ -41,7 +41,7 @@ async fn delete_environment_workspace_success() {
         .unwrap();
 
     // Check that no environment exists
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert_eq!(environments.len(), 0);
 
@@ -114,7 +114,7 @@ async fn delete_environment_project_success() {
         .unwrap();
 
     // Check that no environment exists
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert_eq!(environments.len(), 0);
 

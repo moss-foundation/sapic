@@ -138,27 +138,6 @@ pub enum BatchUpdateResourceOutputKind {
 pub struct BatchUpdateResourceOutput {}
 
 // ########################################################
-// ###                Stream Resources                  ###
-// ########################################################
-
-/// @category Operation
-#[derive(Clone, Debug, Deserialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub enum StreamResourcesInput {
-    #[serde(rename = "LOAD_ROOT")]
-    LoadRoot,
-    #[serde(rename = "RELOAD_PATH")]
-    ReloadPath(PathBuf),
-}
-
-/// @category Operation
-#[derive(Clone, Debug, Serialize, TS)]
-#[ts(export, export_to = "operations.ts")]
-pub struct StreamResourcesOutput {
-    // TODO: count total?
-}
-
-// ########################################################
 // ###               Describe Resource                  ###
 // ########################################################
 

@@ -17,9 +17,6 @@ pub mod list_project_resources;
 pub mod list_projects;
 pub mod list_workspace_environments;
 pub mod open_workspace;
-pub mod stream_environments; // DEPRECATED
-mod stream_project_environments; // DEPRECATED
-pub mod stream_projects; // DEPRECATED
 pub mod unarchive_project;
 pub mod update_environment;
 pub mod update_project;

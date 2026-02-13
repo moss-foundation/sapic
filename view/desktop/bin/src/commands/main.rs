@@ -158,31 +158,6 @@ pub async fn main__close_workspace<'a, R: tauri::Runtime>(
     .await
 }
 
-// DEPRECATED
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_projects<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    channel: TauriChannel<StreamProjectsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamProjectsOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, _, window| async move {
-            window
-                .stream_projects(&ctx, channel)
-                .await
-                .join_err::<()>("failed to stream projects")
-        },
-    )
-    .await
-}
-
 #[allow(non_snake_case)]
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
@@ -224,36 +199,6 @@ pub async fn create_project<'a, R: tauri::Runtime>(
         |ctx, _, _, window| async move {
             window
                 .create_project(&ctx, &input)
-                .await
-                .join_err::<()>("failed to create project")
-        },
-    )
-    .await
-}
-
-// DEPRECATED
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_project_resources<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    project_id: ProjectId,
-    input: StreamResourcesInput,
-    channel: TauriChannel<StreamResourcesEvent>,
-    options: Options,
-) -> joinerror::Result<StreamResourcesOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, app_delegate, window| async move {
-            let project = window.workspace().project(&ctx, &project_id).await?;
-
-            project
-                .handle
-                .stream_resources(&ctx, &app_delegate, channel, input)
                 .await
                 .join_err::<()>("failed to create project")
         },

@@ -6,7 +6,7 @@ use sapic_ipc::contracts::main::project::{
     CreateProjectInput, CreateProjectParams, DeleteProjectInput,
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -37,8 +37,8 @@ async fn delete_project_success() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects.len(), 0);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items.len(), 0);
     cleanup().await;
 }
 
@@ -87,7 +87,7 @@ async fn delete_project_external() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects.len(), 0);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items.len(), 0);
     cleanup().await;
 }

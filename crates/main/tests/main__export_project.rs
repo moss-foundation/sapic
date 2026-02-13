@@ -6,7 +6,7 @@ use sapic_ipc::contracts::main::project::{
     ImportArchiveParams, ImportProjectInput, ImportProjectParams, ImportProjectSource,
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -68,9 +68,9 @@ async fn export_project_success() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
+    let output = test_list_projects(&main_window, &ctx).await;
     // 1 original + 1 imported
-    assert_eq!(projects.len(), 2);
+    assert_eq!(output.items.len(), 2);
 
     cleanup().await;
 }

@@ -6,7 +6,7 @@ use sapic_ipc::contracts::main::project::{
     ArchiveProjectInput, CreateProjectInput, CreateProjectParams, UnarchiveProjectInput,
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -45,8 +45,8 @@ pub async fn unarchive_project_success() {
         .unwrap();
 
     // Check that the project is not archived
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert!(!projects.get(0).unwrap().archived);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert!(!output.items[0].archived);
 
     cleanup().await;
 }
@@ -79,8 +79,8 @@ pub async fn unarchive_project_already_unarchived() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert!(!projects.get(0).unwrap().archived);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert!(!output.items[0].archived);
 
     cleanup().await;
 }

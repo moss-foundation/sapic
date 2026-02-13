@@ -7,7 +7,7 @@ use sapic_ipc::contracts::main::{
     project::{CreateProjectInput, CreateProjectParams},
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_environments};
+use crate::shared::{set_up_test_main_window, test_list_environments};
 
 #[cfg(feature = "integration-tests")]
 mod shared;
@@ -32,7 +32,7 @@ pub async fn activate_environment_workspace_success() {
 
     // By default, newly created environment is not activated.
     // The frontend will send a separate activate_environment operation after creation when necessary
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(!environments.get(&id).unwrap().is_active);
 
@@ -48,7 +48,7 @@ pub async fn activate_environment_workspace_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(environments.get(&id).unwrap().is_active);
 
@@ -64,7 +64,7 @@ pub async fn activate_environment_workspace_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, None).await;
+    let environments = test_list_environments(&ctx, &main_window, None).await;
 
     assert!(environments.get(&id).unwrap().is_active);
 
@@ -127,7 +127,7 @@ pub async fn activate_environment_project_success() {
 
     // By default, newly created environment is not activated.
     // The frontend will send a separate activate_environment operation after creation when necessary
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(!environments.get(&environment_id).unwrap().is_active);
 
@@ -143,7 +143,7 @@ pub async fn activate_environment_project_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(environments.get(&environment_id).unwrap().is_active);
 
@@ -160,7 +160,7 @@ pub async fn activate_environment_project_success() {
         .await
         .unwrap();
 
-    let environments = test_stream_environments(&ctx, &main_window, Some(project_id.clone())).await;
+    let environments = test_list_environments(&ctx, &main_window, Some(project_id.clone())).await;
 
     assert!(environments.get(&environment_id).unwrap().is_active);
 

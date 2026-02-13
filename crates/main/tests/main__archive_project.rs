@@ -6,7 +6,7 @@ use sapic_ipc::contracts::main::project::{
     ArchiveProjectInput, CreateProjectInput, CreateProjectParams,
 };
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 
 mod shared;
 
@@ -33,16 +33,16 @@ pub async fn archive_project_success() {
         .id;
 
     // Check that the project is initially not archived
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert!(!projects.get(0).unwrap().archived);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert!(!output.items[0].archived);
 
     main_window
         .archive_project(&ctx, ArchiveProjectInput { id })
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert!(projects.get(0).unwrap().archived);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert!(output.items[0].archived);
 
     cleanup().await;
 }
@@ -80,8 +80,8 @@ pub async fn archive_project_already_archived() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert!(projects.get(0).unwrap().archived);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert!(output.items[0].archived);
 
     cleanup().await;
 }

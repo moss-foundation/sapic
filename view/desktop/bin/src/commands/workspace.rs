@@ -195,50 +195,6 @@ pub async fn list_changes<'a, R: tauri::Runtime>(
     .await
 }
 
-// DEPRECATED
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_environments<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    channel: TauriChannel<StreamEnvironmentsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamEnvironmentsOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, _, window| async move { window.stream_environments(&ctx, channel).await },
-    )
-    .await
-}
-
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
-pub async fn stream_project_environments<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    input: StreamProjectEnvironmentsInput,
-    channel: TauriChannel<StreamEnvironmentsEvent>,
-    options: Options,
-) -> joinerror::Result<StreamProjectEnvironmentsOutput> {
-    super::with_main_window_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, _, _, window| async move {
-            window
-                .stream_project_environments(&ctx, input, channel)
-                .await
-        },
-    )
-    .await
-}
-
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
 pub async fn activate_environment<'a, R: tauri::Runtime>(

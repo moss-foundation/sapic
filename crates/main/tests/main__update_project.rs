@@ -1,6 +1,6 @@
 #![cfg(feature = "integration-tests")]
 
-use crate::shared::{set_up_test_main_window, test_stream_projects};
+use crate::shared::{set_up_test_main_window, test_list_projects};
 use moss_testutils::random_name::random_project_name;
 use sapic_ipc::contracts::main::project::{
     CreateProjectInput, CreateProjectParams, UpdateProjectInput, UpdateProjectParams,
@@ -47,9 +47,9 @@ async fn rename_project_nochange() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
+    let output = test_list_projects(&main_window, &ctx).await;
 
-    assert_eq!(projects[0].name, old_project_name);
+    assert_eq!(output.items[0].name, old_project_name);
 
     // Use the same name in update params
     main_window
@@ -68,8 +68,8 @@ async fn rename_project_nochange() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects[0].name, old_project_name);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items[0].name, old_project_name);
 
     cleanup().await;
 }
@@ -113,8 +113,8 @@ async fn rename_project_success() {
         .await
         .unwrap();
 
-    let (_, projects) = test_stream_projects(&main_window, &ctx).await;
-    assert_eq!(projects[0].name, new_project_name);
+    let output = test_list_projects(&main_window, &ctx).await;
+    assert_eq!(output.items[0].name, new_project_name);
 
     cleanup().await;
 }
