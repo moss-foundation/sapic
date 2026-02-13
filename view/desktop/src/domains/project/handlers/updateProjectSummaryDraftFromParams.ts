@@ -6,12 +6,6 @@ const updateProjectSummaryDraftFromParams = (draft: ProjectSummary, params: Upda
   if (params.name !== undefined) {
     draft.name = params.name;
   }
-  if (params.order !== undefined) {
-    draft.order = params.order;
-  }
-  if (params.expanded !== undefined) {
-    draft.expanded = params.expanded;
-  }
   if (params.iconPath !== undefined) {
     if (params.iconPath === "REMOVE") {
       draft.iconPath = null;

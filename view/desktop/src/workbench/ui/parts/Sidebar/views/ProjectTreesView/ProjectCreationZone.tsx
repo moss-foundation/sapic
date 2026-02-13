@@ -59,7 +59,6 @@ export const ProjectCreationZone = () => {
 
         const newProject = await createProject({
           name: rootResource.name,
-          order: (projects?.items.length ?? 0) + 1,
         });
 
         try {

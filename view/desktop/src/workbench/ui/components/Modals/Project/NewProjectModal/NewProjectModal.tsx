@@ -52,7 +52,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       const result = await createProject({
         name,
         gitParams: createParams,
-        order: newOrder,
       });
 
       await updateTreeItemState({
@@ -89,7 +88,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
 
       const result = await importProject({
         name,
-        order: newOrder,
         source: importParams,
         iconPath: "",
       });

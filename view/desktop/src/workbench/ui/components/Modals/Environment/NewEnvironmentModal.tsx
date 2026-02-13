@@ -56,7 +56,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     if (mode === "Workspace") {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(workspaceEnvironments),
         variables: [],
       });
 
@@ -70,7 +69,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
     } else if (mode === "Project" && projectId) {
       const environment = await createEnvironment({
         name,
-        order: getNextOrder(projectEnvironments),
         variables: [],
         projectId,
       });

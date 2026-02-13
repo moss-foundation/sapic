@@ -20,8 +20,15 @@ export const useBatchUpdateEnvironment = () => {
           if (updatedEnv) {
             return {
               ...oldEnv,
-              order: updatedEnv.order,
-            };
+              name: updatedEnv.name ?? oldEnv.name,
+              color:
+                updatedEnv.color && typeof updatedEnv.color === "object" && "UPDATE" in updatedEnv.color
+                  ? updatedEnv.color.UPDATE
+                  : updatedEnv.color === "REMOVE"
+                    ? null
+                    : oldEnv.color,
+              totalVariables: updatedEnv.varsToAdd.length - updatedEnv.varsToDelete.length,
+            } satisfies EnvironmentSummary;
           }
           return oldEnv;
         });

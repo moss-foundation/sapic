@@ -128,7 +128,6 @@ export const useNodeDragAndDropHandler = () => {
             await updateTreeItemState({
               treeItemState: {
                 id: resource.ITEM.id,
-                order: resource.ITEM.order!,
                 expanded: sourceTreeNodeData.node.expanded,
               },
               workspaceId: currentWorkspaceId,
@@ -175,7 +174,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -238,7 +236,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -268,7 +265,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,
@@ -420,7 +416,6 @@ export const useNodeDragAndDropHandler = () => {
           await updateTreeItemState({
             treeItemState: {
               id: resource.ITEM.id,
-              order: resource.ITEM.order!,
               expanded: sourceTreeNodeData.node.expanded,
             },
             workspaceId: currentWorkspaceId,

@@ -51,7 +51,6 @@ export const projectService: IProjectService = {
       branch: null,
       iconPath: output.iconPath,
 
-      order: input.order,
       expanded: true,
     });
 

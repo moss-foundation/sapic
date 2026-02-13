@@ -12,10 +12,10 @@ import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 import { ProjectSummarySection } from "../ProjectSummarySection";
 
 export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsViewProps) => {
-  const { data: streamedProjects } = useListProjects();
+  const { data: projects } = useListProjects();
   const { mutateAsync: updateProject } = useUpdateProject();
 
-  const project = streamedProjects?.items.find((p) => p.id === params.projectId);
+  const project = projects?.items.find((p) => p.id === params.projectId);
 
   const { showModal, closeModal, openModal } = useModal();
 

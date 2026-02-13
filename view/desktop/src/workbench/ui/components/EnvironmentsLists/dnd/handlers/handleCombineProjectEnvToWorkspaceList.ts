@@ -47,7 +47,6 @@ export const handleCombineProjectEnvToWorkspaceList = async ({
 
   const newEnvironment = await createEnvironment({
     name: sourceData.data.name,
-    order: newOrder,
     color: sourceData.data.color ?? undefined,
     variables: [],
   });

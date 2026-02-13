@@ -68,10 +68,11 @@ export const environmentService: IEnvironmentService = {
       name: output.name,
       color: output.color,
 
-      order: input.order,
-
       isActive: false,
       totalVariables: 0,
+
+      order: -1,
+      expanded: false,
     });
 
     return output;
@@ -87,8 +88,6 @@ export const environmentService: IEnvironmentService = {
 
     environmentSummariesCollection.update(input.id, (draft) => {
       if (input.name) draft.name = input.name;
-      if (input.order) draft.order = input.order;
-      if (input.expanded) draft.expanded = input.expanded;
       if (input.projectId) draft.projectId = input.projectId;
 
       if (input.color) {

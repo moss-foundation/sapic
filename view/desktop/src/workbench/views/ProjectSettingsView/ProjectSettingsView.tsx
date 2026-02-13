@@ -22,8 +22,8 @@ export type ProjectSettingsViewProps = DefaultViewProps<{
 export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
   const { projectId } = props.params;
 
-  const { data: streamedProjects } = useListProjects();
-  const project = streamedProjects?.items.find((p) => p.id === projectId);
+  const { data: projects } = useListProjects();
+  const project = projects?.items.find((p) => p.id === projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 

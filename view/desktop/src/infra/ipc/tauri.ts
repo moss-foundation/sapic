@@ -73,7 +73,6 @@ export type TauriIpcCommand =
   | "create_project_resource"
   | "delete_project_resource"
   | "update_project_resource"
-  | "stream_project_resources" // DEPRECATED
   | "describe_project_resource"
   | "batch_update_project_resource"
   | "batch_create_project_resource"
