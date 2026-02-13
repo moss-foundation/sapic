@@ -39,12 +39,6 @@ export const createProjectGitParamsSchema = z.union([
   }),
 ]);
 
-export const environmentGroupSchema = z.object({
-  projectId: z.string(),
-  expanded: z.boolean(),
-  order: z.number().optional(),
-});
-
 export const exportProjectParamsSchema = z.object({
   id: z.string(),
   destination: z.string(),
@@ -120,12 +114,6 @@ export const optionsSchema = z.object({
   timeout: z.bigint().optional(),
 });
 
-export const updateEnvironmentGroupParamsSchema = z.object({
-  projectId: z.string(),
-  expanded: z.boolean().optional(),
-  order: z.number().optional(),
-});
-
 export const vcsInfoSchema = z.union([
   z.object({
     "gitHub": gitHubVcsInfoSchema,
@@ -151,7 +139,6 @@ export const addVariableParamsSchema = z.object({
 
 export const createProjectParamsSchema = z.object({
   name: z.string(),
-  order: z.number(),
   externalPath: z.string().optional(),
   gitParams: createProjectGitParamsSchema.optional(),
   iconPath: z.string().optional(),
@@ -159,7 +146,6 @@ export const createProjectParamsSchema = z.object({
 
 export const importProjectParamsSchema = z.object({
   name: z.string(),
-  order: z.number(),
   source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });
@@ -178,17 +164,13 @@ export const updateProjectParamsSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   iconPath: changePathSchema.optional(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
 });
 
 export const updateEnvironmentParamsSchema = z.object({
   projectId: z.string().optional(),
   id: z.string(),
   name: z.string().optional(),
-  order: z.number().optional(),
   color: changeStringSchema.optional(),
-  expanded: z.boolean().optional(),
   varsToAdd: z.array(addVariableParamsSchema),
   varsToUpdate: z.array(updateVariableParamsSchema),
   varsToDelete: z.array(z.string()),

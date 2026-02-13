@@ -31,15 +31,6 @@ export const deleteResourceOutputSchema = z.object({
 });
 
 export const executeVcsOperationOutputSchema = z.record(z.string(), z.never());
-
-export const streamResourcesInputSchema = z.union([
-  z.literal("LOAD_ROOT"),
-  z.object({
-    "RELOAD_PATH": z.string(),
-  }),
-]);
-
-export const streamResourcesOutputSchema = z.record(z.string(), z.never());
 export const batchCreateResourceKindSchema = z.union([
   z.object({
     "ITEM": createItemResourceParamsSchema,

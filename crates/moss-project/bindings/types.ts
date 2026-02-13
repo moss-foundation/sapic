@@ -279,8 +279,6 @@ export type UpdateItemResourceParams = {
    */
   path?: string;
   name?: string;
-  order?: number;
-  expanded?: boolean;
   protocol?: ResourceProtocol;
   url?: string;
   headersToAdd: Array<AddHeaderParams>;

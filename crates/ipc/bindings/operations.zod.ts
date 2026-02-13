@@ -16,11 +16,9 @@ import {
   addVariableParamsSchema,
   contributorSchema,
   createProjectGitParamsSchema,
-  environmentGroupSchema,
   importProjectSourceSchema,
   listEnvironmentItemSchema,
   listProjectItemSchema,
-  updateEnvironmentGroupParamsSchema,
   updateEnvironmentParamsSchema,
   updateProjectParamsSchema,
   updateVariableParamsSchema,
@@ -141,26 +139,12 @@ export const removeUserAccountInputSchema = z.object({
   id: z.string(),
 });
 
-export const streamProjectEnvironmentsInputSchema = z.object({
-  projectId: z.string(),
-});
-
-export const streamProjectEnvironmentsOutputSchema = z.object({});
-
-export const streamProjectsOutputSchema = z.object({});
-
 export const unarchiveProjectInputSchema = z.object({
   id: z.string(),
 });
 
 export const unarchiveProjectOutputSchema = z.object({
   id: z.string(),
-});
-
-export const updateEnvironmentGroupInputSchema = z.object({
-  projectId: z.string(),
-  expanded: z.boolean().optional(),
-  order: z.number().optional(),
 });
 
 export const updateEnvironmentOutputSchema = z.object({
@@ -181,10 +165,6 @@ export const addUserAccountInputSchema = z.object({
   pat: z.string().optional(),
 });
 
-export const batchUpdateEnvironmentGroupInputSchema = z.object({
-  items: z.array(updateEnvironmentGroupParamsSchema),
-});
-
 export const batchUpdateEnvironmentInputSchema = z.object({
   items: z.array(updateEnvironmentParamsSchema),
 });
@@ -196,14 +176,12 @@ export const batchUpdateProjectInputSchema = z.object({
 export const createEnvironmentInputSchema = z.object({
   projectId: z.string().optional(),
   name: z.string(),
-  order: z.number(),
   color: z.string().optional(),
   variables: z.array(addVariableParamsSchema),
 });
 
 export const createProjectInputSchema = z.object({
   name: z.string(),
-  order: z.number(),
   externalPath: z.string().optional(),
   gitParams: createProjectGitParamsSchema.optional(),
   iconPath: z.string().optional(),
@@ -232,7 +210,6 @@ export const getTranslationNamespaceOutputSchema = z.object({
 
 export const importProjectInputSchema = z.object({
   name: z.string(),
-  order: z.number(),
   source: importProjectSourceSchema,
   iconPath: z.string().optional(),
 });
@@ -265,17 +242,11 @@ export const listWorkspaceEnvironmentsOutputSchema = z.object({
 
 export const listWorkspacesOutputSchema = z.array(workspaceInfoSchema);
 
-export const streamEnvironmentsOutputSchema = z.object({
-  groups: z.array(environmentGroupSchema),
-});
-
 export const updateEnvironmentInputSchema = z.object({
   projectId: z.string().optional(),
   id: z.string(),
   name: z.string().optional(),
-  order: z.number().optional(),
   color: changeStringSchema.optional(),
-  expanded: z.boolean().optional(),
   varsToAdd: z.array(addVariableParamsSchema),
   varsToUpdate: z.array(updateVariableParamsSchema),
   varsToDelete: z.array(z.string()),
@@ -285,6 +256,4 @@ export const updateProjectInputSchema = z.object({
   id: z.string(),
   name: z.string().optional(),
   iconPath: changePathSchema.optional(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
 });

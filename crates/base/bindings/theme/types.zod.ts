@@ -5,7 +5,5 @@ export const colorThemeInfoSchema = z.object({
   identifier: themeIdSchema,
   displayName: z.string(),
   mode: themeModeSchema,
-  order: z.number().optional(),
   source: z.string(),
-  isDefault: z.boolean().optional(),
 });

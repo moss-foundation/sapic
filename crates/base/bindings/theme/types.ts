@@ -5,11 +5,4 @@ import { ThemeId, ThemeMode } from "./primitives";
 /**
  * @category Type
  */
-export type ColorThemeInfo = {
-  identifier: ThemeId;
-  displayName: string;
-  mode: ThemeMode;
-  order?: number;
-  source: string;
-  isDefault?: boolean;
-};
+export type ColorThemeInfo = { identifier: ThemeId; displayName: string; mode: ThemeMode; source: string };

@@ -14,11 +14,9 @@ import type {
   AddVariableParams,
   Contributor,
   CreateProjectGitParams,
-  EnvironmentGroup,
   ImportProjectSource,
   ListEnvironmentItem,
   ListProjectItem,
-  UpdateEnvironmentGroupParams,
   UpdateEnvironmentParams,
   UpdateProjectParams,
   UpdateVariableParams,
@@ -55,11 +53,6 @@ export type ArchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
-export type BatchUpdateEnvironmentGroupInput = { items: Array<UpdateEnvironmentGroupParams> };
-
-/**
- * @category Operation
- */
 export type BatchUpdateEnvironmentInput = { items: Array<UpdateEnvironmentParams> };
 
 /**
@@ -88,7 +81,6 @@ export type CancelRequestInput = { request_id: string };
 export type CreateEnvironmentInput = {
   projectId?: string;
   name: string;
-  order: number;
   color?: string;
   variables: Array<AddVariableParams>;
 };
@@ -103,7 +95,6 @@ export type CreateEnvironmentOutput = { id: string; projectId?: string; name: st
  */
 export type CreateProjectInput = {
   name: string;
-  order: number;
   externalPath?: string;
   gitParams?: CreateProjectGitParams;
   iconPath?: string;
@@ -213,7 +204,7 @@ export type GetTranslationNamespaceOutput = { contents: JsonValue };
 /**
  * @category Operation
  */
-export type ImportProjectInput = { name: string; order: number; source: ImportProjectSource; iconPath?: string };
+export type ImportProjectInput = { name: string; source: ImportProjectSource; iconPath?: string };
 
 /**
  * @category Operation
@@ -275,23 +266,6 @@ export type RemoveUserAccountInput = { id: string };
 /**
  * @category Operation
  */
-export type StreamEnvironmentsOutput = { groups: Array<EnvironmentGroup> };
-
-/**
- * @category Operation
- */
-export type StreamProjectEnvironmentsInput = { projectId: string };
-
-export type StreamProjectEnvironmentsOutput = {};
-
-/**
- * @category Operation
- */
-export type StreamProjectsOutput = {};
-
-/**
- * @category Operation
- */
 export type UnarchiveProjectInput = { id: string };
 
 /**
@@ -302,18 +276,11 @@ export type UnarchiveProjectOutput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateEnvironmentGroupInput = { projectId: string; expanded?: boolean; order?: number };
-
-/**
- * @category Operation
- */
 export type UpdateEnvironmentInput = {
   projectId?: string;
   id: string;
   name?: string;
-  order?: number;
   color?: ChangeString;
-  expanded?: boolean;
   varsToAdd: Array<AddVariableParams>;
   varsToUpdate: Array<UpdateVariableParams>;
   varsToDelete: Array<string>;
@@ -327,13 +294,7 @@ export type UpdateEnvironmentOutput = { id: string };
 /**
  * @category Operation
  */
-export type UpdateProjectInput = {
-  id: string;
-  name?: string;
-  iconPath?: ChangePath;
-  order?: number;
-  expanded?: boolean;
-};
+export type UpdateProjectInput = { id: string; name?: string; iconPath?: ChangePath };
 
 /**
  * @category Operation

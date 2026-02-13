@@ -319,8 +319,6 @@ export const updateItemResourceParamsSchema = z.object({
   id: z.string(),
   path: z.string().optional(),
   name: z.string().optional(),
-  order: z.number().optional(),
-  expanded: z.boolean().optional(),
   protocol: resourceProtocolSchema.optional(),
   url: z.string().optional(),
   headersToAdd: z.array(addHeaderParamsSchema),

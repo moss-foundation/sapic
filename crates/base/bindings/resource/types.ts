@@ -7,5 +7,5 @@ export type ResourceSummary = {
   path: string;
   class: ResourceClass;
   kind: ResourceKind;
-  protocol: ResourceProtocol | null;
+  protocol?: ResourceProtocol;
 };

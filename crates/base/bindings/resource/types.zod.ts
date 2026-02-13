@@ -7,5 +7,5 @@ export const resourceSummarySchema = z.object({
   path: z.string(),
   class: resourceClassSchema,
   kind: resourceKindSchema,
-  protocol: resourceProtocolSchema.nullable(),
+  protocol: resourceProtocolSchema.optional(),
 });

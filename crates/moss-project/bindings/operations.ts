@@ -97,16 +97,6 @@ export type ExecuteVcsOperationOutput = Record<string, never>;
 /**
  * @category Operation
  */
-export type StreamResourcesInput = "LOAD_ROOT" | { "RELOAD_PATH": string };
-
-/**
- * @category Operation
- */
-export type StreamResourcesOutput = Record<string, never>;
-
-/**
- * @category Operation
- */
 export type UpdateResourceInput = { "ITEM": UpdateItemResourceParams } | { "DIR": UpdateDirResourceParams };
 
 /**
