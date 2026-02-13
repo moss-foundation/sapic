@@ -49,20 +49,18 @@ export const ProjectEnvironmentsListRootControls = ({
   };
 
   return (
-    <Tree.RootNodeControls>
+    <Tree.RootNodeControls className="cursor-pointer text-sm">
       <Tree.RootNodeTriggers
         className="overflow-hidden py-[2px]"
         onClick={onHeaderClick}
         style={{ paddingLeft: treePaddingLeft }}
       >
-        <button
-          onClick={onIconClick}
-          className="hover:background-(--moss-list-background-hover) flex size-4 cursor-pointer items-center justify-center rounded-full"
-        >
+        <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
+
         <div className="flex items-center gap-1">
-          <Tree.RootNodeLabel label="Environments" />
+          <Tree.RootNodeLabel label="Environments" className="text-sm" />
           <Tree.NodeDirCount count={count} />
         </div>
       </Tree.RootNodeTriggers>

@@ -86,7 +86,7 @@ export const EnvironmentItemControls = ({
           className="cursor-pointer overflow-hidden"
           style={{ paddingLeft: treePaddingLeft + nodeOffset }}
         >
-          <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
+          <Tree.Decorator />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />
         </Tree.NodeTriggers>

@@ -4,6 +4,8 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
+import { useGetResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/useGetResourcesListState";
+import { usePutResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/usePutResourcesListState";
 import { useGetWorkspaceListState } from "@/workbench/adapters/tanstackQuery/workspaceListState/useGetWorkspaceListState";
 import { usePutWorkspaceListState } from "@/workbench/adapters/tanstackQuery/workspaceListState/usePutWorkspaceListItemState";
 
@@ -29,14 +31,15 @@ export const TreeRootResourcesList = ({
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const { data: workspaceListState } = useGetWorkspaceListState(currentWorkspaceId);
-  const expanded = workspaceListState?.expanded ?? false;
+  const { data: resourcesListState } = useGetResourcesListState(tree.id, currentWorkspaceId);
+  const expanded = resourcesListState?.expanded ?? false;
 
-  const { mutate: updateWorkspaceListState } = usePutWorkspaceListState();
+  const { mutate: updateResourcesListState } = usePutResourcesListState();
 
   const handleExpand = () => {
-    updateWorkspaceListState({
-      workspaceListState: { expanded: !expanded },
+    updateResourcesListState({
+      resourcesListItemId: tree.id,
+      resourcesListItemState: { expanded: !expanded },
       workspaceId: currentWorkspaceId,
     });
   };
@@ -44,13 +47,13 @@ export const TreeRootResourcesList = ({
   return (
     <Tree.Node>
       <Tree.NodeControls
-        className="hover:background-(--moss-list-background-hover) flex cursor-pointer items-center gap-1 py-[5px]"
+        className="flex cursor-pointer items-center gap-1 py-[5px]"
         style={{ paddingLeft: treePaddingLeft }}
       >
         <Tree.RootNodeTriggers onClick={handleExpand}>
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
           <div className="flex items-center gap-1">
-            <Tree.RootNodeLabel label="Resources" />
+            <Tree.RootNodeLabel label="Resources" className="text-sm" />
             {/* <Tree.NodeDirCount count={123} /> */}
           </div>
         </Tree.RootNodeTriggers>

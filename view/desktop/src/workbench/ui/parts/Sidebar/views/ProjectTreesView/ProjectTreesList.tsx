@@ -49,10 +49,10 @@ export const ProjectTreesHeader = () => {
     <Tree.RootNodeControls>
       <Tree.RootNodeTriggers
         onClick={handleToggleProjectList}
-        className="hover:background-(--moss-list-background-hover) flex cursor-pointer items-center gap-1 py-[5px] pl-2"
+        className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
       >
         <Icon icon="ChevronRight" className={cn(projectListState?.expanded && "rotate-90")} />
-        <Tree.RootNodeLabel label="Projects" />
+        <Tree.RootNodeLabel className="text-sm" label="Projects" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>
   );

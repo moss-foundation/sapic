@@ -13,6 +13,7 @@ export const ProjectTree = ({
   showOrders = false,
   showRootNodeIds = false,
 }: ProjectTreeProps) => {
+  console.log("tree", tree.id);
   return (
     <div>
       <ProjectTreeContext.Provider
@@ -36,8 +37,6 @@ export const ProjectTree = ({
           <TreeRootNode node={tree} />
         </TreeContextBridge>
       </ProjectTreeContext.Provider>
-
-      <hr className="border-(--moss-border) my-2" />
     </div>
   );
 };

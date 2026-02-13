@@ -77,7 +77,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
       </Tree.RootNodeHeader>
 
       {shouldRenderLists && (
-        <>
+        <div className="flex flex-col gap-1">
           <ProjectEnvironmentsListRoot projectId={id} />
 
           <TreeRootResourcesList
@@ -87,7 +87,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
             handleRootAddFormSubmit={handleRootAddFormSubmit}
             handleRootAddFormCancel={handleRootAddFormCancel}
           />
-        </>
+        </div>
       )}
     </Tree.RootNode>
   );
