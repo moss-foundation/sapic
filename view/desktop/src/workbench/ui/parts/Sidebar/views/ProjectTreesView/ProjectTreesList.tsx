@@ -52,7 +52,7 @@ export const ProjectTreesHeader = () => {
         className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
       >
         <Icon icon="ChevronRight" className={cn(projectListState?.expanded && "rotate-90")} />
-        <Tree.RootNodeLabel className="text-(--moss-gray-6) text-sm" label="Projects" />
+        <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>
   );
