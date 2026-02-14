@@ -9,6 +9,16 @@ export type TauriIpcCommand =
   | "plugin:shared-storage|get_item"
   | "plugin:shared-storage|put_item"
   | "plugin:shared-storage|remove_item"
+  | "plugin:settings-storage|get_value"
+  | "plugin:settings-storage|batch_get_value"
+  | "plugin:settings-storage|update_value"
+  | "plugin:settings-storage|remove_value"
+  | "plugin:shared-storage|batch_put_item"
+  | "plugin:shared-storage|batch_remove_item"
+  | "plugin:shared-storage|batch_get_item"
+  | "plugin:shared-storage|batch_get_item_by_prefix"
+  | "plugin:shared-storage|batch_remove_item_by_prefix"
+  | "plugin:template-parser|parse_url"
   //
   // App
   //
@@ -45,6 +55,8 @@ export type TauriIpcCommand =
   //
   | "welcome__cancel_request"
   | "welcome__open_workspace"
+  | "welcome__create_workspace"
+  | "welcome__update_workspace"
   //
   // Workspace
   //
@@ -61,6 +73,7 @@ export type TauriIpcCommand =
   | "export_project"
   | "main__list_project_environments"
   | "main__list_workspace_environments"
+  | "main__list_project_resources"
   | "create_environment"
   | "update_environment"
   | "batch_update_environment"
@@ -77,6 +90,9 @@ export type TauriIpcCommand =
   | "batch_update_project_resource"
   | "batch_create_project_resource"
   | "execute_vcs_operation";
+
+export const invokeTauriServiceIpc = <T = unknown>(cmd: TauriIpcCommand, args?: InvokeArgs): Promise<T> =>
+  invokeTauri<T>(cmd, args);
 
 export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
 
@@ -99,37 +115,5 @@ export const invokeTauriIpc = async <T, E = unknown>(
   } catch (err) {
     handleTauriIpcError(cmd, err);
     return { status: "error", error: err as E };
-  }
-};
-
-interface InvokeTauriServiceIpcArgs<Input> {
-  cmd: TauriIpcCommand;
-  args?: {
-    input?: Input extends undefined ? InvokeArgs : Input & InvokeArgs;
-    options?: undefined;
-  };
-}
-
-/**
- * @deprecated InvokeTauriServiceIpc is unneeded because services will provide a wrapper around the invoke function.
- */
-export const invokeTauriServiceIpc = async <Input, Output, E = unknown>({
-  cmd,
-  args,
-}: InvokeTauriServiceIpcArgs<Input>): Promise<IpcResult<Output, E>> => {
-  try {
-    const data = await invokeTauri<Output>(cmd, args);
-
-    return {
-      status: "ok",
-      data,
-    };
-  } catch (err) {
-    handleTauriIpcError(cmd, err);
-
-    return {
-      status: "error",
-      error: err as E,
-    };
   }
 };
