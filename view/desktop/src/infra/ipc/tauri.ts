@@ -91,29 +91,6 @@ export type TauriIpcCommand =
   | "batch_create_project_resource"
   | "execute_vcs_operation";
 
-export const invokeTauriServiceIpc = <T = unknown>(cmd: TauriIpcCommand, args?: InvokeArgs): Promise<T> =>
-  invokeTauri<T>(cmd, args);
-
-export type IpcResult<T, E> = { status: "ok"; data: T } | { status: "error"; error: E };
-
-export const handleTauriIpcError = (cmd: TauriIpcCommand, error: unknown) => {
-  console.error(`Error in IPC command "${cmd}":`, error);
-
-  // TODO: dispatch to a global error handler or show user notifications
-};
-
-/**
- * @deprecated InvokeTauriServiceIpc should be used instead, specifically using services from the "view/desktop/src/lib/services" folder.
- */
-export const invokeTauriIpc = async <T, E = unknown>(
-  cmd: TauriIpcCommand,
-  args?: InvokeArgs
-): Promise<IpcResult<T, E>> => {
-  try {
-    const data = await invokeTauri<T>(cmd, args);
-    return { status: "ok", data };
-  } catch (err) {
-    handleTauriIpcError(cmd, err);
-    return { status: "error", error: err as E };
-  }
+export const invokeTauriServiceIpc = async <T = unknown>(cmd: TauriIpcCommand, args?: InvokeArgs): Promise<T> => {
+  return await invokeTauri<T>(cmd, args);
 };

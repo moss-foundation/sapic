@@ -1,28 +1,25 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { invokeTauriIpc } from "@/infra/ipc/tauri";
+import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
 import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from "@langchain/core/prompts";
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
 import { ChatMistralAI } from "@langchain/mistralai";
-import {
-  MainWindow_CreateWorkspaceInput,
-  MainWindow_CreateWorkspaceOutput,
-  mainWindowCreateWorkspaceInputSchema,
-} from "@repo/ipc";
+import { mainWindowCreateWorkspaceInputSchema } from "@repo/ipc";
 
 async function setupModel() {
-  const result = await invokeTauriIpc<string>("get_mistral_api_key");
-  if (result.status == "error") {
-    throw new Error("Mistral API key not found");
+  const result = await invokeTauriServiceIpc<string>("get_mistral_api_key");
+  try {
+    return new ChatMistralAI({
+      apiKey: result,
+      model: "magistral-medium-latest",
+      temperature: 0.5,
+    });
+  } catch (error) {
+    console.error("Error setting up model:", error);
+    throw new Error("Failed to set up model");
   }
-
-  return new ChatMistralAI({
-    apiKey: result.data,
-    model: "magistral-medium-latest",
-    temperature: 0.5,
-  });
 }
 
 async function setupToolAgent() {
@@ -49,18 +46,14 @@ async function setupToolAgent() {
   // @ts-expect-error We will fix the demo when we revisit AI
   const createWorkspaceTool = tool(
     async (input) => {
-      const result = await invokeTauriIpc<MainWindow_CreateWorkspaceOutput, MainWindow_CreateWorkspaceInput>(
-        "main__create_workspace",
-        {
+      try {
+        return await invokeTauriServiceIpc("main__create_workspace", {
           input,
-        }
-      );
-
-      if (result.status === "error") {
-        throw new Error(String(result.error));
+        });
+      } catch (error) {
+        console.error("Error creating workspace:", error);
+        throw new Error("Failed to create workspace");
       }
-
-      return result.data;
     },
     {
       name: "create_workspace",
