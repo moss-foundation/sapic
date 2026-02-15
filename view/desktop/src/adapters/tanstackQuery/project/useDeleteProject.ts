@@ -22,7 +22,7 @@ export const useDeleteProject = () => {
       queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
         return {
           items: old?.items.filter((project) => project.id !== data.id) ?? [],
-        };
+        } satisfies ListProjectsOutput;
       });
 
       projectsWithResources?.forEach((project) => {

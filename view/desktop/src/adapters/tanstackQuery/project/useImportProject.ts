@@ -22,7 +22,7 @@ export const useImportProject = () => {
         };
         return {
           items: [...(old?.items ?? []), newItem],
-        };
+        } satisfies ListProjectsOutput;
       });
     },
   });

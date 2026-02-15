@@ -35,7 +35,7 @@ export const useBatchUpdateProject = () => {
           return oldProject;
         });
 
-        return { items: newItems };
+        return { items: newItems } satisfies ListProjectsOutput;
       });
     },
   });

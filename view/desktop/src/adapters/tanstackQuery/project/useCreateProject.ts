@@ -10,7 +10,7 @@ export const useCreateProject = () => {
   return useMutation<CreateProjectOutput, Error, CreateProjectInput>({
     mutationFn: (input) => projectService.createProject(input),
     onSuccess: (data, variables) => {
-      queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput) => {
+      queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
         return {
           items: [
             ...(old?.items ?? []),
@@ -18,7 +18,7 @@ export const useCreateProject = () => {
               ...inputToEvent(variables, data),
             },
           ],
-        };
+        } satisfies ListProjectsOutput;
       });
     },
   });
