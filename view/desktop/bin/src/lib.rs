@@ -305,7 +305,7 @@ pub async fn run<R: TauriRuntime>() {
             commands::archive_project,
             commands::unarchive_project,
             commands::batch_update_project,
-            commands::list_changes,
+            // commands::list_changes,
             commands::activate_environment,
             commands::create_environment,
             commands::update_environment,

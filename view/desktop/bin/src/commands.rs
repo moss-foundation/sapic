@@ -310,65 +310,65 @@ where
     result.map_err(|e| e.into())
 }
 
-pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
-    ctx: &R::AsyncContext,
-    app: State<'_, Arc<sapic_app::App<R>>>,
-    window: TauriWindow<R::EventLoop>,
-    options: Options,
-    f: F,
-) -> joinerror::Result<T>
-where
-    R: AppRuntime<AsyncContext = ArcContext>,
-    F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace>) -> Fut
-        + Send
-        + 'static,
-    Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
-{
-    let window = app
-        .main_window(window.label())
-        .await
-        .ok_or_join_err_with::<Unavailable>(|| {
-            format!("window '{}' is unavailable", window.label())
-        })?;
+// pub(super) async fn with_workspace_timeout<R, T, F, Fut>(
+//     ctx: &R::AsyncContext,
+//     app: State<'_, Arc<sapic_app::App<R>>>,
+//     window: TauriWindow<R::EventLoop>,
+//     options: Options,
+//     f: F,
+// ) -> joinerror::Result<T>
+// where
+//     R: AppRuntime<AsyncContext = ArcContext>,
+//     F: FnOnce(R::AsyncContext, AppDelegate<R>, Arc<moss_workspace::Workspace>) -> Fut
+//         + Send
+//         + 'static,
+//     Fut: std::future::Future<Output = joinerror::Result<T>> + Send + 'static,
+// {
+//     let window = app
+//         .main_window(window.label())
+//         .await
+//         .ok_or_join_err_with::<Unavailable>(|| {
+//             format!("window '{}' is unavailable", window.label())
+//         })?;
 
-    let workspace = window
-        .inner()
-        .workspace()
-        .await
-        .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
+//     let workspace = window
+//         .inner()
+//         .workspace()
+//         .await
+//         .ok_or_join_err::<FailedPrecondition>("no active workspace")?;
 
-    let timeout = options
-        .as_ref()
-        .and_then(|opts| opts.timeout.map(Duration::from_secs))
-        .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
+//     let timeout = options
+//         .as_ref()
+//         .and_then(|opts| opts.timeout.map(Duration::from_secs))
+//         .unwrap_or(DEFAULT_OPERATION_TIMEOUT);
 
-    let request_id = options.and_then(|opts| opts.request_id);
-    let mut builder = ContextBuilder::new()
-        .with_parent(ctx.clone())
-        .with_timeout(timeout);
+//     let request_id = options.and_then(|opts| opts.request_id);
+//     let mut builder = ContextBuilder::new()
+//         .with_parent(ctx.clone())
+//         .with_timeout(timeout);
 
-    if let Some(ref request_id) = request_id {
-        builder = builder.with_value("request_id", request_id.clone());
-    }
+//     if let Some(ref request_id) = request_id {
+//         builder = builder.with_value("request_id", request_id.clone());
+//     }
 
-    let ctx = builder.freeze();
+//     let ctx = builder.freeze();
 
-    if let Some(request_id) = &request_id {
-        window
-            .track_cancellation(request_id, ctx.get_canceller())
-            .await;
-    }
+//     if let Some(request_id) = &request_id {
+//         window
+//             .track_cancellation(request_id, ctx.get_canceller())
+//             .await;
+//     }
 
-    let result = f(
-        ctx,
-        app.handle().state::<AppDelegate<R>>().inner().clone(),
-        workspace,
-    )
-    .await;
+//     let result = f(
+//         ctx,
+//         app.handle().state::<AppDelegate<R>>().inner().clone(),
+//         workspace,
+//     )
+//     .await;
 
-    if let Some(request_id) = &request_id {
-        window.release_cancellation(request_id).await;
-    }
+//     if let Some(request_id) = &request_id {
+//         window.release_cancellation(request_id).await;
+//     }
 
-    result.map_err(|e| e.into())
-}
+//     result.map_err(|e| e.into())
+// }

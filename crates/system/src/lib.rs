@@ -4,6 +4,7 @@ pub mod environment;
 pub mod language;
 pub mod ports;
 pub mod project;
+pub mod resource;
 pub mod theme;
 pub mod user;
 pub mod workspace;

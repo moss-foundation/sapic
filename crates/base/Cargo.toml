@@ -8,7 +8,10 @@ sapic-core.workspace = true
 moss_text.workspace = true
 moss_id_macro.workspace = true
 moss_bindingutils.workspace = true
+moss_hcl.workspace = true
 
+indexmap.workspace = true
+hcl-rs.workspace = true
 ts-rs = { workspace = true, features = ["chrono-impl"] }
 serde = { workspace = true, features = ["derive", "rc"] }
 serde_json.workspace = true

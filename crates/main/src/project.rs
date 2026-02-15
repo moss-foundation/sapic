@@ -13,8 +13,8 @@ use moss_workspace::storage::KEY_ACTIVE_ENVIRONMENT;
 use rustc_hash::FxHashMap;
 use sapic_base::{
     environment::types::primitives::{EnvironmentId, VariableId},
-    project::types::primitives::ProjectId,
-    resource::types::ResourceSummary,
+    project::{dirs::RESOURCES_DIR, types::primitives::ProjectId},
+    resource::types::{ResourceId, ResourceSummary},
     workspace::types::primitives::WorkspaceId,
 };
 use sapic_core::context::AnyAsyncContext;
@@ -27,11 +27,12 @@ use sapic_system::{
         environment_service::{CreateEnvironmentItemParams, EnvironmentService},
     },
     project::project_edit_service::ProjectEditService,
+    resource::resource_service::ResourceService,
 };
 use std::{path::PathBuf, sync::Arc};
 use tokio::sync::{OnceCell, RwLock, mpsc};
 
-use crate::environment::RuntimeEnvironment;
+use crate::{environment::RuntimeEnvironment, project, resource::RuntimeResource};
 
 #[derive(Deref)]
 pub struct RuntimeProject {
@@ -48,9 +49,34 @@ pub struct RuntimeProject {
     pub(crate) environment_service: Arc<EnvironmentService>,
     pub(crate) environments: OnceCell<RwLock<FxHashMap<EnvironmentId, RuntimeEnvironment>>>,
     pub(crate) active_environment: RwLock<Option<EnvironmentId>>,
+
+    pub(crate) resource_service: Arc<ResourceService>,
+    pub(crate) resources: OnceCell<RwLock<FxHashMap<ResourceId, RuntimeResource>>>,
 }
 
 impl RuntimeProject {
+    async fn resources_internal(
+        &self,
+        ctx: &dyn AnyAsyncContext,
+    ) -> joinerror::Result<&RwLock<FxHashMap<ResourceId, RuntimeResource>>> {
+        self.resources
+            .get_or_try_init(|| async {
+                let (tx, mut rx) = mpsc::unbounded_channel();
+                self.resource_service
+                    .resources(ctx, &self.handle.abs_path().join(RESOURCES_DIR), tx)
+                    .await?;
+
+                let mut result = FxHashMap::default();
+                while let Some(resource) = rx.recv().await {
+                    tracing::info!("resource: {}", resource.path.display());
+                    // result.insert(resource.id, resource);
+                }
+
+                Ok::<_, joinerror::Error>(RwLock::new(result))
+            })
+            .await
+            .join_err::<()>("failed to get project resources")
+    }
     async fn environments_internal(
         &self,
         ctx: &dyn AnyAsyncContext,
@@ -147,6 +173,8 @@ impl RuntimeProject {
         ctx: &dyn AnyAsyncContext,
         dirs: Vec<PathBuf>,
     ) -> joinerror::Result<Vec<ResourceSummary>> {
+        let resources = self.resources_internal(ctx).await?;
+
         let (tx, mut rx) = mpsc::unbounded_channel();
         let worktree = self.handle.worktree().await.clone();
 

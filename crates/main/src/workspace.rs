@@ -23,7 +23,7 @@ use rustc_hash::{FxHashMap, FxHashSet};
 use sapic_base::{
     environment::types::primitives::{EnvironmentId, VariableId},
     other::GitProviderKind,
-    project::types::primitives::ProjectId,
+    project::{self, types::primitives::ProjectId},
     user::types::primitives::AccountId,
     workspace::types::primitives::WorkspaceId,
 };
@@ -41,6 +41,7 @@ use sapic_platform::{
         environment_service_fs::EnvironmentServiceFs,
     },
     project::project_edit_backend::ProjectFsEditBackend,
+    resource::resource_fs_backend::ResourceFsBackend,
 };
 use sapic_system::{
     environment::{
@@ -53,6 +54,7 @@ use sapic_system::{
         CreateProjectGitParams, ProjectConfigEditParams, ProjectEditParams,
         project_edit_service::ProjectEditService, project_service::ProjectService,
     },
+    resource::{ResourceBackend, resource_service::ResourceService},
     user::User,
     workspace::{WorkspaceEditOp, WorkspaceEditParams},
 };
@@ -284,16 +286,21 @@ impl RuntimeWorkspace {
                         }
                     );
 
-                    let environments_path = handle.abs_path().join("environments");
                     let environment_service = EnvironmentService::new(
                         Some(self.id.clone()),
                         Some(project.id.clone()),
                         Arc::new(EnvironmentServiceFs::new(
-                            environments_path,
+                            handle.abs_path().join(project::dirs::ENVIRONMENTS_DIR),
                             self.fs.clone(),
                         )),
                         self.storage.clone(),
                     )
+                    .into();
+
+                    let resource_service = ResourceService::new(ResourceFsBackend::new(
+                        handle.abs_path().join(project::dirs::RESOURCES_DIR),
+                        self.fs.clone(),
+                    ))
                     .into();
 
                     result.insert(
@@ -308,9 +315,13 @@ impl RuntimeWorkspace {
                             )),
                             storage: self.storage.clone(),
                             fs: self.fs.clone(),
+
                             environment_service,
                             environments: OnceCell::new(),
                             active_environment: Default::default(),
+
+                            resource_service,
+                            resources: OnceCell::new(),
                         }
                         .into(),
                     );
@@ -482,16 +493,21 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
-        let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
             Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
-                environments_path,
+                handle.abs_path().join(project::dirs::ENVIRONMENTS_DIR),
                 self.fs.clone(),
             )),
             self.storage.clone(),
         )
+        .into();
+
+        let resource_service = ResourceService::new(ResourceFsBackend::new(
+            handle.abs_path().join(project::dirs::RESOURCES_DIR),
+            self.fs.clone(),
+        ))
         .into();
 
         let project = RuntimeProject {
@@ -507,6 +523,9 @@ impl Workspace for RuntimeWorkspace {
             environment_service,
             environments: Default::default(),
             active_environment: Default::default(),
+
+            resource_service,
+            resources: OnceCell::new(),
         };
 
         let account = if let Some(git_params) = params.git_params.map(|p| p.account_id()) {
@@ -630,16 +649,21 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
-        let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
             Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
-                environments_path,
+                handle.abs_path().join(project::dirs::ENVIRONMENTS_DIR),
                 self.fs.clone(),
             )),
             self.storage.clone(),
         )
+        .into();
+
+        let resource_service = ResourceService::new(ResourceFsBackend::new(
+            handle.abs_path().join(project::dirs::RESOURCES_DIR),
+            self.fs.clone(),
+        ))
         .into();
 
         let project = RuntimeProject {
@@ -655,6 +679,9 @@ impl Workspace for RuntimeWorkspace {
             environment_service,
             environments: Default::default(),
             active_environment: Default::default(),
+
+            resource_service,
+            resources: OnceCell::new(),
         };
 
         // 5. Add project to registry and storage
@@ -704,16 +731,21 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
-        let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
             Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
-                environments_path,
+                handle.abs_path().join(project::dirs::ENVIRONMENTS_DIR),
                 self.fs.clone(),
             )),
             self.storage.clone(),
         )
+        .into();
+
+        let resource_service = ResourceService::new(ResourceFsBackend::new(
+            handle.abs_path().join(project::dirs::RESOURCES_DIR),
+            self.fs.clone(),
+        ))
         .into();
 
         let project = RuntimeProject {
@@ -729,6 +761,9 @@ impl Workspace for RuntimeWorkspace {
             environment_service,
             environments: Default::default(),
             active_environment: Default::default(),
+
+            resource_service,
+            resources: OnceCell::new(),
         };
 
         let projects = self.projects_internal(ctx).await?;
@@ -778,16 +813,21 @@ impl Workspace for RuntimeWorkspace {
             )
             .await?;
 
-        let environments_path = handle.abs_path().join("environments");
         let environment_service = EnvironmentService::new(
             Some(self.id.clone()),
             Some(project_item.id.clone()),
             Arc::new(EnvironmentServiceFs::new(
-                environments_path,
+                handle.abs_path().join(project::dirs::ENVIRONMENTS_DIR),
                 self.fs.clone(),
             )),
             self.storage.clone(),
         )
+        .into();
+
+        let resource_service = ResourceService::new(ResourceFsBackend::new(
+            handle.abs_path().join(project::dirs::RESOURCES_DIR),
+            self.fs.clone(),
+        ))
         .into();
 
         let project = RuntimeProject {
@@ -803,6 +843,9 @@ impl Workspace for RuntimeWorkspace {
             environment_service,
             environments: Default::default(),
             active_environment: Default::default(),
+
+            resource_service,
+            resources: OnceCell::new(),
         };
 
         let projects = self.projects_internal(ctx).await?;

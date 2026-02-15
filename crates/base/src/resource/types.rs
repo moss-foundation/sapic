@@ -1,10 +1,9 @@
+pub mod primitives;
+pub use primitives::*;
+
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use ts_rs::TS;
-
-use crate::resource::types::primitives::*;
-
-pub mod primitives;
 
 #[derive(Debug, Clone, Serialize, Deserialize, TS)]
 #[serde(rename_all = "camelCase")]

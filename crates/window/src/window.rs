@@ -37,9 +37,9 @@ impl<R: AppRuntime> OldSapicWindow<R> {
         self.app_handle.clone()
     }
 
-    pub async fn workspace(&self) -> Option<Arc<Workspace>> {
-        self.workspace_service.workspace().await
-    }
+    // pub async fn workspace(&self) -> Option<Arc<Workspace>> {
+    //     self.workspace_service.workspace().await
+    // }
 
     // pub async fn track_cancellation(&self, request_id: &str, canceller: Canceller) -> () {
     //     let mut write = self.tracked_cancellations.write().await;

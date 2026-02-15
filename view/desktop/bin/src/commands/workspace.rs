@@ -173,27 +173,27 @@ pub async fn batch_update_project<'a, R: tauri::Runtime>(
     .await
 }
 
-#[tauri::command(async)]
-#[instrument(level = "trace", skip(app), fields(window = window.label()))]
-pub async fn list_changes<'a, R: tauri::Runtime>(
-    ctx: AsyncContext<'a>,
-    app: App<'a, R>,
-    window: TauriWindow<R>,
-    options: Options,
-) -> joinerror::Result<ListChangesOutput> {
-    super::with_workspace_timeout(
-        ctx.inner(),
-        app,
-        window,
-        options,
-        |ctx, app_delegate, workspace| async move {
-            workspace
-                .list_changes::<TauriAppRuntime<R>>(&ctx, &app_delegate)
-                .await
-        },
-    )
-    .await
-}
+// #[tauri::command(async)]
+// #[instrument(level = "trace", skip(app), fields(window = window.label()))]
+// pub async fn list_changes<'a, R: tauri::Runtime>(
+//     ctx: AsyncContext<'a>,
+//     app: App<'a, R>,
+//     window: TauriWindow<R>,
+//     options: Options,
+// ) -> joinerror::Result<ListChangesOutput> {
+//     super::with_workspace_timeout(
+//         ctx.inner(),
+//         app,
+//         window,
+//         options,
+//         |ctx, app_delegate, workspace| async move {
+//             workspace
+//                 .list_changes::<TauriAppRuntime<R>>(&ctx, &app_delegate)
+//                 .await
+//         },
+//     )
+//     .await
+// }
 
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label()))]
