@@ -68,6 +68,12 @@ impl RuntimeProject {
 
                 let mut result = FxHashMap::default();
                 while let Some(resource) = rx.recv().await {
+                    // TODO: Make sure that here we get the correct path and can read the contact from the resource file. Then
+                    // 1. Create a manifest model
+                    // 2. Create a runtime resource
+                    //
+                    // The goal is to fully move all API operations on resources
+
                     tracing::info!("resource: {}", resource.path.display());
                     // result.insert(resource.id, resource);
                 }
