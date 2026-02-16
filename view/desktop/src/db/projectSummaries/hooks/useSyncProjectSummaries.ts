@@ -10,7 +10,7 @@ export const useSyncProjectSummaries = () => {
   const hasSyncedRef = useRef(false);
   const lastWorkspaceIdRef = useRef<string | undefined>(currentWorkspaceId);
 
-  const { data: projects, isLoading } = useListProjects();
+  const { data: projects, isLoading, isPending } = useListProjects();
   const { data: treeItemStates } = useBatchGetTreeItemState(
     projects?.items.map((project) => project.id) ?? [],
     currentWorkspaceId
@@ -53,5 +53,5 @@ export const useSyncProjectSummaries = () => {
     updateLocalProjects();
   }, [currentWorkspaceId, projects, treeItemStates]);
 
-  return { isLoading };
+  return { isLoading, isPending };
 };

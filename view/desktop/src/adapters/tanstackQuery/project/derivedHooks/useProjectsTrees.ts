@@ -17,15 +17,15 @@ export interface UseProjectsTreesProps {
 export const useProjectsTrees = (): UseProjectsTreesProps => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { isLoading: areProjectsLoading } = useSyncProjectSummaries();
-  const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
+  const { isPending: areProjectsPending } = useSyncProjectSummaries();
+  const { isPending: areResourcesPending } = useSyncResourceSummaries();
 
   const localProjectSummaries = useGetAllLocalProjectSummaries();
   const localResourceSummaries = useGetAllLocalResourceSummaries();
 
   const [projectsTrees, setProjectsTrees] = useState<ProjectTreeRootNode[]>([]);
 
-  const isLoading = areResourcesLoading || areProjectsLoading;
+  const isLoading = areResourcesPending || areProjectsPending;
 
   useEffect(() => {
     if (isLoading) return;

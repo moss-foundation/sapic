@@ -8,7 +8,7 @@ import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/tre
 export const useSyncResourceSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projectsWithResources, isLoading } = useProjectsWithResources();
+  const { data: projectsWithResources, isLoading, isPending } = useProjectsWithResources();
 
   const { data: treeItemStates } = useBatchGetTreeItemState(
     projectsWithResources.flatMap((project) => project.resources.map((resource) => resource.id)),
@@ -58,5 +58,5 @@ export const useSyncResourceSummaries = () => {
     updateResourceSummaries();
   }, [projectsWithResources]);
 
-  return { isLoading };
+  return { isLoading, isPending };
 };
