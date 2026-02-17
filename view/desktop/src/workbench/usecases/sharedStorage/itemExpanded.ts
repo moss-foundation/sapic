@@ -10,17 +10,21 @@ import {
 
 export async function getItemExpanded(key: string, workspaceId: string): Promise<GetItemOutput> {
   const expandedKey = `${key}.expanded`;
-  return await sharedStorageIpc.getItem(expandedKey, { workspace: workspaceId });
+  return await sharedStorageIpc.getItem(expandedKey, workspaceId ? { workspace: workspaceId } : "application");
 }
 
 export async function batchGetItemExpanded(keys: string[], workspaceId: string): Promise<BatchGetItemOutput> {
   const expandedKeys = keys.map((key) => `${key}.expanded`);
-  return await sharedStorageIpc.batchGetItem(expandedKeys, { workspace: workspaceId });
+  return await sharedStorageIpc.batchGetItem(expandedKeys, workspaceId ? { workspace: workspaceId } : "application");
 }
 
 export async function updateItemExpanded(key: string, expanded: boolean, workspaceId: string): Promise<PutItemOutput> {
   const expandedKey = `${key}.expanded`;
-  return await sharedStorageIpc.putItem(expandedKey, expanded, { workspace: workspaceId });
+  return await sharedStorageIpc.putItem(
+    expandedKey,
+    expanded,
+    workspaceId ? { workspace: workspaceId } : "application"
+  );
 }
 
 export async function batchPutItemExpanded(
@@ -28,15 +32,15 @@ export async function batchPutItemExpanded(
   workspaceId: string
 ): Promise<BatchPutItemOutput> {
   const expandedItems = Object.fromEntries(Object.entries(items).map(([key, value]) => [`${key}.expanded`, value]));
-  return await sharedStorageIpc.batchPutItem(expandedItems, { workspace: workspaceId });
+  return await sharedStorageIpc.batchPutItem(expandedItems, workspaceId ? { workspace: workspaceId } : "application");
 }
 
 export async function removeItemExpanded(key: string, workspaceId: string): Promise<RemoveItemOutput> {
   const expandedKey = `${key}.expanded`;
-  return await sharedStorageIpc.removeItem(expandedKey, { workspace: workspaceId });
+  return await sharedStorageIpc.removeItem(expandedKey, workspaceId ? { workspace: workspaceId } : "application");
 }
 
 export async function batchRemoveItemExpanded(keys: string[], workspaceId: string): Promise<BatchRemoveItemOutput> {
   const expandedKeys = keys.map((key) => `${key}.expanded`);
-  return await sharedStorageIpc.batchRemoveItem(expandedKeys, { workspace: workspaceId });
+  return await sharedStorageIpc.batchRemoveItem(expandedKeys, workspaceId ? { workspace: workspaceId } : "application");
 }

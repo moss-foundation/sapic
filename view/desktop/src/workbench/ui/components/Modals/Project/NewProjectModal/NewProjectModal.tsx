@@ -64,10 +64,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       });
 
       await putEnvironmentListItemState({
-        environmentListItemState: {
-          id: result.id,
-          expanded: true,
-        },
+        id: result.id,
+        expanded: true,
         workspaceId: currentWorkspaceId,
       });
 
@@ -102,10 +100,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       });
 
       await putEnvironmentListItemState({
-        environmentListItemState: {
-          id: result.id,
-          expanded: true,
-        },
+        id: result.id,
+        expanded: true,
         workspaceId: currentWorkspaceId,
       });
 

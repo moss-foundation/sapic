@@ -34,11 +34,12 @@ interface IEnvironmentItemStateService {
 
 export const environmentItemStateService: IEnvironmentItemStateService = {
   getOrder: async (id, workspaceId) => {
-    const result = await getItemOrder(id, workspaceId);
+    const { value } = await getItemOrder(id, workspaceId);
+    const order = value === "none" ? undefined : (value.value as number);
     environmentSummariesCollection.update(id, (draft) => {
-      draft.order = (result.value as unknown as number) ?? undefined;
+      draft.order = order;
     });
-    return (result.value as unknown as number) ?? undefined;
+    return order;
   },
   batchGetOrder: async (ids, workspaceId) => {
     const result = await batchGetItemOrder(ids, workspaceId);
@@ -82,8 +83,8 @@ export const environmentItemStateService: IEnvironmentItemStateService = {
   },
 
   getExpanded: async (id, workspaceId) => {
-    const result = await getItemExpanded(id, workspaceId);
-    const expanded = (result.value as unknown as boolean) ?? undefined;
+    const { value } = await getItemExpanded(id, workspaceId);
+    const expanded = value === "none" ? undefined : (value.value as boolean);
     if (environmentSummariesCollection.has(id)) {
       environmentSummariesCollection.update(id, (draft) => {
         draft.expanded = expanded ?? false;

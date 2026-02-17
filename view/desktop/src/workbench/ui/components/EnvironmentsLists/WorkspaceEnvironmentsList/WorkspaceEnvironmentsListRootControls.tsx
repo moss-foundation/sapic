@@ -19,10 +19,8 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
     if (expanded) return;
 
     updateEnvironmentListItemState({
-      environmentListItemState: {
-        id: WORKSPACE_ENVIRONMENTS_LIST_ID,
-        expanded: true,
-      },
+      id: WORKSPACE_ENVIRONMENTS_LIST_ID,
+      expanded: true,
       workspaceId: currentWorkspaceId,
     });
   };
@@ -30,10 +28,8 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
   const onIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     updateEnvironmentListItemState({
-      environmentListItemState: {
-        id: WORKSPACE_ENVIRONMENTS_LIST_ID,
-        expanded: !expanded,
-      },
+      id: WORKSPACE_ENVIRONMENTS_LIST_ID,
+      expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });
   };

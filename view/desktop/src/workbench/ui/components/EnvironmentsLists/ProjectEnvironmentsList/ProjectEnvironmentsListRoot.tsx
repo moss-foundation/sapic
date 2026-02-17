@@ -24,8 +24,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
 
   const project = projects?.items.find((project) => project.id === projectId);
-  const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
-  const expanded = projectEnvironmentListItemState?.expanded ?? false;
+  const { data: expanded = false } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,

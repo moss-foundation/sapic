@@ -6,6 +6,6 @@ export const USE_REMOVE_ENVIRONMENT_LIST_ITEM_STATE_MUTATION_KEY = "removeEnviro
 export const useRemoveEnvironmentListItemState = () => {
   return useMutation<void, Error, { id: string; workspaceId: string }>({
     mutationKey: [USE_REMOVE_ENVIRONMENT_LIST_ITEM_STATE_MUTATION_KEY],
-    mutationFn: ({ id, workspaceId }) => environmentListItemStateService.remove(id, workspaceId),
+    mutationFn: ({ id, workspaceId }) => environmentListItemStateService.removeExpanded(id, workspaceId),
   });
 };

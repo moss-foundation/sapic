@@ -29,10 +29,8 @@ export const ProjectEnvironmentsListRootControls = ({
     if (expanded) return;
 
     updateEnvironmentListItemState({
-      environmentListItemState: {
-        id: project.id,
-        expanded: true,
-      },
+      id: project.id,
+      expanded: true,
       workspaceId: currentWorkspaceId,
     });
   };
@@ -40,10 +38,8 @@ export const ProjectEnvironmentsListRootControls = ({
   const onIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     updateEnvironmentListItemState({
-      environmentListItemState: {
-        id: project.id,
-        expanded: !expanded,
-      },
+      id: project.id,
+      expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });
   };

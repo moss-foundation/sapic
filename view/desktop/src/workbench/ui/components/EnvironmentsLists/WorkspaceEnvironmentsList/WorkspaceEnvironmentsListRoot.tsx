@@ -19,13 +19,8 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
 
-  const { data: workspaceEnvironmentListItemState } = useGetEnvironmentListItemState(
-    WORKSPACE_ENVIRONMENTS_LIST_ID,
-    currentWorkspaceId
-  );
-
   const workspaceEnvironmentsListRef = useRef<HTMLUListElement>(null);
-  const expanded = workspaceEnvironmentListItemState?.expanded ?? false;
+  const { data: expanded = false } = useGetEnvironmentListItemState(WORKSPACE_ENVIRONMENTS_LIST_ID, currentWorkspaceId);
 
   const { instruction } = useDropTargetWorkspaceEnvironmentList({
     refList: workspaceEnvironmentsListRef,

@@ -34,13 +34,10 @@ export const useSyncEnvironments = () => {
       ];
 
       const envIds = allEnvironments.map((env) => env.id);
-      console.log("envIds", { envIds });
       const [envOrders, envExpanded] = await Promise.all([
         environmentItemStateService.batchGetOrder(envIds, currentWorkspaceId),
         environmentItemStateService.batchGetExpanded(envIds, currentWorkspaceId),
       ]);
-
-      console.log("envOrders", { envOrders });
 
       const summaries: EnvironmentSummary[] = allEnvironments.map((env, index) => ({
         id: env.id,
