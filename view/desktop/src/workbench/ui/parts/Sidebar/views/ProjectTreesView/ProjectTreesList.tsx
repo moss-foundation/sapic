@@ -7,6 +7,7 @@ import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/proje
 import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListItemState/usePutProjectListState";
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
+import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
 
 export const ProjectTreesList = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -15,6 +16,7 @@ export const ProjectTreesList = () => {
   const { displayMode } = useWorkspaceModeStore();
 
   const { data: projectListState } = useGetProjectListState(currentWorkspaceId);
+  useMonitorEnvironmentsLists();
 
   return (
     <div>

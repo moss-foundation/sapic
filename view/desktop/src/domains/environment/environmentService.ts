@@ -24,8 +24,8 @@ interface IEnvironmentService {
   listWorkspaceEnvironments: () => Promise<ListWorkspaceEnvironmentsOutput>;
   listProjectEnvironments: (input: ListProjectEnvironmentsInput) => Promise<ListProjectEnvironmentsOutput>;
 
-  updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
-  batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
+  updateEnvironment(input: UpdateEnvironmentInput): Promise<UpdateEnvironmentOutput>;
+  updateEnvironment(input: BatchUpdateEnvironmentInput): Promise<BatchUpdateEnvironmentOutput>;
 
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
 }
@@ -71,8 +71,7 @@ export const environmentService: IEnvironmentService = {
       isActive: false,
       totalVariables: 0,
 
-      order: -1,
-      expanded: false,
+      order: undefined,
     });
 
     return output;
@@ -83,27 +82,37 @@ export const environmentService: IEnvironmentService = {
   listProjectEnvironments: async (input) => {
     return await environmentIpc.listProjectEnvironments(input);
   },
-  updateEnvironment: async (input) => {
+
+  updateEnvironment: (async (input: UpdateEnvironmentInput | BatchUpdateEnvironmentInput) => {
+    if ("items" in input) {
+      const output = await environmentIpc.updateEnvironment(input);
+      output.ids.forEach((id) => {
+        environmentSummariesCollection.update(id, (draft) => {
+          const item = input.items.find((item) => item.id === id);
+
+          if (item?.varsToAdd.length && item.varsToAdd.length > 0) draft.totalVariables += item.varsToAdd.length;
+          if (item?.varsToDelete.length && item.varsToDelete.length > 0)
+            draft.totalVariables -= item.varsToDelete.length;
+          if (item?.name) draft.name = item.name;
+          if (item?.color && typeof item.color === "object" && "UPDATE" in item.color) draft.color = item.color.UPDATE;
+          if (item?.color && item.color === "REMOVE") draft.color = null;
+        });
+      });
+      return output;
+    }
+
     const output = await environmentIpc.updateEnvironment(input);
 
-    environmentSummariesCollection.update(input.id, (draft) => {
+    environmentSummariesCollection.update(output.id, (draft) => {
+      draft.totalVariables = draft.totalVariables + (input.varsToAdd.length ?? 0) - (input.varsToDelete.length ?? 0);
       if (input.name) draft.name = input.name;
-      if (input.projectId) draft.projectId = input.projectId;
-
-      if (input.color) {
-        if (input.color === "REMOVE") draft.color = null;
-        else if (typeof input.color === "object" && "UPDATE" in input.color) draft.color = input.color.UPDATE;
-      }
-
-      if (input.varsToAdd.length > 0) draft.totalVariables += input.varsToAdd.length;
-      if (input.varsToDelete.length > 0) draft.totalVariables -= input.varsToDelete.length;
+      if (input.color && typeof input.color === "object" && "UPDATE" in input.color) draft.color = input.color.UPDATE;
+      if (input.color && input.color === "REMOVE") draft.color = null;
     });
 
     return output;
-  },
-  batchUpdateEnvironment: async (input) => {
-    return await environmentIpc.batchUpdateEnvironment(input);
-  },
+  }) as IEnvironmentService["updateEnvironment"],
+
   deleteEnvironment: async (input) => {
     const output = await environmentIpc.deleteEnvironment(input);
     environmentSummariesCollection.delete(input.id);

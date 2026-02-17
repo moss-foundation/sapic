@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 
-import { useFocusInputOnMount, useValidateInput } from "@/hooks";
+import { useValidateInput } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
@@ -13,13 +13,9 @@ interface EnvironmentAddFormProps {
 
 export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, className }: EnvironmentAddFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
-
-  const { isInitialized } = useFocusInputOnMount({
-    inputRef,
-    initialValue: value,
-  });
 
   const { isValid } = useValidateInput({
     value,
@@ -64,7 +60,9 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        autoFocus
+        onFocus={() => {
+          isInitialized.current = true;
+        }}
         minLength={1}
         maxLength={100}
         className="rounded-xs focus-visible:outline-(--moss-accent) relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center bg-white py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0"

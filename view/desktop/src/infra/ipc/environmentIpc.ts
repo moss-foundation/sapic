@@ -1,4 +1,10 @@
 import { IEnvironmentIpc } from "@/domains/environment";
+import {
+  BatchUpdateEnvironmentInput,
+  BatchUpdateEnvironmentOutput,
+  UpdateEnvironmentInput,
+  UpdateEnvironmentOutput,
+} from "@repo/ipc";
 
 import { invokeTauriServiceIpc } from "./tauri";
 
@@ -12,16 +18,17 @@ export const environmentIpc: IEnvironmentIpc = {
   activateEnvironment: async (input) => {
     return await invokeTauriServiceIpc("activate_environment", { input });
   },
-  batchUpdateEnvironment: async (input) => {
-    return await invokeTauriServiceIpc("batch_update_environment", { input });
-  },
   createEnvironment: async (input) => {
     return await invokeTauriServiceIpc("create_environment", { input });
   },
   deleteEnvironment: async (input) => {
     return await invokeTauriServiceIpc("delete_environment", { input });
   },
-  updateEnvironment: async (input) => {
-    return await invokeTauriServiceIpc("update_environment", { input });
-  },
+  updateEnvironment: (async (input: UpdateEnvironmentInput | BatchUpdateEnvironmentInput) => {
+    if ("items" in input) {
+      return await invokeTauriServiceIpc<BatchUpdateEnvironmentOutput>("batch_update_environment", { input });
+    }
+
+    return await invokeTauriServiceIpc<UpdateEnvironmentOutput>("update_environment", { input });
+  }) as IEnvironmentIpc["updateEnvironment"],
 };

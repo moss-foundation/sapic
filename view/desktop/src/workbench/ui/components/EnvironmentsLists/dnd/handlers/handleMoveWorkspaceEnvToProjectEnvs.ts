@@ -1,5 +1,6 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
-import { EnvironmentItemState } from "@/workbench/domains/environmentItemState/types";
+import { computeOrderUpdates, computeSequentialOrders } from "@/utils/computeOrderUpdates";
+import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import {
   CreateEnvironmentInput,
@@ -17,11 +18,6 @@ interface HandleMoveWorkspaceEnvToProjectEnvsProps {
   projectEnvironments: EnvironmentSummary[];
   instruction: Instruction;
   currentWorkspaceId: string;
-  batchPutEnvironmentItemState: (props: {
-    environmentItemStates: EnvironmentItemState[];
-    workspaceId: string;
-  }) => Promise<void>;
-  removeEnvironmentItemState: (props: { id: string; workspaceId: string }) => Promise<void>;
   deleteEnvironment: (props: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
   createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
 }
@@ -33,8 +29,6 @@ export const handleMoveWorkspaceEnvToProjectEnvs = async ({
   projectEnvironments,
   instruction,
   currentWorkspaceId,
-  batchPutEnvironmentItemState,
-  removeEnvironmentItemState,
   deleteEnvironment,
   createEnvironment,
 }: HandleMoveWorkspaceEnvToProjectEnvsProps) => {
@@ -55,36 +49,22 @@ export const handleMoveWorkspaceEnvToProjectEnvs = async ({
     variables: [],
   });
 
-  const projectEnvsStatesToUpdate = [
+  const reorderedProjectEnvs = [
     ...projectEnvironmentsByProjectId.slice(0, dropOrder),
     newEnvironment,
     ...projectEnvironmentsByProjectId.slice(dropOrder),
-  ].map((env, index) => ({
-    id: env.id,
-    order: index + 1,
-  }));
+  ];
+  const projectUpdates = computeSequentialOrders(reorderedProjectEnvs);
 
-  const workspaceEnvsStatesToUpdate =
-    workspaceEnvironments
-      .filter((env) => env.order! > sourceData.data.order! && env.id !== sourceData.data.id)
-      .map((env) => ({
-        id: env.id,
-        order: env.order! - 1,
-      })) ?? [];
+  const remainingWorkspaceEnvs = workspaceEnvironments.filter((env) => env.id !== sourceData.data.id);
+  const workspaceUpdates = computeOrderUpdates(remainingWorkspaceEnvs);
 
-  const allEnvsStatesToUpdate = [...projectEnvsStatesToUpdate, ...workspaceEnvsStatesToUpdate];
+  const allUpdates = { ...projectUpdates, ...workspaceUpdates };
 
-  await batchPutEnvironmentItemState({
-    environmentItemStates: allEnvsStatesToUpdate,
-    workspaceId: currentWorkspaceId,
-  });
+  if (Object.keys(allUpdates).length > 0) {
+    await environmentItemStateService.batchPutOrder(allUpdates, currentWorkspaceId);
+  }
 
-  await removeEnvironmentItemState({
-    id: sourceData.data.id,
-    workspaceId: currentWorkspaceId,
-  });
-
-  await deleteEnvironment({
-    id: sourceData.data.id,
-  });
+  await environmentItemStateService.removeOrder(sourceData.data.id, currentWorkspaceId);
+  await deleteEnvironment({ id: sourceData.data.id });
 };

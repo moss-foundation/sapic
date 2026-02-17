@@ -4,9 +4,9 @@ import { useCreateEnvironment } from "@/adapters";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { cn } from "@/utils";
-import { usePutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/usePutEnvironmentItemState";
+import { cn, sortObjectsByOrder } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
+import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
 
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 import { useDropTargetWorkspaceEnvironmentList } from "../dnd/hooks/useDropTargetWorkspaceEnvironmentList";
@@ -18,7 +18,6 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-  const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
 
   const { data: workspaceEnvironmentListItemState } = useGetEnvironmentListItemState(
     WORKSPACE_ENVIRONMENTS_LIST_ID,
@@ -39,16 +38,16 @@ export const WorkspaceEnvironmentsListRoot = () => {
       color: undefined,
       variables: [],
     });
-    await putEnvironmentItemState({
-      environmentItemState: {
-        id: newEnvironmentOutput.id,
-        order: workspaceEnvironments.length,
-      },
-      workspaceId: currentWorkspaceId,
-    });
+    await environmentItemStateService.putOrder(
+      newEnvironmentOutput.id,
+      workspaceEnvironments.length + 1,
+      currentWorkspaceId
+    );
   };
 
   const restrictedNames = workspaceEnvironments?.map((environment) => environment.name) ?? [];
+
+  const sortedWorkspaceEnvironments = sortObjectsByOrder(workspaceEnvironments, "name");
 
   return (
     <Tree.RootNode ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
@@ -61,7 +60,7 @@ export const WorkspaceEnvironmentsListRoot = () => {
 
       {expanded && (
         <Tree.RootNodeChildren hideDirDepthIndicator>
-          {workspaceEnvironments?.map((environment) => (
+          {sortedWorkspaceEnvironments?.map((environment) => (
             <EnvironmentItem key={environment.id} environment={environment} />
           ))}
         </Tree.RootNodeChildren>

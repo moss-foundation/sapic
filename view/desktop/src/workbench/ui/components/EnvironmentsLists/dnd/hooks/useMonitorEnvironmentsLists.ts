@@ -4,8 +4,6 @@ import { useCreateEnvironment, useDeleteEnvironment } from "@/adapters";
 import { useGetAllProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetAllProjectEnvironments";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
-import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
-import { useRemoveEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useRemoveEnvironmentItemState";
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -30,9 +28,6 @@ export const useMonitorEnvironmentsLists = () => {
 
   const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-
-  const { mutateAsync: batchPutEnvironmentItemState } = useBatchPutEnvironmentItemState();
-  const { mutateAsync: removeEnvironmentItemState } = useRemoveEnvironmentItemState();
 
   useEffect(() => {
     return monitorForElements({
@@ -65,7 +60,6 @@ export const useMonitorEnvironmentsLists = () => {
               workspaceEnvironments,
               instruction,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
             });
             break;
           case EnvironmentsDropOperations.ReorderProjectEnvs:
@@ -75,7 +69,6 @@ export const useMonitorEnvironmentsLists = () => {
               projectEnvironments: allProjectEnvironments ?? [],
               instruction,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
             });
             break;
           case EnvironmentsDropOperations.MoveWorkspaceEnvToProjectEnvs:
@@ -86,8 +79,6 @@ export const useMonitorEnvironmentsLists = () => {
               projectEnvironments: allProjectEnvironments ?? [],
               instruction,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -100,8 +91,6 @@ export const useMonitorEnvironmentsLists = () => {
               workspaceEnvironments,
               instruction,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -113,8 +102,6 @@ export const useMonitorEnvironmentsLists = () => {
               projectEnvironments: allProjectEnvironments ?? [],
               instruction,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -126,8 +113,6 @@ export const useMonitorEnvironmentsLists = () => {
               workspaceEnvironments,
               projectEnvironments: allProjectEnvironments ?? [],
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -138,8 +123,6 @@ export const useMonitorEnvironmentsLists = () => {
               locationData,
               projectEnvironments: allProjectEnvironments ?? [],
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -151,8 +134,6 @@ export const useMonitorEnvironmentsLists = () => {
               projectEnvironments: allProjectEnvironments ?? [],
               workspaceEnvironments,
               currentWorkspaceId,
-              batchPutEnvironmentItemState,
-              removeEnvironmentItemState,
               deleteEnvironment,
               createEnvironment,
             });
@@ -162,13 +143,5 @@ export const useMonitorEnvironmentsLists = () => {
         }
       },
     });
-  }, [
-    batchPutEnvironmentItemState,
-    currentWorkspaceId,
-    allProjectEnvironments,
-    workspaceEnvironments,
-    removeEnvironmentItemState,
-    deleteEnvironment,
-    createEnvironment,
-  ]);
+  }, [currentWorkspaceId, allProjectEnvironments, workspaceEnvironments, deleteEnvironment, createEnvironment]);
 };

@@ -5,7 +5,6 @@ import { useListProjects } from "@/adapters/tanstackQuery/project/useListProject
 import { environmentService } from "@/domains/environment/environmentService";
 import { useCurrentWorkspace } from "@/hooks";
 import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
-import { EnvironmentItemState } from "@/workbench/domains/environmentItemState/types";
 import { ListEnvironmentItem, ListProjectsOutput } from "@repo/ipc";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
@@ -22,8 +21,7 @@ export const useSyncEnvironments = () => {
   const { data: workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
 
   useEffect(() => {
-    if (isProjectsLoading || isWorkspaceEnvironmentsLoading) return;
-    if (!workspaceEnvironments || !projects) return;
+    if (isProjectsLoading || isWorkspaceEnvironmentsLoading || !projects || !workspaceEnvironments) return;
 
     const syncEnvironments = async () => {
       clearExistingEnvironments();
@@ -35,15 +33,25 @@ export const useSyncEnvironments = () => {
         ...projectEnvironments,
       ];
 
-      const envStates = await environmentItemStateService.batchGet(
-        allEnvironments.map((env) => env.id),
-        currentWorkspaceId
-      );
+      const envIds = allEnvironments.map((env) => env.id);
+      console.log("envIds", { envIds });
+      const [envOrders, envExpanded] = await Promise.all([
+        environmentItemStateService.batchGetOrder(envIds, currentWorkspaceId),
+        environmentItemStateService.batchGetExpanded(envIds, currentWorkspaceId),
+      ]);
 
-      const summaries = allEnvironments.map((env) => {
-        const envState = envStates.find((state) => state.id === env.id);
-        return toEnvironmentSummary(env, envState);
-      });
+      console.log("envOrders", { envOrders });
+
+      const summaries: EnvironmentSummary[] = allEnvironments.map((env, index) => ({
+        id: env.id,
+        projectId: env.projectId,
+        isActive: env.isActive,
+        name: env.name,
+        color: env.color,
+        totalVariables: env.totalVariables,
+        order: envOrders[index],
+        expanded: envExpanded[index] ?? false,
+      }));
 
       insertEnvironmentSummaries(summaries);
     };
@@ -75,19 +83,6 @@ const clearExistingEnvironments = () => {
     environmentSummariesCollection.delete(env.id);
   });
 };
-
-const toEnvironmentSummary = (
-  env: ListEnvironmentItemWithProjectId,
-  envState?: EnvironmentItemState
-): EnvironmentSummary => ({
-  id: env.id,
-  projectId: env.projectId,
-  isActive: env.isActive,
-  name: env.name,
-  color: env.color,
-  totalVariables: env.totalVariables,
-  order: envState?.order ?? -1,
-});
 
 const insertEnvironmentSummaries = (summaries: EnvironmentSummary[]) => {
   summaries.forEach((summary) => {

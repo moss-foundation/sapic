@@ -1,103 +1,134 @@
 import { environmentSummariesCollection } from "@/db/environmentsSummaries/environmentSummaries";
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
-import { JsonValue } from "@repo/moss-bindingutils";
-
-import { EnvironmentItemState } from "./types";
-
-const SHARED_STORAGE_ENVIRONMENT_ITEM_STATE_KEY = "workbench.environmentItemState" as const;
+import {
+  batchGetItemExpanded,
+  batchPutItemExpanded,
+  batchRemoveItemExpanded,
+  getItemExpanded,
+  removeItemExpanded,
+  updateItemExpanded,
+} from "@/workbench/usecases/sharedStorage/itemExpanded";
+import {
+  batchGetItemOrder,
+  batchPutItemOrder,
+  batchRemoveItemOrder,
+  getItemOrder,
+  putItemOrder,
+  removeItemOrder,
+} from "@/workbench/usecases/sharedStorage/itemOrder";
 
 interface IEnvironmentItemStateService {
-  get: (environmentItemId: string, workspaceId: string) => Promise<EnvironmentItemState>;
-  put: (environmentItemState: EnvironmentItemState, workspaceId: string) => Promise<void>;
-  remove: (environmentItemId: string, workspaceId: string) => Promise<void>;
+  getOrder: (id: string, workspaceId: string) => Promise<number | undefined>;
+  batchGetOrder: (id: string[], workspaceId: string) => Promise<(number | undefined)[]>;
+  putOrder: (id: string, order: number, workspaceId: string) => Promise<void>;
+  batchPutOrder: (items: Record<string, number>, workspaceId: string) => Promise<void>;
+  removeOrder: (id: string, workspaceId: string) => Promise<void>;
+  batchRemoveOrder: (ids: string[], workspaceId: string) => Promise<void>;
 
-  batchGet: (environmentItemIds: string[], workspaceId: string) => Promise<EnvironmentItemState[]>;
-  batchPut: (environmentItemStates: EnvironmentItemState[], workspaceId: string) => Promise<void>;
-  batchRemove: (environmentItemIds: string[], workspaceId: string) => Promise<void>;
+  getExpanded: (id: string, workspaceId: string) => Promise<boolean | undefined>;
+  batchGetExpanded: (ids: string[], workspaceId: string) => Promise<boolean[]>;
+  putExpanded: (id: string, expanded: boolean, workspaceId: string) => Promise<void>;
+  batchPutExpanded: (items: Record<string, boolean>, workspaceId: string) => Promise<void>;
+  removeExpanded: (id: string, workspaceId: string) => Promise<void>;
+  batchRemoveExpanded: (ids: string[], workspaceId: string) => Promise<void>;
 }
 
 export const environmentItemStateService: IEnvironmentItemStateService = {
-  get: async (environmentItemId: string, workspaceId: string) => {
-    const { value: output } = await sharedStorageIpc.getItem(
-      constructEnvironmentItemStateKey(environmentItemId, workspaceId),
-      { workspace: workspaceId }
-    );
-
-    if (output !== "none") {
-      return output.value as unknown as EnvironmentItemState;
-    }
-
-    return { id: environmentItemId, order: 0 } satisfies EnvironmentItemState;
-  },
-  put: async (environmentItemState: EnvironmentItemState, workspaceId: string) => {
-    const { id, ...state } = environmentItemState;
-    await sharedStorageIpc.putItem(constructEnvironmentItemStateKey(id, workspaceId), state, {
-      workspace: workspaceId,
+  getOrder: async (id, workspaceId) => {
+    const result = await getItemOrder(id, workspaceId);
+    environmentSummariesCollection.update(id, (draft) => {
+      draft.order = (result.value as unknown as number) ?? undefined;
     });
-
-    if (environmentSummariesCollection.has(environmentItemState.id)) {
-      environmentSummariesCollection.update(environmentItemState.id, (draft) => {
-        draft.order = environmentItemState.order;
+    return (result.value as unknown as number) ?? undefined;
+  },
+  batchGetOrder: async (ids, workspaceId) => {
+    const result = await batchGetItemOrder(ids, workspaceId);
+    return ids.map((id) => (result.items[`${id}.order`] as number) ?? undefined);
+  },
+  putOrder: async (id, order, workspaceId) => {
+    await putItemOrder(id, order, workspaceId);
+    if (environmentSummariesCollection.has(id)) {
+      environmentSummariesCollection.update(id, (draft) => {
+        draft.order = order;
       });
     }
   },
-  remove: async (environmentItemId: string, workspaceId: string) => {
-    await sharedStorageIpc.removeItem(constructEnvironmentItemStateKey(environmentItemId, workspaceId), {
-      workspace: workspaceId,
-    });
-  },
-  batchGet: async (environmentItemIds: string[], workspaceId: string) => {
-    const keys = environmentItemIds.map((id) => constructEnvironmentItemStateKey(id, workspaceId));
-
-    const { items: output } = await sharedStorageIpc.batchGetItem(keys, {
-      workspace: workspaceId,
-    });
-
-    if (!output) return [];
-
-    return environmentItemIds.map((environmentItemId) => {
-      const key = constructEnvironmentItemStateKey(environmentItemId, workspaceId);
-      const itemValue = output[key];
-      if (itemValue !== null && itemValue !== undefined) {
-        return { id: environmentItemId, ...(itemValue as Omit<EnvironmentItemState, "id">) };
+  batchPutOrder: async (items, workspaceId) => {
+    await batchPutItemOrder(items, workspaceId);
+    Object.entries(items).forEach(([id, order]) => {
+      if (environmentSummariesCollection.has(id)) {
+        environmentSummariesCollection.update(id, (draft) => {
+          draft.order = order;
+        });
       }
-      return { id: environmentItemId, order: -1 } satisfies EnvironmentItemState;
     });
   },
-  batchPut: async (environmentItemStates: EnvironmentItemState[], workspaceId: string) => {
-    const items = environmentItemStates.map((environmentItemState) => ({
-      key: constructEnvironmentItemStateKey(environmentItemState.id, workspaceId),
-      value: { order: environmentItemState.order },
-      scope: { workspace: workspaceId },
-    }));
-
-    const scope = { workspace: workspaceId };
-
-    await sharedStorageIpc.batchPutItem(
-      items.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, JsonValue>
-      ),
-      scope
-    );
-
-    environmentItemStates.forEach((environmentItemState) => {
-      if (!environmentSummariesCollection.has(environmentItemState.id)) return;
-
-      environmentSummariesCollection.update(environmentItemState.id, (draft) => {
-        draft.order = environmentItemState.order;
+  removeOrder: async (id, workspaceId) => {
+    await removeItemOrder(id, workspaceId);
+    if (environmentSummariesCollection.has(id)) {
+      environmentSummariesCollection.update(id, (draft) => {
+        draft.order = undefined;
       });
+    }
+  },
+  batchRemoveOrder: async (ids, workspaceId) => {
+    await batchRemoveItemOrder(ids, workspaceId);
+    ids.forEach((id) => {
+      if (environmentSummariesCollection.has(id)) {
+        environmentSummariesCollection.update(id, (draft) => {
+          draft.order = undefined;
+        });
+      }
     });
   },
-  batchRemove: async (environmentItemIds: string[], workspaceId: string) => {
-    const keys = environmentItemIds.map((id) => constructEnvironmentItemStateKey(id, workspaceId));
-    await sharedStorageIpc.batchRemoveItem(keys, { workspace: workspaceId });
-  },
-};
 
-const constructEnvironmentItemStateKey = (environmentItemId: string, workspaceId: string) => {
-  return `${SHARED_STORAGE_ENVIRONMENT_ITEM_STATE_KEY}.${workspaceId}.${environmentItemId}`;
-};
+  getExpanded: async (id, workspaceId) => {
+    const result = await getItemExpanded(id, workspaceId);
+    const expanded = (result.value as unknown as boolean) ?? undefined;
+    if (environmentSummariesCollection.has(id)) {
+      environmentSummariesCollection.update(id, (draft) => {
+        draft.expanded = expanded ?? false;
+      });
+    }
+    return expanded;
+  },
+  batchGetExpanded: async (ids, workspaceId) => {
+    const result = await batchGetItemExpanded(ids, workspaceId);
+    return ids.map((id) => (result.items[`${id}.expanded`] as boolean) ?? false);
+  },
+  putExpanded: async (id, expanded, workspaceId) => {
+    await updateItemExpanded(id, expanded, workspaceId);
+    if (environmentSummariesCollection.has(id)) {
+      environmentSummariesCollection.update(id, (draft) => {
+        draft.expanded = expanded;
+      });
+    }
+  },
+  batchPutExpanded: async (items, workspaceId) => {
+    await batchPutItemExpanded(items, workspaceId);
+    Object.entries(items).forEach(([id, expanded]) => {
+      if (environmentSummariesCollection.has(id)) {
+        environmentSummariesCollection.update(id, (draft) => {
+          draft.expanded = expanded;
+        });
+      }
+    });
+  },
+  removeExpanded: async (id, workspaceId) => {
+    await removeItemExpanded(id, workspaceId);
+    if (environmentSummariesCollection.has(id)) {
+      environmentSummariesCollection.update(id, (draft) => {
+        draft.expanded = false;
+      });
+    }
+  },
+  batchRemoveExpanded: async (ids, workspaceId) => {
+    await batchRemoveItemExpanded(ids, workspaceId);
+    ids.forEach((id) => {
+      if (environmentSummariesCollection.has(id)) {
+        environmentSummariesCollection.update(id, (draft) => {
+          draft.expanded = false;
+        });
+      }
+    });
+  },
+} satisfies IEnvironmentItemStateService;
