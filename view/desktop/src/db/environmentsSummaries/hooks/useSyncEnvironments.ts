@@ -17,8 +17,8 @@ type ListEnvironmentItemWithProjectId = ListEnvironmentItem & {
 export const useSyncEnvironments = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects, isLoading: isProjectsLoading } = useListProjects();
-  const { data: workspaceEnvironments, isLoading: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
+  const { data: projects, isFetching: isProjectsLoading } = useListProjects();
+  const { data: workspaceEnvironments, isFetching: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
 
   useEffect(() => {
     if (isProjectsLoading || isWorkspaceEnvironmentsLoading || !projects || !workspaceEnvironments) return;
@@ -52,7 +52,6 @@ export const useSyncEnvironments = () => {
 
       insertEnvironmentSummaries(summaries);
     };
-
     syncEnvironments();
   }, [currentWorkspaceId, isProjectsLoading, isWorkspaceEnvironmentsLoading, projects, workspaceEnvironments]);
 };

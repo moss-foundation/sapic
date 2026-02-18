@@ -32,7 +32,10 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
     projectEnvironments: projectEnvironments ?? [],
   });
 
-  if (!project) return null;
+  if (!project) {
+    console.error(`Project ${projectId} not found`);
+    return null;
+  }
 
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>

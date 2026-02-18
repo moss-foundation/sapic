@@ -21,6 +21,10 @@ export const useSyncProjectSummaries = () => {
     if (lastWorkspaceIdRef.current !== currentWorkspaceId) {
       lastWorkspaceIdRef.current = currentWorkspaceId;
       hasSyncedRef.current = false;
+
+      projectSummariesCollection.forEach((project) => {
+        projectSummariesCollection.delete(project.id);
+      });
     }
   }, [currentWorkspaceId]);
 

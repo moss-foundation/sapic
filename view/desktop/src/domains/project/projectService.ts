@@ -67,9 +67,7 @@ export const projectService: IProjectService = {
     return await projectIpc.importProject(input);
   },
   listProjects: async () => {
-    const output = await projectIpc.listProjects();
-    console.log("listProjects", output);
-    return output;
+    return await projectIpc.listProjects();
   },
   updateProject: async (input) => {
     const output = await projectIpc.updateProject(input);

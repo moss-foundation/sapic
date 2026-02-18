@@ -21,8 +21,8 @@ export const useOpenWorkspace = () => {
         mainRouter.navigate({ to: "/$workspaceId", params: { workspaceId: id } });
 
         queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACES_QUERY_KEY] });
-        queryClient.invalidateQueries({ queryKey: [USE_LIST_PROJECTS_QUERY_KEY] });
-        queryClient.invalidateQueries({ queryKey: [USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY] });
+        queryClient.removeQueries({ queryKey: [USE_LIST_PROJECTS_QUERY_KEY] });
+        queryClient.removeQueries({ queryKey: [USE_LIST_WORKSPACE_ENVIRONMENTS_QUERY_KEY] });
       }
     },
   });
