@@ -7,7 +7,7 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
@@ -59,8 +59,6 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
 
     const localResourceSummary = useGetLocalResourceDetails(node.id);
 
-    const { mutateAsync: putTreeItemState } = usePutTreeItemState();
-
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
     const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
@@ -80,14 +78,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
         });
 
         if (!node.expanded) {
-          await putTreeItemState({
-            treeItemState: {
-              id: node.id,
-              order: node.order ?? 0,
-              expanded: true,
-            },
-            workspaceId: currentWorkspaceId,
-          });
+          await treeItemStateService.putExpanded(node.id, true, currentWorkspaceId);
           resourceSummariesCollection.update(node.id, (draft) => {
             draft.expanded = true;
           });
@@ -120,14 +111,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
       e.stopPropagation();
       if (node.kind === "Item") return;
 
-      await putTreeItemState({
-        treeItemState: {
-          id: node.id,
-          order: node.order ?? 0,
-          expanded: !node.expanded,
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.putExpanded(node.id, !node.expanded, currentWorkspaceId);
 
       resourceSummariesCollection.update(node.id, (draft) => {
         draft.expanded = !node.expanded;

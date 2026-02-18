@@ -1,8 +1,7 @@
 import { useDeleteProject } from "@/adapters/tanstackQuery/project";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
-import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
-import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ConfirmationModal } from "../ConfirmationModal";
@@ -12,9 +11,6 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { mutateAsync: deleteProject, isPending: isDeleteProjectLoading } = useDeleteProject();
   const localProjectSummaries = useGetAllLocalProjectSummaries();
-
-  const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
-  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
 
   const { removePanel } = useTabbedPaneStore();
 
@@ -28,24 +24,17 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
     try {
       await deleteProject({ id: projectToDelete.id });
 
-      await removeTreeItemState({
-        id: projectToDelete.id,
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.removeOrder(projectToDelete.id, currentWorkspaceId);
 
       const projectsAfterDeleted = localProjectSummaries?.filter(
         (p) => p.order && p.order > (projectToDelete.order ?? 0)
       );
 
       if (projectsAfterDeleted) {
-        await batchPutTreeItemState({
-          treeItemStates: projectsAfterDeleted.map((project) => ({
-            id: project.id,
-            order: project.order! - 1,
-            expanded: project.expanded,
-          })),
-          workspaceId: currentWorkspaceId,
-        });
+        await treeItemStateService.batchPutOrder(
+          Object.fromEntries(projectsAfterDeleted.map((project) => [project.id, project.order! - 1])),
+          currentWorkspaceId
+        );
       }
 
       closeModal();

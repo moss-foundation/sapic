@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { useCreateProjectResource } from "@/adapters";
 import { useCurrentWorkspace } from "@/hooks";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../../types";
@@ -12,7 +12,6 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
   const { id } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
 
   const [isAddingRootFileNode, setIsAddingRootFileNode] = useState(false);
@@ -39,10 +38,8 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
         input: newResource,
       });
 
-      await updateTreeItemState({
-        treeItemState: { id: createdResourceOutput.id, order: newOrder, expanded: true },
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.putOrder(createdResourceOutput.id, newOrder, currentWorkspaceId);
+      await treeItemStateService.putExpanded(createdResourceOutput.id, true, currentWorkspaceId);
     } catch (error) {
       console.error(error);
     } finally {

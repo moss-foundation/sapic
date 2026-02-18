@@ -7,7 +7,7 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { CreateProjectGitParams, ImportProjectSource } from "@repo/ipc";
 
@@ -29,7 +29,6 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: importProject } = useImportProject();
 
-  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { mutateAsync: putEnvironmentListItemState } = usePutEnvironmentListItemState();
 
   const { addOrFocusPanel } = useTabbedPaneStore();
@@ -54,14 +53,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         gitParams: createParams,
       });
 
-      await updateTreeItemState({
-        treeItemState: {
-          id: result.id,
-          order: newOrder,
-          expanded: true,
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.putOrder(result.id, newOrder, currentWorkspaceId);
+      await treeItemStateService.putExpanded(result.id, true, currentWorkspaceId);
 
       await putEnvironmentListItemState({
         id: result.id,
@@ -90,14 +83,8 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
         iconPath: "",
       });
 
-      await updateTreeItemState({
-        treeItemState: {
-          id: result.id,
-          order: newOrder,
-          expanded: true,
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.putOrder(result.id, newOrder, currentWorkspaceId);
+      await treeItemStateService.putExpanded(result.id, true, currentWorkspaceId);
 
       await putEnvironmentListItemState({
         id: result.id,

@@ -49,8 +49,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
               } else {
                 const newNode: ProjectTreeNode = {
                   ...resource,
-                  expanded: false,
-                  order: undefined,
+                  expanded: resource.expanded ?? false,
+                  order: resource.order,
                   childNodes: [],
                 };
                 childNodes.push(newNode);
@@ -80,8 +80,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
                   class: resource.class,
                   kind: "Dir",
                   protocol: undefined,
-                  order: undefined,
-                  expanded: false,
+                  order: resource.order,
+                  expanded: resource.expanded ?? false,
                   childNodes: [],
                 };
                 targetArray.push(child);
@@ -100,8 +100,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
             } else {
               const newNode: ProjectTreeNode = {
                 ...resource,
-                order: undefined,
-                expanded: false,
+                order: resource.order,
+                expanded: resource.expanded ?? false,
                 childNodes: [],
               };
               targetArray.push(newNode);

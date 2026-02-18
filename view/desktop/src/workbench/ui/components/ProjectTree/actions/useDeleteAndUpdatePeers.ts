@@ -1,13 +1,8 @@
 import { useDeleteProjectResource } from "@/adapters";
 import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
-import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useListProjectResources";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
-import { useBatchRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchRemoveTreeItemState";
-import { useRemoveTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useRemoveTreeItemState";
-import { ListProjectResourceItem } from "@repo/ipc";
-import { useQueryClient } from "@tanstack/react-query";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 import { getAllNestedResources, siblingsAfterRemovalPayload } from "../utils";
@@ -17,16 +12,10 @@ export const useDeleteAndUpdatePeers = (
   node: ProjectTreeNode,
   parentNode: ProjectTreeNode | ProjectTreeRootNode
 ) => {
-  const queryClient = useQueryClient();
-
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
-
-  const { mutateAsync: removeTreeItemState } = useRemoveTreeItemState();
-  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
-  const { mutateAsync: batchRemoveTreeItemState } = useBatchRemoveTreeItemState();
 
   const deleteAndUpdatePeers = async () => {
     await deleteProjectResource({
@@ -38,10 +27,10 @@ export const useDeleteAndUpdatePeers = (
 
     const allNestedChildren = getAllNestedResources(node);
 
-    await batchRemoveTreeItemState({
-      ids: allNestedChildren.map((child) => child.id),
-      workspaceId: currentWorkspaceId,
-    });
+    await treeItemStateService.batchRemoveOrder(
+      allNestedChildren.map((child) => child.id),
+      currentWorkspaceId
+    );
 
     const sortedChildren = sortObjectsByOrder(parentNode.childNodes);
     const index = sortedChildren.findIndex((e) => e.id === node.id) + 1;
@@ -50,7 +39,7 @@ export const useDeleteAndUpdatePeers = (
       order: e.order! - 1,
     }));
 
-    const result = await batchUpdateProjectResource({
+    await batchUpdateProjectResource({
       projectId,
       resources: {
         resources: siblingsAfterRemovalPayload({
@@ -60,36 +49,12 @@ export const useDeleteAndUpdatePeers = (
       },
     });
 
-    if (result.status === "ok") {
-      //TODO: Remove this once we have a proper way to update the project resources(in the tanstack adapter)
-      queryClient.setQueryData(
-        [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, projectId],
-        (cacheData: ListProjectResourceItem[]) => {
-          return cacheData.map((cacheResource) => {
-            if (updatedParentNodeChildren.some((resource) => resource.id === cacheResource.id)) {
-              const updatedResource = updatedParentNodeChildren.find((resource) => resource.id === cacheResource.id);
-              return { ...cacheResource, ...updatedResource };
-            }
+    await treeItemStateService.batchPutOrder(
+      Object.fromEntries(updatedParentNodeChildren.map((child) => [child.id, child.order! - 1])),
+      currentWorkspaceId
+    );
 
-            return cacheResource;
-          });
-        }
-      );
-
-      await batchPutTreeItemState({
-        treeItemStates: updatedParentNodeChildren.map((child) => ({
-          id: child.id,
-          order: child.order! - 1,
-          expanded: child.expanded,
-        })),
-        workspaceId: currentWorkspaceId,
-      });
-
-      await removeTreeItemState({
-        id: node.id,
-        workspaceId: currentWorkspaceId,
-      });
-    }
+    await treeItemStateService.removeOrder(node.id, currentWorkspaceId);
   };
 
   return {

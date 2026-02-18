@@ -5,8 +5,7 @@ import { useListProjects } from "@/adapters/tanstackQuery/project/useListProject
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
-import { useBatchPutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchPutTreeItemState";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
+import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constants";
 import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
@@ -19,9 +18,6 @@ export const ProjectTreeViewHeader = () => {
   const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useListProjects();
 
   const { clearAllProjectResourcesCache } = useClearAllProjectResources();
-
-  const { mutateAsync: putTreeItemState } = usePutTreeItemState();
-  const { mutateAsync: batchPutTreeItemState } = useBatchPutTreeItemState();
 
   const projectSummaries = useGetAllLocalProjectSummaries();
   const resourceSummaries = useGetAllLocalResourceSummaries();
@@ -57,23 +53,12 @@ export const ProjectTreeViewHeader = () => {
     if (openedProjectSummaries.length === 0) return;
 
     if (openedProjectSummaries.length === 1) {
-      await putTreeItemState({
-        treeItemState: {
-          id: openedProjectSummaries[0].id,
-          expanded: false,
-          order: openedProjectSummaries[0].order,
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      treeItemStateService.putExpanded(openedProjectSummaries[0].id, false, currentWorkspaceId);
     } else {
-      await batchPutTreeItemState({
-        treeItemStates: openedProjectSummaries.map((p) => ({
-          id: p.id,
-          expanded: false,
-          order: p.order,
-        })),
-        workspaceId: currentWorkspaceId,
-      });
+      treeItemStateService.batchPutExpanded(
+        Object.fromEntries(openedProjectSummaries.map((p) => [p.id, false])),
+        currentWorkspaceId
+      );
     }
   };
 
@@ -83,23 +68,12 @@ export const ProjectTreeViewHeader = () => {
     if (expandedDirResources.length === 0) return;
 
     if (expandedDirResources.length === 1) {
-      await putTreeItemState({
-        treeItemState: {
-          id: expandedDirResources[0].id,
-          expanded: false,
-          order: expandedDirResources[0].order ?? undefined,
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      treeItemStateService.putExpanded(expandedDirResources[0].id, false, currentWorkspaceId);
     } else {
-      await batchPutTreeItemState({
-        treeItemStates: expandedDirResources.map((resource) => ({
-          id: resource.id,
-          expanded: false,
-          order: resource.order ?? undefined,
-        })),
-        workspaceId: currentWorkspaceId,
-      });
+      treeItemStateService.batchPutExpanded(
+        Object.fromEntries(expandedDirResources.map((resource) => [resource.id, false])),
+        currentWorkspaceId
+      );
     }
   };
 
