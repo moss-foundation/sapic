@@ -1,6 +1,6 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import {
   CreateEnvironmentInput,
   CreateEnvironmentOutput,

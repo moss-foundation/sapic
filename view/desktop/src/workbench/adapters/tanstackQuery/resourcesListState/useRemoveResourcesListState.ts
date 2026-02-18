@@ -1,4 +1,4 @@
-import { resourcesListItemStateService } from "@/workbench/domains/resourcesListItemState/service";
+import { resourcesListItemStateService } from "@/workbench/services/resourcesListItemStateService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_GET_RESOURCES_LIST_STATE_QUERY_KEY } from "./useGetResourcesListState";

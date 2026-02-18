@@ -1,4 +1,4 @@
-import { resourcesListItemStateService } from "@/workbench/domains/resourcesListItemState/service";
+import { resourcesListItemStateService } from "@/workbench/services/resourcesListItemStateService";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_RESOURCES_LIST_STATE_QUERY_KEY = "getResourcesListState" as const;

@@ -2,7 +2,7 @@ import { useContext, useState } from "react";
 
 import { useCreateProjectResource, useUpdateProjectResource } from "@/adapters";
 import { useCurrentWorkspace } from "@/hooks";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";

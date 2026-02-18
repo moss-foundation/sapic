@@ -6,7 +6,7 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { cn, sortObjectsByOrder } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 import { useDropTargetWorkspaceEnvironmentList } from "../dnd/hooks/useDropTargetWorkspaceEnvironmentList";

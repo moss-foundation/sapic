@@ -9,7 +9,7 @@ import { useCurrentWorkspace, useFocusInputOnMount, useValidateInput } from "@/h
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
 

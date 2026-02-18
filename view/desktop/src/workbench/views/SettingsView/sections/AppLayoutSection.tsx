@@ -1,6 +1,6 @@
 import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/services/layout";
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 import { MenuItemProps } from "@/workbench/utils/renderActionMenuItem";
 

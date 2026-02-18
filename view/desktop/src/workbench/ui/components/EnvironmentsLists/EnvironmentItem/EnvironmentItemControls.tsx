@@ -8,7 +8,7 @@ import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";

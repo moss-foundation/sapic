@@ -2,7 +2,7 @@ import { useDeleteProjectResource } from "@/adapters";
 import { useBatchUpdateProjectResource } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 import { getAllNestedResources, siblingsAfterRemovalPayload } from "../utils";

@@ -4,7 +4,7 @@ import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environme
 import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { environmentService } from "@/domains/environment/environmentService";
 import { useCurrentWorkspace } from "@/hooks";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { ListEnvironmentItem, ListProjectsOutput } from "@repo/ipc";
 
 import { environmentSummariesCollection } from "../environmentSummaries";

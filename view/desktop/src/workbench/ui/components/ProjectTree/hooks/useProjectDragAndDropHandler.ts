@@ -2,7 +2,7 @@ import { useCallback, useEffect } from "react";
 
 import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { useCurrentWorkspace } from "@/hooks";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectDragType } from "../constants";

@@ -1,4 +1,4 @@
-import { tokenizerService } from "@/workbench/domains/tokenizer";
+import { tokenizerService } from "@/workbench/services/tokenizerService";
 import { useMutation } from "@tanstack/react-query";
 
 export const useTokenizer = () => {

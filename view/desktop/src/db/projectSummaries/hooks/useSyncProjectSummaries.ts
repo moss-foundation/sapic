@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 export const useSyncProjectSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();

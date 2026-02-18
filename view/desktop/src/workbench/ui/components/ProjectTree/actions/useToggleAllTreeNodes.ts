@@ -1,6 +1,6 @@
 import { useGetResourcesSummariesByProjectId } from "@/db/resourceSummaries/hooks/useGetResourcesSummariesByProjectId";
 import { useCurrentWorkspace } from "@/hooks";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 export const useToggleAllTreeNodes = (id: string) => {
   const { currentWorkspaceId } = useCurrentWorkspace();

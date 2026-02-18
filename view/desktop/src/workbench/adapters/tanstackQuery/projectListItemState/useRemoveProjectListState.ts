@@ -1,4 +1,4 @@
-import { projectListStateService } from "@/workbench/domains/projectListItemState/service";
+import { projectListStateService } from "@/workbench/services/projectListStateService";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_REMOVE_PROJECT_LIST_STATE_MUTATION_KEY = "removeProjectListState" as const;

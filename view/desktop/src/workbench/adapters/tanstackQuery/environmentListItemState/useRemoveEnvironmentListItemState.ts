@@ -1,4 +1,4 @@
-import { environmentListItemStateService } from "@/workbench/domains/environmentListItemState/service";
+import { environmentListItemStateService } from "@/workbench/services/environmentListItemStateService";
 import { useMutation } from "@tanstack/react-query";
 
 export const USE_REMOVE_ENVIRONMENT_LIST_ITEM_STATE_MUTATION_KEY = "removeEnvironmentListItemState" as const;

@@ -1,6 +1,6 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { computeSequentialOrders } from "@/utils/computeOrderUpdates";
-import { environmentItemStateService } from "@/workbench/domains/environmentItemState/service";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";

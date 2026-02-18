@@ -3,7 +3,7 @@ import { useEffect, useEffectEvent } from "react";
 import { useProjectsWithResources } from "@/adapters";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
-import { treeItemStateService } from "@/workbench/domains/treeItemState/service";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 export const useSyncResourceSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();

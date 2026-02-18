@@ -1,6 +1,6 @@
 import { SerializedDockview } from "moss-tabs";
 
-import { LayoutStateInput, LayoutStateOutput } from "@/workbench/domains/layout/service";
+import { LayoutStateInput, LayoutStateOutput } from "@/workbench/services/layout/service";
 
 export const mapUpdateLayoutInputToLayoutStateOutput = (
   oldLayout: LayoutStateOutput,

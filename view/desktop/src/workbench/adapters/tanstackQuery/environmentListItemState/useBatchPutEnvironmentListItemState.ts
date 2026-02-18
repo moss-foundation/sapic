@@ -1,4 +1,4 @@
-import { environmentListItemStateService } from "@/workbench/domains/environmentListItemState/service";
+import { environmentListItemStateService } from "@/workbench/services/environmentListItemStateService";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_BATCH_GET_ENVIRONMENT_LIST_ITEM_STATE_QUERY_KEY } from "./useBatchGetEnvironmentListItemState";

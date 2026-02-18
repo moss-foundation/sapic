@@ -1,7 +1,7 @@
 import { Orientation, SerializedDockview } from "moss-tabs";
 
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
-import { LayoutStateOutput } from "@/workbench/domains/layout/service";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/services/layout";
+import { LayoutStateOutput } from "@/workbench/services/layout/service";
 import { ACTIVITY_BAR_VIEW_GROUP_PROJECTS_ID } from "@/workbench/ui/parts/ActivityBar/constants";
 
 export const defaultSidebarPanelState = {
