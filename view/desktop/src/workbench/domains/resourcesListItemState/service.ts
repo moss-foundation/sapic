@@ -1,45 +1,30 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
-
-import { ResourcesListItemState } from "./types";
-
-const SHARED_STORAGE_RESOURCES_LIST_ITEM_STATE_KEY = "workbench.resourcesListItemState" as const;
+import {
+  getItemExpanded,
+  removeItemExpanded,
+  updateItemExpanded,
+} from "@/workbench/usecases/sharedStorage/itemExpanded";
 
 interface IResourcesListItemStateService {
-  get: (resourcesListItemId: string, workspaceId: string) => Promise<ResourcesListItemState>;
-  put: (
-    resourcesListItemId: string,
-    resourcesListItemState: ResourcesListItemState,
-    workspaceId: string
-  ) => Promise<void>;
+  get: (resourcesListItemId: string, workspaceId: string) => Promise<boolean>;
+  put: (resourcesListItemId: string, resourcesListItemState: boolean, workspaceId: string) => Promise<void>;
   remove: (resourcesListItemId: string, workspaceId: string) => Promise<void>;
 }
 
 export const resourcesListItemStateService: IResourcesListItemStateService = {
-  get: async (resourcesListItemId: string, workspaceId: string) => {
-    const { value: output } = await sharedStorageIpc.getItem(
-      constructResourcesListItemStateKey(resourcesListItemId, workspaceId),
-      { workspace: workspaceId }
-    );
-
-    if (output !== "none") {
-      return output.value as unknown as ResourcesListItemState;
+  get: async (resourcesListItemId, workspaceId) => {
+    const key = `resourcesListItem.${resourcesListItemId}`;
+    const { value } = await getItemExpanded(key, workspaceId);
+    if (value !== "none") {
+      return value.value as boolean;
     }
-
-    return { expanded: false } satisfies ResourcesListItemState;
+    return false;
   },
-  put: async (resourcesListItemId: string, resourcesListItemState: ResourcesListItemState, workspaceId: string) => {
-    const { ...state } = resourcesListItemState;
-    await sharedStorageIpc.putItem(constructResourcesListItemStateKey(resourcesListItemId, workspaceId), state, {
-      workspace: workspaceId,
-    });
+  put: async (resourcesListItemId, resourcesListItemState, workspaceId) => {
+    const key = `resourcesListItem.${resourcesListItemId}`;
+    await updateItemExpanded(key, resourcesListItemState, workspaceId);
   },
-  remove: async (resourcesListItemId: string, workspaceId: string) => {
-    await sharedStorageIpc.removeItem(constructResourcesListItemStateKey(resourcesListItemId, workspaceId), {
-      workspace: workspaceId,
-    });
+  remove: async (resourcesListItemId, workspaceId) => {
+    const key = `resourcesListItem.${resourcesListItemId}`;
+    await removeItemExpanded(key, workspaceId);
   },
-};
-
-const constructResourcesListItemStateKey = (resourcesListItemId: string, workspaceId: string) => {
-  return `${SHARED_STORAGE_RESOURCES_LIST_ITEM_STATE_KEY}.${workspaceId}.${resourcesListItemId}`;
 };

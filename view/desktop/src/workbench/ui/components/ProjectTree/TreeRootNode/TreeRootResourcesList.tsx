@@ -29,15 +29,14 @@ export const TreeRootResourcesList = ({
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const { data: resourcesListState } = useGetResourcesListState(tree.id, currentWorkspaceId);
-  const expanded = resourcesListState?.expanded ?? false;
+  const { data: expanded } = useGetResourcesListState(tree.id, currentWorkspaceId);
 
   const { mutate: updateResourcesListState } = usePutResourcesListState();
 
   const handleExpand = () => {
     updateResourcesListState({
       resourcesListItemId: tree.id,
-      resourcesListItemState: { expanded: !expanded },
+      expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });
   };
