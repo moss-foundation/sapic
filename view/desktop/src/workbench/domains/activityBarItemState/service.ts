@@ -1,10 +1,9 @@
 import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
-import { JsonValue } from "@repo/moss-bindingutils";
 
 import { defaultStates } from "./defaults";
 import { ActivityBarItemState } from "./types";
 
-const SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY = "workbench.activityBarItemState" as const;
+const SCOPE = "application" as const;
 
 export interface IActivityBarItemStateService {
   get: (activityBarId: string) => Promise<ActivityBarItemState>;
@@ -17,73 +16,37 @@ export interface IActivityBarItemStateService {
 }
 
 export const activityBarItemStateService: IActivityBarItemStateService = {
-  get: async (activityBarId: string) => {
-    const { value: output } = await sharedStorageIpc.getItem(
-      constructActivityBarItemStateKey(activityBarId),
-      "application"
-    );
-
+  get: async (activityBarId) => {
+    const { value: output } = await sharedStorageIpc.getItem(`${activityBarId}.order`, SCOPE);
     if (output === "none") {
       return defaultStates.find((state) => state.id === activityBarId)!;
     }
-
-    return output.value as unknown as ActivityBarItemState;
+    return { id: activityBarId, order: output.value as number };
   },
-  put: async (activityBarState: ActivityBarItemState) => {
-    const { id, ...state } = activityBarState;
-    await sharedStorageIpc.putItem(constructActivityBarItemStateKey(id), state, "application");
+  put: async (activityBarState) => {
+    await sharedStorageIpc.putItem(`${activityBarState.id}.order`, activityBarState.order, SCOPE);
   },
-  remove: async (activityBarId: string) => {
-    await sharedStorageIpc.removeItem(constructActivityBarItemStateKey(activityBarId), "application");
+  remove: async (activityBarId) => {
+    await sharedStorageIpc.removeItem(`${activityBarId}.order`, SCOPE);
   },
 
-  batchGet: async (activityBarIds: string[]) => {
-    const keys = activityBarIds.map((id) => constructActivityBarItemStateKey(id));
-    const { items: output } = await sharedStorageIpc.batchGetItem(keys, "application");
-
+  batchGet: async (activityBarIds) => {
+    const orderKeys = activityBarIds.map((id) => `${id}.order`);
+    const { items: output } = await sharedStorageIpc.batchGetItem(orderKeys, SCOPE);
     if (!output) return [];
 
-    return activityBarIds.map((activityBarId): ActivityBarItemState => {
-      const key = constructActivityBarItemStateKey(activityBarId);
-      const itemValue = output[key];
-
-      if (itemValue) {
-        return { id: activityBarId, ...(itemValue as Omit<ActivityBarItemState, "id">) };
-      }
-
-      return {
-        id: activityBarId,
-        order: 0,
-      };
+    return activityBarIds.map((id) => {
+      const value = output[`${id}.order`];
+      if (value != null) return { id, order: value as number };
+      return defaultStates.find((state) => state.id === id) ?? { id, order: 0 };
     });
   },
-  batchPut: async (activityBarStates: ActivityBarItemState[]) => {
-    const items = activityBarStates.map((activityBarState) => ({
-      key: constructActivityBarItemStateKey(activityBarState.id),
-      value: {
-        order: activityBarState.order,
-      },
-      scope: "application",
-    }));
-
-    const scope = "application";
-
-    await sharedStorageIpc.batchPutItem(
-      items.reduce(
-        (acc, item) => {
-          acc[item.key] = item.value;
-          return acc;
-        },
-        {} as Record<string, JsonValue>
-      ),
-      scope
-    );
+  batchPut: async (activityBarStates) => {
+    const items = Object.fromEntries(activityBarStates.map((state) => [`${state.id}.order`, state.order]));
+    await sharedStorageIpc.batchPutItem(items, SCOPE);
   },
-  batchRemove: async (activityBarIds: string[]) => {
-    await sharedStorageIpc.batchRemoveItem(activityBarIds, "application");
+  batchRemove: async (activityBarIds) => {
+    const orderKeys = activityBarIds.map((id) => `${id}.order`);
+    await sharedStorageIpc.batchRemoveItem(orderKeys, SCOPE);
   },
-};
-
-const constructActivityBarItemStateKey = (activityBarId: string) => {
-  return `${SHARED_STORAGE_ACTIVITY_BAR_ITEM_STATE_KEY}.${activityBarId}`;
 };
