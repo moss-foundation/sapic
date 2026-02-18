@@ -1,8 +1,12 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
+import {
+  getItemExpanded,
+  removeItemExpanded,
+  updateItemExpanded,
+} from "@/workbench/usecases/sharedStorage/itemExpanded";
 
 import { ProjectListItemState } from "./types";
 
-const SHARED_STORAGE_PROJECT_LIST_STATE_KEY = "workbench.projectListState" as const;
+const KEY = "projectList" as const;
 
 interface IProjectListStateService {
   get: (workspaceId: string) => Promise<ProjectListItemState>;
@@ -11,30 +15,17 @@ interface IProjectListStateService {
 }
 
 export const projectListStateService: IProjectListStateService = {
-  get: async (workspaceId: string) => {
-    const { value: output } = await sharedStorageIpc.getItem(constructProjectListStateKey(workspaceId), {
-      workspace: workspaceId,
-    });
-
-    if (output !== "none") {
-      return output.value as unknown as ProjectListItemState;
+  get: async (workspaceId) => {
+    const { value } = await getItemExpanded(KEY, workspaceId);
+    if (value !== "none") {
+      return { expanded: value.value as boolean };
     }
-
-    return { expanded: false } satisfies ProjectListItemState;
+    return { expanded: false };
   },
-  put: async (projectListItemState: ProjectListItemState, workspaceId: string) => {
-    const { ...state } = projectListItemState;
-    await sharedStorageIpc.putItem(constructProjectListStateKey(workspaceId), state, {
-      workspace: workspaceId,
-    });
+  put: async (projectListItemState, workspaceId) => {
+    await updateItemExpanded(KEY, projectListItemState.expanded, workspaceId);
   },
-  remove: async (workspaceId: string) => {
-    await sharedStorageIpc.removeItem(constructProjectListStateKey(workspaceId), {
-      workspace: workspaceId,
-    });
+  remove: async (workspaceId) => {
+    await removeItemExpanded(KEY, workspaceId);
   },
-};
-
-const constructProjectListStateKey = (workspaceId: string) => {
-  return `${SHARED_STORAGE_PROJECT_LIST_STATE_KEY}.${workspaceId}`;
 };
