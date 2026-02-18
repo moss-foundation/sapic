@@ -14,12 +14,12 @@ export * from "./environmentListItemState/useRemoveEnvironmentListItemState";
 
 export * from "./layout";
 
-export * from "./projectListItemState/useGetProjectListState";
-export * from "./projectListItemState/usePutProjectListState";
-export * from "./projectListItemState/useRemoveProjectListState";
+export * from "./projectListState/useGetProjectListState";
+export * from "./projectListState/usePutProjectListState";
+export * from "./projectListState/useRemoveProjectListState";
 
-export * from "./resourcesListState/useGetResourcesListState";
-export * from "./resourcesListState/usePutResourcesListState";
-export * from "./resourcesListState/useRemoveResourcesListState";
+export * from "./resourcesListItemState/useGetResourcesListItemState";
+export * from "./resourcesListItemState/usePutResourcesListItemState";
+export * from "./resourcesListItemState/useRemoveResourcesListItemState";
 
 export * from "./tokenizer/useTokenizer";

@@ -4,8 +4,8 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
-import { useGetResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/useGetResourcesListState";
-import { usePutResourcesListState } from "@/workbench/adapters/tanstackQuery/resourcesListState/usePutResourcesListState";
+import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/useGetResourcesListItemState";
+import { usePutResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/usePutResourcesListItemState";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
@@ -29,9 +29,9 @@ export const TreeRootResourcesList = ({
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const { data: expanded } = useGetResourcesListState(tree.id, currentWorkspaceId);
+  const { data: expanded } = useGetResourcesListItemState(tree.id, currentWorkspaceId);
 
-  const { mutate: updateResourcesListState } = usePutResourcesListState();
+  const { mutate: updateResourcesListState } = usePutResourcesListItemState();
 
   const handleExpand = () => {
     updateResourcesListState({
