@@ -1,9 +1,16 @@
-import { sharedStorageIpc } from "@/infra/ipc/sharedStorageIpc";
+import {
+  batchGetItemOrder,
+  batchPutItemOrder,
+  batchRemoveItemOrder,
+  getItemOrder,
+  putItemOrder,
+  removeItemOrder,
+} from "@/workbench/usecases/sharedStorage/itemOrder";
 
 import { defaultStates } from "./defaults";
 import { ActivityBarItemState } from "./types";
 
-const SCOPE = "application" as const;
+const SCOPE = "" as const;
 
 export interface IActivityBarItemStateService {
   get: (activityBarId: string) => Promise<ActivityBarItemState>;
@@ -17,22 +24,21 @@ export interface IActivityBarItemStateService {
 
 export const activityBarItemStateService: IActivityBarItemStateService = {
   get: async (activityBarId) => {
-    const { value: output } = await sharedStorageIpc.getItem(`${activityBarId}.order`, SCOPE);
-    if (output === "none") {
+    const { value } = await getItemOrder(activityBarId, SCOPE);
+    if (value === "none") {
       return defaultStates.find((state) => state.id === activityBarId)!;
     }
-    return { id: activityBarId, order: output.value as number };
+    return { id: activityBarId, order: value.value as number };
   },
   put: async (activityBarState) => {
-    await sharedStorageIpc.putItem(`${activityBarState.id}.order`, activityBarState.order, SCOPE);
+    await putItemOrder(activityBarState.id, activityBarState.order, SCOPE);
   },
   remove: async (activityBarId) => {
-    await sharedStorageIpc.removeItem(`${activityBarId}.order`, SCOPE);
+    await removeItemOrder(activityBarId, SCOPE);
   },
 
   batchGet: async (activityBarIds) => {
-    const orderKeys = activityBarIds.map((id) => `${id}.order`);
-    const { items: output } = await sharedStorageIpc.batchGetItem(orderKeys, SCOPE);
+    const { items: output } = await batchGetItemOrder(activityBarIds, SCOPE);
     if (!output) return [];
 
     return activityBarIds.map((id) => {
@@ -42,11 +48,10 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
     });
   },
   batchPut: async (activityBarStates) => {
-    const items = Object.fromEntries(activityBarStates.map((state) => [`${state.id}.order`, state.order]));
-    await sharedStorageIpc.batchPutItem(items, SCOPE);
+    const items = Object.fromEntries(activityBarStates.map((state) => [state.id, state.order]));
+    await batchPutItemOrder(items, SCOPE);
   },
   batchRemove: async (activityBarIds) => {
-    const orderKeys = activityBarIds.map((id) => `${id}.order`);
-    await sharedStorageIpc.batchRemoveItem(orderKeys, SCOPE);
+    await batchRemoveItemOrder(activityBarIds, SCOPE);
   },
 };
