@@ -10,8 +10,6 @@ import {
 import { defaultStates } from "./defaults";
 import { ActivityBarItemState } from "./types";
 
-const SCOPE = "" as const;
-
 export interface IActivityBarItemStateService {
   get: (activityBarId: string) => Promise<ActivityBarItemState>;
   put: (activityBarState: ActivityBarItemState) => Promise<void>;
@@ -24,21 +22,21 @@ export interface IActivityBarItemStateService {
 
 export const activityBarItemStateService: IActivityBarItemStateService = {
   get: async (activityBarId) => {
-    const { value } = await getItemOrder(activityBarId, SCOPE);
+    const { value } = await getItemOrder(activityBarId);
     if (value === "none") {
       return defaultStates.find((state) => state.id === activityBarId)!;
     }
     return { id: activityBarId, order: value.value as number };
   },
   put: async (activityBarState) => {
-    await putItemOrder(activityBarState.id, activityBarState.order, SCOPE);
+    await putItemOrder(activityBarState.id, activityBarState.order);
   },
   remove: async (activityBarId) => {
-    await removeItemOrder(activityBarId, SCOPE);
+    await removeItemOrder(activityBarId);
   },
 
   batchGet: async (activityBarIds) => {
-    const { items: output } = await batchGetItemOrder(activityBarIds, SCOPE);
+    const { items: output } = await batchGetItemOrder(activityBarIds);
     if (!output) return [];
 
     return activityBarIds.map((id) => {
@@ -49,9 +47,9 @@ export const activityBarItemStateService: IActivityBarItemStateService = {
   },
   batchPut: async (activityBarStates) => {
     const items = Object.fromEntries(activityBarStates.map((state) => [state.id, state.order]));
-    await batchPutItemOrder(items, SCOPE);
+    await batchPutItemOrder(items);
   },
   batchRemove: async (activityBarIds) => {
-    await batchRemoveItemOrder(activityBarIds, SCOPE);
+    await batchRemoveItemOrder(activityBarIds);
   },
 };
