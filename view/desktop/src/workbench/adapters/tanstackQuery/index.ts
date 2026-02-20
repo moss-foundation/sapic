@@ -22,4 +22,11 @@ export * from "./resourcesListItemState/useGetResourcesListItemState";
 export * from "./resourcesListItemState/usePutResourcesListItemState";
 export * from "./resourcesListItemState/useRemoveResourcesListItemState";
 
+export * from "./statusBarItemState/useBatchGetStatusBarItemState";
+export * from "./statusBarItemState/useBatchPutStatusBarItemState";
+export * from "./statusBarItemState/useBatchRemoveStatusBarItemState";
+export * from "./statusBarItemState/useGetStatusBarItemState";
+export * from "./statusBarItemState/usePutStatusBarItemState";
+export * from "./statusBarItemState/useRemoveStatusBarItemState";
+
 export * from "./tokenizer/useTokenizer";

@@ -6,7 +6,7 @@ import { cn } from "@/utils";
 import { LocalizedString } from "@repo/base";
 import { ActivityEvent } from "@repo/ipc";
 
-export const StatusBarActivity = () => {
+export const StatusBarActivityPlaceholder = () => {
   const { hasActiveEvents, latestEvent, getStartTitleForActivity, displayQueue } = useWindowActivityEvents();
 
   // Helper to convert LocalizedString to string

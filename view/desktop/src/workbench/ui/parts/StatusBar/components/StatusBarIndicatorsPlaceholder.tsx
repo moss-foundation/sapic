@@ -1,7 +1,7 @@
 import { Icon } from "@/lib/ui";
 import { useLogsStore } from "@/workbench/store/logs";
 
-export const StatusBarIndicators = () => {
+export const StatusBarIndicatorsPlaceholder = () => {
   const { warnCount, errorCount } = useLogsStore();
 
   return (
