@@ -91,6 +91,6 @@ export type TauriIpcCommand =
   | "batch_create_project_resource"
   | "execute_vcs_operation";
 
-export const invokeTauriServiceIpc = async <T = unknown>(cmd: TauriIpcCommand, args?: InvokeArgs): Promise<T> => {
+export const invokeTauriIpc = async <T = unknown>(cmd: TauriIpcCommand, args?: InvokeArgs): Promise<T> => {
   return await invokeTauri<T>(cmd, args);
 };

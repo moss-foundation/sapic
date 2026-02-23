@@ -1,10 +1,10 @@
 import { IUserIpc } from "@/domains/user";
 
-import { invokeTauriServiceIpc } from "./tauri";
+import { invokeTauriIpc } from "./tauri";
 
 export const userIpc: IUserIpc = {
-  listUserAccounts: async () => await invokeTauriServiceIpc("list_user_accounts"),
-  addUserAccount: async (input) => await invokeTauriServiceIpc("add_user_account", { input }),
-  updateUserAccount: async (input) => await invokeTauriServiceIpc("update_user_account", { input }),
-  removeUserAccount: async (input) => await invokeTauriServiceIpc("remove_user_account", { input }),
+  listUserAccounts: async () => await invokeTauriIpc("list_user_accounts"),
+  addUserAccount: async (input) => await invokeTauriIpc("add_user_account", { input }),
+  updateUserAccount: async (input) => await invokeTauriIpc("update_user_account", { input }),
+  removeUserAccount: async (input) => await invokeTauriIpc("remove_user_account", { input }),
 };

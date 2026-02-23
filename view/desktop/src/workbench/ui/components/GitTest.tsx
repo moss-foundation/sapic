@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { ExecuteVcsOperationInput, ExecuteVcsOperationOutput } from "@repo/moss-project";
 import { EntryChange, ListChangesOutput } from "@repo/moss-workspace";
 
@@ -13,7 +13,7 @@ const GitTest = () => {
   const keyFor = (c: EntryChange) => `${c.projectId}:${c.path}`;
 
   async function handleFileStatusesButton() {
-    const result = await invokeTauriServiceIpc<ListChangesOutput>("list_changes", {});
+    const result = await invokeTauriIpc<ListChangesOutput>("list_changes", {});
     try {
       setResourceChanges(result.changes);
     } catch (error) {
@@ -50,7 +50,7 @@ const GitTest = () => {
         },
       };
       try {
-        await invokeTauriServiceIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
           projectId: projectId,
           input: input,
         });
@@ -79,7 +79,7 @@ const GitTest = () => {
         },
       };
       try {
-        await invokeTauriServiceIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
           projectId: projectId,
           input: input,
         });
@@ -95,7 +95,7 @@ const GitTest = () => {
       operation: "FETCH",
     };
     try {
-      await invokeTauriServiceIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
         projectId: targetProjectId,
         input: input,
       });
@@ -110,7 +110,7 @@ const GitTest = () => {
       operation: "PULL",
     };
     try {
-      await invokeTauriServiceIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
         projectId: targetProjectId,
         input: input,
       });
@@ -125,7 +125,7 @@ const GitTest = () => {
       operation: "PUSH",
     };
     try {
-      await invokeTauriServiceIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
         projectId: targetProjectId,
         input: input,
       });

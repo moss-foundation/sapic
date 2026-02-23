@@ -1,10 +1,10 @@
 import { ISettingsStorageIpc } from "@/shared/settingsStorage/ipc";
 
-import { invokeTauriServiceIpc } from "./tauri";
+import { invokeTauriIpc } from "./tauri";
 
 export const settingsStorageIpc: ISettingsStorageIpc = {
   getValue: async (key, scope) => {
-    return await invokeTauriServiceIpc("plugin:settings-storage|get_value", {
+    return await invokeTauriIpc("plugin:settings-storage|get_value", {
       input: {
         key,
         scope,
@@ -12,7 +12,7 @@ export const settingsStorageIpc: ISettingsStorageIpc = {
     });
   },
   batchGetValue: async (keys, scope) => {
-    return await invokeTauriServiceIpc("plugin:settings-storage|batch_get_value", {
+    return await invokeTauriIpc("plugin:settings-storage|batch_get_value", {
       input: {
         keys,
         scope,
@@ -20,7 +20,7 @@ export const settingsStorageIpc: ISettingsStorageIpc = {
     });
   },
   updateValue: async (key, value, scope) => {
-    return await invokeTauriServiceIpc("plugin:settings-storage|update_value", {
+    return await invokeTauriIpc("plugin:settings-storage|update_value", {
       input: {
         key,
         value,
@@ -29,7 +29,7 @@ export const settingsStorageIpc: ISettingsStorageIpc = {
     });
   },
   removeValue: async (key, scope) => {
-    return await invokeTauriServiceIpc("plugin:settings-storage|remove_value", {
+    return await invokeTauriIpc("plugin:settings-storage|remove_value", {
       input: {
         key,
         scope,

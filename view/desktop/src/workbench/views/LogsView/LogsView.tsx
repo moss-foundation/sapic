@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { useActivityRouter } from "@/hooks/app";
-import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { PageContent } from "@/workbench/ui/components";
 import { ActivityEventSimulator } from "@/workbench/ui/components/ActivityEventSimulator";
 import AIDemo from "@/workbench/ui/components/AIDemo";
@@ -66,7 +66,7 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handleGetItem = async () => {
     try {
-      const result = await invokeTauriServiceIpc<GetItemOutput>("plugin:shared-storage|get_item", {
+      const result = await invokeTauriIpc<GetItemOutput>("plugin:shared-storage|get_item", {
         input: {
           key: getItemForm.key,
           scope: getItemForm.workspaceId ? { workspace: getItemForm.workspaceId } : "application",
@@ -83,7 +83,7 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handlePutItem = async () => {
     try {
-      const result = await invokeTauriServiceIpc<PutItemOutput>("plugin:shared-storage|put_item", {
+      const result = await invokeTauriIpc<PutItemOutput>("plugin:shared-storage|put_item", {
         input: {
           key: putItemForm.key,
           scope: putItemForm.workspaceId ? { workspace: putItemForm.workspaceId } : "application",
@@ -101,7 +101,7 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handleRemoveItem = async () => {
     try {
-      const result = await invokeTauriServiceIpc<RemoveItemOutput>("plugin:shared-storage|remove_item", {
+      const result = await invokeTauriIpc<RemoveItemOutput>("plugin:shared-storage|remove_item", {
         input: {
           key: removeItemForm.key,
           scope: removeItemForm.workspaceId ? { workspace: removeItemForm.workspaceId } : "application",
@@ -305,7 +305,7 @@ const ExtensionRegistryTest = () => {
   const [extensions, setExtensions] = useState<ExtensionInfo[]>([]);
 
   async function handleListExtensionsButton() {
-    const result = await invokeTauriServiceIpc<ListExtensionsOutput>("list_extensions", {});
+    const result = await invokeTauriIpc<ListExtensionsOutput>("list_extensions", {});
 
     setExtensions(result);
   }
@@ -346,7 +346,7 @@ const ExtensionRegistryTest = () => {
                   <button
                     className="cursor-pointer rounded bg-blue-500 p-2 text-white"
                     onClick={async () => {
-                      const result = await invokeTauriServiceIpc("download_extension", {
+                      const result = await invokeTauriIpc("download_extension", {
                         input: {
                           extensionId: info.id,
                           version: info.latestVersion,
