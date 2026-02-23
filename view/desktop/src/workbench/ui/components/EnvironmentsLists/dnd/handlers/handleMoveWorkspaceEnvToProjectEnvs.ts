@@ -1,13 +1,9 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
+import { CreateEnvironmentParams } from "@/domains/environment/environmentService";
 import { computeOrderUpdates, computeSequentialOrders } from "@/utils/computeOrderUpdates";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import {
-  CreateEnvironmentInput,
-  CreateEnvironmentOutput,
-  DeleteEnvironmentInput,
-  DeleteEnvironmentOutput,
-} from "@repo/ipc";
+import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
@@ -19,7 +15,7 @@ interface HandleMoveWorkspaceEnvToProjectEnvsProps {
   instruction: Instruction;
   currentWorkspaceId: string;
   deleteEnvironment: (props: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+  createEnvironment: (props: CreateEnvironmentParams) => Promise<CreateEnvironmentOutput>;
 }
 
 export const handleMoveWorkspaceEnvToProjectEnvs = async ({
@@ -47,6 +43,8 @@ export const handleMoveWorkspaceEnvToProjectEnvs = async ({
     name: sourceData.data.name,
     color: sourceData.data.color ?? undefined,
     variables: [],
+    order: dropOrder,
+    expanded: sourceData.data.expanded,
   });
 
   const reorderedProjectEnvs = [

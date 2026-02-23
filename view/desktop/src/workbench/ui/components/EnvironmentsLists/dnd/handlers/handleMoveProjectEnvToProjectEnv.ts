@@ -1,13 +1,9 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
+import { CreateEnvironmentParams } from "@/domains/environment/environmentService";
 import { computeOrderUpdates, computeSequentialOrders } from "@/utils/computeOrderUpdates";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import {
-  CreateEnvironmentInput,
-  CreateEnvironmentOutput,
-  DeleteEnvironmentInput,
-  DeleteEnvironmentOutput,
-} from "@repo/ipc";
+import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
@@ -18,7 +14,7 @@ interface HandleMoveProjectEnvToProjectEnvProps {
   instruction: Instruction;
   currentWorkspaceId: string;
   deleteEnvironment: (props: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+  createEnvironment: (props: CreateEnvironmentParams) => Promise<CreateEnvironmentOutput>;
 }
 
 export const handleMoveProjectEnvToProjectEnv = async ({
@@ -51,6 +47,8 @@ export const handleMoveProjectEnvToProjectEnv = async ({
     projectId: targetProjectId,
     name: sourceData.data.name,
     variables: [],
+    order: dropOrder,
+    expanded: sourceData.data.expanded,
   });
 
   const remainingSourceEnvs = sourceProjectEnvs.filter((env) => env.id !== sourceData.data.id);

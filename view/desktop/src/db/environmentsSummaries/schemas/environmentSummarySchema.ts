@@ -9,5 +9,5 @@ export const environmentSummarySchema = z.object({
   totalVariables: z.number(),
 
   order: z.number().optional(),
-  expanded: z.boolean().default(false),
+  expanded: z.boolean(),
 });

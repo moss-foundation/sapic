@@ -1,12 +1,8 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
+import { CreateEnvironmentParams } from "@/domains/environment/environmentService";
 import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
-import {
-  CreateEnvironmentInput,
-  CreateEnvironmentOutput,
-  DeleteEnvironmentInput,
-  DeleteEnvironmentOutput,
-} from "@repo/ipc";
+import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
@@ -17,7 +13,7 @@ interface HandleCombineWorkspaceEnvToProjectListProps {
   projectEnvironments: EnvironmentSummary[];
   currentWorkspaceId: string;
   deleteEnvironment: (props: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+  createEnvironment: (props: CreateEnvironmentParams) => Promise<CreateEnvironmentOutput>;
 }
 
 export const handleCombineWorkspaceEnvToProjectList = async ({
@@ -42,6 +38,8 @@ export const handleCombineWorkspaceEnvToProjectList = async ({
     name: sourceData.data.name,
     color: sourceData.data.color ?? undefined,
     variables: [],
+    order: projectEnvironmentsByProjectId.length + 1,
+    expanded: sourceData.data.expanded,
   });
 
   const targetEnvsWithNew = [...projectEnvironmentsByProjectId, { id: newEnvironment.id, name: sourceData.data.name }];
