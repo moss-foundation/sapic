@@ -1,9 +1,9 @@
-import { invokeTauriServiceIpc } from "@/infra/ipc/tauri.ts";
+import { invokeTauriIpc } from "@/infra/ipc/tauri.ts";
 
 export const OnboardingPage = () => {
   const handleComplete = async () => {
     try {
-      await invokeTauriServiceIpc("onboarding__complete_onboarding");
+      await invokeTauriIpc("onboarding__complete_onboarding");
     } catch (error) {
       console.error("Error completing onboarding:", error);
     }

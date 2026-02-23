@@ -56,6 +56,8 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
       const environment = await createEnvironment({
         name,
         variables: [],
+        order: getNextOrder(workspaceEnvironments),
+        expanded: false,
       });
 
       await environmentItemStateService.putOrder(
@@ -68,6 +70,8 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
         name,
         variables: [],
         projectId,
+        order: getNextOrder(projectEnvironments),
+        expanded: false,
       });
 
       await environmentItemStateService.putOrder(environment.id, getNextOrder(projectEnvironments), currentWorkspaceId);

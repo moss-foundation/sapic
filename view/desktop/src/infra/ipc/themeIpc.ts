@@ -1,16 +1,16 @@
 import { IThemeIpc } from "@/domains/theme";
 
-import { invokeTauriServiceIpc } from "./tauri";
+import { invokeTauriIpc } from "./tauri";
 
 export const themeIpc: IThemeIpc = {
   describeColorTheme: async (themeId) => {
-    return await invokeTauriServiceIpc("describe_color_theme", {
+    return await invokeTauriIpc("describe_color_theme", {
       input: {
         id: themeId,
       },
     });
   },
   listColorThemes: async () => {
-    return await invokeTauriServiceIpc("list_color_themes");
+    return await invokeTauriIpc("list_color_themes");
   },
 };

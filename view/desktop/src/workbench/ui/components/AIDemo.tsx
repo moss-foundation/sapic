@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { z } from "zod";
 
-import { invokeTauriServiceIpc } from "@/infra/ipc/tauri";
+import { invokeTauriIpc } from "@/infra/ipc/tauri";
 import { ChatPromptTemplate, HumanMessagePromptTemplate, SystemMessagePromptTemplate } from "@langchain/core/prompts";
 import { tool } from "@langchain/core/tools";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
@@ -9,7 +9,7 @@ import { ChatMistralAI } from "@langchain/mistralai";
 import { mainWindowCreateWorkspaceInputSchema } from "@repo/ipc";
 
 async function setupModel() {
-  const result = await invokeTauriServiceIpc<string>("get_mistral_api_key");
+  const result = await invokeTauriIpc<string>("get_mistral_api_key");
   try {
     return new ChatMistralAI({
       apiKey: result,
@@ -47,7 +47,7 @@ async function setupToolAgent() {
   const createWorkspaceTool = tool(
     async (input) => {
       try {
-        return await invokeTauriServiceIpc("main__create_workspace", {
+        return await invokeTauriIpc("main__create_workspace", {
           input,
         });
       } catch (error) {

@@ -18,40 +18,42 @@ import { Channel } from "@tauri-apps/api/core";
 
 // prettier-ignore
 interface IResourceService {
-  batchCreate: (projectId: string, input: BatchCreateResourceInput) => Promise<BatchCreateResourceOutput>;
-  batchUpdate: (projectId: string, input: BatchUpdateResourceInput, channelEvent: Channel<BatchUpdateResourceEvent>) => Promise<BatchUpdateResourceOutput>;
+  list: (input: ListProjectResourcesInput) => Promise<ListProjectResourcesOutput>;
+  describe: (projectId: string, resourceId: string) => Promise<DescribeResourceOutput>;
 
   create: (projectId: string, input: CreateResourceInput) => Promise<CreateResourceOutput>;
+  batchCreate: (projectId: string, input: BatchCreateResourceInput) => Promise<BatchCreateResourceOutput>;
+
+  update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput >;
+  batchUpdate: (projectId: string, input: BatchUpdateResourceInput, channelEvent: Channel<BatchUpdateResourceEvent>) => Promise<BatchUpdateResourceOutput>;
 
   delete: (projectId: string, input: DeleteResourceInput) => Promise<DeleteResourceOutput>;
 
-  describe: (projectId: string, resourceId: string) => Promise<DescribeResourceOutput>;
-
-  list: (input: ListProjectResourcesInput) => Promise<ListProjectResourcesOutput>;
-
-  update: (projectId: string, input: UpdateResourceInput) => Promise<UpdateResourceOutput >;
 }
 
 export const resourceService: IResourceService = {
-  batchCreate: async (projectId, input) => {
-    return await resourceIpc.batchCreate(projectId, input);
-  },
-  batchUpdate: async (projectId, input, channelEvent) => {
-    return await resourceIpc.batchUpdate(projectId, input, channelEvent);
-  },
-  create: async (projectId, input) => {
-    return await resourceIpc.create(projectId, input);
-  },
-  delete: async (projectId, input) => {
-    return await resourceIpc.delete(projectId, input);
+  list: async (input) => {
+    return await resourceIpc.list(input);
   },
   describe: async (id, projectId) => {
     return await resourceIpc.describe(id, projectId);
   },
-  list: async (input) => {
-    return await resourceIpc.list(input);
+
+  create: async (projectId, input) => {
+    return await resourceIpc.create(projectId, input);
   },
+  batchCreate: async (projectId, input) => {
+    return await resourceIpc.batchCreate(projectId, input);
+  },
+
   update: async (projectId, input) => {
     return await resourceIpc.update(projectId, input);
+  },
+  batchUpdate: async (projectId, input, channelEvent) => {
+    return await resourceIpc.batchUpdate(projectId, input, channelEvent);
+  },
+
+  delete: async (projectId, input) => {
+    return await resourceIpc.delete(projectId, input);
   },
 };
