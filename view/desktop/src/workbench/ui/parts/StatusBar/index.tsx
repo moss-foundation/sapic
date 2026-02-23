@@ -1,78 +1,23 @@
-import { useEffect, useState, type ComponentPropsWithoutRef } from "react";
+import { type ComponentPropsWithoutRef } from "react";
 
-import { Icons } from "@/lib/ui";
 import { cn } from "@/utils";
 import { Divider } from "@/workbench/ui/components/Divider";
-import { swapListById } from "@/workbench/utils/swapListById";
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { StatusBarActivity } from "./StatusBarActivity";
-import { StatusBarButton } from "./StatusBarButton";
-import { StatusBarFPSCounter } from "./StatusBarFPSCounter";
-import { StatusBarIndicators } from "./StatusBarIndicators";
-import ZoomButtons from "./ZoomButtons";
-
-interface Item {
-  id: number;
-  icon: Icons;
-  label: string;
-  order: number;
-}
+import { StatusBarActivityPlaceholder } from "./components/StatusBarActivityPlaceholder";
+import { StatusBarButton } from "./components/StatusBarButton";
+import { StatusBarDraggableButton } from "./components/StatusBarDraggableButton";
+import { StatusBarFPSCounter } from "./components/StatusBarFPSCounter";
+import { StatusBarIndicatorsPlaceholder } from "./components/StatusBarIndicatorsPlaceholder";
+import ZoomButtons from "./components/ZoomButtons";
+import { useMonitorStatusBar } from "./dnd/hooks/useMonitorStatusBar";
+import { useOnlineStatus } from "./hooks/useOnlineStatus";
+import { useSyncStatusBarItems } from "./hooks/useSyncStatusBarItems";
 
 export const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
-  const [isOnline, setIsOnline] = useState(true);
-  const [DNDList, setDNDList] = useState<Item[]>([
-    {
-      id: 1,
-      icon: "Console",
-      label: "Console",
-      order: 1,
-    },
-    {
-      id: 2,
-      icon: "Trash",
-      label: "Trash",
-      order: 2,
-    },
-    {
-      id: 3,
-      icon: "Cookie",
-      label: "Cookies",
-      order: 3,
-    },
-  ]);
+  const { isOnline } = useOnlineStatus();
+  const { items } = useSyncStatusBarItems();
 
-  useEffect(() => {
-    return monitorForElements({
-      onDrop({ location, source }) {
-        const target = location.current.dropTargets[0];
-        if (!target || target.data.draggableType !== "StatusBarButton") return;
-
-        const sourceData = source.data;
-        const targetData = target.data;
-        if (!sourceData || !targetData) return;
-
-        const updatedItems = swapListById(sourceData.id as number, targetData.id as number, DNDList);
-
-        if (!updatedItems) return;
-
-        setDNDList(updatedItems);
-      },
-    });
-  }, [DNDList]);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
-    };
-  }, []);
+  useMonitorStatusBar();
 
   return (
     <footer
@@ -83,15 +28,15 @@ export const StatusBar = ({ className }: ComponentPropsWithoutRef<"div">) => {
     >
       <div className="flex h-full gap-1">
         <div className="flex h-full gap-1">
-          {DNDList.map((item) => (
-            <StatusBarButton key={item.id} {...item} isDraggable draggableType="StatusBarButton" />
+          {items.map((item) => (
+            <StatusBarDraggableButton key={item.id} statusBarItem={item} />
           ))}
         </div>
 
         <Divider className="py-1.5" />
 
-        <StatusBarIndicators />
-        <StatusBarActivity />
+        <StatusBarIndicatorsPlaceholder />
+        <StatusBarActivityPlaceholder />
       </div>
 
       <div className="flex h-full gap-6">
