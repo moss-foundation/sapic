@@ -21,7 +21,7 @@ export interface IEnvironmentIpc {
   listProjectEnvironments: (input: ListProjectEnvironmentsInput) => Promise<ListProjectEnvironmentsOutput>;
 
   updateEnvironment(input: UpdateEnvironmentInput): Promise<UpdateEnvironmentOutput>;
-  updateEnvironment(input: BatchUpdateEnvironmentInput): Promise<BatchUpdateEnvironmentOutput>;
+  batchUpdateEnvironment(input: BatchUpdateEnvironmentInput): Promise<BatchUpdateEnvironmentOutput>;
 
   createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;

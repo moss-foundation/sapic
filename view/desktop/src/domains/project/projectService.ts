@@ -20,27 +20,25 @@ import {
 } from "./handlers/updateProjectSummaryDraftFromParams";
 
 interface IProjectService {
-  batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
+  listProjects: () => Promise<ListProjectsOutput>;
+  importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
   createProject: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
 
-  deleteProject: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
-
-  importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
-
-  listProjects: () => Promise<ListProjectsOutput>;
-
   updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
+  batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
+
+  deleteProject: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
 }
 
 export const projectService: IProjectService = {
-  batchUpdateProject: async (input) => {
-    const output = await projectIpc.batchUpdateProject(input);
-
-    batchUpdateProjectSummaryCollectionFromInput(input);
-
-    return output;
+  listProjects: async () => {
+    return await projectIpc.listProjects();
   },
+  importProject: async (input) => {
+    return await projectIpc.importProject(input);
+  },
+
   createProject: async (input) => {
     const output = await projectIpc.createProject(input);
 
@@ -56,23 +54,26 @@ export const projectService: IProjectService = {
 
     return output;
   },
-  deleteProject: async (input) => {
-    const output = await projectIpc.deleteProject(input);
 
-    projectSummariesCollection.delete(input.id);
-
-    return output;
-  },
-  importProject: async (input) => {
-    return await projectIpc.importProject(input);
-  },
-  listProjects: async () => {
-    return await projectIpc.listProjects();
-  },
   updateProject: async (input) => {
     const output = await projectIpc.updateProject(input);
 
     updateProjectSummaryCollectionFromInput(input);
+
+    return output;
+  },
+  batchUpdateProject: async (input) => {
+    const output = await projectIpc.batchUpdateProject(input);
+
+    batchUpdateProjectSummaryCollectionFromInput(input);
+
+    return output;
+  },
+
+  deleteProject: async (input) => {
+    const output = await projectIpc.deleteProject(input);
+
+    projectSummariesCollection.delete(input.id);
 
     return output;
   },
