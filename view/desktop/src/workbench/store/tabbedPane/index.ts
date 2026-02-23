@@ -1,7 +1,7 @@
 import { AddPanelOptions, DockviewApi, SerializedDockview } from "moss-tabs";
 import { create } from "zustand";
 
-import { emptyGridState } from "@/workbench/domains/layout/defaults";
+import { emptyGridState } from "@/workbench/services/layout/defaults";
 
 import { TypedAddPanelOptions } from "./types";
 

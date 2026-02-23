@@ -1,4 +1,4 @@
-import { layoutService } from "@/workbench/domains/layout/service";
+import { layoutService } from "@/workbench/services/layout/service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_GET_LAYOUT_QUERY_KEY } from "./useGetLayout";

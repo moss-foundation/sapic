@@ -1,6 +1,6 @@
 import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/services/layout";
 import { ActivityBar } from "@/workbench/ui/parts";
 import { SidebarContent } from "@/workbench/ui/parts/Sidebar/SidebarContent";
 

@@ -1,11 +1,12 @@
 import { ILanguageIpc } from "@/domains/language";
-import { invoke } from "@tauri-apps/api/core";
+
+import { invokeTauriIpc } from "./tauri";
 
 export const languageIpc: ILanguageIpc = {
   listLanguages: async () => {
-    return await invoke("list_languages");
+    return await invokeTauriIpc("list_languages");
   },
   getTranslationNamespace: async (input) => {
-    return await invoke("get_translation_namespace", { input });
+    return await invokeTauriIpc("get_translation_namespace", { input });
   },
 };

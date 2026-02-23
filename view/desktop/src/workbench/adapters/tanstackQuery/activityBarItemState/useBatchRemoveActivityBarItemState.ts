@@ -1,4 +1,4 @@
-import { activityBarItemStateService } from "@/workbench/domains/activityBarItemState/service";
+import { activityBarItemStateService } from "@/workbench/services/activityBarItemState/service";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { USE_BATCH_GET_ACTIVITY_BAR_ITEM_STATE_QUERY_KEY } from "./useBatchGetActivityBarItemState";

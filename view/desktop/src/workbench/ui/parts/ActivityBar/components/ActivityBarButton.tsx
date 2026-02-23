@@ -4,7 +4,7 @@ import { createPortal } from "react-dom";
 import { useCurrentWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION } from "@/workbench/services/layout";
 import DropIndicator from "@/workbench/ui/components/DropIndicator";
 import { ActivityBarButtonProps } from "@/workbench/ui/parts/ActivityBar/types";
 

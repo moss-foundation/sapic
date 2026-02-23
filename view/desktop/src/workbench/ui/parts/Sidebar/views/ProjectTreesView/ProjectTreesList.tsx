@@ -3,10 +3,11 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
-import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/projectListItemState/useGetProjectListState";
-import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListItemState/usePutProjectListState";
+import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/useGetProjectListState";
+import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/usePutProjectListState";
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
+import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
 
 export const ProjectTreesList = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -14,13 +15,14 @@ export const ProjectTreesList = () => {
 
   const { displayMode } = useWorkspaceModeStore();
 
-  const { data: projectListState } = useGetProjectListState(currentWorkspaceId);
+  const { data: expanded } = useGetProjectListState(currentWorkspaceId);
+  useMonitorEnvironmentsLists();
 
   return (
     <div>
       <ProjectTreesHeader />
 
-      {projectListState?.expanded && (
+      {expanded && (
         <div className="flex h-full flex-col">
           {!isLoading &&
             projectsTreesSortedByOrder.map((tree) => (
@@ -36,11 +38,11 @@ export const ProjectTreesHeader = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutate: updateProjectListState } = usePutProjectListState();
-  const { data: projectListState } = useGetProjectListState(currentWorkspaceId);
+  const { data: expanded } = useGetProjectListState(currentWorkspaceId);
 
   const handleToggleProjectList = () => {
     updateProjectListState({
-      projectListState: { expanded: !projectListState?.expanded },
+      expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });
   };
@@ -51,7 +53,7 @@ export const ProjectTreesHeader = () => {
         onClick={handleToggleProjectList}
         className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
       >
-        <Icon icon="ChevronRight" className={cn(projectListState?.expanded && "rotate-90")} />
+        <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>

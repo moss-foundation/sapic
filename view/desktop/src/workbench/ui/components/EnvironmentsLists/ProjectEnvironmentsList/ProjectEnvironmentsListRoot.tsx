@@ -24,8 +24,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
 
   const project = projects?.items.find((project) => project.id === projectId);
-  const { data: projectEnvironmentListItemState } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
-  const expanded = projectEnvironmentListItemState?.expanded ?? false;
+  const { data: expanded = false } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
@@ -33,7 +32,10 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
     projectEnvironments: projectEnvironments ?? [],
   });
 
-  if (!project) return null;
+  if (!project) {
+    console.error(`Project ${projectId} not found`);
+    return null;
+  }
 
   return (
     <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>

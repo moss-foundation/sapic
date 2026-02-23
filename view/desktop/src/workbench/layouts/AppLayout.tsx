@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 
 import { useCurrentWorkspace } from "@/hooks";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION, SIDEBAR_POSITION } from "@/workbench/services/layout";
 import { SidebarEdgeHandler } from "@/workbench/ui/components";
 import { ActivityBar, BottomPane, Sidebar, TabbedPane } from "@/workbench/ui/parts";
 

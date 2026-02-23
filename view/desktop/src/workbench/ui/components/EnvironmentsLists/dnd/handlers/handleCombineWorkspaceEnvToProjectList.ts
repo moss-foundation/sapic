@@ -1,11 +1,8 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
-import { EnvironmentItemState } from "@/workbench/domains/environmentItemState/types";
-import {
-  CreateEnvironmentInput,
-  CreateEnvironmentOutput,
-  DeleteEnvironmentInput,
-  DeleteEnvironmentOutput,
-} from "@repo/ipc";
+import { CreateEnvironmentParams } from "@/domains/environment/environmentService";
+import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
+import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
@@ -15,13 +12,8 @@ interface HandleCombineWorkspaceEnvToProjectListProps {
   workspaceEnvironments: EnvironmentSummary[];
   projectEnvironments: EnvironmentSummary[];
   currentWorkspaceId: string;
-  batchPutEnvironmentItemState: (props: {
-    environmentItemStates: EnvironmentItemState[];
-    workspaceId: string;
-  }) => Promise<void>;
-  removeEnvironmentItemState: (props: { id: string; workspaceId: string }) => Promise<void>;
   deleteEnvironment: (props: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
-  createEnvironment: (props: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+  createEnvironment: (props: CreateEnvironmentParams) => Promise<CreateEnvironmentOutput>;
 }
 
 export const handleCombineWorkspaceEnvToProjectList = async ({
@@ -30,8 +22,6 @@ export const handleCombineWorkspaceEnvToProjectList = async ({
   workspaceEnvironments,
   projectEnvironments,
   currentWorkspaceId,
-  batchPutEnvironmentItemState,
-  removeEnvironmentItemState,
   deleteEnvironment,
   createEnvironment,
 }: HandleCombineWorkspaceEnvToProjectListProps) => {
@@ -42,42 +32,28 @@ export const handleCombineWorkspaceEnvToProjectList = async ({
   }
 
   const projectEnvironmentsByProjectId = projectEnvironments.filter((env) => env.projectId === projectId);
-  const newOrder = projectEnvironmentsByProjectId.length + 1;
 
   const newEnvironment = await createEnvironment({
     projectId,
     name: sourceData.data.name,
     color: sourceData.data.color ?? undefined,
     variables: [],
+    order: projectEnvironmentsByProjectId.length + 1,
+    expanded: sourceData.data.expanded,
   });
 
-  const workspaceEnvsStatesToUpdate =
-    workspaceEnvironments
-      .filter((env) => env.order! > sourceData.data.order! && env.id !== sourceData.data.id)
-      .map((env) => ({
-        id: env.id,
-        order: env.order! - 1,
-      })) ?? [];
+  const targetEnvsWithNew = [...projectEnvironmentsByProjectId, { id: newEnvironment.id, name: sourceData.data.name }];
+  const targetUpdates = computeOrderUpdates(targetEnvsWithNew);
 
-  const allEnvsStatesToUpdate = [
-    ...workspaceEnvsStatesToUpdate,
-    {
-      id: newEnvironment.id,
-      order: newOrder,
-    },
-  ];
+  const remainingWorkspaceEnvs = workspaceEnvironments.filter((env) => env.id !== sourceData.data.id);
+  const sourceUpdates = computeOrderUpdates(remainingWorkspaceEnvs);
 
-  await batchPutEnvironmentItemState({
-    environmentItemStates: allEnvsStatesToUpdate,
-    workspaceId: currentWorkspaceId,
-  });
+  const allUpdates = { ...targetUpdates, ...sourceUpdates };
 
-  await removeEnvironmentItemState({
-    id: sourceData.data.id,
-    workspaceId: currentWorkspaceId,
-  });
+  if (Object.keys(allUpdates).length > 0) {
+    await environmentItemStateService.batchPutOrder(allUpdates, currentWorkspaceId);
+  }
 
-  await deleteEnvironment({
-    id: sourceData.data.id,
-  });
+  await environmentItemStateService.removeOrder(sourceData.data.id, currentWorkspaceId);
+  await deleteEnvironment({ id: sourceData.data.id });
 };

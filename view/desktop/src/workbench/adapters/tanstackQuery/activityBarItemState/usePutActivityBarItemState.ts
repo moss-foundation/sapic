@@ -1,5 +1,5 @@
-import { activityBarItemStateService } from "@/workbench/domains/activityBarItemState/service";
-import { ActivityBarItemState } from "@/workbench/domains/activityBarItemState/types";
+import { activityBarItemStateService } from "@/workbench/services/activityBarItemState/service";
+import { ActivityBarItemState } from "@/workbench/services/activityBarItemState/types";
 import { placeholderActivityBarFirstItems } from "@/workbench/ui/parts/ActivityBar/components/placeholder";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 

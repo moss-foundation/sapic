@@ -11,8 +11,9 @@ export const useUpdateProject = () => {
     mutationFn: (input) => projectService.updateProject(input),
     onSuccess: (data, variables) => {
       queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
+        if (!old) return { items: [] };
         return {
-          items: old?.items.map((oldProject): ListProjectItem => {
+          items: old.items.map((oldProject): ListProjectItem => {
             if (oldProject.id !== data.id) return oldProject;
 
             const handleChangeValue = <T>(
@@ -39,7 +40,7 @@ export const useUpdateProject = () => {
               iconPath: updatedIconPath,
             };
           }),
-        };
+        } satisfies ListProjectsOutput;
       });
     },
   });

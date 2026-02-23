@@ -1,7 +1,7 @@
 import { useCurrentWorkspace } from "@/hooks";
 import { cn } from "@/utils";
 import { useGetLayout, useUpdateLayout } from "@/workbench/adapters";
-import { SIDEBAR_POSITION } from "@/workbench/domains/layout";
+import { SIDEBAR_POSITION } from "@/workbench/services/layout";
 import { ActionButton } from "@/workbench/ui/components/ActionButton";
 
 export interface PanelToggleButtonsProps {

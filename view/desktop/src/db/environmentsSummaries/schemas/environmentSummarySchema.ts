@@ -8,6 +8,6 @@ export const environmentSummarySchema = z.object({
   color: z.string().optional().nullable(),
   totalVariables: z.number(),
 
-  order: z.number(),
-  expanded: z.boolean().optional(),
+  order: z.number().optional(),
+  expanded: z.boolean(),
 });

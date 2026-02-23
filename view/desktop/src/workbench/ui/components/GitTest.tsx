@@ -14,12 +14,12 @@ const GitTest = () => {
 
   async function handleFileStatusesButton() {
     const result = await invokeTauriIpc<ListChangesOutput>("list_changes", {});
-
-    if (result.status === "error") {
-      throw new Error(String(result.status));
+    try {
+      setResourceChanges(result.changes);
+    } catch (error) {
+      console.error("Error getting file statuses:", error);
+      throw new Error("Failed to get file statuses");
     }
-
-    setResourceChanges(result.data.changes);
   }
 
   function toggleSelection(key: string) {
@@ -49,12 +49,14 @@ const GitTest = () => {
           },
         },
       };
-      const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-        projectId: projectId,
-        input: input,
-      });
-      if (result.status === "error") {
-        throw new Error(String(result.status));
+      try {
+        await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+          projectId: projectId,
+          input: input,
+        });
+      } catch (error) {
+        console.error("Error committing:", error);
+        throw new Error("Failed to commit");
       }
     }
   }
@@ -76,12 +78,14 @@ const GitTest = () => {
           },
         },
       };
-      const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-        projectId: projectId,
-        input: input,
-      });
-      if (result.status === "error") {
-        throw new Error(String(result.status));
+      try {
+        await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+          projectId: projectId,
+          input: input,
+        });
+      } catch (error) {
+        console.error("Error discarding:", error);
+        throw new Error("Failed to discard");
       }
     }
   }
@@ -90,12 +94,14 @@ const GitTest = () => {
     const input: ExecuteVcsOperationInput = {
       operation: "FETCH",
     };
-    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      projectId: targetProjectId,
-      input: input,
-    });
-    if (result.status === "error") {
-      throw new Error(String(result.status));
+    try {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        projectId: targetProjectId,
+        input: input,
+      });
+    } catch (error) {
+      console.error("Error fetching:", error);
+      throw new Error("Failed to fetch");
     }
   }
 
@@ -103,12 +109,14 @@ const GitTest = () => {
     const input: ExecuteVcsOperationInput = {
       operation: "PULL",
     };
-    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      projectId: targetProjectId,
-      input: input,
-    });
-    if (result.status === "error") {
-      throw new Error(String(result.status));
+    try {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        projectId: targetProjectId,
+        input: input,
+      });
+    } catch (error) {
+      console.error("Error pulling:", error);
+      throw new Error("Failed to pull");
     }
   }
 
@@ -116,12 +124,14 @@ const GitTest = () => {
     const input: ExecuteVcsOperationInput = {
       operation: "PUSH",
     };
-    const result = await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
-      projectId: targetProjectId,
-      input: input,
-    });
-    if (result.status === "error") {
-      throw new Error(String(result.status));
+    try {
+      await invokeTauriIpc<ExecuteVcsOperationOutput>("execute_vcs_operation", {
+        projectId: targetProjectId,
+        input: input,
+      });
+    } catch (error) {
+      console.error("Error pushing:", error);
+      throw new Error("Failed to push");
     }
   }
 

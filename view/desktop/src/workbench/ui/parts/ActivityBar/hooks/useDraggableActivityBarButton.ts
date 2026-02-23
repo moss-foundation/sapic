@@ -1,7 +1,7 @@
 import { RefObject, useEffect, useState } from "react";
 
 import { useGetLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION } from "@/workbench/services/layout";
 import {
   attachClosestEdge,
   extractClosestEdge,

@@ -13,7 +13,6 @@ export const ProjectTree = ({
   showOrders = false,
   showRootNodeIds = false,
 }: ProjectTreeProps) => {
-  console.log("tree", tree.id);
   return (
     <div>
       <ProjectTreeContext.Provider

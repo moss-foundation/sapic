@@ -1,34 +1,35 @@
 import { IWorkspaceIpc } from "@/domains/workspace";
-import { invoke } from "@tauri-apps/api/core";
+
+import { invokeTauriIpc } from "./tauri";
 
 export const workspaceIpc: IWorkspaceIpc = {
   listWorkspaces: async () => {
-    return await invoke("list_workspaces");
+    return await invokeTauriIpc("list_workspaces");
   },
   deleteWorkspace: async (input) => {
-    return await invoke("delete_workspace", { input });
+    return await invokeTauriIpc("delete_workspace", { input });
   },
 
   main__openWorkspace: async (input) => {
-    return await invoke("main__open_workspace", { input });
+    return await invokeTauriIpc("main__open_workspace", { input });
   },
   main__createWorkspace: async (input) => {
-    return await invoke("main__create_workspace", { input });
+    return await invokeTauriIpc("main__create_workspace", { input });
   },
   main__closeWorkspace: async () => {
-    return await invoke("main__close_workspace");
+    return await invokeTauriIpc("main__close_workspace");
   },
   main__updateWorkspace: async (input) => {
-    return await invoke("main__update_workspace", { input });
+    return await invokeTauriIpc("main__update_workspace", { input });
   },
 
   welcome__createWorkspace: async (input) => {
-    return await invoke("welcome__create_workspace", { input });
+    return await invokeTauriIpc("welcome__create_workspace", { input });
   },
   welcome__openWorkspace: async (input) => {
-    return await invoke("welcome__open_workspace", { input });
+    return await invokeTauriIpc("welcome__open_workspace", { input });
   },
   welcome__updateWorkspace: async (input) => {
-    return await invoke("welcome__update_workspace", { input });
+    return await invokeTauriIpc("welcome__update_workspace", { input });
   },
 };

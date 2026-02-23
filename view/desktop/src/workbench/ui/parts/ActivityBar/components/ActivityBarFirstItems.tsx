@@ -1,6 +1,6 @@
 import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION } from "@/workbench/services/layout";
 
 import { useMonitorActivityBarFirstItems } from "../hooks/useMonitorActivityBarFirstItems";
 import { useSyncedActivityBarFirstItems } from "../hooks/useSyncedActivityBarFirstItems";

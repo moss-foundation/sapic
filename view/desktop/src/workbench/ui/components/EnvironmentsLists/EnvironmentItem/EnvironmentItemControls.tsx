@@ -2,11 +2,13 @@ import { MouseEvent, useContext, useState } from "react";
 
 import { useDeleteEnvironment } from "@/adapters";
 import { useActivateEnvironment } from "@/adapters/tanstackQuery/environment/useActivateEnvironment";
+import { useGetAllProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetAllProjectEnvironments";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { useBatchPutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/useBatchPutEnvironmentItemState";
+import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu, ConfirmationModal } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
@@ -33,10 +35,10 @@ export const EnvironmentItemControls = ({
   const { activePanelId } = useTabbedPaneStore();
 
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
+  const { projectEnvironments } = useGetAllProjectEnvironments();
 
   const { mutate: activateEnvironment } = useActivateEnvironment();
   const { mutateAsync: deleteEnvironment } = useDeleteEnvironment();
-  const { mutateAsync: batchPutEnvironmentItemState } = useBatchPutEnvironmentItemState();
   const { showModal: showDeleteModal, setShowModal: setShowDeleteModal, closeModal: closeDeleteModal } = useModal();
 
   const [showActionMenu, setShowActionMenu] = useState(false);
@@ -44,17 +46,17 @@ export const EnvironmentItemControls = ({
   const handleDeleteEnvironment = async () => {
     await deleteEnvironment({ id: environment.id, projectId: environment.projectId ?? undefined });
 
-    const environmentsAfterDeleted = workspaceEnvironments?.filter((env) => env.order! > environment.order!);
+    const siblingEnvironments = environment.projectId
+      ? projectEnvironments?.filter((env) => env.projectId === environment.projectId)
+      : workspaceEnvironments;
 
-    if (!environmentsAfterDeleted || environmentsAfterDeleted.length === 0) return;
+    const remainingEnvironments = siblingEnvironments?.filter((env) => env.id !== environment.id);
+    if (!remainingEnvironments || remainingEnvironments.length === 0) return;
 
-    await batchPutEnvironmentItemState({
-      environmentItemStates: environmentsAfterDeleted.map((env) => ({
-        id: env.id,
-        order: (env.order ?? 0) - 1,
-      })),
-      workspaceId: currentWorkspaceId,
-    });
+    const updates = computeOrderUpdates(remainingEnvironments);
+    if (Object.keys(updates).length === 0) return;
+
+    await environmentItemStateService.batchPutOrder(updates, currentWorkspaceId);
   };
 
   const handleSetActiveEnvironment = (e: MouseEvent<HTMLButtonElement>) => {
@@ -85,6 +87,7 @@ export const EnvironmentItemControls = ({
           className="cursor-pointer overflow-hidden"
           style={{ paddingLeft: treePaddingLeft + nodeOffset }}
         >
+          <Tree.RootNodeOrder order={environment.order} />
           <Tree.Decorator />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />

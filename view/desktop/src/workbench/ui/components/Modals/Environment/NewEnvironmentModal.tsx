@@ -9,7 +9,7 @@ import { useCurrentWorkspace, useFocusInputOnMount, useValidateInput } from "@/h
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
 import Input from "@/lib/ui/Input";
-import { usePutEnvironmentItemState } from "@/workbench/adapters/tanstackQuery/environmentItemState/usePutEnvironmentItemState";
+import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { RadioGroup } from "@/workbench/ui/components";
 import { ModalForm } from "@/workbench/ui/components/ModalForm";
 
@@ -21,7 +21,6 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const { data: projects } = useListProjects();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
-  const { mutateAsync: putEnvironmentItemState } = usePutEnvironmentItemState();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -57,29 +56,25 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
       const environment = await createEnvironment({
         name,
         variables: [],
+        order: getNextOrder(workspaceEnvironments),
+        expanded: false,
       });
 
-      await putEnvironmentItemState({
-        environmentItemState: {
-          id: environment.id,
-          order: getNextOrder(workspaceEnvironments),
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      await environmentItemStateService.putOrder(
+        environment.id,
+        getNextOrder(workspaceEnvironments),
+        currentWorkspaceId
+      );
     } else if (mode === "Project" && projectId) {
       const environment = await createEnvironment({
         name,
         variables: [],
         projectId,
+        order: getNextOrder(projectEnvironments),
+        expanded: false,
       });
 
-      await putEnvironmentItemState({
-        environmentItemState: {
-          id: environment.id,
-          order: getNextOrder(projectEnvironments),
-        },
-        workspaceId: currentWorkspaceId,
-      });
+      await environmentItemStateService.putOrder(environment.id, getNextOrder(projectEnvironments), currentWorkspaceId);
     }
 
     closeModal();

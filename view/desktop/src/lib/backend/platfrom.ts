@@ -1,9 +1,7 @@
-import { InvokeArgs } from "@tauri-apps/api/core";
+import { invoke, InvokeArgs } from "@tauri-apps/api/core";
 
-import { invokeTauriIpc, IpcResult } from "../../infra/ipc/tauri";
-
-export const invokeMossCommand = async <T, E>(cmd: string, args?: InvokeArgs): Promise<IpcResult<T, E>> => {
-  return await invokeTauriIpc<T, E>("execute_command", {
+export const invokeMossCommand = async <T>(cmd: string, args?: InvokeArgs): Promise<T> => {
+  return await invoke<T>("execute_command", {
     cmd,
     args,
   });

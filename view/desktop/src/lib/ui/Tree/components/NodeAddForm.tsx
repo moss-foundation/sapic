@@ -3,14 +3,14 @@ import { useRef, useState } from "react";
 import { useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { cn } from "@/utils";
 
-interface NodeRenamingFormProps {
+interface NodeAddFormProps {
   onSubmit: (name: string) => void;
   onCancel: () => void;
   restrictedNames?: string[];
   className?: string;
 }
 
-export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, className }: NodeRenamingFormProps) => {
+export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, className }: NodeAddFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [value, setValue] = useState("");
@@ -59,7 +59,7 @@ export const NodeAddForm = ({ onSubmit, onCancel, restrictedNames, className }: 
         autoFocus
         minLength={1}
         maxLength={100}
-        className="relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center rounded-xs bg-white py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0 focus-visible:outline-(--moss-accent)"
+        className="rounded-xs focus-visible:outline-(--moss-accent) relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center bg-white py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0"
         onKeyUp={handleKeyUp}
         onBlur={handleBlur}
         required

@@ -3,17 +3,12 @@ import { useEffect, useEffectEvent } from "react";
 import { useProjectsWithResources } from "@/adapters";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
-import { useBatchGetTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/useBatchGetTreeItemState";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 export const useSyncResourceSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projectsWithResources, isLoading } = useProjectsWithResources();
-
-  const { data: treeItemStates } = useBatchGetTreeItemState(
-    projectsWithResources.flatMap((project) => project.resources.map((resource) => resource.id)),
-    currentWorkspaceId
-  );
+  const { data: projectsWithResources, isLoading, isPending } = useProjectsWithResources();
 
   const updateResourceSummaries = useEffectEvent(async () => {
     //remove all local resource summaries in case some resources are deleted from the project
@@ -21,10 +16,21 @@ export const useSyncResourceSummaries = () => {
       resourceSummariesCollection.delete(resource.id);
     });
 
+    const allResourceIds = projectsWithResources.flatMap((project) => project.resources.map((resource) => resource.id));
+
+    const [treeItemOrders, treeItemExpanded] = await Promise.all([
+      treeItemStateService.batchGetOrder(allResourceIds, currentWorkspaceId),
+      treeItemStateService.batchGetExpanded(allResourceIds, currentWorkspaceId),
+    ]);
+
+    const orderMap = Object.fromEntries(allResourceIds.map((id, i) => [id, treeItemOrders[i]]));
+    const expandedMap = Object.fromEntries(allResourceIds.map((id, i) => [id, treeItemExpanded[i]]));
+
     projectsWithResources.forEach((project) => {
       project.resources.forEach((resource) => {
         const hasResourceSummary = resourceSummariesCollection.has(resource.id);
-        const treeItemState = treeItemStates?.find((treeItemState) => treeItemState.id === resource.id);
+        const order = orderMap[resource.id];
+        const expanded = expandedMap[resource.id];
 
         if (hasResourceSummary) {
           resourceSummariesCollection.update(resource.id, (draft) => {
@@ -32,8 +38,8 @@ export const useSyncResourceSummaries = () => {
               ...resource,
               protocol: resource.protocol ?? undefined,
 
-              order: treeItemState?.order ?? draft.order,
-              expanded: treeItemState?.expanded ?? draft.expanded,
+              order: order,
+              expanded: expanded,
             });
           });
         } else {
@@ -46,8 +52,8 @@ export const useSyncResourceSummaries = () => {
             kind: resource.kind,
             protocol: resource.protocol ?? undefined,
 
-            order: treeItemState?.order,
-            expanded: treeItemState?.expanded,
+            order: order,
+            expanded: expanded,
           });
         }
       });
@@ -58,5 +64,5 @@ export const useSyncResourceSummaries = () => {
     updateResourceSummaries();
   }, [projectsWithResources]);
 
-  return { isLoading };
+  return { isLoading, isPending };
 };

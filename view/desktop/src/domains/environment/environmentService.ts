@@ -1,4 +1,5 @@
 import { environmentSummariesCollection } from "@/db/environmentsSummaries/environmentSummaries";
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { environmentIpc } from "@/infra/ipc/environmentIpc";
 import {
   ActivateEnvironmentInput,
@@ -16,16 +17,21 @@ import {
   UpdateEnvironmentOutput,
 } from "@repo/ipc";
 
+export interface CreateEnvironmentParams extends CreateEnvironmentInput {
+  order: number;
+  expanded: boolean;
+}
+
 interface IEnvironmentService {
   activateEnvironment: (input: ActivateEnvironmentInput) => Promise<ActivateEnvironmentOutput>;
 
-  createEnvironment: (input: CreateEnvironmentInput) => Promise<CreateEnvironmentOutput>;
+  createEnvironment: (input: CreateEnvironmentParams) => Promise<CreateEnvironmentOutput>;
 
   listWorkspaceEnvironments: () => Promise<ListWorkspaceEnvironmentsOutput>;
   listProjectEnvironments: (input: ListProjectEnvironmentsInput) => Promise<ListProjectEnvironmentsOutput>;
 
-  updateEnvironment: (input: UpdateEnvironmentInput) => Promise<UpdateEnvironmentOutput>;
-  batchUpdateEnvironment: (input: BatchUpdateEnvironmentInput) => Promise<BatchUpdateEnvironmentOutput>;
+  updateEnvironment(input: UpdateEnvironmentInput): Promise<UpdateEnvironmentOutput>;
+  batchUpdateEnvironment(input: BatchUpdateEnvironmentInput): Promise<BatchUpdateEnvironmentOutput>;
 
   deleteEnvironment: (input: DeleteEnvironmentInput) => Promise<DeleteEnvironmentOutput>;
 }
@@ -71,8 +77,8 @@ export const environmentService: IEnvironmentService = {
       isActive: false,
       totalVariables: 0,
 
-      order: -1,
-      expanded: false,
+      order: input.order,
+      expanded: input.expanded,
     });
 
     return output;
@@ -83,30 +89,47 @@ export const environmentService: IEnvironmentService = {
   listProjectEnvironments: async (input) => {
     return await environmentIpc.listProjectEnvironments(input);
   },
-  updateEnvironment: async (input) => {
+
+  updateEnvironment: async (input: UpdateEnvironmentInput) => {
     const output = await environmentIpc.updateEnvironment(input);
 
-    environmentSummariesCollection.update(input.id, (draft) => {
-      if (input.name) draft.name = input.name;
-      if (input.projectId) draft.projectId = input.projectId;
-
-      if (input.color) {
-        if (input.color === "REMOVE") draft.color = null;
-        else if (typeof input.color === "object" && "UPDATE" in input.color) draft.color = input.color.UPDATE;
-      }
-
-      if (input.varsToAdd.length > 0) draft.totalVariables += input.varsToAdd.length;
-      if (input.varsToDelete.length > 0) draft.totalVariables -= input.varsToDelete.length;
+    environmentSummariesCollection.update(output.id, (draft) => {
+      applyEnvironmentUpdate(draft, input);
     });
 
     return output;
   },
   batchUpdateEnvironment: async (input) => {
-    return await environmentIpc.batchUpdateEnvironment(input);
+    const output = await environmentIpc.batchUpdateEnvironment(input);
+
+    output.ids.forEach((id) => {
+      environmentSummariesCollection.update(id, (draft) => {
+        const item = input.items.find((item) => item.id === id);
+        if (!item) return;
+
+        applyEnvironmentUpdate(draft, item);
+      });
+    });
+
+    return output;
   },
+
   deleteEnvironment: async (input) => {
     const output = await environmentIpc.deleteEnvironment(input);
     environmentSummariesCollection.delete(input.id);
     return output;
   },
+};
+
+const applyEnvironmentUpdate = (draft: EnvironmentSummary, data: Partial<UpdateEnvironmentInput>) => {
+  if (data.name) draft.name = data.name;
+
+  if (data.color === "REMOVE") {
+    draft.color = null;
+  } else if (data.color && typeof data.color === "object" && "UPDATE" in data.color) {
+    draft.color = data.color.UPDATE;
+  }
+
+  if (data.varsToAdd?.length) draft.totalVariables += data.varsToAdd.length;
+  if (data.varsToDelete?.length) draft.totalVariables -= data.varsToDelete.length;
 };

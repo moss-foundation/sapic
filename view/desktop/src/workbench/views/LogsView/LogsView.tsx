@@ -15,6 +15,7 @@ import { tags } from "@lezer/highlight";
 import { ExtensionInfo } from "@repo/base";
 import { ListExtensionsOutput } from "@repo/ipc";
 import { parser } from "@repo/lezer-grammar";
+import { GetItemOutput, PutItemOutput, RemoveItemOutput } from "@repo/shared-storage";
 import { LogEntryInfo, ON_DID_APPEND_LOG_ENTRY_CHANNEL } from "@repo/window";
 import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
@@ -65,15 +66,15 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handleGetItem = async () => {
     try {
-      const result = await invokeTauriIpc("plugin:shared-storage|get_item", {
+      const result = await invokeTauriIpc<GetItemOutput>("plugin:shared-storage|get_item", {
         input: {
           key: getItemForm.key,
           scope: getItemForm.workspaceId ? { workspace: getItemForm.workspaceId } : "application",
         },
       });
       console.log("Get item result:", result);
-      if (result.status === "ok") {
-        console.log("Data:", result.data);
+      if (result.value !== null) {
+        console.log("Data:", result);
       }
     } catch (error) {
       console.error("Error getting item:", error);
@@ -82,7 +83,7 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handlePutItem = async () => {
     try {
-      const result = await invokeTauriIpc("plugin:shared-storage|put_item", {
+      const result = await invokeTauriIpc<PutItemOutput>("plugin:shared-storage|put_item", {
         input: {
           key: putItemForm.key,
           scope: putItemForm.workspaceId ? { workspace: putItemForm.workspaceId } : "application",
@@ -90,8 +91,8 @@ export const LogsView = ({}: LogsViewProps) => {
         },
       });
       console.log("Put item result:", result);
-      if (result.status === "ok") {
-        console.log("Data:", result.data);
+      if (result.value !== null) {
+        console.log("Data:", result);
       }
     } catch (error) {
       console.error("Error putting item:", error);
@@ -100,15 +101,15 @@ export const LogsView = ({}: LogsViewProps) => {
 
   const handleRemoveItem = async () => {
     try {
-      const result = await invokeTauriIpc("plugin:shared-storage|remove_item", {
+      const result = await invokeTauriIpc<RemoveItemOutput>("plugin:shared-storage|remove_item", {
         input: {
           key: removeItemForm.key,
           scope: removeItemForm.workspaceId ? { workspace: removeItemForm.workspaceId } : "application",
         },
       });
       console.log("Remove item result:", result);
-      if (result.status === "ok") {
-        console.log("Data:", result.data);
+      if (result.value !== null) {
+        console.log("Data:", result);
       }
     } catch (error) {
       console.error("Error removing item:", error);
@@ -305,11 +306,8 @@ const ExtensionRegistryTest = () => {
 
   async function handleListExtensionsButton() {
     const result = await invokeTauriIpc<ListExtensionsOutput>("list_extensions", {});
-    if (result.status === "error") {
-      throw new Error(String(result.status));
-    }
 
-    setExtensions(result.data);
+    setExtensions(result);
   }
 
   return (
@@ -354,8 +352,8 @@ const ExtensionRegistryTest = () => {
                           version: info.latestVersion,
                         },
                       });
-                      if (result.status === "error") {
-                        throw new Error(String(result.status));
+                      if (result === "error") {
+                        throw new Error(String(result));
                       }
                     }}
                   >

@@ -1,6 +1,6 @@
 import { useCurrentWorkspace } from "@/hooks";
-import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
-import { layoutService } from "@/workbench/domains/layout/service";
+import { defaultLayoutState } from "@/workbench/services/layout/defaults";
+import { layoutService } from "@/workbench/services/layout/service";
 import { useQuery } from "@tanstack/react-query";
 
 export const USE_GET_LAYOUT_QUERY_KEY = "getLayout";

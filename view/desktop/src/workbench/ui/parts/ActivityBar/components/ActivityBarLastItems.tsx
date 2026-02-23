@@ -1,7 +1,7 @@
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 import { useGetLayout } from "@/workbench/adapters";
-import { ACTIVITYBAR_POSITION } from "@/workbench/domains/layout";
+import { ACTIVITYBAR_POSITION } from "@/workbench/services/layout";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 

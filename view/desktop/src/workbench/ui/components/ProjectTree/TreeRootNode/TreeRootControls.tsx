@@ -2,7 +2,7 @@ import { useContext } from "react";
 
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { usePutTreeItemState } from "@/workbench/adapters/tanstackQuery/treeItemState/usePutTreeItemState";
+import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
@@ -36,7 +36,6 @@ export const TreeRootControls = ({
 
   const { expandAllNodes, collapseAllNodes } = useToggleAllTreeNodes(id);
   const { refreshProject } = useRefreshProject(id);
-  const { mutateAsync: updateTreeItemState } = usePutTreeItemState();
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
   const handleRefresh = () => {
@@ -46,18 +45,12 @@ export const TreeRootControls = ({
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
 
-    await updateTreeItemState({
-      treeItemState: { id: node.id, order: node.order ?? 0, expanded: !node.expanded },
-      workspaceId: currentWorkspaceId,
-    });
+    await treeItemStateService.putExpanded(node.id, !node.expanded, currentWorkspaceId);
   };
 
   const handleLabelClick = async () => {
     if (!node.expanded) {
-      await updateTreeItemState({
-        treeItemState: { id: node.id, order: node.order ?? 0, expanded: true },
-        workspaceId: currentWorkspaceId,
-      });
+      await treeItemStateService.putExpanded(node.id, true, currentWorkspaceId);
     }
 
     addOrFocusPanel({

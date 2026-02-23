@@ -1,6 +1,6 @@
 import { mainWorkspaceService } from "@/main/services/mainWindowWorkspaceService";
 import { useUpdateLayout } from "@/workbench/adapters";
-import { defaultLayoutState } from "@/workbench/domains/layout/defaults";
+import { defaultLayoutState } from "@/workbench/services/layout/defaults";
 import { WorkspaceInfo } from "@repo/base";
 import { ListWorkspacesOutput, MainWindow_CreateWorkspaceInput, MainWindow_CreateWorkspaceOutput } from "@repo/ipc";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
