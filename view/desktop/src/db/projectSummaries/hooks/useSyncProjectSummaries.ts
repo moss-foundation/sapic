@@ -47,8 +47,8 @@ export const useSyncProjectSummaries = () => {
     });
 
     projectSummariesCollection.forEach((project) => {
-      const doesProjectExist = projectItems.some((p) => p.id === project.id);
-      if (!doesProjectExist) projectSummariesCollection.delete(project.id);
+      const doesProjectExistInRemote = projectItems.some((p) => p.id === project.id);
+      if (!doesProjectExistInRemote) projectSummariesCollection.delete(project.id);
     });
   });
 
