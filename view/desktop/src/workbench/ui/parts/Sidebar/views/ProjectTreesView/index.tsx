@@ -4,8 +4,8 @@ import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnv
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
+import { useMonitorProjectRootNodes } from "@/workbench/ui/components/ProjectTree/dnd/hooks/useMonitorProjectRootNodes";
 import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
-import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -16,7 +16,7 @@ import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  useProjectDragAndDropHandler();
+  useMonitorProjectRootNodes();
   useNodeDragAndDropHandler();
 
   useSyncEnvironments();

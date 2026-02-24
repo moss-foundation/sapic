@@ -40,16 +40,6 @@ export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRootNode): boolea
   return tree.childNodes.every(checkIfAllNodesAreCollapsed);
 };
 
-export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
-  return source.data as {
-    type: "TreeRootNode";
-    data: {
-      projectId: string;
-      node: ProjectTreeRootNode;
-    };
-  };
-};
-
 export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
   const instruction = extractInstruction(location.current?.dropTargets[0].data);
 

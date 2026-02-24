@@ -5,10 +5,10 @@ import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsListRoot";
+import { useDraggableRootNode } from "../dnd/hooks/useDraggableRootNode";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNodeProps } from "../types";
 import { calculateShouldRenderRootChildNodes } from "../utils";
-import { useDraggableRootNode } from "./hooks/useDraggableRootNode";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootControls } from "./TreeRootControls";
@@ -40,8 +40,8 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
     handleRenamingRootNodeFormCancel,
   } = useRootNodeRenamingForm(node);
 
-  const { isDragging, instruction, dirInstruction } = useDraggableRootNode({
-    dirRef: dropTargetRootRef,
+  const { isDragging, instruction } = useDraggableRootNode({
+    nodeRef: dropTargetRootRef,
     triggerRef: draggableHeaderRef,
     node,
     isRenamingNode: isRenamingRootNode,
@@ -51,12 +51,7 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
   const restrictedNames = projects?.items.map((project) => project.name) ?? [];
 
   return (
-    <Tree.RootNode
-      ref={dropTargetRootRef}
-      instruction={instruction}
-      combineInstruction={dirInstruction}
-      isDragging={isDragging}
-    >
+    <Tree.RootNode ref={dropTargetRootRef} instruction={instruction} isDragging={isDragging}>
       <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
