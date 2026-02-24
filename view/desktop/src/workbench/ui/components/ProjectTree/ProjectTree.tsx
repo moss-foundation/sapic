@@ -1,4 +1,4 @@
-import { ProjectTreeContext, TreeContextBridge } from "./ProjectTreeContext.tsx";
+import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
 import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
 import { ProjectTreeProps } from "./types.ts";
 import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
@@ -32,9 +32,7 @@ export const ProjectTree = ({
           showRootNodeIds,
         }}
       >
-        <TreeContextBridge>
-          <TreeRootNode node={tree} />
-        </TreeContextBridge>
+        <TreeRootNode node={tree} />
       </ProjectTreeContext.Provider>
     </div>
   );

@@ -6,7 +6,6 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { NodeIndicator } from "../NodeIndicator";
-import { useTreeContext } from "../TreeContext";
 
 interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   depth?: number;
@@ -18,6 +17,9 @@ interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   hideDragHandle?: boolean;
   dropIndicatorFullWidth?: boolean;
   isDirty?: boolean;
+  nodeOffset?: number;
+  nodePaddingLeft?: number;
+  treePaddingRight?: number;
 }
 
 export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
@@ -33,14 +35,12 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
       hideDragHandle = false,
       dropIndicatorFullWidth = false,
       isDirty = false,
+      nodePaddingLeft = 12,
+      treePaddingRight = 8,
       ...props
     }: NodeControlsProps,
     ref
   ) => {
-    const { nodeOffset, treePaddingLeft, treePaddingRight } = useTreeContext();
-
-    const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
-
     return (
       <div
         ref={ref}
