@@ -12,6 +12,7 @@ export const useSyncProjectSummaries = () => {
 
   const { data: projects, isLoading, isPending } = useListProjects();
 
+  //TODO try to use useEffectEvent here
   // Reset sync flag when workspace changes
   useEffect(() => {
     if (lastWorkspaceIdRef.current !== currentWorkspaceId) {
@@ -40,9 +41,9 @@ export const useSyncProjectSummaries = () => {
         currentWorkspaceId
       );
 
-      for (const project of projects.items) {
-        const order = treeItemOrders?.[project.id];
-        const expanded = treeItemExpanded?.[project.id];
+      projects.items.forEach((project, index) => {
+        const order = treeItemOrders?.[index];
+        const expanded = treeItemExpanded?.[index];
 
         if (projectSummariesCollection.has(project.id)) {
           projectSummariesCollection.update(project.id, (draft) => {
@@ -56,7 +57,8 @@ export const useSyncProjectSummaries = () => {
             expanded: expanded ?? true,
           });
         }
-      }
+      });
+
       hasSyncedRef.current = true;
     };
 
