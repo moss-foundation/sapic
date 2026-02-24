@@ -5,6 +5,7 @@ import { FolderSettingsViewProps } from "../FolderSettingsView";
 import { findNodeInProject } from "../utils";
 
 export const OverviewTabContent = ({ params }: FolderSettingsViewProps) => {
+  //FIXME useProjectsTrees creates its own instance, meaning it will duplicate the data and will cause unnecessary re-renders
   const { projectsTrees } = useProjectsTrees();
   const project = projectsTrees?.find((col) => col.id === params?.projectId);
   const node = project ? findNodeInProject(project, params?.node?.id) : undefined;

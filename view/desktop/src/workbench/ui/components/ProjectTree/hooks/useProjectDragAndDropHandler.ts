@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
 
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
+import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -11,11 +11,9 @@ import { getTreeRootNodeSourceData, getTreeRootNodeTargetData } from "../utils";
 export const useProjectDragAndDropHandler = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { projectsTrees } = useProjectsTrees();
-
   const handleReorder = useCallback(
     async ({ location, source }) => {
-      if (!projectsTrees || location.current?.dropTargets.length === 0) return;
+      if (location.current?.dropTargets.length === 0) return;
 
       const sourceData = getTreeRootNodeSourceData(source);
       const targetData = getTreeRootNodeTargetData(location);
@@ -25,7 +23,7 @@ export const useProjectDragAndDropHandler = () => {
       }
 
       try {
-        const sorted = [...projectsTrees].sort((a, b) => a.order! - b.order!);
+        const sorted = projectSummariesCollection.map((p) => p).sort((a, b) => a.order! - b.order!);
 
         const sourceIndex = sorted.findIndex((p) => p.id === sourceData.data.projectId);
         const targetIndex = sorted.findIndex((p) => p.id === targetData.data.projectId);
@@ -63,7 +61,7 @@ export const useProjectDragAndDropHandler = () => {
         console.error("Error reordering projects:", error);
       }
     },
-    [projectsTrees, currentWorkspaceId]
+    [currentWorkspaceId]
   );
 
   useEffect(() => {

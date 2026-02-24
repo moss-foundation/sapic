@@ -1,69 +1,63 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useEffectEvent } from "react";
 
 import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
+import { ListProjectItem } from "@repo/ipc";
+
+import { flushProjectSummaries } from "../actions/flushProjectSummaries";
 
 export const useSyncProjectSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const hasSyncedRef = useRef(false);
-  const lastWorkspaceIdRef = useRef<string | undefined>(currentWorkspaceId);
 
   const { data: projects, isLoading, isPending } = useListProjects();
 
-  //TODO try to use useEffectEvent here
-  // Reset sync flag when workspace changes
-  useEffect(() => {
-    if (lastWorkspaceIdRef.current !== currentWorkspaceId) {
-      lastWorkspaceIdRef.current = currentWorkspaceId;
-      hasSyncedRef.current = false;
-
-      projectSummariesCollection.forEach((project) => {
-        projectSummariesCollection.delete(project.id);
-      });
-    }
-  }, [currentWorkspaceId]);
-
-  useEffect(() => {
-    // Only sync on initial load when data is available
-    if (hasSyncedRef.current || !projects || projects.items.length === 0) {
+  const updateProjectSummaries = useEffectEvent(async (projectItems: ListProjectItem[]) => {
+    if (projectItems.length === 0) {
+      flushProjectSummaries();
       return;
     }
 
-    const updateLocalProjects = async () => {
-      const treeItemOrders = await treeItemStateService.batchGetOrder(
-        projects.items.map((project) => project.id),
-        currentWorkspaceId
-      );
-      const treeItemExpanded = await treeItemStateService.batchGetExpanded(
-        projects.items.map((project) => project.id),
-        currentWorkspaceId
-      );
+    const treeItemOrders = await treeItemStateService.batchGetOrder(
+      projectItems.map((project) => project.id),
+      currentWorkspaceId
+    );
+    const treeItemExpanded = await treeItemStateService.batchGetExpanded(
+      projectItems.map((project) => project.id),
+      currentWorkspaceId
+    );
 
-      projects.items.forEach((project, index) => {
-        const order = treeItemOrders?.[index];
-        const expanded = treeItemExpanded?.[index];
+    projectItems.forEach((project, index) => {
+      const order = treeItemOrders?.[index];
+      const expanded = treeItemExpanded?.[index];
 
-        if (projectSummariesCollection.has(project.id)) {
-          projectSummariesCollection.update(project.id, (draft) => {
-            draft.order = order ?? -1;
-            draft.expanded = expanded ?? true;
-          });
-        } else {
-          projectSummariesCollection.insert({
-            ...project,
-            order: order ?? -1,
-            expanded: expanded ?? true,
-          });
-        }
-      });
+      if (projectSummariesCollection.has(project.id)) {
+        projectSummariesCollection.update(project.id, (draft) => {
+          draft.order = order;
+          draft.expanded = expanded;
+        });
+      } else {
+        projectSummariesCollection.insert({
+          ...project,
+          order,
+          expanded,
+        });
+      }
+    });
 
-      hasSyncedRef.current = true;
-    };
+    projectSummariesCollection.forEach((project) => {
+      const doesProjectExist = projectItems.some((p) => p.id === project.id);
+      if (!doesProjectExist) projectSummariesCollection.delete(project.id);
+    });
+  });
 
-    updateLocalProjects();
-  }, [currentWorkspaceId, projects]);
+  useEffect(flushProjectSummaries, [currentWorkspaceId]);
+
+  useEffect(() => {
+    if (!projects) return;
+    updateProjectSummaries(projects.items);
+  }, [projects]);
 
   return { isLoading, isPending };
 };
