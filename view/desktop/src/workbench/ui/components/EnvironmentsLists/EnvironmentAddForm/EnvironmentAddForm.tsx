@@ -1,3 +1,4 @@
+import { useFocusWithin } from "ahooks";
 import { useRef, useState } from "react";
 
 import { useValidateInput } from "@/hooks";
@@ -16,6 +17,13 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
   const isInitialized = useRef(false);
 
   const [value, setValue] = useState("");
+
+  useFocusWithin(inputRef, {
+    onFocus: () => {
+      isInitialized.current = true;
+    },
+    onBlur: () => handleBlur,
+  });
 
   const { isValid } = useValidateInput({
     value,
@@ -56,18 +64,15 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
       className={cn("pl-5.5 flex h-full w-full grow items-center gap-1.5 py-1 pr-1", className)}
     >
       <Icon icon="Add" className="shrink-0 opacity-50" />
+
       <input
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        onFocus={() => {
-          isInitialized.current = true;
-        }}
         minLength={1}
         maxLength={100}
-        className="rounded-xs focus-visible:outline-(--moss-accent) relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center bg-white py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0"
+        className="rounded-xs focus-visible:outline-(--moss-accent) relative flex h-full w-[calc(100%-3px)] min-w-0 grow items-center py-0.5 focus-visible:outline-1 focus-visible:outline-offset-0"
         onKeyUp={handleKeyUp}
-        onBlur={handleBlur}
         placeholder="New Environment"
         required
       />

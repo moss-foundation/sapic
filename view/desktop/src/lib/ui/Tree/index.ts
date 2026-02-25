@@ -2,6 +2,12 @@ import { ActionLabel } from "./components/ActionLabel";
 import { ActionsHover } from "./components/ActionsHover";
 import { ActionsPersistent } from "./components/ActionsPersistent";
 import { Decorator } from "./components/Decorator";
+import { List } from "./components/List/List";
+import { ListChildren } from "./components/List/ListChildren";
+import { ListDirCount } from "./components/List/ListDirCount";
+import { ListHeader } from "./components/List/ListHeader";
+import { ListHeaderDetails } from "./components/List/ListHeaderDetails";
+import { ListLabel } from "./components/List/ListLabel";
 import { Node } from "./components/Node/Node";
 import { NodeActions } from "./components/Node/NodeActions";
 import { NodeChildren } from "./components/Node/NodeChildren";
@@ -35,6 +41,13 @@ interface TreeWithSubComponents {
   RootNodeLabel: typeof RootNodeLabel;
   RootNodeOrder: typeof RootNodeOrder;
   RootNodeTriggers: typeof RootNodeTriggers;
+
+  List: typeof List;
+  ListHeader: typeof ListHeader;
+  ListLabel: typeof ListLabel;
+  ListChildren: typeof ListChildren;
+  ListHeaderDetails: typeof ListHeaderDetails;
+  ListDirCount: typeof ListDirCount;
 
   Node: typeof Node;
   NodeActions: typeof NodeActions;
@@ -77,6 +90,13 @@ TreeWithSubs.NodeOrder = NodeOrder;
 TreeWithSubs.NodeDirCount = NodeDirCount;
 TreeWithSubs.NodeLabel = NodeLabel;
 TreeWithSubs.NodeTriggers = NodeTriggers;
+
+TreeWithSubs.List = List;
+TreeWithSubs.ListHeader = ListHeader;
+TreeWithSubs.ListLabel = ListLabel;
+TreeWithSubs.ListChildren = ListChildren;
+TreeWithSubs.ListHeaderDetails = ListHeaderDetails;
+TreeWithSubs.ListDirCount = ListDirCount;
 
 TreeWithSubs.NodeAddForm = NodeAddForm;
 TreeWithSubs.NodeRenamingForm = NodeRenamingForm;

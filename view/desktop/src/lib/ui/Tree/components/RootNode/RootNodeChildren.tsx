@@ -11,7 +11,7 @@ interface RootNodeChildrenProps {
 export const RootNodeChildren = ({ children, className, hideDirDepthIndicator, ...props }: RootNodeChildrenProps) => {
   return (
     <ul className={cn("relative w-full", className)} {...props}>
-      {!hideDirDepthIndicator && <DirDepthIndicator depth={0} />}
+      {!hideDirDepthIndicator && <DirDepthIndicator offset={0} />}
 
       {children}
     </ul>

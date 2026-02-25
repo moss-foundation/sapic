@@ -1,9 +1,12 @@
+import { useContext } from "react";
+
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 
 interface WorkspaceEnvironmentsListRootControlsProps {
@@ -12,6 +15,8 @@ interface WorkspaceEnvironmentsListRootControlsProps {
 
 export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnvironmentsListRootControlsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+
+  const { showOrders } = useContext(ProjectTreeContext);
 
   const { mutate: updateEnvironmentListItemState } = usePutEnvironmentListItemState();
 
@@ -41,6 +46,7 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         </button>
 
+        {showOrders && <Tree.RootNodeOrder order={0} />}
         <Tree.RootNodeLabel label="Globals" />
       </Tree.RootNodeTriggers>
     </Tree.RootNodeControls>

@@ -37,7 +37,6 @@ export const WorkspaceEnvironmentsListRoot = () => {
   };
 
   const restrictedNames = workspaceEnvironments?.map((environment) => environment.name) ?? [];
-
   const sortedWorkspaceEnvironments = sortObjectsByOrder(workspaceEnvironments, "name");
 
   return (

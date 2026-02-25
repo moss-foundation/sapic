@@ -9,17 +9,17 @@ import { ListProjectItem } from "@repo/ipc";
 
 import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 
-interface ProjectEnvironmentsListRootControlsProps {
+interface ProjectEnvironmentsListRootHeaderDetailsProps {
   project: ListProjectItem;
   expanded: boolean;
   count: number;
 }
 
-export const ProjectEnvironmentsListRootControls = ({
+export const ProjectEnvironmentsListRootHeaderDetails = ({
   project,
   expanded,
   count,
-}: ProjectEnvironmentsListRootControlsProps) => {
+}: ProjectEnvironmentsListRootHeaderDetailsProps) => {
   const { treePaddingLeft } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
 
@@ -45,21 +45,17 @@ export const ProjectEnvironmentsListRootControls = ({
   };
 
   return (
-    <Tree.RootNodeControls className="cursor-pointer text-sm">
-      <Tree.RootNodeTriggers
-        className="overflow-hidden py-[2px]"
-        onClick={onHeaderClick}
-        style={{ paddingLeft: treePaddingLeft }}
-      >
-        <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
-          <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
-        </button>
+    <Tree.ListHeaderDetails
+      className="cursor-pointer text-sm"
+      onClick={onHeaderClick}
+      style={{ paddingLeft: treePaddingLeft }}
+    >
+      <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
+        <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
+      </button>
 
-        <div className="flex items-center gap-1">
-          <Tree.RootNodeLabel label="Environments" className="text-sm" />
-          <Tree.NodeDirCount count={count} />
-        </div>
-      </Tree.RootNodeTriggers>
-    </Tree.RootNodeControls>
+      <Tree.ListLabel label="Environments" />
+      <Tree.ListDirCount count={count} />
+    </Tree.ListHeaderDetails>
   );
 };

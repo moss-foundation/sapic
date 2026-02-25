@@ -1,15 +1,15 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
 import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
-import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
+import { ProjectEnvironmentsListRootHeaderDetails } from "./ProjectEnvironmentsListRootHeaderDetails";
 
 interface ProjectEnvironmentsListRootProps {
   projectId: string;
@@ -17,8 +17,9 @@ interface ProjectEnvironmentsListRootProps {
 
 export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsListRootProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
+  const projectEnvironmentsListRef = useRef<HTMLDivElement>(null);
 
   const { data: projects } = useListProjects();
   const { projectEnvironments } = useGetProjectEnvironments(projectId);
@@ -38,22 +39,22 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   }
 
   return (
-    <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader disableIndicator={true}>
-        <ProjectEnvironmentsListRootControls
+    <Tree.List ref={projectEnvironmentsListRef} instruction={instruction}>
+      <Tree.ListHeader offsetLeft={treePaddingLeft}>
+        <ProjectEnvironmentsListRootHeaderDetails
           project={project}
           expanded={expanded}
           count={projectEnvironments?.length ?? 0}
         />
-      </Tree.RootNodeHeader>
+      </Tree.ListHeader>
 
       {expanded && (
-        <Tree.RootNodeChildren hideDirDepthIndicator>
+        <Tree.RootNodeChildren>
           {projectEnvironments?.map((environment) => (
             <EnvironmentItem key={environment.id} environment={environment} />
           ))}
         </Tree.RootNodeChildren>
       )}
-    </Tree.RootNode>
+    </Tree.List>
   );
 };

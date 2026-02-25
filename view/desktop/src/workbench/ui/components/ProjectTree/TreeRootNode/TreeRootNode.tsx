@@ -16,7 +16,7 @@ import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
 import { TreeRootResourcesList } from "./TreeRootResourcesList";
 
 export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
-  const { id } = useContext(ProjectTreeContext);
+  const { id, treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
 
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const dropTargetRootRef = useRef<HTMLUListElement>(null);
@@ -52,7 +52,12 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
 
   return (
     <Tree.RootNode ref={dropTargetRootRef} instruction={instruction} isDragging={isDragging}>
-      <Tree.RootNodeHeader ref={draggableHeaderRef} isActive={activePanelId === node.id}>
+      <Tree.RootNodeHeader
+        ref={draggableHeaderRef}
+        isActive={activePanelId === node.id}
+        treePaddingLeft={treePaddingLeft}
+        treePaddingRight={treePaddingRight}
+      >
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
             node={node}

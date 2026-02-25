@@ -30,7 +30,7 @@ export const EnvironmentItemControls = ({
   instruction,
   type,
 }: EnvironmentItemControlsProps) => {
-  const { treePaddingLeft, nodeOffset } = useContext(ProjectTreeContext);
+  const { treePaddingLeft, nodeOffset, showOrders } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { activePanelId } = useTabbedPaneStore();
 
@@ -87,7 +87,7 @@ export const EnvironmentItemControls = ({
           className="cursor-pointer overflow-hidden"
           style={{ paddingLeft: treePaddingLeft + nodeOffset }}
         >
-          <Tree.RootNodeOrder order={environment.order} />
+          {showOrders && <Tree.RootNodeOrder order={environment.order} />}
           <Tree.Decorator />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />

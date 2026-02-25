@@ -1,5 +1,4 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
-import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
 
@@ -25,12 +24,11 @@ export const EnvironmentItemRenamingForm = ({
   return (
     <Tree.NodeControls
       depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
-      className={cn("min-h-[22px] py-1", className)}
+      className={cn("pb-[4px] pt-[5px]", className)}
     >
       <Tree.NodeTriggers>
-        <div className="flex h-5 shrink-0 items-center justify-start">
-          <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
-        </div>
+        <Tree.Decorator />
+
         <Tree.NodeRenamingForm
           onSubmit={handleRename}
           onCancel={handleCancel}
