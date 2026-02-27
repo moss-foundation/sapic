@@ -48,7 +48,7 @@ export const ProjectTreesHeader = () => {
   };
 
   return (
-    <Tree.RootNodeControls>
+    <Tree.RootNodeDetails>
       <Tree.RootNodeTriggers
         onClick={handleToggleProjectList}
         className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
@@ -56,6 +56,6 @@ export const ProjectTreesHeader = () => {
         <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
       </Tree.RootNodeTriggers>
-    </Tree.RootNodeControls>
+    </Tree.RootNodeDetails>
   );
 };

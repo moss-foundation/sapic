@@ -9,11 +9,11 @@ import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQue
 import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 
-interface WorkspaceEnvironmentsListRootControlsProps {
+interface WorkspaceEnvironmentsListRootDetailsProps {
   expanded: boolean;
 }
 
-export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnvironmentsListRootControlsProps) => {
+export const WorkspaceEnvironmentsListRootDetails = ({ expanded }: WorkspaceEnvironmentsListRootDetailsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { showOrders } = useContext(ProjectTreeContext);
@@ -40,7 +40,7 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
   };
 
   return (
-    <Tree.RootNodeControls>
+    <Tree.RootNodeDetails>
       <Tree.RootNodeTriggers className="overflow-hidden py-[2px]" onClick={onHeaderClick}>
         <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
@@ -49,6 +49,6 @@ export const WorkspaceEnvironmentsListRootControls = ({ expanded }: WorkspaceEnv
         {showOrders && <Tree.RootNodeOrder order={0} />}
         <Tree.RootNodeLabel label="Globals" />
       </Tree.RootNodeTriggers>
-    </Tree.RootNodeControls>
+    </Tree.RootNodeDetails>
   );
 };

@@ -22,7 +22,7 @@ export const EnvironmentItemRenamingForm = ({
   type,
 }: EnvironmentItemRenamingFormProps) => {
   return (
-    <Tree.NodeControls
+    <Tree.NodeDetails
       depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
       className={cn("pb-[4px] pt-[5px]", className)}
     >
@@ -36,6 +36,6 @@ export const EnvironmentItemRenamingForm = ({
           restrictedNames={restrictedNames}
         />
       </Tree.NodeTriggers>
-    </Tree.NodeControls>
+    </Tree.NodeDetails>
   );
 };

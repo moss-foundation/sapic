@@ -9,7 +9,7 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { useDraggableEnvironmentItem } from "../dnd/hooks/useDraggableEnvironmentItem";
-import { EnvironmentItemControls } from "./EnvironmentItemControls";
+import { EnvironmentItemDetails } from "./EnvironmentItemDetails";
 import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
@@ -71,7 +71,7 @@ export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
           handleCancel={handleCancel}
         />
       ) : (
-        <EnvironmentItemControls
+        <EnvironmentItemDetails
           type={envType}
           environment={environment}
           instruction={instruction}

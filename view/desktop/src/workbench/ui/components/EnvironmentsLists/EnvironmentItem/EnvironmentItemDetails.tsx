@@ -17,19 +17,19 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 
-interface EnvironmentItemControlsProps {
+interface EnvironmentItemDetailsProps {
   environment: EnvironmentSummary;
   setIsEditing: (isEditing: boolean) => void;
   instruction: Instruction | null;
   type: ENVIRONMENT_ITEM_DRAG_TYPE;
 }
 
-export const EnvironmentItemControls = ({
+export const EnvironmentItemDetails = ({
   environment,
   setIsEditing,
   instruction,
   type,
-}: EnvironmentItemControlsProps) => {
+}: EnvironmentItemDetailsProps) => {
   const { treePaddingLeft, nodeOffset, showOrders } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { activePanelId } = useTabbedPaneStore();
@@ -76,7 +76,7 @@ export const EnvironmentItemControls = ({
 
   return (
     <>
-      <Tree.NodeControls
+      <Tree.NodeDetails
         isActive={activePanelId === environment.id}
         instruction={instruction}
         hideDragHandle
@@ -130,7 +130,7 @@ export const EnvironmentItemControls = ({
             </ActionMenu.Root>
           </Tree.ActionsHover>
         </Tree.NodeActions>
-      </Tree.NodeControls>
+      </Tree.NodeDetails>
 
       {showDeleteModal && (
         <ConfirmationModal

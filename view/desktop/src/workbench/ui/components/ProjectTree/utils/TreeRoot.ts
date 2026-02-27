@@ -59,22 +59,6 @@ export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
   };
 };
 
-export const calculateShouldRenderRootChildNodes = (
-  node: ProjectTreeRootNode,
-  isAddingRootNodeFile: boolean,
-  isRenamingRootNode: boolean
-) => {
-  if (!node.expanded) {
-    return false;
-  }
-
-  if (isAddingRootNodeFile || isRenamingRootNode) {
-    return true;
-  }
-
-  return true;
-};
-
 export const getChildrenNames = (node: ProjectTreeNode | ProjectTreeRootNode) => {
   return node.childNodes.map((childNode) => childNode.name);
 };

@@ -1,13 +1,9 @@
-import { useContext } from "react";
-
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 import { usePutEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/usePutEnvironmentListItemState";
 import { ListProjectItem } from "@repo/ipc";
-
-import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 
 interface ProjectEnvironmentsListRootHeaderDetailsProps {
   project: ListProjectItem;
@@ -20,7 +16,6 @@ export const ProjectEnvironmentsListRootHeaderDetails = ({
   expanded,
   count,
 }: ProjectEnvironmentsListRootHeaderDetailsProps) => {
-  const { treePaddingLeft } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutate: updateEnvironmentListItemState } = usePutEnvironmentListItemState();
@@ -45,11 +40,7 @@ export const ProjectEnvironmentsListRootHeaderDetails = ({
   };
 
   return (
-    <Tree.ListHeaderDetails
-      className="cursor-pointer text-sm"
-      onClick={onHeaderClick}
-      style={{ paddingLeft: treePaddingLeft }}
-    >
+    <Tree.ListHeaderDetails className="cursor-pointer text-sm" onClick={onHeaderClick}>
       <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
         <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
       </button>

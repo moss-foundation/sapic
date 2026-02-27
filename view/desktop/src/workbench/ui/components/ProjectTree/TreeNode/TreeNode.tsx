@@ -11,7 +11,7 @@ import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import TreeNodeAddForm from "./TreeNodeAddForm";
 import TreeNodeChildren from "./TreeNodeChildren";
-import TreeNodeControls from "./TreeNodeControls";
+import TreeNodeDetails from "./TreeNodeDetails";
 import TreeNodeRenamingForm from "./TreeNodeRenamingForm";
 
 export interface TreeNodeComponentProps {
@@ -69,7 +69,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <TreeNodeControls
+        <TreeNodeDetails
           ref={triggerRef}
           node={node}
           parentNode={parentNode}

@@ -10,7 +10,7 @@ import { ModalWrapperProps } from "../types";
 export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperProps & { id: string }) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { mutateAsync: deleteProject, isPending: isDeleteProjectLoading } = useDeleteProject();
-  const localProjectSummaries = useGetAllLocalProjectSummaries();
+  const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
 
   const { removePanel } = useTabbedPaneStore();
 

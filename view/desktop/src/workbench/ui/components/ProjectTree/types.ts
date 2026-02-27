@@ -16,10 +16,6 @@ export interface ProjectTreeNode extends ListProjectResourceItem {
   childNodes: ProjectTreeNode[];
 }
 
-export interface ProjectTreeRootNodeProps {
-  node: ProjectTreeRootNode;
-}
-
 export interface DragNode {
   projectId: string;
   repository?: string;

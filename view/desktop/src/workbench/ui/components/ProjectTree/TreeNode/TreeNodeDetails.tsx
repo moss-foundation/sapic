@@ -19,7 +19,7 @@ import { countNumberOfAllNestedChildNodes } from "../utils";
 import TreeNode from "./TreeNode";
 import { TreeNodeActions } from "./TreeNodeActions";
 
-interface TreeNodeControlsProps {
+interface TreeNodeDetailsProps {
   node: ProjectTreeNode;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
   depth: number;
@@ -34,7 +34,7 @@ interface TreeNodeControlsProps {
   isLastChild: boolean;
 }
 
-const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
+const TreeNodeDetails = forwardRef<HTMLDivElement, TreeNodeDetailsProps>(
   (
     {
       node,
@@ -62,7 +62,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
     const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
     const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
-    const handleControlsClick = async () => {
+    const handleDetailsClick = async () => {
       if (node.kind === "Dir") {
         addOrFocusPanel({
           id: node.id,
@@ -121,7 +121,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
     return (
       <ActionMenu.Root modal={false}>
         <ActionMenu.Trigger asChild openOnRightClick>
-          <Tree.NodeControls
+          <Tree.NodeDetails
             instruction={instruction}
             isLastChild={isLastChild}
             ref={ref}
@@ -130,7 +130,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
             isActive={activePanelId === node.id}
             isDirty={localResourceSummary?.metadata.isDirty ?? false}
           >
-            <Tree.NodeTriggers onClick={handleControlsClick} className="overflow-hidden">
+            <Tree.NodeTriggers onClick={handleDetailsClick} className="overflow-hidden">
               <Tree.NodeDirToggleIcon
                 handleClickOnDir={handleClickOnDir}
                 isDir={node.kind === "Dir"}
@@ -173,7 +173,7 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
                 </ul>,
                 preview
               )}
-          </Tree.NodeControls>
+          </Tree.NodeDetails>
         </ActionMenu.Trigger>
         <ActionMenu.Portal>
           <ActionMenu.Content>
@@ -188,4 +188,4 @@ const TreeNodeControls = forwardRef<HTMLDivElement, TreeNodeControlsProps>(
   }
 );
 
-export default TreeNodeControls;
+export default TreeNodeDetails;

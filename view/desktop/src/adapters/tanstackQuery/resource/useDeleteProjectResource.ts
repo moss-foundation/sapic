@@ -1,6 +1,6 @@
 import { resourceService } from "@/domains/resource/resourceService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { ListProjectResourceItem } from "@repo/ipc";
+import { ListProjectResourcesOutput } from "@repo/ipc";
 import { DeleteResourceInput, DeleteResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -20,20 +20,18 @@ export const useDeleteProjectResource = () => {
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
-        (old: ListProjectResourceItem[]) => {
-          const deletedResource = old.find((resource) => resource.id === data.id);
+        (old: ListProjectResourcesOutput): ListProjectResourcesOutput => {
+          const deletedResource = old.items.find((resource) => resource.id === data.id);
 
           if (!deletedResource) {
             return old;
           }
 
-          return old.filter((resource) => {
+          const newResources = old.items.filter((resource) => {
             const panel = api?.getPanel(resource.id);
 
-            if (resource.id === data.id) {
-              if (panel) {
-                api?.removePanel(panel);
-              }
+            if (resource.id === deletedResource.id) {
+              if (panel) api?.removePanel(panel);
               return false;
             }
 
@@ -43,16 +41,18 @@ export const useDeleteProjectResource = () => {
               );
 
               if (isNested) {
-                if (panel) {
-                  api?.removePanel(panel);
-                }
-
+                if (panel) api?.removePanel(panel);
                 return false;
               }
             }
 
             return true;
           });
+
+          return {
+            ...old,
+            items: newResources,
+          };
         }
       );
     },

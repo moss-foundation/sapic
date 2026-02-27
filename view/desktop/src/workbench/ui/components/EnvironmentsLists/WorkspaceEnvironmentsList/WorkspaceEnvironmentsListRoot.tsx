@@ -11,7 +11,7 @@ import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 import { useDropTargetWorkspaceEnvironmentList } from "../dnd/hooks/useDropTargetWorkspaceEnvironmentList";
 import { EnvironmentAddForm } from "../EnvironmentAddForm/EnvironmentAddForm";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
-import { WorkspaceEnvironmentsListRootControls } from "./WorkspaceEnvironmentsListRootControls";
+import { WorkspaceEnvironmentsListRootDetails } from "./WorkspaceEnvironmentsListRootDetails";
 
 export const WorkspaceEnvironmentsListRoot = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -45,7 +45,7 @@ export const WorkspaceEnvironmentsListRoot = () => {
         className="text-(--moss-secondary-foreground) cursor-pointer text-sm"
         disableIndicator={true}
       >
-        <WorkspaceEnvironmentsListRootControls expanded={expanded} />
+        <WorkspaceEnvironmentsListRootDetails expanded={expanded} />
       </Tree.RootNodeHeader>
 
       {expanded && (

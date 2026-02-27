@@ -27,6 +27,8 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const project = projects?.items.find((project) => project.id === projectId);
   const { data: expanded = false } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
+  const listHeaderOffset = treePaddingLeft * 2;
+
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
     projectId,
@@ -40,7 +42,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
 
   return (
     <Tree.List ref={projectEnvironmentsListRef} instruction={instruction}>
-      <Tree.ListHeader offsetLeft={treePaddingLeft}>
+      <Tree.ListHeader offsetLeft={listHeaderOffset}>
         <ProjectEnvironmentsListRootHeaderDetails
           project={project}
           expanded={expanded}

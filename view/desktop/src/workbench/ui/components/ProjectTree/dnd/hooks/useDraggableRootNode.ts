@@ -13,22 +13,22 @@ import { DragTreeRootNodeData } from "../types.dnd";
 
 interface UseDraggableRootNodeProps {
   nodeRef: RefObject<HTMLUListElement | null>;
-  triggerRef: RefObject<HTMLLIElement | null>;
+  headerRef: RefObject<HTMLLIElement | null>;
   node: ProjectTreeRootNode;
   isRenamingNode: boolean;
 }
 
-export const useDraggableRootNode = ({ nodeRef, triggerRef, node, isRenamingNode }: UseDraggableRootNodeProps) => {
+export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode }: UseDraggableRootNodeProps) => {
   const { id, displayMode } = useContext(ProjectTreeContext);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
-    const triggerElement = triggerRef.current;
+    const headerElement = headerRef.current;
     const nodeElement = nodeRef.current;
 
-    if (!triggerElement || !nodeElement || isRenamingNode) return;
+    if (!headerElement || !nodeElement || isRenamingNode) return;
 
     const rootNodeData: DragTreeRootNodeData = {
       type: ProjectDragType.ROOT_NODE,
@@ -40,10 +40,14 @@ export const useDraggableRootNode = ({ nodeRef, triggerRef, node, isRenamingNode
 
     return combine(
       draggable({
-        element: triggerElement,
+        element: headerElement,
         getInitialData: () => rootNodeData,
-        onDragStart: () => setIsDragging(true),
-        onDrop: () => setIsDragging(false),
+        onDragStart: () => {
+          setIsDragging(true);
+        },
+        onDrop: () => {
+          setIsDragging(false);
+        },
       }),
       dropTargetForElements({
         element: nodeElement,
@@ -75,7 +79,7 @@ export const useDraggableRootNode = ({ nodeRef, triggerRef, node, isRenamingNode
         },
       })
     );
-  }, [displayMode, id, isRenamingNode, node, nodeRef, triggerRef]);
+  }, [displayMode, id, isRenamingNode, node, nodeRef, headerRef]);
 
   return { isDragging, instruction };
 };

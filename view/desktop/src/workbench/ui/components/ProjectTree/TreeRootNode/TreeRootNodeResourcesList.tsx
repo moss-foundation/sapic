@@ -19,7 +19,7 @@ interface TreeRootResourcesListProps {
   handleRootAddFormCancel: () => void;
 }
 
-export const TreeRootResourcesList = ({
+export const TreeRootNodeResourcesList = ({
   tree,
   isAddingRootFileNode,
   isAddingRootFolderNode,
@@ -28,8 +28,9 @@ export const TreeRootResourcesList = ({
 }: TreeRootResourcesListProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { treePaddingLeft } = useContext(ProjectTreeContext);
-
   const { data: expanded } = useGetResourcesListItemState(tree.id, currentWorkspaceId);
+
+  const shouldRenderChildNodes = expanded || isAddingRootFileNode || isAddingRootFolderNode;
 
   const { mutate: updateResourcesListState } = usePutResourcesListItemState();
 
@@ -43,20 +44,20 @@ export const TreeRootResourcesList = ({
 
   return (
     <Tree.Node>
-      <Tree.NodeControls
+      <Tree.NodeDetails
         className="flex cursor-pointer items-center gap-1 py-[5px]"
         style={{ paddingLeft: treePaddingLeft }}
       >
         <Tree.RootNodeTriggers onClick={handleExpand}>
-          <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
+          <Icon icon="ChevronRight" className={cn(shouldRenderChildNodes && "rotate-90")} />
           <div className="flex items-center gap-1">
             <Tree.RootNodeLabel label="Resources" className="text-sm" />
             {/* <Tree.NodeDirCount count={123} /> */}
           </div>
         </Tree.RootNodeTriggers>
-      </Tree.NodeControls>
+      </Tree.NodeDetails>
 
-      {expanded && (
+      {shouldRenderChildNodes && (
         <TreeRootNodeChildren
           node={tree}
           isAddingRootFileNode={isAddingRootFileNode}

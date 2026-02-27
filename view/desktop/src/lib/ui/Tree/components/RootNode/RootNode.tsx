@@ -13,6 +13,7 @@ interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   isChildDropBlocked?: boolean | null;
   instruction?: Instruction | null;
   dropIndicatorFullWidth?: boolean;
+  //TODO try to remove combineInstruction, it causes more issues than it solves
   combineInstruction?: Instruction | null;
   isDragging?: boolean;
 }

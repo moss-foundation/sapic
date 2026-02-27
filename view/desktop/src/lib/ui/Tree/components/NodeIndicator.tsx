@@ -19,7 +19,7 @@ export const NodeIndicator = ({ isActive, isDirty = false, className, ...props }
         {
           "background-(--moss-secondary-background-hover) border-l border-l-(--moss-accent)": isActive && !isDirty,
           "bg-orange-200": isDirty,
-          "group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeControls:background-(--moss-secondary-background-hover)": !isDirty,
+          "group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeDetails:background-(--moss-secondary-background-hover)": !isDirty,
         },
         className 
       )}

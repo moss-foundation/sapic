@@ -7,7 +7,7 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { NodeIndicator } from "../NodeIndicator";
 
-interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
+interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
   depth?: number;
   isChildDropBlocked?: boolean | null;
   isActive?: boolean;
@@ -22,7 +22,7 @@ interface NodeControlsProps extends HTMLAttributes<HTMLDivElement> {
   treePaddingRight?: number;
 }
 
-export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
+export const NodeDetails = forwardRef<HTMLDivElement, NodeDetailsProps>(
   (
     {
       depth = 0,
@@ -38,14 +38,14 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
       nodePaddingLeft = 12,
       treePaddingRight = 8,
       ...props
-    }: NodeControlsProps,
+    }: NodeDetailsProps,
     ref
   ) => {
     return (
       <div
         ref={ref}
         className={cn(
-          "group/TreeNodeControls relative flex min-h-[28px] min-w-0 cursor-pointer items-center justify-between"
+          "group/TreeNodeDetails relative flex min-h-[28px] min-w-0 cursor-pointer items-center justify-between"
         )}
         role="button"
         tabIndex={0}
@@ -64,7 +64,7 @@ export const NodeControls = forwardRef<HTMLDivElement, NodeControlsProps>(
 
         {!isRootNode && !hideDragHandle && (
           <DragHandleButton
-            className="group-hover/TreeNodeControls:delay-400 absolute left-[1px] top-1/2 -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeNodeControls:duration-150"
+            className="group-hover/TreeNodeDetails:delay-400 absolute left-[1px] top-1/2 -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeDetails:opacity-100 group-hover/TreeNodeDetails:duration-150"
             slim
             ghost
           />

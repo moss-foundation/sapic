@@ -32,7 +32,7 @@ export const ProjectTree = ({
           showRootNodeIds,
         }}
       >
-        <TreeRootNode node={tree} />
+        <TreeRootNode tree={tree} />
       </ProjectTreeContext.Provider>
     </div>
   );

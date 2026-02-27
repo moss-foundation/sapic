@@ -20,8 +20,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
   const { isPending: areProjectsPending } = useSyncProjectSummaries();
   const { isPending: areResourcesPending } = useSyncResourceSummaries();
 
-  const localProjectSummaries = useGetAllLocalProjectSummaries();
-  const localResourceSummaries = useGetAllLocalResourceSummaries();
+  const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
+  const { data: localResourceSummaries } = useGetAllLocalResourceSummaries();
 
   const [projectsTrees, setProjectsTrees] = useState<ProjectTreeRootNode[]>([]);
 
@@ -33,9 +33,7 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
     const buildProjectsTrees = async () => {
       const trees = await Promise.all(
         localProjectSummaries.map(async (projectSummary): Promise<ProjectTreeRootNode> => {
-          const resources = localResourceSummaries
-            .filter((resource) => resource.projectId === projectSummary.id)
-            .sort((a, b) => a.path.segments.length - b.path.segments.length);
+          const resources = sortObjectsByOrder(localResourceSummaries);
 
           const childNodes: ProjectTreeNode[] = [];
 

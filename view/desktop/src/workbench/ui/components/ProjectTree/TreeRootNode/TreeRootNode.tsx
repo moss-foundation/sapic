@@ -4,22 +4,25 @@ import { useListProjects } from "@/adapters/tanstackQuery/project/useListProject
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
-import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsListRoot";
 import { useDraggableRootNode } from "../dnd/hooks/useDraggableRootNode";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeRootNodeProps } from "../types";
-import { calculateShouldRenderRootChildNodes } from "../utils";
+import { ProjectTreeRootNode } from "../types";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
-import { TreeRootControls } from "./TreeRootControls";
+import { TreeRootNodeHeaderContent } from "./TreeRootNodeHeaderContent";
+import { TreeRootNodeLists } from "./TreeRootNodeLists";
 import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
-import { TreeRootResourcesList } from "./TreeRootResourcesList";
+import { calculateShouldRenderRootChildNodes } from "./utils/calculateShouldRenderRootChildNodes";
 
-export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
-  const { id, treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
+interface TreeRootNodeProps {
+  tree: ProjectTreeRootNode;
+}
+
+export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
+  const { treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
 
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
-  const dropTargetRootRef = useRef<HTMLUListElement>(null);
+  const rootNodeRef = useRef<HTMLUListElement>(null);
 
   const { data: projects } = useListProjects();
   const { activePanelId } = useTabbedPaneStore();
@@ -31,44 +34,45 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
     setIsAddingRootFolderNode,
     handleRootAddFormCancel,
     handleRootAddFormSubmit,
-  } = useRootNodeAddForm(node);
+  } = useRootNodeAddForm(tree);
 
   const {
     isRenamingRootNode,
     setIsRenamingRootNode,
     handleRenamingRootNodeFormSubmit,
     handleRenamingRootNodeFormCancel,
-  } = useRootNodeRenamingForm(node);
+  } = useRootNodeRenamingForm(tree);
 
   const { isDragging, instruction } = useDraggableRootNode({
-    nodeRef: dropTargetRootRef,
-    triggerRef: draggableHeaderRef,
-    node,
+    nodeRef: rootNodeRef,
+    headerRef: draggableHeaderRef,
+    node: tree,
     isRenamingNode: isRenamingRootNode,
   });
 
-  const shouldRenderLists = calculateShouldRenderRootChildNodes(node, isAddingRootFileNode, isRenamingRootNode);
+  const shouldRenderLists = calculateShouldRenderRootChildNodes({ node: tree, isAddingRootFileNode });
   const restrictedNames = projects?.items.map((project) => project.name) ?? [];
 
   return (
-    <Tree.RootNode ref={dropTargetRootRef} instruction={instruction} isDragging={isDragging}>
+    <Tree.RootNode ref={rootNodeRef} instruction={instruction} isDragging={isDragging}>
       <Tree.RootNodeHeader
         ref={draggableHeaderRef}
-        isActive={activePanelId === node.id}
+        isActive={activePanelId === tree.id}
         treePaddingLeft={treePaddingLeft}
         treePaddingRight={treePaddingRight}
       >
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
-            node={node}
+            node={tree}
             shouldRenderChildNodes={shouldRenderLists}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
           />
         ) : (
-          <TreeRootControls
-            node={node}
+          <TreeRootNodeHeaderContent
+            node={tree}
+            isAddingRootFileNode={isAddingRootFileNode}
             setIsAddingRootFileNode={setIsAddingRootFileNode}
             setIsAddingRootFolderNode={setIsAddingRootFolderNode}
             setIsRenamingRootNode={setIsRenamingRootNode}
@@ -77,17 +81,13 @@ export const TreeRootNode = ({ node }: ProjectTreeRootNodeProps) => {
       </Tree.RootNodeHeader>
 
       {shouldRenderLists && (
-        <div className="flex flex-col gap-1">
-          <ProjectEnvironmentsListRoot projectId={id} />
-
-          <TreeRootResourcesList
-            tree={node}
-            isAddingRootFileNode={isAddingRootFileNode}
-            isAddingRootFolderNode={isAddingRootFolderNode}
-            handleRootAddFormSubmit={handleRootAddFormSubmit}
-            handleRootAddFormCancel={handleRootAddFormCancel}
-          />
-        </div>
+        <TreeRootNodeLists
+          tree={tree}
+          isAddingRootFileNode={isAddingRootFileNode}
+          isAddingRootFolderNode={isAddingRootFolderNode}
+          handleRootAddFormSubmit={handleRootAddFormSubmit}
+          handleRootAddFormCancel={handleRootAddFormCancel}
+        />
       )}
     </Tree.RootNode>
   );
