@@ -2,6 +2,7 @@ import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/type
 
 import { DropResourcesList } from "../../../dnd/types.dnd";
 import { DragNode } from "../../../types";
+import { hasDirectDescendantWithSimilarName } from "../../../utils";
 
 export const canCombineToResourcesList = (
   sourceData: DragNode | null,
@@ -11,7 +12,7 @@ export const canCombineToResourcesList = (
     return "not-available";
   }
 
-  if (locationData.data.tree.childNodes.some((child) => child.id === sourceData.node.id)) {
+  if (hasDirectDescendantWithSimilarName(locationData.data.tree, sourceData.node)) {
     return "blocked";
   }
 

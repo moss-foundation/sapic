@@ -31,7 +31,7 @@ export const hasDirectDescendantWithSimilarName = (
 ): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some(
-    (child) => child.id !== dropNode.id && child.name.toLowerCase() === dropNode.name.toLowerCase()
+    (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
   );
 };
 
