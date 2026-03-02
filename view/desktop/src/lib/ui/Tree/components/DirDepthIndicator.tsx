@@ -2,13 +2,6 @@ interface DirDepthIndicatorProps {
   offset?: number;
 }
 export const DirDepthIndicator = ({ offset }: DirDepthIndicatorProps) => {
-  //TODO add treePaddingLeft and nodeOffset to the props
-  //const { treePaddingLeft } = useContext(ProjectTreeContext);
-  // const { nodeOffset } = useContext(TreeContext);
-
-  //const iconSize = 16;
-  //const left = depth * nodeOffset + treePaddingLeft + iconSize + 1;
-
   return (
     <div
       //prettier-ignore

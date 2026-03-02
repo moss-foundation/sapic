@@ -6,14 +6,17 @@ import { TreeNode } from "./TreeNode";
 
 interface TreeNodeChildrenProps {
   node: ProjectTreeNode;
-  depth: number;
+  depth?: number;
+  offset?: number;
+  treeOffset?: number;
 }
 
-const TreeNodeChildren = ({ node, depth }: TreeNodeChildrenProps) => {
+const TreeNodeChildren = ({ node, depth = 1, offset, treeOffset }: TreeNodeChildrenProps) => {
   const sortedChildNodes = sortObjectsByOrder(node.childNodes);
+  const dirDepthIndicatorOffset = depth && offset && treeOffset ? treeOffset + depth * offset : 0;
 
   return (
-    <Tree.NodeChildren depth={depth}>
+    <Tree.NodeChildren dirDepthIndicatorOffset={dirDepthIndicatorOffset}>
       {sortedChildNodes.map((childNode, index) => (
         <TreeNode
           parentNode={node}

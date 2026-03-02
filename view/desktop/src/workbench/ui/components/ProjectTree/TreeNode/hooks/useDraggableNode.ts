@@ -172,7 +172,7 @@ export const useDraggableNode = ({
         },
       })
     );
-  }, [dropTargetListRef, id, instruction, node, parentNode, setPreview, triggerRef]);
+  }, [id, dropTargetListRef, triggerRef, node, parentNode, setPreview]);
 
   return { instruction, isDragging, isChildDropBlocked };
 };

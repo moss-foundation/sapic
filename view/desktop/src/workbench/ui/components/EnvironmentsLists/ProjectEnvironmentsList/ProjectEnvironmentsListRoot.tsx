@@ -28,6 +28,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   const { data: expanded = false } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
 
   const listHeaderOffset = treePaddingLeft * 2;
+  const listItemOffset = treePaddingLeft * 3;
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
@@ -51,9 +52,9 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
       </Tree.ListHeader>
 
       {expanded && (
-        <Tree.RootNodeChildren>
+        <Tree.RootNodeChildren hideDirDepthIndicator>
           {projectEnvironments?.map((environment) => (
-            <EnvironmentItem key={environment.id} environment={environment} />
+            <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
           ))}
         </Tree.RootNodeChildren>
       )}

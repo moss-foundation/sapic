@@ -22,6 +22,7 @@ interface EnvironmentItemDetailsProps {
   setIsEditing: (isEditing: boolean) => void;
   instruction: Instruction | null;
   type: ENVIRONMENT_ITEM_DRAG_TYPE;
+  offsetLeft?: number;
 }
 
 export const EnvironmentItemDetails = ({
@@ -29,8 +30,9 @@ export const EnvironmentItemDetails = ({
   setIsEditing,
   instruction,
   type,
+  offsetLeft,
 }: EnvironmentItemDetailsProps) => {
-  const { treePaddingLeft, nodeOffset, showOrders } = useContext(ProjectTreeContext);
+  const { showOrders } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { activePanelId } = useTabbedPaneStore();
 
@@ -83,10 +85,7 @@ export const EnvironmentItemDetails = ({
         depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
         dropIndicatorFullWidth
       >
-        <Tree.NodeTriggers
-          className="cursor-pointer overflow-hidden"
-          style={{ paddingLeft: treePaddingLeft + nodeOffset }}
-        >
+        <Tree.NodeTriggers className="cursor-pointer overflow-hidden" style={{ paddingLeft: offsetLeft }}>
           {showOrders && <Tree.RootNodeOrder order={environment.order} />}
           <Tree.Decorator />
           <Tree.NodeLabel label={environment.name} />

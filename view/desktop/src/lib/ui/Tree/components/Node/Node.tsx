@@ -3,23 +3,57 @@ import { forwardRef, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DropIndicatorForDir } from "../DropIndicatorForDir";
-
 interface NodeProps extends HTMLAttributes<HTMLLIElement> {
   children: ReactNode;
-  isChildDropBlocked?: boolean | null;
-  dropInstructionForDir?: Instruction | null;
+  instruction?: Instruction | null;
   className?: string;
 }
 
 export const Node = forwardRef<HTMLLIElement, NodeProps>(
-  ({ children, className, isChildDropBlocked, dropInstructionForDir, ...props }: NodeProps, ref) => {
+  ({ children, className, instruction, ...props }: NodeProps, ref) => {
     return (
       <li ref={ref} className={cn("relative", className)} {...props}>
-        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={dropInstructionForDir ?? null} />
+        <TestDropIndicatorForDir instruction={instruction} />
 
         {children}
       </li>
     );
   }
 );
+
+//TODO remove this component
+const TestDropIndicatorForDir = ({ instruction }: { instruction: Instruction | null | undefined }) => {
+  if (!instruction) return null;
+
+  if (instruction.operation === "combine") {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          height: "100%",
+          width: "100%",
+          top: 0,
+          left: 0,
+          zIndex: -1,
+          pointerEvents: "none",
+          backgroundColor: instruction.blocked ? "var(--moss-error-background)" : "var(--moss-success-background)",
+        }}
+      />
+    );
+  }
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        height: "1px",
+        width: "100%",
+        top: instruction.operation === "reorder-before" ? 0 : "100%",
+        left: 0,
+        zIndex: -1,
+        backgroundColor: "var(--moss-accent)",
+        pointerEvents: "none",
+      }}
+    />
+  );
+};

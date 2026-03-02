@@ -9,3 +9,11 @@ export interface DragTreeRootNodeData {
   };
   [key: string | symbol]: unknown;
 }
+
+export interface DropResourcesList {
+  type: ProjectDragType.RESOURCES_LIST;
+  data: {
+    tree: ProjectTreeRootNode;
+  };
+  [key: string | symbol]: unknown;
+}

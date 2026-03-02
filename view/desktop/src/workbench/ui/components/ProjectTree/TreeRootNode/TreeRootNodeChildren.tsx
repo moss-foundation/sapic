@@ -12,6 +12,8 @@ interface TreeRootNodeChildrenProps {
   isAddingRootFolderNode: boolean;
   handleAddFormRootSubmit: (name: string) => void;
   handleAddFormRootCancel: () => void;
+  offsetLeft?: number;
+  depth?: number;
 }
 
 export const TreeRootNodeChildren = ({
@@ -20,6 +22,8 @@ export const TreeRootNodeChildren = ({
   isAddingRootFolderNode,
   handleAddFormRootSubmit,
   handleAddFormRootCancel,
+  offsetLeft,
+  depth,
 }: TreeRootNodeChildrenProps) => {
   const shouldRenderAddRootForm = isAddingRootFileNode || isAddingRootFolderNode;
   const restrictedNames = getChildrenNames(node);
@@ -27,14 +31,14 @@ export const TreeRootNodeChildren = ({
   const sortedChildNodes = sortObjectsByOrder(node.childNodes);
 
   return (
-    <Tree.RootNodeChildren>
+    <Tree.RootNodeChildren offset={offsetLeft} depth={depth} treeOffset={6}>
       {sortedChildNodes.map((childNode, index) => {
         return (
           <TreeNode
             parentNode={node}
             key={childNode.id}
             node={childNode}
-            depth={1}
+            depth={3}
             isLastChild={index === sortedChildNodes.length - 1}
           />
         );

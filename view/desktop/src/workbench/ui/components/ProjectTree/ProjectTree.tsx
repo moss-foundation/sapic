@@ -5,12 +5,12 @@ import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./u
 
 export const ProjectTree = ({
   tree,
-  treePaddingLeft = 12,
+  treePaddingLeft = 8,
   treePaddingRight = 8,
   nodeOffset = 12,
   searchInput,
   displayMode = "LIVE",
-  showOrders = true,
+  showOrders = false,
   showRootNodeIds = false,
 }: ProjectTreeProps) => {
   return (

@@ -1,7 +1,7 @@
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
+import { useProjectsTrees } from "@/lib/ui/Tree/hooks/useProjectsTrees";
 import { cn } from "@/utils";
 import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/useGetProjectListState";
 import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/usePutProjectListState";

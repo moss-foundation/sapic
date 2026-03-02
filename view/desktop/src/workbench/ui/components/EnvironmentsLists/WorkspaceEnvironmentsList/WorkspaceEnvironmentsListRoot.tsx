@@ -16,6 +16,7 @@ import { WorkspaceEnvironmentsListRootDetails } from "./WorkspaceEnvironmentsLis
 export const WorkspaceEnvironmentsListRoot = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
+
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
 
   const workspaceEnvironmentsListRef = useRef<HTMLUListElement>(null);
@@ -39,24 +40,30 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const restrictedNames = workspaceEnvironments?.map((environment) => environment.name) ?? [];
   const sortedWorkspaceEnvironments = sortObjectsByOrder(workspaceEnvironments, "name");
 
+  //TODO this is hardcoded for now, we need another way to get the offset
+  const listHeaderOffset = 8;
+  const listItemOffset = listHeaderOffset * 2;
+
   return (
     <Tree.RootNode ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
       <Tree.RootNodeHeader
         className="text-(--moss-secondary-foreground) cursor-pointer text-sm"
         disableIndicator={true}
+        style={{ paddingLeft: listHeaderOffset }}
       >
         <WorkspaceEnvironmentsListRootDetails expanded={expanded} />
       </Tree.RootNodeHeader>
 
       {expanded && (
-        <Tree.RootNodeChildren hideDirDepthIndicator>
-          {sortedWorkspaceEnvironments?.map((environment) => (
-            <EnvironmentItem key={environment.id} environment={environment} />
-          ))}
-        </Tree.RootNodeChildren>
+        <>
+          <Tree.RootNodeChildren hideDirDepthIndicator offset={listHeaderOffset} depth={2}>
+            {sortedWorkspaceEnvironments?.map((environment) => (
+              <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
+            ))}
+          </Tree.RootNodeChildren>
+          <EnvironmentAddForm onSubmit={handleAddEnvironment} restrictedNames={restrictedNames} />
+        </>
       )}
-
-      <EnvironmentAddForm onSubmit={handleAddEnvironment} restrictedNames={restrictedNames} />
     </Tree.RootNode>
   );
 };

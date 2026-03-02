@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
@@ -7,6 +7,7 @@ import { cn } from "@/utils";
 import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/useGetResourcesListItemState";
 import { usePutResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/usePutResourcesListItemState";
 
+import { useDropTargetResourcesList } from "../dnd/hooks/useDropTargetResourcesList";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
@@ -30,9 +31,11 @@ export const TreeRootNodeResourcesList = ({
   const { treePaddingLeft } = useContext(ProjectTreeContext);
   const { data: expanded } = useGetResourcesListItemState(tree.id, currentWorkspaceId);
 
+  const ref = useRef<HTMLDivElement | null>(null);
   const shouldRenderChildNodes = expanded || isAddingRootFileNode || isAddingRootFolderNode;
 
   const { mutate: updateResourcesListState } = usePutResourcesListItemState();
+  const { instruction } = useDropTargetResourcesList({ ref, tree });
 
   const handleExpand = () => {
     updateResourcesListState({
@@ -43,10 +46,11 @@ export const TreeRootNodeResourcesList = ({
   };
 
   return (
-    <Tree.Node>
+    <Tree.Node instruction={instruction}>
       <Tree.NodeDetails
+        ref={ref}
         className="flex cursor-pointer items-center gap-1 py-[5px]"
-        style={{ paddingLeft: treePaddingLeft }}
+        style={{ paddingLeft: treePaddingLeft * 2 }}
       >
         <Tree.RootNodeTriggers onClick={handleExpand}>
           <Icon icon="ChevronRight" className={cn(shouldRenderChildNodes && "rotate-90")} />
@@ -60,6 +64,8 @@ export const TreeRootNodeResourcesList = ({
       {shouldRenderChildNodes && (
         <TreeRootNodeChildren
           node={tree}
+          offsetLeft={treePaddingLeft * 2}
+          depth={2}
           isAddingRootFileNode={isAddingRootFileNode}
           isAddingRootFolderNode={isAddingRootFolderNode}
           handleAddFormRootSubmit={handleRootAddFormSubmit}

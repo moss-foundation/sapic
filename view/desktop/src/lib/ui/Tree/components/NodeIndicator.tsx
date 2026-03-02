@@ -14,7 +14,7 @@ export const NodeIndicator = ({ isActive, isDirty = false, className, ...props }
       className={cn(`
           absolute top-0 left-0 
           h-full w-full 
-          -z-1
+          -z-2
         `,
         {
           "background-(--moss-secondary-background-hover) border-l border-l-(--moss-accent)": isActive && !isDirty,

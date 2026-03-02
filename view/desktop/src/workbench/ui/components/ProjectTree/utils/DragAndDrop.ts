@@ -76,6 +76,7 @@ export const getLocationProjectTreeRootNodeData = (location: DragLocationHistory
 };
 
 export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
+  if (location.current.dropTargets.length === 0) return null;
   return extractInstruction(location.current.dropTargets[0].data);
 };
 

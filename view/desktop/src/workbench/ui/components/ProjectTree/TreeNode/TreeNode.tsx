@@ -23,7 +23,7 @@ export interface TreeNodeComponentProps {
 
 export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
   const { id } = useContext(ProjectTreeContext);
-
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
@@ -59,7 +59,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} dropInstructionForDir={instruction}>
+    <Tree.Node ref={dropTargetListRef} isChildDropBlocked={isChildDropBlocked} instruction={instruction}>
       {isRenamingNode ? (
         <TreeNodeRenamingForm
           node={node}
@@ -86,7 +86,9 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
         />
       )}
 
-      {shouldRenderChildNodes && <TreeNodeChildren node={node} depth={depth} />}
+      {shouldRenderChildNodes && (
+        <TreeNodeChildren node={node} depth={depth} offset={treePaddingLeft} treeOffset={22} />
+      )}
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <TreeNodeAddForm
