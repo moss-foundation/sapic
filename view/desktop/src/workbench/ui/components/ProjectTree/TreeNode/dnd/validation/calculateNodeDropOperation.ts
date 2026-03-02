@@ -28,18 +28,17 @@ export const calculateNodeDropOperation = ({
     return null;
   }
 
+  const isCombine = instruction.operation === "combine";
   const isSameProject = sourceTreeNodeData.projectId === locationTreeNodeData.projectId;
+
   if (isSameProject) {
-    if (instruction.operation === "combine") {
-      return NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT;
-    } else {
-      return NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT;
-    }
-  } else {
-    if (instruction.operation === "combine") {
-      return NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT;
-    } else {
-      return NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT;
-    }
+    //prettier-ignore
+    return isCombine 
+        ? NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT 
+        : NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT;
   }
+
+  return isCombine
+    ? NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT
+    : NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT;
 };
