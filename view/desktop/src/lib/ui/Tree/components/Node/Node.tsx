@@ -7,12 +7,13 @@ interface NodeProps extends HTMLAttributes<HTMLLIElement> {
   children: ReactNode;
   instruction?: Instruction | null;
   className?: string;
+  isDragging?: boolean;
 }
 
 export const Node = forwardRef<HTMLLIElement, NodeProps>(
-  ({ children, className, instruction, ...props }: NodeProps, ref) => {
+  ({ children, className, instruction, isDragging, ...props }: NodeProps, ref) => {
     return (
-      <li ref={ref} className={cn("relative", className)} {...props}>
+      <li ref={ref} className={cn("relative", className, { "opacity-50": isDragging })} {...props}>
         <TestDropIndicatorForDir instruction={instruction} />
 
         {children}

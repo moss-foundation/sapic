@@ -1,4 +1,4 @@
-import { forwardRef, useContext } from "react";
+import { useContext } from "react";
 import { createPortal } from "react-dom";
 
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
@@ -20,6 +20,7 @@ import TreeNode from "./TreeNode";
 import { TreeNodeActions } from "./TreeNodeActions";
 
 interface TreeNodeDetailsProps {
+  ref?: React.Ref<HTMLDivElement>;
   node: ProjectTreeNode;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
   depth: number;
@@ -34,158 +35,154 @@ interface TreeNodeDetailsProps {
   isLastChild: boolean;
 }
 
-const TreeNodeDetails = forwardRef<HTMLDivElement, TreeNodeDetailsProps>(
-  (
-    {
-      node,
-      parentNode,
-      depth,
-      onAddFile,
-      onAddFolder,
-      onRename,
-      onDelete,
-      preview,
-      isChildDropBlocked,
-      instruction,
-      isLastChild,
-    },
-    ref
-  ) => {
-    const { currentWorkspaceId } = useCurrentWorkspace();
+function TreeNodeDetails({
+  ref,
+  node,
+  parentNode,
+  depth,
+  onAddFile,
+  onAddFolder,
+  onRename,
+  onDelete,
+  preview,
+  isChildDropBlocked,
+  instruction,
+  isLastChild,
+}: TreeNodeDetailsProps) {
+  const { currentWorkspaceId } = useCurrentWorkspace();
 
-    const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
+  const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
 
-    const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
+  const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-    const localResourceSummary = useGetLocalResourceDetails(node.id);
+  const localResourceSummary = useGetLocalResourceDetails(node.id);
 
-    const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
-    const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
+  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
+  const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
-    const handleDetailsClick = async () => {
-      if (node.kind === "Dir") {
+  const handleDetailsClick = async () => {
+    if (node.kind === "Dir") {
+      addOrFocusPanel({
+        id: node.id,
+        title: node.name,
+        component: "FolderSettingsView",
+        params: {
+          projectId: id,
+          node: {
+            ...node,
+            expanded: true,
+          },
+        },
+      });
+
+      if (!node.expanded) {
+        await treeItemStateService.putExpanded(node.id, true, currentWorkspaceId);
+        resourceSummariesCollection.update(node.id, (draft) => {
+          draft.expanded = true;
+        });
+      }
+    }
+
+    if (node.kind === "Item") {
+      if (node.class === "endpoint") {
         addOrFocusPanel({
           id: node.id,
           title: node.name,
-          component: "FolderSettingsView",
+          component: "EndpointView",
           params: {
+            resourceId: node.id,
             projectId: id,
-            node: {
-              ...node,
-              expanded: true,
-            },
+            tabIcon: "Http",
           },
         });
-
-        if (!node.expanded) {
-          await treeItemStateService.putExpanded(node.id, true, currentWorkspaceId);
-          resourceSummariesCollection.update(node.id, (draft) => {
-            draft.expanded = true;
-          });
-        }
+      } else {
+        addOrFocusPanel({
+          id: node.id,
+          title: node.name,
+          component: "DefaultView",
+        });
       }
+    }
+  };
 
-      if (node.kind === "Item") {
-        if (node.class === "endpoint") {
-          addOrFocusPanel({
-            id: node.id,
-            title: node.name,
-            component: "EndpointView",
-            params: {
-              resourceId: node.id,
-              projectId: id,
-              tabIcon: "Http",
-            },
-          });
-        } else {
-          addOrFocusPanel({
-            id: node.id,
-            title: node.name,
-            component: "DefaultView",
-          });
-        }
-      }
-    };
+  const handleClickOnDir = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.stopPropagation();
+    if (node.kind === "Item") return;
 
-    const handleClickOnDir = async (e: React.MouseEvent<HTMLButtonElement>) => {
-      e.stopPropagation();
-      if (node.kind === "Item") return;
+    await treeItemStateService.putExpanded(node.id, !node.expanded, currentWorkspaceId);
 
-      await treeItemStateService.putExpanded(node.id, !node.expanded, currentWorkspaceId);
+    resourceSummariesCollection.update(node.id, (draft) => {
+      draft.expanded = !node.expanded;
+    });
+  };
 
-      resourceSummariesCollection.update(node.id, (draft) => {
-        draft.expanded = !node.expanded;
-      });
-    };
+  return (
+    <ActionMenu.Root modal={false}>
+      <ActionMenu.Trigger asChild openOnRightClick>
+        <Tree.NodeDetails
+          ref={ref}
+          instruction={instruction}
+          isLastChild={isLastChild}
+          depth={depth}
+          isChildDropBlocked={isChildDropBlocked}
+          isActive={activePanelId === node.id}
+          isDirty={localResourceSummary?.metadata.isDirty ?? false}
+        >
+          <Tree.NodeTriggers onClick={handleDetailsClick} className="overflow-hidden">
+            <Tree.NodeDirToggleIcon
+              handleClickOnDir={handleClickOnDir}
+              isDir={node.kind === "Dir"}
+              shouldRenderChildNodes={shouldRenderChildNodes}
+            />
+            {showOrders && <Tree.NodeOrder order={node.order} />}
+            <ResourceIcon resource={node} />
+            <Tree.NodeLabel label={node.name} />
+            {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
+          </Tree.NodeTriggers>
 
-    return (
-      <ActionMenu.Root modal={false}>
-        <ActionMenu.Trigger asChild openOnRightClick>
-          <Tree.NodeDetails
-            instruction={instruction}
-            isLastChild={isLastChild}
-            ref={ref}
-            depth={depth}
-            isChildDropBlocked={isChildDropBlocked}
-            isActive={activePanelId === node.id}
-            isDirty={localResourceSummary?.metadata.isDirty ?? false}
-          >
-            <Tree.NodeTriggers onClick={handleDetailsClick} className="overflow-hidden">
-              <Tree.NodeDirToggleIcon
-                handleClickOnDir={handleClickOnDir}
-                isDir={node.kind === "Dir"}
-                shouldRenderChildNodes={shouldRenderChildNodes}
-              />
-              {showOrders && <Tree.NodeOrder order={node.order} />}
-              <ResourceIcon resource={node} />
-              <Tree.NodeLabel label={node.name} />
-              {node.kind === "Dir" && <Tree.NodeDirCount count={numberOfAllNestedChildNodes} />}
-            </Tree.NodeTriggers>
+          {node.kind === "Dir" && (
+            <TreeNodeActions
+              node={node}
+              parentNode={parentNode}
+              setIsAddingFileNode={onAddFile}
+              setIsAddingFolderNode={onAddFolder}
+              setIsRenamingNode={onRename}
+              className="ml-auto"
+            />
+          )}
 
-            {node.kind === "Dir" && (
-              <TreeNodeActions
-                node={node}
-                parentNode={parentNode}
-                setIsAddingFileNode={onAddFile}
-                setIsAddingFolderNode={onAddFolder}
-                setIsRenamingNode={onRename}
-                className="ml-auto"
-              />
+          {preview &&
+            createPortal(
+              <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
+                <TreeNode
+                  parentNode={{
+                    ...node,
+                    id: "-",
+                    name: "DraggedNode",
+                    order: undefined,
+                    expanded: false,
+                    childNodes: [],
+                  }}
+                  isLastChild={false}
+                  node={{ ...node, id: "DraggedNode", childNodes: [] }}
+                  depth={0}
+                />
+                <Icon icon="ChevronRight" className={cn("opacity-0")} />
+              </ul>,
+              preview
             )}
-
-            {preview &&
-              createPortal(
-                <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
-                  <TreeNode
-                    parentNode={{
-                      ...node,
-                      id: "-",
-                      name: "DraggedNode",
-                      order: undefined,
-                      expanded: false,
-                      childNodes: [],
-                    }}
-                    isLastChild={false}
-                    node={{ ...node, id: "DraggedNode", childNodes: [] }}
-                    depth={0}
-                  />
-                  <Icon icon="ChevronRight" className={cn("opacity-0")} />
-                </ul>,
-                preview
-              )}
-          </Tree.NodeDetails>
-        </ActionMenu.Trigger>
-        <ActionMenu.Portal>
-          <ActionMenu.Content>
-            {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
-            {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
-            <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
-            <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>
-          </ActionMenu.Content>
-        </ActionMenu.Portal>
-      </ActionMenu.Root>
-    );
-  }
-);
+        </Tree.NodeDetails>
+      </ActionMenu.Trigger>
+      <ActionMenu.Portal>
+        <ActionMenu.Content>
+          {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFile}>Add File</ActionMenu.Item>}
+          {node.kind === "Dir" && <ActionMenu.Item onClick={onAddFolder}>Add Folder</ActionMenu.Item>}
+          <ActionMenu.Item onClick={onRename}>Edit</ActionMenu.Item>
+          <ActionMenu.Item onClick={onDelete}>Delete</ActionMenu.Item>
+        </ActionMenu.Content>
+      </ActionMenu.Portal>
+    </ActionMenu.Root>
+  );
+}
 
 export default TreeNodeDetails;

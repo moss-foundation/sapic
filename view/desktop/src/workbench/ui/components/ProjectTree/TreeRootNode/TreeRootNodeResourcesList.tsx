@@ -7,9 +7,9 @@ import { cn } from "@/utils";
 import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/useGetResourcesListItemState";
 import { usePutResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/usePutResourcesListItemState";
 
-import { useDropTargetResourcesList } from "../dnd/hooks/useDropTargetResourcesList";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRootNode } from "../types";
+import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
 import { TreeRootNodeChildren } from "./TreeRootNodeChildren";
 
 interface TreeRootResourcesListProps {

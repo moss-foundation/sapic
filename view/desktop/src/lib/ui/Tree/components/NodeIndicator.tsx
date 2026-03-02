@@ -10,18 +10,17 @@ interface NodeIndicatorProps extends HTMLAttributes<HTMLDivElement> {
 export const NodeIndicator = ({ isActive, isDirty = false, className, ...props }: NodeIndicatorProps) => {
   return (
     <div
-      //prettier-ignore
-      className={cn(`
-          absolute top-0 left-0 
-          h-full w-full 
-          -z-2
-        `,
+      className={cn(
+        "absolute left-0 top-0",
+        "h-full w-full",
+        "-z-2",
         {
-          "background-(--moss-secondary-background-hover) border-l border-l-(--moss-accent)": isActive && !isDirty,
+          "background-(--moss-secondary-background-hover) border-l-(--moss-accent) border-l": isActive && !isDirty,
           "bg-orange-200": isDirty,
-          "group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeDetails:background-(--moss-secondary-background-hover)": !isDirty,
+          "group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeDetails:background-(--moss-secondary-background-hover)":
+            !isDirty,
         },
-        className 
+        className
       )}
       {...props}
     />

@@ -1,17 +1,13 @@
 import { RefObject, useEffect, useState } from "react";
 
-import {
-  attachInstruction,
-  Availability,
-  extractInstruction,
-  Instruction,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ProjectDragType } from "../../constants";
-import { DragNode, ProjectTreeRootNode } from "../../types";
-import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../utils/DragAndDrop";
-import { DropResourcesList } from "../types.dnd";
+import { ProjectDragType } from "../../../constants";
+import { DropResourcesList } from "../../../dnd/types.dnd";
+import { ProjectTreeRootNode } from "../../../types";
+import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
+import { canCombineToResourcesList } from "../validation/canCombineToResourcesList";
 
 interface UseDropTargetResourcesListProps {
   ref: RefObject<HTMLDivElement | null>;
@@ -63,17 +59,4 @@ export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResources
   return {
     instruction,
   };
-};
-
-//TODO: move to utils
-const canCombineToResourcesList = (sourceData: DragNode | null, locationData: DropResourcesList): Availability => {
-  if (!sourceData) {
-    return "not-available";
-  }
-
-  if (locationData.data.tree.childNodes.some((child) => child.id === sourceData.node.id)) {
-    return "blocked";
-  }
-
-  return "available";
 };

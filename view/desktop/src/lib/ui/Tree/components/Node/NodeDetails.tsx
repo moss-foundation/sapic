@@ -1,4 +1,4 @@
-import { HTMLAttributes, RefObject } from "react";
+import { HTMLAttributes, Ref } from "react";
 
 import { cn } from "@/utils";
 import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
@@ -8,7 +8,7 @@ import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
 import { NodeIndicator } from "../NodeIndicator";
 
 interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
-  ref?: RefObject<HTMLDivElement | null>;
+  ref?: Ref<HTMLDivElement | null>;
   depth?: number;
   isChildDropBlocked?: boolean | null;
   isActive?: boolean;
