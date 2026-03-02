@@ -1,9 +1,4 @@
-import {
-  Availability,
-  extractInstruction,
-  Instruction,
-  Operation,
-} from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
+import { Availability, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import {
   DragLocationHistory,
   DropTargetRecord,
@@ -107,36 +102,6 @@ export const getAllNestedResources = (node: ProjectTreeNode): ListProjectResourc
 
 export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
   return extractInstruction(self.data);
-};
-
-export const canDropNode = (sourceTarget: DragNode, dropTarget: DropNode, operation: Operation) => {
-  if (sourceTarget.node.class !== dropTarget.node.class) {
-    return false;
-  }
-
-  if (sourceTarget.node.id === dropTarget.node.id) {
-    return false;
-  }
-
-  if (dropTarget.node.kind === "Item") {
-    if (hasDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-      return false;
-    }
-  }
-
-  if (dropTarget.node.kind === "Dir") {
-    if (operation === "combine") {
-      if (hasDirectDescendantWithSimilarName(dropTarget.node, sourceTarget.node)) {
-        return false;
-      }
-    } else {
-      if (hasDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-        return false;
-      }
-    }
-  }
-
-  return true;
 };
 
 //operations rules

@@ -12,27 +12,24 @@ import { useCurrentWorkspace } from "@/hooks";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import {
-  canDropNode,
   getInstructionFromLocation,
   getLocationProjectTreeNodeData,
-  getLocationProjectTreeRootNodeData,
   getSourceProjectTreeNodeData,
-  hasDirectDescendantWithSimilarName,
   isSourceProjectTreeNode,
 } from "../../../utils";
-import { handleNodeOnAnotherProjectRoot } from "../handlers/handleNodeOnAnotherProjectRoot";
+import { NodeDropOperation } from "../constants";
 import { handleNodeOnFolderToAnotherProject } from "../handlers/handleNodeOnFolderToAnotherProject";
 import { handleNodeOnFolderWithinProject } from "../handlers/handleNodeOnFolderWithinProject";
 import { handleNodeOnNodeToAnotherProject } from "../handlers/handleNodeOnNodeToAnotherProject";
 import { handleNodeOnNodeWithinProject } from "../handlers/handleNodeOnNodeWithinProject";
+import { calculateNodeDropOperation } from "../validation/calculateNodeDropOperation";
 
-export const useNodeDragAndDropHandler = () => {
+export const useMonitorTreeNodes = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
   const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
-
   const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
 
@@ -46,64 +43,30 @@ export const useNodeDragAndDropHandler = () => {
       onDrop: async ({ location, source }) => {
         const sourceTreeNodeData = getSourceProjectTreeNodeData(source);
         const locationTreeNodeData = getLocationProjectTreeNodeData(location);
-        const locationTreeRootNodeData = getLocationProjectTreeRootNodeData(location);
-
         const instruction = getInstructionFromLocation(location);
-        const operation = instruction?.operation;
 
-        if (!sourceTreeNodeData) {
-          console.warn("can't drop: no source");
-          return;
-        }
+        const nodeDropOperation = calculateNodeDropOperation({
+          sourceTreeNodeData,
+          locationTreeNodeData,
+          instruction,
+        });
 
-        if (instruction?.blocked || !operation) {
-          console.warn("can't drop: blocked or no operation", { instruction, operation });
-          return;
-        }
-
-        if (locationTreeRootNodeData && operation === "combine") {
-          if (hasDirectDescendantWithSimilarName(locationTreeRootNodeData.node, sourceTreeNodeData.node)) {
-            console.warn("can't drop: has direct similar descendant");
-            return;
-          }
-
-          handleNodeOnAnotherProjectRoot({
-            deleteProjectResource,
-            batchUpdateProjectResource,
-            batchCreateProjectResource,
-            currentWorkspaceId,
-            fetchResourcesForPath,
-          });
-          return;
-        }
-
-        if (!locationTreeNodeData) {
-          console.warn("can't drop: no location");
-          return;
-        }
-
-        if (!canDropNode(sourceTreeNodeData, locationTreeNodeData, operation)) {
-          console.warn("can't drop: invalid operation");
-          return;
-        }
-
-        const isSameProject = sourceTreeNodeData.projectId === locationTreeNodeData.projectId;
-        if (isSameProject) {
-          if (operation === "combine") {
+        switch (nodeDropOperation) {
+          case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:
             handleNodeOnFolderWithinProject({
               currentWorkspaceId,
               fetchResourcesForPath,
               batchUpdateProjectResource,
             });
-          } else {
+            break;
+          case NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT:
             handleNodeOnNodeWithinProject({
               currentWorkspaceId,
               fetchResourcesForPath,
               batchUpdateProjectResource,
             });
-          }
-        } else {
-          if (operation === "combine") {
+            break;
+          case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
             handleNodeOnFolderToAnotherProject({
               batchCreateProjectResource,
               batchUpdateProjectResource,
@@ -111,7 +74,8 @@ export const useNodeDragAndDropHandler = () => {
               deleteProjectResource,
               fetchResourcesForPath,
             });
-          } else {
+            break;
+          case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
             handleNodeOnNodeToAnotherProject({
               batchUpdateProjectResource,
               currentWorkspaceId,
@@ -119,7 +83,9 @@ export const useNodeDragAndDropHandler = () => {
               fetchResourcesForPath,
               batchCreateProjectResource,
             });
-          }
+            break;
+          default:
+            break;
         }
       },
     });
