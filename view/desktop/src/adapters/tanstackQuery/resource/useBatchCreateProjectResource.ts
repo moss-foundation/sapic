@@ -2,7 +2,7 @@ import { resourceService } from "@/domains/resource/resourceService";
 import { BatchCreateResourceInput, BatchCreateResourceOutput } from "@repo/moss-project";
 import { useMutation } from "@tanstack/react-query";
 
-interface UseBatchCreateProjectResourceInput {
+export interface UseBatchCreateProjectResourceInput {
   projectId: string;
   input: BatchCreateResourceInput;
 }

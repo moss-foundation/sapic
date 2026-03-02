@@ -5,7 +5,7 @@ import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
 import { useMonitorProjectRootNodes } from "@/workbench/ui/components/ProjectTree/dnd/hooks/useMonitorProjectRootNodes";
-import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
+import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/TreeNode/dnd/hooks/useNodeDragAndDropHandler";
 import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 

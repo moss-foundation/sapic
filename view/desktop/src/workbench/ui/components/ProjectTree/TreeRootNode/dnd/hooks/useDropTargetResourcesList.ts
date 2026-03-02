@@ -23,9 +23,7 @@ export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResources
 
     return dropTargetForElements({
       element,
-      canDrop: ({ source }) => {
-        return isSourceProjectTreeNode(source);
-      },
+      canDrop: ({ source }) => isSourceProjectTreeNode(source),
       getData: ({ input, element, source }) => {
         const sourceData = getSourceProjectTreeNodeData(source);
         const locationData: DropResourcesList = {
@@ -43,7 +41,6 @@ export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResources
           },
         });
       },
-
       onDrag: ({ self }) => {
         setInstruction(extractInstruction(self.data));
       },

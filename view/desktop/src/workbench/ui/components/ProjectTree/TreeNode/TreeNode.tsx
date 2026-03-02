@@ -6,7 +6,7 @@ import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
 import { getChildrenNames } from "../utils";
-import { useDraggableNode } from "./hooks/useDraggableNode";
+import { useDraggableNode } from "./dnd/hooks/useDraggableNode";
 import { useNodeAddForm } from "./hooks/useNodeAddForm";
 import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
 import TreeNodeAddForm from "./TreeNodeAddForm";

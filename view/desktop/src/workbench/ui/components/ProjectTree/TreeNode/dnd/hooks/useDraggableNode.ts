@@ -5,9 +5,9 @@ import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview";
 
-import { ProjectDragType } from "../../constants";
-import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";
+import { ProjectDragType } from "../../../constants";
+import { ProjectTreeContext } from "../../../ProjectTreeContext";
+import { ProjectTreeNode, ProjectTreeRootNode } from "../../../types";
 import {
   evaluateIsChildDropBlocked,
   getLocationProjectTreeNodeData,
@@ -16,7 +16,7 @@ import {
   isCombineAvailable,
   isReorderAvailable,
   isSourceProjectTreeNode,
-} from "../../utils";
+} from "../../../utils";
 
 interface UseDraggableNodeProps {
   node: ProjectTreeNode;
