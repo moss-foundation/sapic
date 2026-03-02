@@ -21,47 +21,53 @@ interface HandleNodeOnFolderWithinProjectProps {
   >;
   currentWorkspaceId: string;
   fetchResourcesForPath: (projectId: string, path: string) => Promise<ListProjectResourcesOutput>;
+  sourceTreeNodeData: DragNode;
+  locationTreeNodeData: DropNode;
 }
 
-export const handleNodeOnFolderWithinProject =
-  ({ batchUpdateProjectResource, currentWorkspaceId, fetchResourcesForPath }: HandleNodeOnFolderWithinProjectProps) =>
-  async (sourceTreeNodeData: DragNode, locationTreeNodeData: DropNode) => {
-    const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+export const handleNodeOnFolderWithinProject = async ({
+  batchUpdateProjectResource,
+  currentWorkspaceId,
+  fetchResourcesForPath,
+  sourceTreeNodeData,
+  locationTreeNodeData,
+}: HandleNodeOnFolderWithinProjectProps) => {
+  const newOrder = locationTreeNodeData.node.childNodes.length + 1;
 
-    const sourceNodeUpdate =
-      sourceTreeNodeData.node.kind === "Dir"
-        ? makeDirUpdatePayload({
-            id: sourceTreeNodeData.node.id,
-            path: locationTreeNodeData.node.path.raw,
-            order: newOrder,
-          })
-        : makeItemUpdatePayload({
-            id: sourceTreeNodeData.node.id,
-            path: locationTreeNodeData.node.path.raw,
-            order: newOrder,
-          });
+  const sourceNodeUpdate =
+    sourceTreeNodeData.node.kind === "Dir"
+      ? makeDirUpdatePayload({
+          id: sourceTreeNodeData.node.id,
+          path: locationTreeNodeData.node.path.raw,
+          order: newOrder,
+        })
+      : makeItemUpdatePayload({
+          id: sourceTreeNodeData.node.id,
+          path: locationTreeNodeData.node.path.raw,
+          order: newOrder,
+        });
 
-    const sourceParentNodes = sourceTreeNodeData.parentNode.childNodes;
-    const nodesToUpdate = siblingsAfterRemovalPayload({
-      nodes: sourceParentNodes,
-      removedNode: sourceTreeNodeData.node,
-    });
+  const sourceParentNodes = sourceTreeNodeData.parentNode.childNodes;
+  const nodesToUpdate = siblingsAfterRemovalPayload({
+    nodes: sourceParentNodes,
+    removedNode: sourceTreeNodeData.node,
+  });
 
-    const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-    await batchUpdateProjectResource({
-      projectId: sourceTreeNodeData.projectId,
-      resources: {
-        resources: allUpdates,
-      },
-    });
+  const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
+  await batchUpdateProjectResource({
+    projectId: sourceTreeNodeData.projectId,
+    resources: {
+      resources: allUpdates,
+    },
+  });
 
-    await treeItemStateService.putOrder(sourceTreeNodeData.node.id, newOrder, currentWorkspaceId);
-    await treeItemStateService.putExpanded(
-      sourceTreeNodeData.node.id,
-      sourceTreeNodeData.node.expanded,
-      currentWorkspaceId
-    );
+  await treeItemStateService.putOrder(sourceTreeNodeData.node.id, newOrder, currentWorkspaceId);
+  await treeItemStateService.putExpanded(
+    sourceTreeNodeData.node.id,
+    sourceTreeNodeData.node.expanded,
+    currentWorkspaceId
+  );
 
-    await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
-    await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
-  };
+  await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
+  await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+};

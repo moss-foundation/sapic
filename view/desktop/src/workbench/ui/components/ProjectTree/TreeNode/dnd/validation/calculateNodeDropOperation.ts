@@ -4,9 +4,9 @@ import { DragNode, DropNode } from "../../../types";
 import { NodeDropOperation } from "../constants";
 
 interface CalculateNodeDropOperationProps {
-  sourceTreeNodeData: DragNode | null;
-  locationTreeNodeData: DropNode | null;
-  instruction: Instruction | null;
+  sourceTreeNodeData: DragNode;
+  locationTreeNodeData: DropNode;
+  instruction: Instruction;
 }
 
 export const calculateNodeDropOperation = ({
@@ -14,16 +14,6 @@ export const calculateNodeDropOperation = ({
   locationTreeNodeData,
   instruction,
 }: CalculateNodeDropOperationProps): NodeDropOperation | null => {
-  if (!sourceTreeNodeData || !instruction || !locationTreeNodeData) {
-    console.warn("can't drop: no source, instruction, or location", {
-      sourceTreeNodeData,
-      locationTreeNodeData,
-      instruction,
-    });
-
-    return null;
-  }
-
   if (instruction.blocked) {
     return null;
   }
