@@ -167,47 +167,6 @@ export const siblingsAfterRemovalPayload = ({
     );
 };
 
-export const reorderedNodesForSameDirPayload = ({
-  nodes,
-  movedId,
-  moveToIndex,
-}: {
-  nodes: ProjectTreeNode[];
-  movedId: string;
-  moveToIndex: number;
-}) => {
-  const nodeToMove = nodes.find((n) => n.id === movedId);
-
-  if (!nodeToMove) {
-    console.error("Node to move not found", { movedId, nodes });
-    return [];
-  }
-
-  const sortedParentNodes = sortObjectsByOrder(nodes);
-  const updatedSourceNodesPayload = [
-    ...sortedParentNodes.slice(0, moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
-    nodeToMove,
-    ...sortedParentNodes.slice(moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
-  ]
-    .map((resource, index) => ({
-      ...resource,
-      order: index + 1,
-    }))
-    .filter((resource) => {
-      const nodeInLocation = nodes.find((n) => n.id === resource.id);
-      return nodeInLocation?.order !== resource.order;
-    })
-    .map((resource) => {
-      if (resource.kind === "Dir") {
-        return makeDirUpdatePayload({ id: resource.id, order: resource.order });
-      } else {
-        return makeItemUpdatePayload({ id: resource.id, order: resource.order });
-      }
-    });
-
-  return updatedSourceNodesPayload;
-};
-
 export const reorderedNodesForDifferentDirPayload = ({
   node,
   newNode,

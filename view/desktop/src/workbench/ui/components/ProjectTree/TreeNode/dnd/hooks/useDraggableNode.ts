@@ -14,9 +14,9 @@ import {
   getSourceProjectTreeNodeData,
   hasDescendant,
   isCombineAvailable,
-  isReorderAvailable,
   isSourceProjectTreeNode,
 } from "../../../utils";
+import { isNodeReorderAvailable } from "../validation/isNodeReorderAvailable";
 
 interface UseDraggableNodeProps {
   node: ProjectTreeNode;
@@ -102,8 +102,8 @@ export const useDraggableNode = ({
             input,
             element,
             operations: {
-              "reorder-before": isReorderAvailable(sourceTarget, data.data),
-              "reorder-after": isReorderAvailable(sourceTarget, data.data),
+              "reorder-before": isNodeReorderAvailable(sourceTarget, data.data),
+              "reorder-after": isNodeReorderAvailable(sourceTarget, data.data),
               combine: isCombineAvailable(sourceTarget, data.data),
             },
           });
@@ -123,7 +123,6 @@ export const useDraggableNode = ({
 
           setInstruction(instruction);
         },
-
         onDragLeave() {
           setInstruction(null);
         },

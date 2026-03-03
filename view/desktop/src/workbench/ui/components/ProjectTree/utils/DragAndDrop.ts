@@ -106,30 +106,6 @@ export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | nu
 
 //operations rules
 
-export const isReorderAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
-  if (sourceTarget.node.id === dropTarget.node.id) {
-    return "not-available";
-  }
-
-  if (dropTarget.node.kind === "Dir" && dropTarget.node.expanded) {
-    return "not-available";
-  }
-
-  if (sourceTarget.node.class !== dropTarget.node.class) {
-    return "blocked";
-  }
-
-  if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-    return "blocked";
-  }
-
-  if (hasDirectDescendantWithSimilarName(dropTarget.parentNode, sourceTarget.node)) {
-    return "blocked";
-  }
-
-  return "available";
-};
-
 export const isCombineAvailable = (sourceTarget: DragNode, dropTarget: DropNode): Availability => {
   if (dropTarget.node.kind !== "Dir") {
     return "not-available";

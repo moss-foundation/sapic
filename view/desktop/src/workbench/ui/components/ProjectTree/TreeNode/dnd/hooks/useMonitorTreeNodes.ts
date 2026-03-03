@@ -58,6 +58,8 @@ export const useMonitorTreeNodes = () => {
           instruction,
         });
 
+        console.log("nodeDropOperation", nodeDropOperation);
+
         switch (nodeDropOperation) {
           case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:
             handleNodeOnFolderWithinProject({

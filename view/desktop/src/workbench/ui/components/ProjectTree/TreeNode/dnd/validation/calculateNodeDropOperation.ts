@@ -14,6 +14,12 @@ export const calculateNodeDropOperation = ({
   locationTreeNodeData,
   instruction,
 }: CalculateNodeDropOperationProps): NodeDropOperation | null => {
+  console.log("calculateNodeDropOperation", {
+    sourceTreeNodeData,
+    locationTreeNodeData,
+    instruction,
+  });
+
   if (instruction.blocked) {
     return null;
   }

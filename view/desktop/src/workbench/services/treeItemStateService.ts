@@ -1,4 +1,5 @@
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import {
   batchGetItemExpanded,
   batchPutItemExpanded,
@@ -60,6 +61,11 @@ export const treeItemStateService: ITreeItemStateService = {
     Object.entries(items).forEach(([id, order]) => {
       if (projectSummariesCollection.has(id)) {
         projectSummariesCollection.update(id, (draft) => {
+          draft.order = order;
+        });
+      }
+      if (resourceSummariesCollection.has(id)) {
+        resourceSummariesCollection.update(id, (draft) => {
           draft.order = order;
         });
       }
