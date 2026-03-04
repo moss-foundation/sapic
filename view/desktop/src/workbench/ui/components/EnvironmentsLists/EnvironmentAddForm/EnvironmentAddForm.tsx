@@ -18,13 +18,6 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
 
   const [value, setValue] = useState("");
 
-  useFocusWithin(inputRef, {
-    onFocus: () => {
-      isInitialized.current = true;
-    },
-    onBlur: () => handleBlur,
-  });
-
   const { isValid } = useValidateInput({
     value,
     restrictedValues: restrictedNames,
@@ -57,6 +50,13 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
     onSubmit(value);
     setValue("");
   };
+
+  useFocusWithin(inputRef, {
+    onFocus: () => {
+      isInitialized.current = true;
+    },
+    onBlur: handleBlur,
+  });
 
   return (
     <form
