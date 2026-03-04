@@ -11,6 +11,7 @@ interface EnvironmentItemRenamingFormProps {
   restrictedNames: string[];
   className?: string;
   type: ENVIRONMENT_ITEM_DRAG_TYPE;
+  offsetLeft?: number;
 }
 
 export const EnvironmentItemRenamingForm = ({
@@ -20,13 +21,14 @@ export const EnvironmentItemRenamingForm = ({
   environment,
   restrictedNames,
   type,
+  offsetLeft,
 }: EnvironmentItemRenamingFormProps) => {
   return (
     <Tree.NodeDetails
       depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
       className={cn("pb-[4px] pt-[5px]", className)}
     >
-      <Tree.NodeTriggers>
+      <Tree.NodeTriggers style={{ paddingLeft: offsetLeft }}>
         <Tree.Decorator />
 
         <Tree.NodeRenamingForm

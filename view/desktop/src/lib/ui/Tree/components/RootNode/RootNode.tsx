@@ -3,35 +3,17 @@ import { forwardRef, HTMLAttributes } from "react";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DropIndicatorForCombine } from "../DropIndicatorForCombine";
-import { DropIndicatorForDir } from "../DropIndicatorForDir";
-import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
+import { ReorderDNDIndicator } from "../ReorderDNDIndicator";
 
 interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
   children: React.ReactNode;
   className?: string;
-  isChildDropBlocked?: boolean | null;
-  instruction?: Instruction | null;
-  dropIndicatorFullWidth?: boolean;
-  //TODO try to remove combineInstruction, it causes more issues than it solves
-  combineInstruction?: Instruction | null;
+  reorderInstruction?: Instruction | null;
   isDragging?: boolean;
 }
 
 export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
-  (
-    {
-      children,
-      className,
-      isChildDropBlocked,
-      instruction,
-      dropIndicatorFullWidth = false,
-      combineInstruction,
-      isDragging,
-      ...props
-    }: RootNodeProps,
-    ref
-  ) => {
+  ({ children, className, reorderInstruction, isDragging, ...props }: RootNodeProps, ref) => {
     return (
       <ul
         ref={ref}
@@ -44,9 +26,7 @@ export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
         )}
         {...props}
       >
-        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={instruction ?? null} />
-        <DropIndicatorForTrigger instruction={instruction ?? null} fullWidth={dropIndicatorFullWidth} />
-        {combineInstruction && <DropIndicatorForCombine instruction={combineInstruction} />}
+        <ReorderDNDIndicator reorderInstruction={reorderInstruction ?? null} />
 
         {children}
       </ul>

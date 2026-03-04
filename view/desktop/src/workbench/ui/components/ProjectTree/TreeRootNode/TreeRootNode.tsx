@@ -54,7 +54,7 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
   const restrictedNames = projects?.items.map((project) => project.name) ?? [];
 
   return (
-    <Tree.RootNode ref={rootNodeRef} instruction={instruction} isDragging={isDragging}>
+    <Tree.RootNode ref={rootNodeRef} reorderInstruction={instruction} isDragging={isDragging}>
       <Tree.RootNodeHeader
         ref={draggableHeaderRef}
         isActive={activePanelId === tree.id}

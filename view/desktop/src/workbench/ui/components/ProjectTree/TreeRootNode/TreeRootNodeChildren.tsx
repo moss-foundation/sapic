@@ -27,21 +27,12 @@ export const TreeRootNodeChildren = ({
 }: TreeRootNodeChildrenProps) => {
   const shouldRenderAddRootForm = isAddingRootFileNode || isAddingRootFolderNode;
   const restrictedNames = getChildrenNames(node);
-
   const sortedChildNodes = sortObjectsByOrder(node.childNodes);
 
   return (
     <Tree.RootNodeChildren offset={offsetLeft} depth={depth} treeOffset={6}>
-      {sortedChildNodes.map((childNode, index) => {
-        return (
-          <TreeNode
-            parentNode={node}
-            key={childNode.id}
-            node={childNode}
-            depth={3}
-            isLastChild={index === sortedChildNodes.length - 1}
-          />
-        );
+      {sortedChildNodes.map((childNode) => {
+        return <TreeNode parentNode={node} key={childNode.id} node={childNode} depth={3} />;
       })}
 
       {shouldRenderAddRootForm && (

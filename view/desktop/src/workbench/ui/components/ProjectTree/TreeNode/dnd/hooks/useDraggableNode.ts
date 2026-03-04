@@ -9,10 +9,8 @@ import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
 import { ProjectTreeNode, ProjectTreeRootNode } from "../../../types";
 import {
-  evaluateIsChildDropBlocked,
   getLocationProjectTreeNodeData,
   getSourceProjectTreeNodeData,
-  hasDescendant,
   isCombineAvailable,
   isSourceProjectTreeNode,
 } from "../../../utils";
@@ -22,29 +20,19 @@ interface UseDraggableNodeProps {
   node: ProjectTreeNode;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
   triggerRef: RefObject<HTMLDivElement | null>;
-  dropTargetListRef: RefObject<HTMLLIElement | null>;
-  isLastChild: boolean;
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-export const useDraggableNode = ({
-  node,
-  parentNode,
-  triggerRef,
-  dropTargetListRef,
-  setPreview,
-}: UseDraggableNodeProps) => {
+export const useDraggableNode = ({ node, parentNode, triggerRef, setPreview }: UseDraggableNodeProps) => {
   const { id } = useContext(ProjectTreeContext);
 
   const [instruction, setInstruction] = useState<Instruction | null>(null);
   const [isDragging, setIsDragging] = useState<boolean>(false);
-  const [isChildDropBlocked, setIsChildDropBlocked] = useState<boolean | null>(null);
 
   useEffect(() => {
     const element = triggerRef.current;
-    const dropTargetListElement = dropTargetListRef.current;
 
-    if (!element || !dropTargetListElement) return;
+    if (!element) return;
 
     return combine(
       draggable({
@@ -85,6 +73,7 @@ export const useDraggableNode = ({
             },
           };
 
+          //TODO make it shorter
           const sourceTarget = getSourceProjectTreeNodeData(source);
           if (!sourceTarget) {
             return attachInstruction(data, {
@@ -117,7 +106,6 @@ export const useDraggableNode = ({
           const instruction: Instruction | null = extractInstruction(self.data);
 
           if (!sourceTarget || !dropTarget || !instruction) {
-            setIsChildDropBlocked(null);
             return;
           }
 
@@ -129,49 +117,9 @@ export const useDraggableNode = ({
         onDrop() {
           setInstruction(null);
         },
-      }),
-      dropTargetForElements({
-        element: dropTargetListElement,
-        getData: () => ({
-          type: ProjectDragType.NODE,
-          data: {
-            projectId: id,
-            node,
-            parentNode,
-          },
-        }),
-        onDrag: ({ source, location }) => {
-          const sourceTarget = getSourceProjectTreeNodeData(source);
-          const dropTarget = getLocationProjectTreeNodeData(location);
-
-          if (!sourceTarget || !dropTarget) {
-            return;
-          }
-
-          if (sourceTarget.node.id === node.id) {
-            if (hasDescendant(sourceTarget.node, dropTarget.node)) {
-              setIsChildDropBlocked(true);
-              return;
-            }
-          }
-
-          if (dropTarget.parentNode.id === node.id && dropTarget.instruction?.operation !== "combine") {
-            const isChildDropBlocked = evaluateIsChildDropBlocked(node, sourceTarget.node);
-            setIsChildDropBlocked(isChildDropBlocked);
-            return;
-          }
-
-          setIsChildDropBlocked(null);
-        },
-        onDropTargetChange: () => {
-          setIsChildDropBlocked(null);
-        },
-        onDrop: () => {
-          setIsChildDropBlocked(null);
-        },
       })
     );
-  }, [id, dropTargetListRef, triggerRef, node, parentNode, setPreview]);
+  }, [id, triggerRef, node, parentNode, setPreview]);
 
-  return { instruction, isDragging, isChildDropBlocked };
+  return { instruction, isDragging };
 };

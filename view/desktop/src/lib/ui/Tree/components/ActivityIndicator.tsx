@@ -7,7 +7,7 @@ interface NodeIndicatorProps extends HTMLAttributes<HTMLDivElement> {
   isDirty?: boolean;
 }
 
-export const NodeIndicator = ({ isActive, isDirty = false, className, ...props }: NodeIndicatorProps) => {
+export const ActivityIndicator = ({ isActive, isDirty = false, className, ...props }: NodeIndicatorProps) => {
   return (
     <div
       className={cn(

@@ -2,7 +2,7 @@ import { forwardRef, HTMLAttributes } from "react";
 
 import { cn } from "@/utils";
 
-import { NodeIndicator } from "../NodeIndicator";
+import { ActivityIndicator } from "../ActivityIndicator";
 
 interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
   isActive?: boolean;
@@ -38,7 +38,7 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
         }}
         {...props}
       >
-        {!disableIndicator && <NodeIndicator isActive={isActive} />}
+        {!disableIndicator && <ActivityIndicator isActive={isActive} />}
         {children}
       </li>
     );

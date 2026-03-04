@@ -42,7 +42,7 @@ export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsLi
   }
 
   return (
-    <Tree.List ref={projectEnvironmentsListRef} instruction={instruction}>
+    <Tree.List ref={projectEnvironmentsListRef} combineInstruction={instruction}>
       <Tree.ListHeader offsetLeft={listHeaderOffset}>
         <ProjectEnvironmentsListRootHeaderDetails
           project={project}

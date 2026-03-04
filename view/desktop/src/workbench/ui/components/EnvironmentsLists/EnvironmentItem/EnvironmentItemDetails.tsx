@@ -80,10 +80,9 @@ export const EnvironmentItemDetails = ({
     <>
       <Tree.NodeDetails
         isActive={activePanelId === environment.id}
-        instruction={instruction}
+        reorderInstruction={instruction}
         hideDragHandle
         depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
-        dropIndicatorFullWidth
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden" style={{ paddingLeft: offsetLeft }}>
           {showOrders && <Tree.RootNodeOrder order={environment.order} />}

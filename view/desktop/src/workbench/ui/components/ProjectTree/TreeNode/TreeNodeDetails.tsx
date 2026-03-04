@@ -30,9 +30,7 @@ interface TreeNodeDetailsProps {
   onDelete: () => void;
   isDragging: boolean;
   preview: HTMLElement | null;
-  isChildDropBlocked: boolean | null;
-  instruction: Instruction | null;
-  isLastChild: boolean;
+  reorderInstruction: Instruction | null;
 }
 
 function TreeNodeDetails({
@@ -45,9 +43,7 @@ function TreeNodeDetails({
   onRename,
   onDelete,
   preview,
-  isChildDropBlocked,
-  instruction,
-  isLastChild,
+  reorderInstruction,
 }: TreeNodeDetailsProps) {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
@@ -121,10 +117,8 @@ function TreeNodeDetails({
       <ActionMenu.Trigger asChild openOnRightClick>
         <Tree.NodeDetails
           ref={ref}
-          instruction={instruction}
-          isLastChild={isLastChild}
+          reorderInstruction={reorderInstruction}
           depth={depth}
-          isChildDropBlocked={isChildDropBlocked}
           isActive={activePanelId === node.id}
           isDirty={localResourceSummary?.metadata.isDirty ?? false}
         >
@@ -163,7 +157,6 @@ function TreeNodeDetails({
                     expanded: false,
                     childNodes: [],
                   }}
-                  isLastChild={false}
                   node={{ ...node, id: "DraggedNode", childNodes: [] }}
                   depth={0}
                 />

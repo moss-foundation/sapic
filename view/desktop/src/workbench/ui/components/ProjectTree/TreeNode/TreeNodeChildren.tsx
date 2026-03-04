@@ -17,14 +17,8 @@ const TreeNodeChildren = ({ node, depth = 1, offset, treeOffset }: TreeNodeChild
 
   return (
     <Tree.NodeChildren dirDepthIndicatorOffset={dirDepthIndicatorOffset}>
-      {sortedChildNodes.map((childNode, index) => (
-        <TreeNode
-          parentNode={node}
-          key={childNode.id}
-          node={childNode}
-          depth={depth + 1}
-          isLastChild={index === node.childNodes.length - 1}
-        />
+      {sortedChildNodes.map((childNode) => (
+        <TreeNode parentNode={node} key={childNode.id} node={childNode} depth={depth + 1} />
       ))}
     </Tree.NodeChildren>
   );

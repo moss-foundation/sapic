@@ -4,19 +4,16 @@ import { cn } from "@/utils";
 import { DragHandleButton } from "@/workbench/ui/components/DragHandleButton";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DropIndicatorForTrigger } from "../DropIndicatorForTrigger";
-import { NodeIndicator } from "../NodeIndicator";
+import { ActivityIndicator } from "../ActivityIndicator";
+import { ReorderDNDIndicator } from "../ReorderDNDIndicator";
 
 interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
   ref?: Ref<HTMLDivElement | null>;
   depth?: number;
-  isChildDropBlocked?: boolean | null;
   isActive?: boolean;
   isRootNode?: boolean;
-  instruction?: Instruction | null;
-  isLastChild?: boolean;
+  reorderInstruction?: Instruction | null;
   hideDragHandle?: boolean;
-  dropIndicatorFullWidth?: boolean;
   isDirty?: boolean;
   nodeOffset?: number;
   nodePaddingLeft?: number;
@@ -26,19 +23,19 @@ interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
 export const NodeDetails = ({
   ref,
   depth = 0,
-  isChildDropBlocked = null,
   isRootNode = false,
   isActive = false,
   children,
-  instruction = null,
-  isLastChild = false,
+  reorderInstruction = null,
   hideDragHandle = false,
-  dropIndicatorFullWidth = false,
   isDirty = false,
   nodePaddingLeft = 12,
   treePaddingRight = 8,
   ...props
 }: NodeDetailsProps) => {
+  const offsetLeft = nodePaddingLeft * depth;
+  const offsetRight = treePaddingRight;
+
   return (
     <div
       ref={ref}
@@ -49,16 +46,7 @@ export const NodeDetails = ({
       tabIndex={0}
       {...props}
     >
-      {isChildDropBlocked !== true && <NodeIndicator isActive={isActive} isDirty={isDirty} />}
-
-      <DropIndicatorForTrigger
-        paddingLeft={nodePaddingLeft}
-        paddingRight={treePaddingRight}
-        instruction={instruction ?? null}
-        depth={depth}
-        isLastChild={isLastChild}
-        fullWidth={dropIndicatorFullWidth}
-      />
+      <ActivityIndicator isActive={isActive} isDirty={isDirty} />
 
       {!isRootNode && !hideDragHandle && (
         <DragHandleButton
@@ -69,9 +57,10 @@ export const NodeDetails = ({
       )}
 
       <div
-        style={{ paddingLeft: nodePaddingLeft * depth, paddingRight: treePaddingRight }}
+        style={{ paddingLeft: offsetLeft, paddingRight: offsetRight }}
         className="flex min-w-0 grow items-center justify-between"
       >
+        <ReorderDNDIndicator reorderInstruction={reorderInstruction} offsetLeft={offsetLeft} />
         {children}
       </div>
     </div>

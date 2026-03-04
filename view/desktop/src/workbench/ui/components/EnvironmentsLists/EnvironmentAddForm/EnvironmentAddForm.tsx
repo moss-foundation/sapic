@@ -49,6 +49,7 @@ export const EnvironmentAddForm = ({ onSubmit, onCancel, restrictedNames, classN
 
     onSubmit(value);
     setValue("");
+    inputRef.current?.blur();
   };
 
   useFocusWithin(inputRef, {

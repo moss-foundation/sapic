@@ -18,12 +18,12 @@ export interface TreeNodeComponentProps {
   node: ProjectTreeNode;
   depth: number;
   parentNode: ProjectTreeNode | ProjectTreeRootNode;
-  isLastChild: boolean;
 }
 
-export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeComponentProps) => {
+export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) => {
   const { id } = useContext(ProjectTreeContext);
   const { treePaddingLeft } = useContext(ProjectTreeContext);
+
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
@@ -46,12 +46,10 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
   };
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging, isChildDropBlocked } = useDraggableNode({
+  const { instruction, isDragging } = useDraggableNode({
     node,
     parentNode,
     triggerRef,
-    dropTargetListRef,
-    isLastChild,
     setPreview,
   });
 
@@ -59,7 +57,7 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <Tree.Node ref={dropTargetListRef} instruction={instruction} isDragging={isDragging}>
+    <Tree.Node ref={dropTargetListRef} combineInstruction={instruction} isDragging={isDragging}>
       {isRenamingNode ? (
         <TreeNodeRenamingForm
           node={node}
@@ -79,10 +77,8 @@ export const TreeNode = ({ node, depth, parentNode, isLastChild }: TreeNodeCompo
           onRename={() => setIsRenamingNode(true)}
           onDelete={handleDeleteNode}
           isDragging={isDragging}
-          instruction={instruction}
-          isLastChild={isLastChild}
+          reorderInstruction={instruction}
           preview={preview}
-          isChildDropBlocked={isChildDropBlocked}
         />
       )}
 

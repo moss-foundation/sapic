@@ -70,6 +70,7 @@ export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProp
           restrictedNames={restrictedNames}
           handleRename={handleRename}
           handleCancel={handleCancel}
+          offsetLeft={offsetLeft}
         />
       ) : (
         <EnvironmentItemDetails

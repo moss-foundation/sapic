@@ -19,7 +19,7 @@ export const WorkspaceEnvironmentsListRoot = () => {
 
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
 
-  const workspaceEnvironmentsListRef = useRef<HTMLUListElement>(null);
+  const workspaceEnvironmentsListRef = useRef<HTMLDivElement>(null);
   const { data: expanded = false } = useGetEnvironmentListItemState(WORKSPACE_ENVIRONMENTS_LIST_ID, currentWorkspaceId);
 
   const { instruction } = useDropTargetWorkspaceEnvironmentList({
@@ -45,14 +45,13 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const listItemOffset = listHeaderOffset * 2;
 
   return (
-    <Tree.RootNode ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader
+    <Tree.List ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
+      <Tree.ListHeader
         className="text-(--moss-secondary-foreground) cursor-pointer text-sm"
-        disableIndicator={true}
         style={{ paddingLeft: listHeaderOffset }}
       >
         <WorkspaceEnvironmentsListRootDetails expanded={expanded} />
-      </Tree.RootNodeHeader>
+      </Tree.ListHeader>
 
       {expanded && (
         <>
@@ -61,9 +60,10 @@ export const WorkspaceEnvironmentsListRoot = () => {
               <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
             ))}
           </Tree.RootNodeChildren>
+
           <EnvironmentAddForm onSubmit={handleAddEnvironment} restrictedNames={restrictedNames} />
         </>
       )}
-    </Tree.RootNode>
+    </Tree.List>
   );
 };

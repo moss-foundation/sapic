@@ -46,7 +46,7 @@ export const TreeRootNodeResourcesList = ({
   };
 
   return (
-    <Tree.Node instruction={instruction}>
+    <Tree.Node combineInstruction={instruction}>
       <Tree.NodeDetails
         ref={ref}
         className="flex cursor-pointer items-center gap-1 py-[5px]"
