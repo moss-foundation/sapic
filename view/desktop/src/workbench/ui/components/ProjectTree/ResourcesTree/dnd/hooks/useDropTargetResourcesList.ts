@@ -11,7 +11,7 @@ import { LocationResourcesListData } from "../types.dnd";
 import { canCombineToResourcesList } from "../validation/canCombineToResourcesList";
 
 interface UseDropTargetResourcesListProps {
-  ref: RefObject<HTMLDivElement | null>;
+  ref: RefObject<HTMLHeadingElement | null>;
   rootResourcesNodes: ResourceNode[];
 }
 

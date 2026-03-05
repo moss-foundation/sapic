@@ -41,6 +41,10 @@ export const useMonitorResourcesNodes = () => {
         return isSourceProjectTreeNode(source);
       },
       onDrop: async ({ location, source }) => {
+        console.log({
+          location,
+          source,
+        });
         const sourceTreeNodeData = getSourceProjectTreeNodeData(source);
         const locationTreeNodeData = getLocationProjectTreeNodeData(location);
         const instruction = getInstructionFromLocation(location);
@@ -57,8 +61,6 @@ export const useMonitorResourcesNodes = () => {
           locationTreeNodeData,
           instruction,
         });
-
-        console.log("nodeDropOperation", nodeDropOperation);
 
         switch (nodeDropOperation) {
           case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:

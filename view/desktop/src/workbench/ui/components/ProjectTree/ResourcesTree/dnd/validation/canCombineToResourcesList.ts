@@ -1,7 +1,12 @@
+import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
+
 import { DragNode } from "../../../types";
 import { LocationResourcesListData } from "../types.dnd";
 
-export const canCombineToResourcesList = (sourceData: DragNode | null, locationData: LocationResourcesListData) => {
+export const canCombineToResourcesList = (
+  sourceData: DragNode | null,
+  locationData: LocationResourcesListData
+): Availability => {
   if (!sourceData) {
     return "not-available";
   }

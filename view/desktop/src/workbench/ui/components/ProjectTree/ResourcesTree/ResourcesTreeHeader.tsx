@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { RefObject, useContext } from "react";
 
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
@@ -11,9 +11,10 @@ import { ProjectTreeContext } from "../ProjectTreeContext";
 interface ResourcesTreeHeaderProps {
   expanded: boolean;
   offsetLeft: number;
+  ref: RefObject<HTMLHeadingElement | null>;
 }
 
-export const ResourcesTreeHeader = ({ expanded, offsetLeft }: ResourcesTreeHeaderProps) => {
+export const ResourcesTreeHeader = ({ expanded, offsetLeft, ref }: ResourcesTreeHeaderProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { id } = useContext(ProjectTreeContext);
 
@@ -39,7 +40,7 @@ export const ResourcesTreeHeader = ({ expanded, offsetLeft }: ResourcesTreeHeade
   };
 
   return (
-    <Tree.ListHeader offsetLeft={offsetLeft}>
+    <Tree.ListHeader offsetLeft={offsetLeft} ref={ref}>
       <Tree.ListHeaderDetails className="cursor-pointer text-sm" onClick={onHeaderClick}>
         <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
