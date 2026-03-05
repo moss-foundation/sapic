@@ -6,7 +6,7 @@ import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/us
 import { useSyncResourceSummaries } from "@/db/resourceSummaries/hooks/useSyncResourceSummaries";
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ProjectTreeNode, ProjectTreeRootNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ProjectTreeRootNode, ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 
 export interface UseProjectsTreesProps {
   projectsTrees: ProjectTreeRootNode[];
@@ -51,12 +51,12 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
   };
 };
 
-const buildProjectTreeNodes = (projectId: string, allResources: LocalResourceSummary[]): ProjectTreeNode[] => {
+const buildProjectTreeNodes = (projectId: string, allResources: LocalResourceSummary[]): ResourceNode[] => {
   const projectResources = allResources
     .filter((resource) => resource.projectId === projectId)
     .sort((a, b) => a.path.segments.length - b.path.segments.length);
 
-  const childNodes: ProjectTreeNode[] = [];
+  const childNodes: ResourceNode[] = [];
 
   for (const resource of projectResources) {
     if (resource.path.segments.length === 1) {
@@ -71,7 +71,7 @@ const buildProjectTreeNodes = (projectId: string, allResources: LocalResourceSum
     }
 
     // Nested resource
-    let currentNode: ProjectTreeNode | undefined;
+    let currentNode: ResourceNode | undefined;
     const pathSegments = resource.path.segments;
 
     for (let i = 0; i < pathSegments.length - 1; i++) {
@@ -97,7 +97,7 @@ const buildProjectTreeNodes = (projectId: string, allResources: LocalResourceSum
   return childNodes;
 };
 
-const resourceToTreeNode = (resource: LocalResourceSummary): ProjectTreeNode => ({
+const resourceToTreeNode = (resource: LocalResourceSummary): ResourceNode => ({
   ...resource,
   expanded: resource.expanded ?? false,
   order: resource.order,
@@ -105,12 +105,12 @@ const resourceToTreeNode = (resource: LocalResourceSummary): ProjectTreeNode => 
 });
 
 const getOrCreateDirNode = (
-  parentChildren: ProjectTreeNode[],
+  parentChildren: ResourceNode[],
   segment: string,
   projectId: string,
   pathSoFar: string[],
   template: LocalResourceSummary
-): ProjectTreeNode => {
+): ResourceNode => {
   let dir = parentChildren.find((n) => n.name === segment && n.kind === "Dir");
   if (!dir) {
     dir = {
@@ -123,7 +123,7 @@ const getOrCreateDirNode = (
       order: template.order,
       expanded: template.expanded ?? false,
       childNodes: [],
-    } satisfies ProjectTreeNode;
+    } satisfies ResourceNode;
     parentChildren.push(dir);
   }
   return dir;

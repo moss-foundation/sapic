@@ -1,5 +1,5 @@
 import { Icons } from "@/lib/ui";
-import { ProjectTreeNode, ProjectTreeRootNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ProjectTreeRootNode, ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 
 export const getFolderIcon = (): Icons => {
   return "Folder";
@@ -10,7 +10,7 @@ export const findNodeInProject = (project: ProjectTreeRootNode, searchId: string
   for (const category of project.childNodes) {
     if (category.id === searchId) return category;
 
-    const findInChildren = (node: ProjectTreeNode): ProjectTreeNode | undefined => {
+    const findInChildren = (node: ResourceNode): ResourceNode | undefined => {
       if (node.id === searchId) return node;
       for (const child of node.childNodes) {
         const found = findInChildren(child);

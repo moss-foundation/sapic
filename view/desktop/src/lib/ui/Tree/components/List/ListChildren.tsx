@@ -5,11 +5,8 @@ import { cn } from "@/utils";
 interface ListChildrenProps extends HTMLAttributes<HTMLUListElement> {
   children: ReactNode;
   className?: string;
-  show: boolean;
 }
-export const ListChildren = ({ children, className, show, ...props }: ListChildrenProps) => {
-  if (!show) return null;
-
+export const ListChildren = ({ children, className, ...props }: ListChildrenProps) => {
   return (
     <ul className={cn("relative h-full", className)} {...props}>
       {children}

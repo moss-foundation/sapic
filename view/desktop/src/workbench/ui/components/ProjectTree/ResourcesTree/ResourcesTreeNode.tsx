@@ -2,32 +2,31 @@ import { useContext, useRef, useState } from "react";
 
 import { Tree } from "@/lib/ui/Tree";
 
-import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ResourceNode } from "../types";
 import { getChildrenNames } from "../utils";
-import { useDraggableNode } from "./dnd/hooks/useDraggableNode";
-import { useNodeAddForm } from "./hooks/useNodeAddForm";
-import { useNodeRenamingForm } from "./hooks/useNodeRenamingForm";
-import TreeNodeAddForm from "./TreeNodeAddForm";
-import TreeNodeChildren from "./TreeNodeChildren";
-import TreeNodeDetails from "./TreeNodeDetails";
-import TreeNodeRenamingForm from "./TreeNodeRenamingForm";
+import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
+import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
+import ResourceNodeRenamingForm from "./forms/ResourceNodeRenamingForm";
+import { useDeleteAndUpdateResourceNodePeers } from "./hooks/useDeleteAndUpdateResourceNodePeers";
+import { useResourceNodeAddForm } from "./hooks/useResourceNodeAddForm";
+import { useResourceNodeRenamingForm } from "./hooks/useResourceNodeRenamingForm";
+import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
+import ResourcesTreeNodeDetails from "./ResourcesTreeNodeDetails";
 
-export interface TreeNodeComponentProps {
-  node: ProjectTreeNode;
+interface ResourcesTreeNodeProps {
+  node: ResourceNode;
+  parentNode?: ResourceNode;
   depth: number;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
 }
 
-export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) => {
+export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNodeProps) => {
   const { id } = useContext(ProjectTreeContext);
-  const { treePaddingLeft } = useContext(ProjectTreeContext);
 
   const triggerRef = useRef<HTMLDivElement>(null);
   const dropTargetListRef = useRef<HTMLLIElement>(null);
 
-  const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
+  const { deleteAndUpdatePeers } = useDeleteAndUpdateResourceNodePeers({ projectId: id, node, parentNode });
 
   const {
     isAddingFileNode,
@@ -36,17 +35,17 @@ export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) =>
     setIsAddingFolderNode,
     handleAddFormSubmit,
     handleAddFormCancel,
-  } = useNodeAddForm(node);
+  } = useResourceNodeAddForm(node);
 
   const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } =
-    useNodeRenamingForm(node);
+    useResourceNodeRenamingForm(node);
 
   const handleDeleteNode = async () => {
     await deleteAndUpdatePeers();
   };
 
   const [preview, setPreview] = useState<HTMLElement | null>(null);
-  const { instruction, isDragging } = useDraggableNode({
+  const { instruction, isDragging } = useDraggableResourceNode({
     node,
     parentNode,
     triggerRef,
@@ -59,7 +58,7 @@ export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) =>
   return (
     <Tree.Node ref={dropTargetListRef} combineInstruction={instruction} isDragging={isDragging}>
       {isRenamingNode ? (
-        <TreeNodeRenamingForm
+        <ResourceNodeRenamingForm
           node={node}
           depth={depth}
           restrictedNames={restrictedNames}
@@ -67,7 +66,7 @@ export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) =>
           handleRenamingFormCancel={handleRenamingFormCancel}
         />
       ) : (
-        <TreeNodeDetails
+        <ResourcesTreeNodeDetails
           ref={triggerRef}
           node={node}
           parentNode={parentNode}
@@ -82,12 +81,10 @@ export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) =>
         />
       )}
 
-      {shouldRenderChildNodes && (
-        <TreeNodeChildren node={node} depth={depth} offset={treePaddingLeft} treeOffset={22} />
-      )}
+      {shouldRenderChildNodes && <ResourcesTreeChildren rootResourcesNodes={node.childNodes} depth={depth + 1} />}
 
       {(isAddingFileNode || isAddingFolderNode) && (
-        <TreeNodeAddForm
+        <ResourceNodeAddForm
           depth={depth}
           isAddingFolderNode={isAddingFolderNode}
           handleAddFormSubmit={handleAddFormSubmit}
@@ -98,5 +95,3 @@ export const TreeNode = ({ node, depth, parentNode }: TreeNodeComponentProps) =>
     </Tree.Node>
   );
 };
-
-export default TreeNode;

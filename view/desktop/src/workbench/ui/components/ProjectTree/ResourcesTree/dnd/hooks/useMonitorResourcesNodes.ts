@@ -24,7 +24,7 @@ import { handleNodeOnNodeToAnotherProject } from "../handlers/handleNodeOnNodeTo
 import { handleNodeOnNodeWithinProject } from "../handlers/handleNodeOnNodeWithinProject";
 import { calculateNodeDropOperation } from "../validation/calculateNodeDropOperation";
 
-export const useMonitorTreeNodes = () => {
+export const useMonitorResourcesNodes = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutateAsync: createProjectResource } = useCreateProjectResource();

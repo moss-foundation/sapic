@@ -4,36 +4,36 @@ import { Tree } from "@/lib/ui/Tree";
 import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 
-import { useDeleteAndUpdatePeers } from "../actions/useDeleteAndUpdatePeers";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ResourceNode } from "../types";
+import { useDeleteAndUpdateResourceNodePeers } from "./hooks/useDeleteAndUpdateResourceNodePeers";
 
-interface TreeNodeActionsProps {
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
+interface ResourcesTreeNodeActionsProps {
+  node: ResourceNode;
+  parentNode?: ResourceNode;
   setIsAddingFileNode: (isAdding: boolean) => void;
   setIsAddingFolderNode: (isAdding: boolean) => void;
   setIsRenamingNode: (isRenaming: boolean) => void;
   className?: string;
 }
 
-export const TreeNodeActions = ({
+export const ResourcesTreeNodeActions = ({
   node,
   parentNode,
   setIsAddingFileNode,
   setIsAddingFolderNode,
   setIsRenamingNode,
   className,
-}: TreeNodeActionsProps) => {
+}: ResourcesTreeNodeActionsProps) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { deleteAndUpdatePeers } = useDeleteAndUpdatePeers(id, node, parentNode);
+  const [showDropdown, setShowDropdown] = useState(false);
+
+  const { deleteAndUpdatePeers } = useDeleteAndUpdateResourceNodePeers({ projectId: id, node, parentNode });
 
   const handleDeleteNode = async () => {
     await deleteAndUpdatePeers();
   };
-
-  const [showDropdown, setShowDropdown] = useState(false);
 
   return (
     <Tree.NodeActions className={className}>

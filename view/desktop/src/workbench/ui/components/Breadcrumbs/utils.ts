@@ -1,6 +1,6 @@
-import { ProjectTreeNode, ProjectTreeRootNode } from "../ProjectTree/types";
+import { ProjectTreeRootNode, ResourceNode } from "../ProjectTree/types";
 
-export const findNodeByIdInTree = (tree: ProjectTreeRootNode, id: string): ProjectTreeNode | undefined => {
+export const findNodeByIdInTree = (tree: ProjectTreeRootNode, id: string): ResourceNode | undefined => {
   for (const child of tree.childNodes) {
     const found = findNodeById(child, id);
     if (found) return found;
@@ -9,7 +9,7 @@ export const findNodeByIdInTree = (tree: ProjectTreeRootNode, id: string): Proje
   return undefined;
 };
 
-export const findNodeById = (topNode: ProjectTreeNode, id: string): ProjectTreeNode | undefined => {
+export const findNodeById = (topNode: ResourceNode, id: string): ResourceNode | undefined => {
   if (topNode.id === id) return topNode;
 
   if (topNode.childNodes && topNode.childNodes.length > 0) {
@@ -22,7 +22,7 @@ export const findNodeById = (topNode: ProjectTreeNode, id: string): ProjectTreeN
   return undefined;
 };
 
-export const findNodesSequence = (tree: ProjectTreeRootNode, node: ProjectTreeNode) => {
+export const findNodesSequence = (tree: ProjectTreeRootNode, node: ResourceNode) => {
   for (const child of tree.childNodes) {
     const found = findSequence(child, node.path.segments);
     if (found) return found;
@@ -31,8 +31,8 @@ export const findNodesSequence = (tree: ProjectTreeRootNode, node: ProjectTreeNo
   return null;
 };
 
-const findSequence = (topNode: ProjectTreeNode, fullPath: string[]) => {
-  const nodes: ProjectTreeNode[] = [];
+const findSequence = (topNode: ResourceNode, fullPath: string[]) => {
+  const nodes: ResourceNode[] = [];
 
   if (validSequence(topNode.path.segments, fullPath)) {
     nodes.push(topNode);
@@ -54,12 +54,12 @@ const validSequence = (currentPath: string[], fullPath: string[]) => {
   return currentPath.every((item, index) => item === fullPath[index]);
 };
 
-export const closeAllNodesInTree = (tree: ProjectTreeNode) => {
+export const closeAllNodesInTree = (tree: ResourceNode) => {
   const collapsedTree = { ...tree };
   return collapseAllNodes(collapsedTree);
 };
 
-export const collapseAllNodes = <T extends ProjectTreeNode>(node: T): T => {
+export const collapseAllNodes = <T extends ResourceNode>(node: T): T => {
   return {
     ...node,
     expanded: node.kind === "Dir" ? false : node.expanded,
@@ -67,7 +67,7 @@ export const collapseAllNodes = <T extends ProjectTreeNode>(node: T): T => {
   };
 };
 
-export const updateTreeNode = (node: ProjectTreeNode, updatedNode: ProjectTreeNode): ProjectTreeNode => {
+export const updateTreeNode = (node: ResourceNode, updatedNode: ResourceNode): ResourceNode => {
   if (node.id === updatedNode.id) return updatedNode;
 
   return {

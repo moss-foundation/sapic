@@ -5,10 +5,10 @@ import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../../types";
+import { ResourceNode } from "../../types";
 import { createResourceKind } from "../../utils";
 
-export const useNodeAddForm = (parentNode: ProjectTreeNode | ProjectTreeRootNode) => {
+export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
   const { id } = useContext(ProjectTreeContext);
 
   const { currentWorkspaceId } = useCurrentWorkspace();

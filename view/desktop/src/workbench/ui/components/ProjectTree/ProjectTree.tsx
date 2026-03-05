@@ -21,13 +21,18 @@ export const ProjectTree = ({
           name: tree.name,
           order: tree.order ?? 0,
           iconPath: tree.iconPath,
+
           treePaddingLeft,
           treePaddingRight,
           nodeOffset,
+
           allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
           allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
+
           searchInput: searchInput ?? "",
+
           displayMode,
+
           showOrders,
           showRootNodeIds,
         }}

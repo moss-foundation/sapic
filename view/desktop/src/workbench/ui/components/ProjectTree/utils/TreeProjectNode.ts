@@ -1,6 +1,6 @@
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ProjectTreeRootNode, ResourceNode } from "../types";
 
-export const hasDescendant = (parentNode: ProjectTreeNode, dropNode: ProjectTreeNode): boolean => {
+export const hasDescendant = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
   if (parentNode.id === dropNode.id) return true;
   if (parentNode.childNodes.length === 0) return false;
 
@@ -10,14 +10,14 @@ export const hasDescendant = (parentNode: ProjectTreeNode, dropNode: ProjectTree
   });
 };
 
-export const hasDirectDescendant = (parentNode: ProjectTreeNode, dropNode: ProjectTreeNode): boolean => {
+export const hasDirectDescendant = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some((child) => child.id === dropNode.id);
 };
 
 export const hasDirectSimilarDescendant = (
-  parentNode: ProjectTreeNode | ProjectTreeRootNode,
-  dropNode: ProjectTreeNode
+  parentNode: ResourceNode | ProjectTreeRootNode,
+  dropNode: ResourceNode
 ): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some(
@@ -26,8 +26,8 @@ export const hasDirectSimilarDescendant = (
 };
 
 export const hasDirectDescendantWithSimilarName = (
-  parentNode: ProjectTreeNode | ProjectTreeRootNode,
-  dropNode: ProjectTreeNode
+  parentNode: ResourceNode | ProjectTreeRootNode,
+  dropNode: ResourceNode
 ): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some(
@@ -39,7 +39,7 @@ const doesStringIncludePartialString = (str: string, partialStr: string) => {
   return str.toLowerCase().includes(partialStr.toLowerCase());
 };
 
-export const hasDescendantWithSearchInput = (parentNode: ProjectTreeNode, input: string): boolean => {
+export const hasDescendantWithSearchInput = (parentNode: ResourceNode, input: string): boolean => {
   if (!parentNode.childNodes) return false;
 
   const projectId = String(parentNode.id);
@@ -51,7 +51,7 @@ export const hasDescendantWithSearchInput = (parentNode: ProjectTreeNode, input:
   );
 };
 
-export const countNumberOfAllNestedChildNodes = (node: ProjectTreeNode): number => {
+export const countNumberOfAllNestedChildNodes = (node: ResourceNode): number => {
   if (!node.childNodes) return 0;
   return node.childNodes.reduce((acc, child) => {
     const childCount = child.kind === "Item" ? 1 : 0;

@@ -3,10 +3,10 @@ import { ListProjectResourceItem } from "@repo/ipc";
 import { BatchUpdateResourceKind } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ProjectTreeRootNode, ResourceNode } from "../types";
 
 export const getPathWithoutName = async (
-  node: ProjectTreeNode | ListProjectResourceItem
+  node: ResourceNode | ListProjectResourceItem
 ): Promise<ListProjectResourceItem["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
@@ -154,8 +154,8 @@ export const siblingsAfterRemovalPayload = ({
   nodes,
   removedNode,
 }: {
-  nodes: ProjectTreeNode[];
-  removedNode: ProjectTreeNode;
+  nodes: ResourceNode[];
+  removedNode: ResourceNode;
 }) => {
   const sortedChildren = sortObjectsByOrder(nodes);
   return sortedChildren
@@ -172,8 +172,8 @@ export const reorderedNodesForDifferentDirPayload = ({
   newNode,
   moveToIndex,
 }: {
-  node: ProjectTreeNode | ProjectTreeRootNode;
-  newNode: ProjectTreeNode;
+  node: ResourceNode | ProjectTreeRootNode;
+  newNode: ResourceNode;
   moveToIndex: number;
 }) => {
   const sortedTargetNodes = sortObjectsByOrder(node.childNodes);
@@ -213,5 +213,5 @@ export const reorderedNodesForDifferentDirPayload = ({
   return targetResourcesToUpdate;
 };
 
-export const resolveParentPath = (parentNode: ProjectTreeNode | ProjectTreeRootNode): string =>
+export const resolveParentPath = (parentNode: ResourceNode | ProjectTreeRootNode): string =>
   "path" in parentNode ? parentNode.path.raw : "";

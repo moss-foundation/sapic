@@ -5,7 +5,7 @@ import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
-import { ProjectTreeNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";
@@ -13,7 +13,7 @@ import { getFolderIcon } from "./utils";
 
 export type FolderSettingsViewProps = DefaultViewProps<{
   projectId: string;
-  node: ProjectTreeNode;
+  node: ResourceNode;
 }>;
 
 export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {

@@ -7,23 +7,25 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../../../types";
-import {
-  getLocationProjectTreeNodeData,
-  getSourceProjectTreeNodeData,
-  isCombineAvailable,
-  isSourceProjectTreeNode,
-} from "../../../utils";
+import { ResourceNode } from "../../../types";
+import { getLocationProjectTreeNodeData, getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils";
+import { DragResourceNode } from "../types.dnd";
+import { isNodeCombineAvailable } from "../validation/isNodeCombineAvailable";
 import { isNodeReorderAvailable } from "../validation/isNodeReorderAvailable";
 
-interface UseDraggableNodeProps {
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
+interface UseDraggableResourceNodeProps {
+  node: ResourceNode;
+  parentNode?: ResourceNode;
   triggerRef: RefObject<HTMLDivElement | null>;
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }
 
-export const useDraggableNode = ({ node, parentNode, triggerRef, setPreview }: UseDraggableNodeProps) => {
+export const useDraggableResourceNode = ({
+  node,
+  parentNode,
+  triggerRef,
+  setPreview,
+}: UseDraggableResourceNodeProps) => {
   const { id } = useContext(ProjectTreeContext);
 
   const [instruction, setInstruction] = useState<Instruction | null>(null);
@@ -37,7 +39,7 @@ export const useDraggableNode = ({ node, parentNode, triggerRef, setPreview }: U
     return combine(
       draggable({
         element,
-        getInitialData: () => ({
+        getInitialData: (): DragResourceNode => ({
           type: ProjectDragType.NODE,
           data: {
             projectId: id,
@@ -64,7 +66,8 @@ export const useDraggableNode = ({ node, parentNode, triggerRef, setPreview }: U
       dropTargetForElements({
         element,
         getData: ({ input, element, source }) => {
-          const data = {
+          const sourceData = getSourceProjectTreeNodeData(source);
+          const locationData: DragResourceNode = {
             type: ProjectDragType.NODE,
             data: {
               projectId: id,
@@ -73,27 +76,13 @@ export const useDraggableNode = ({ node, parentNode, triggerRef, setPreview }: U
             },
           };
 
-          //TODO make it shorter
-          const sourceTarget = getSourceProjectTreeNodeData(source);
-          if (!sourceTarget) {
-            return attachInstruction(data, {
-              input,
-              element,
-              operations: {
-                "reorder-before": "not-available",
-                "reorder-after": "not-available",
-                combine: "not-available",
-              },
-            });
-          }
-
-          return attachInstruction(data, {
+          return attachInstruction(locationData, {
             input,
             element,
             operations: {
-              "reorder-before": isNodeReorderAvailable(sourceTarget, data.data),
-              "reorder-after": isNodeReorderAvailable(sourceTarget, data.data),
-              combine: isCombineAvailable(sourceTarget, data.data),
+              "reorder-before": isNodeReorderAvailable(sourceData, locationData.data.node),
+              "reorder-after": isNodeReorderAvailable(sourceData, locationData.data.node),
+              combine: isNodeCombineAvailable(sourceData, locationData.data.node),
             },
           });
         },

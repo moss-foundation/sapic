@@ -32,7 +32,7 @@ export const TreeRootNodeChildren = ({
   return (
     <Tree.RootNodeChildren offset={offsetLeft} depth={depth} treeOffset={6}>
       {sortedChildNodes.map((childNode) => {
-        return <TreeNode parentNode={node} key={childNode.id} node={childNode} depth={3} />;
+        return <TreeNode key={childNode.id} node={childNode} depth={3} />;
       })}
 
       {shouldRenderAddRootForm && (

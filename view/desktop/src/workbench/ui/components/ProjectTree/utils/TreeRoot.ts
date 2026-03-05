@@ -2,14 +2,14 @@ import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-dr
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 import { ProjectDragType } from "../constants";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ProjectTreeRootNode, ResourceNode } from "../types";
 
 export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
   return source.data.type === ProjectDragType.ROOT_NODE;
 };
 
 export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRootNode): boolean => {
-  const checkIfAllNodesAreExpanded = (node: ProjectTreeNode): boolean => {
+  const checkIfAllNodesAreExpanded = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (!node.expanded) return false;
@@ -25,7 +25,7 @@ export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRootNode): boolean
 };
 
 export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRootNode): boolean => {
-  const checkIfAllNodesAreCollapsed = (node: ProjectTreeNode): boolean => {
+  const checkIfAllNodesAreCollapsed = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (node.expanded) return false;
@@ -59,6 +59,6 @@ export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
   };
 };
 
-export const getChildrenNames = (node: ProjectTreeNode | ProjectTreeRootNode) => {
+export const getChildrenNames = (node: ResourceNode | ProjectTreeRootNode) => {
   return node.childNodes.map((childNode) => childNode.name);
 };

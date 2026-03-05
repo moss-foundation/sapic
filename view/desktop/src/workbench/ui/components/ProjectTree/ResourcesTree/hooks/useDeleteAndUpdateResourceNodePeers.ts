@@ -4,14 +4,21 @@ import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
-import { getAllNestedResources, siblingsAfterRemovalPayload } from "../utils";
+import { ResourceNode } from "../../types";
+import { getAllNestedResources, siblingsAfterRemovalPayload } from "../../utils";
 
-export const useDeleteAndUpdatePeers = (
-  projectId: string,
-  node: ProjectTreeNode,
-  parentNode: ProjectTreeNode | ProjectTreeRootNode
-) => {
+interface UseDeleteAndUpdateResourceNodePeersProps {
+  projectId: string;
+  node: ResourceNode;
+  parentNode?: ResourceNode;
+}
+
+//TODO finish this hook
+export const useDeleteAndUpdateResourceNodePeers = ({
+  projectId,
+  node,
+  parentNode,
+}: UseDeleteAndUpdateResourceNodePeersProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
@@ -24,6 +31,10 @@ export const useDeleteAndUpdatePeers = (
         id: node.id,
       },
     });
+
+    const isResourcesListRoot = parentNode === undefined;
+
+    const peerNodes = isResourcesListRoot ? node.childNodes : parentNode.childNodes;
 
     const allNestedChildren = getAllNestedResources(node);
 

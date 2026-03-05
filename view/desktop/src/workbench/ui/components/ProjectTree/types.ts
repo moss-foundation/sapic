@@ -7,27 +7,25 @@ import { ProjectDragType } from "./constants";
 export interface ProjectTreeRootNode extends ListProjectItem {
   order?: number | undefined;
   expanded: boolean;
-  childNodes: ProjectTreeNode[];
+  childNodes: ResourceNode[];
 }
 
-export interface ProjectTreeNode extends ListProjectResourceItem {
+export interface ResourceNode extends ListProjectResourceItem {
   order?: number | undefined;
   expanded: boolean;
-  childNodes: ProjectTreeNode[];
+  childNodes: ResourceNode[];
 }
 
 export interface DragNode {
   projectId: string;
-  repository?: string;
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode;
+  node: ResourceNode;
+  parentNode: ResourceNode;
 }
 
 export interface DropNode {
   projectId: string;
-  repository?: string;
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
+  node: ResourceNode;
+  parentNode: ResourceNode | ProjectTreeRootNode;
   instruction?: Instruction;
 }
 

@@ -4,9 +4,9 @@ import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTreeNode } from "../../types";
+import { ResourceNode } from "../../types";
 
-export const useNodeRenamingForm = (node: ProjectTreeNode) => {
+export const useResourceNodeRenamingForm = (node: ResourceNode) => {
   const { id } = useContext(ProjectTreeContext);
 
   const { fetchResourcesForPath } = useFetchResourcesForPath();

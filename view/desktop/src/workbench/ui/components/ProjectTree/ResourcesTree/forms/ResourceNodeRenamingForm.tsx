@@ -4,15 +4,15 @@ import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { ResourceIcon } from "../../ResourceIcon";
-import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeNode } from "../types";
+import { ResourceIcon } from "../../../ResourceIcon";
+import { ProjectTreeContext } from "../../ProjectTreeContext";
+import { ResourceNode } from "../../types";
 
 interface TreeNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
-  node: ProjectTreeNode;
+  node: ResourceNode;
   depth: number;
   restrictedNames: string[];
-  onNodeRenameCallback?: (node: ProjectTreeNode) => void;
+  onNodeRenameCallback?: (node: ResourceNode) => void;
   handleRenamingFormSubmit: (newName: string) => void;
   handleRenamingFormCancel: () => void;
   className?: string;

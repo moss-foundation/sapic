@@ -1,12 +1,9 @@
 import { useContext } from "react";
-import { createPortal } from "react-dom";
 
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
-import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { cn } from "@/utils";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { ActionMenu } from "@/workbench/ui/components";
@@ -14,15 +11,15 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ResourceNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
-import TreeNode from "./TreeNode";
-import { TreeNodeActions } from "./TreeNodeActions";
+import { ResourceNodePreview } from "./dnd/ResourceNodePreview";
+import { ResourcesTreeNodeActions } from "./ResourcesTreeNodeActions";
 
-interface TreeNodeDetailsProps {
+interface ResourcesTreeNodeDetailsProps {
   ref?: React.Ref<HTMLDivElement>;
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
+  node: ResourceNode;
+  parentNode?: ResourceNode;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;
@@ -33,7 +30,7 @@ interface TreeNodeDetailsProps {
   reorderInstruction: Instruction | null;
 }
 
-function TreeNodeDetails({
+const ResourcesTreeNodeDetails = ({
   ref,
   node,
   parentNode,
@@ -44,7 +41,7 @@ function TreeNodeDetails({
   onDelete,
   preview,
   reorderInstruction,
-}: TreeNodeDetailsProps) {
+}: ResourcesTreeNodeDetailsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
@@ -135,7 +132,7 @@ function TreeNodeDetails({
           </Tree.NodeTriggers>
 
           {node.kind === "Dir" && (
-            <TreeNodeActions
+            <ResourcesTreeNodeActions
               node={node}
               parentNode={parentNode}
               setIsAddingFileNode={onAddFile}
@@ -145,25 +142,7 @@ function TreeNodeDetails({
             />
           )}
 
-          {preview &&
-            createPortal(
-              <ul className="background-(--moss-primary-background) flex gap-1 rounded-sm">
-                <TreeNode
-                  parentNode={{
-                    ...node,
-                    id: "-",
-                    name: "DraggedNode",
-                    order: undefined,
-                    expanded: false,
-                    childNodes: [],
-                  }}
-                  node={{ ...node, id: "DraggedNode", childNodes: [] }}
-                  depth={0}
-                />
-                <Icon icon="ChevronRight" className={cn("opacity-0")} />
-              </ul>,
-              preview
-            )}
+          {preview && <ResourceNodePreview node={node} preview={preview} />}
         </Tree.NodeDetails>
       </ActionMenu.Trigger>
       <ActionMenu.Portal>
@@ -176,6 +155,6 @@ function TreeNodeDetails({
       </ActionMenu.Portal>
     </ActionMenu.Root>
   );
-}
+};
 
-export default TreeNodeDetails;
+export default ResourcesTreeNodeDetails;
