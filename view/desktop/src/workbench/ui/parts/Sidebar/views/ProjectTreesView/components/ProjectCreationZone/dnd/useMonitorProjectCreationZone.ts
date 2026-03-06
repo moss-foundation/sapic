@@ -8,6 +8,7 @@ import {
   useDeleteProjectResource,
   useListProjects,
 } from "@/adapters";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
@@ -64,10 +65,20 @@ export const useMonitorProjectCreationZone = () => {
           name: rootResource.name,
         });
 
+        const newProjectOrder = projects?.items.length ? projects.items.length + 1 : 1;
+        await treeItemStateService.putOrder(newProject.id, newProjectOrder, currentWorkspaceId);
+        await treeItemStateService.putExpanded(newProject.id, false, currentWorkspaceId);
+
         try {
           await deleteProjectResource({
             projectId: sourceData.projectId,
             input: { id: rootResource.id },
+          });
+
+          nestedResources.forEach(async (resource) => {
+            if (resourceSummariesCollection.has(resource.id)) {
+              resourceSummariesCollection.delete(resource.id);
+            }
           });
 
           await treeItemStateService.batchRemoveOrder(

@@ -56,9 +56,19 @@ export const resourceService: IResourceService = {
   delete: async (projectId, input) => {
     const output = await resourceIpc.delete(projectId, input);
 
-    //TODO should delete all nested resources summaries too
-    if (resourceSummariesCollection.has(input.id)) {
+    const deletedSummary = resourceSummariesCollection.has(input.id) ? resourceSummariesCollection.get(input.id) : null;
+    if (deletedSummary) {
       resourceSummariesCollection.delete(input.id);
+      resourceSummariesCollection.forEach((resource) => {
+        if (resource.path.segments.length > deletedSummary.path.segments.length) {
+          const isNested = deletedSummary.path.segments.every(
+            (segment, index) => resource.path.segments[index] === segment
+          );
+          if (isNested) {
+            resourceSummariesCollection.delete(resource.id);
+          }
+        }
+      });
     }
 
     return output;

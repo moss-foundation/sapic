@@ -54,7 +54,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
       });
 
       await treeItemStateService.putOrder(result.id, newOrder, currentWorkspaceId);
-      await treeItemStateService.putExpanded(result.id, true, currentWorkspaceId);
+      await treeItemStateService.putExpanded(result.id, false, currentWorkspaceId);
 
       await putEnvironmentListItemState({
         id: result.id,
