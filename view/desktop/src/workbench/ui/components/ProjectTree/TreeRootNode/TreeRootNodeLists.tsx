@@ -1,10 +1,9 @@
-import { useContext } from "react";
-
 import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsListRoot";
-import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTree } from "../ResourcesTree/ResourcesTree";
+import { ProjectTree } from "../types";
 
 interface TreeRootNodeListsProps {
+  tree: ProjectTree;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
   handleRootAddFormSubmit: (name: string) => void;
@@ -12,18 +11,18 @@ interface TreeRootNodeListsProps {
 }
 
 export const TreeRootNodeLists = ({
+  tree,
   isAddingRootFileNode,
   isAddingRootFolderNode,
   handleRootAddFormSubmit,
   handleRootAddFormCancel,
 }: TreeRootNodeListsProps) => {
-  const { id } = useContext(ProjectTreeContext);
-
   return (
     <div className="flex flex-col gap-1">
-      <ProjectEnvironmentsListRoot projectId={id} />
+      <ProjectEnvironmentsListRoot tree={tree} />
 
       <ResourcesTree
+        tree={tree.resourcesTree}
         isAddingRootFileNode={isAddingRootFileNode}
         isAddingRootFolderNode={isAddingRootFolderNode}
         handleRootAddFormSubmit={handleRootAddFormSubmit}

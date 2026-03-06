@@ -52,7 +52,7 @@ export const handleNodeOnAnotherProjectRoot = async ({
   const allResources = getAllNestedResources(sourceTreeNodeData.node);
   const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
 
-  const newOrder = locationTreeRootNodeData.node.childNodes.length + 1;
+  const newOrder = locationTreeRootNodeData.node.resourcesTree.childNodes.length + 1;
 
   await deleteProjectResource({
     projectId: sourceTreeNodeData.projectId,

@@ -3,7 +3,7 @@ import { ListProjectResourceItem } from "@repo/ipc";
 import { BatchUpdateResourceKind } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-import { ResourceNode, ResourcesTree } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 
 export const getPathWithoutName = async (
   node: ResourceNode | ListProjectResourceItem
@@ -172,7 +172,7 @@ export const reorderedNodesForDifferentDirPayload = ({
   newNode,
   moveToIndex,
 }: {
-  node: ResourceNode | ResourcesTree;
+  node: ResourceNode | IResourcesTree;
   newNode: ResourceNode;
   moveToIndex: number;
 }) => {
@@ -213,5 +213,5 @@ export const reorderedNodesForDifferentDirPayload = ({
   return targetResourcesToUpdate;
 };
 
-export const resolveParentPath = (parentNode: ResourceNode | ResourcesTree): string =>
+export const resolveParentPath = (parentNode: ResourceNode | IResourcesTree): string =>
   "path" in parentNode ? parentNode.path.raw : "";

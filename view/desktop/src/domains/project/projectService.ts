@@ -48,7 +48,6 @@ export const projectService: IProjectService = {
       archived: false,
       branch: null,
       iconPath: output.iconPath,
-
       expanded: true,
     });
 

@@ -5,12 +5,12 @@ import { ActionMenu } from "@/workbench/ui/components";
 import ActionButton from "@/workbench/ui/components/ActionButton";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ResourceNode, ResourcesTree } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 import { useDeleteAndUpdateResourceNodePeers } from "./hooks/useDeleteAndUpdateResourceNodePeers";
 
 interface ResourcesTreeNodeActionsProps {
   node: ResourceNode;
-  parentNode: ResourceNode | ResourcesTree;
+  parentNode: ResourceNode | IResourcesTree;
   setIsAddingFileNode: (isAdding: boolean) => void;
   setIsAddingFolderNode: (isAdding: boolean) => void;
   setIsRenamingNode: (isRenaming: boolean) => void;

@@ -1,22 +1,18 @@
-import { useMemo } from "react";
-
-import { useGetResourcesSummariesByProjectId } from "@/db/resourceSummaries/hooks/useGetResourcesSummariesByProjectId";
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ResourceNode, ResourcesTree } from "@/workbench/ui/components/ProjectTree/types";
+import { IResourcesTree, ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 
-export const useResourcesTree = (projectId: string): ResourcesTree => {
-  const { data: localResourceSummaries } = useGetResourcesSummariesByProjectId(projectId);
+export interface BuildResourcesTreeProps {
+  projectId: string;
+  localResourceSummaries: LocalResourceSummary[];
+}
 
-  const resourcesTree = useMemo(() => {
-    return {
-      id: `resources-tree-${projectId}`,
-      projectId,
-      childNodes: sortObjectsByOrder(buildResourceTreeNodes(projectId, localResourceSummaries)),
-    };
-  }, [projectId, localResourceSummaries]);
-
-  return resourcesTree;
+export const buildResourcesTree = ({ projectId, localResourceSummaries }: BuildResourcesTreeProps): IResourcesTree => {
+  return {
+    id: `resources-tree-${projectId}`,
+    projectId,
+    childNodes: buildResourceTreeNodes(projectId, localResourceSummaries),
+  };
 };
 
 const resourceToTreeNode = (resource: LocalResourceSummary): ResourceNode => ({
@@ -89,5 +85,12 @@ const buildResourceTreeNodes = (projectId: string, resources: LocalResourceSumma
     }
   }
 
-  return childNodes;
+  return recursiveSortNodes(childNodes);
+};
+
+const recursiveSortNodes = (nodes: ResourceNode[]): ResourceNode[] => {
+  return sortObjectsByOrder(nodes, "name").map((node) => ({
+    ...node,
+    childNodes: recursiveSortNodes(node.childNodes),
+  }));
 };

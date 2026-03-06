@@ -1,7 +1,7 @@
-import { ProjectTreeRootNode } from "../../types";
+import { ProjectTree } from "../../types";
 
 interface CalculateShouldRenderRootChildNodesProps {
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   isAddingRootFileNode: boolean;
 }
 

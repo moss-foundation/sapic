@@ -9,11 +9,11 @@ import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/Del
 import { useRefreshProject } from "../actions/useRefreshProject";
 import { useToggleAllTreeNodes } from "../actions/useToggleAllTreeNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../types";
+import { ProjectTree } from "../types";
 import { TreeRootNodeBranchIcon } from "./TreeRootNodeBranchIcon";
 
 interface TreeRootNodeActionsProps {
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   setIsAddingRootFileNode: (isAdding: boolean) => void;
   setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;

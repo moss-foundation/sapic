@@ -5,10 +5,10 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../types";
+import { ProjectTree } from "../types";
 
 interface TreeRootNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   shouldRenderChildNodes: boolean;
   restrictedNames: string[];
   handleRenamingFormSubmit: (newName: string) => void;

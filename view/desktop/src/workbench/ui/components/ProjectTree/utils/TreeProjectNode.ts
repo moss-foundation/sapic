@@ -1,4 +1,4 @@
-import { ResourceNode, ResourcesTree } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 
 export const hasDescendant = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
   if (parentNode.id === dropNode.id) return true;
@@ -16,7 +16,7 @@ export const hasDirectDescendant = (parentNode: ResourceNode, dropNode: Resource
 };
 
 export const hasDirectSimilarDescendant = (
-  parentNode: ResourceNode | ResourcesTree,
+  parentNode: ResourceNode | IResourcesTree,
   dropNode: ResourceNode
 ): boolean => {
   if (!parentNode.childNodes) return false;
@@ -26,7 +26,7 @@ export const hasDirectSimilarDescendant = (
 };
 
 export const hasDirectDescendantWithSimilarName = (
-  parentNode: ResourceNode | ResourcesTree,
+  parentNode: ResourceNode | IResourcesTree,
   dropNode: ResourceNode
 ): boolean => {
   if (!parentNode.childNodes) return false;

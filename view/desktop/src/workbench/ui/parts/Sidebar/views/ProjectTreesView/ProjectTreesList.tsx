@@ -1,13 +1,13 @@
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
-import { useProjectsTrees } from "@/lib/ui/Tree/hooks/useProjectsTrees";
 import { cn } from "@/utils";
 import { useGetProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/useGetProjectListState";
 import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/projectListState/usePutProjectListState";
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
 import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
+import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
 
 export const ProjectTreesList = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();

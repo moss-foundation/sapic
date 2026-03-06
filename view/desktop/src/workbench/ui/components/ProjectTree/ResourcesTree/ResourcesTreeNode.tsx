@@ -3,7 +3,7 @@ import { useContext, useRef, useState } from "react";
 import { Tree } from "@/lib/ui/Tree";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ResourceNode, ResourcesTree } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 import { getChildrenNames } from "../utils";
 import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
@@ -16,7 +16,7 @@ import ResourcesTreeNodeDetails from "./ResourcesTreeNodeDetails";
 
 interface ResourcesTreeNodeProps {
   node: ResourceNode;
-  parentNode: ResourceNode | ResourcesTree;
+  parentNode: ResourceNode | IResourcesTree;
   depth: number;
 }
 

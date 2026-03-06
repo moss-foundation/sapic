@@ -1,11 +1,11 @@
 import { Tree } from "@/lib/ui/Tree";
 
-import { ResourceNode, ResourcesTree } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 import { ResourcesTreeNode } from "./ResourcesTreeNode";
 
 interface ResourcesTreeChildrenProps {
   rootResourcesNodes: ResourceNode[];
-  parentNode: ResourcesTree | ResourceNode;
+  parentNode: IResourcesTree | ResourceNode;
   depth: number;
 }
 

@@ -6,11 +6,11 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../types";
+import { ProjectTree } from "../types";
 import { TreeRootNodeActions } from "./TreeRootNodeActions";
 
 interface TreeRootNodeHeaderContentProps {
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   isAddingRootFileNode: boolean;
   setIsAddingRootFileNode: (isAdding: boolean) => void;
   setIsAddingRootFolderNode: (isAdding: boolean) => void;

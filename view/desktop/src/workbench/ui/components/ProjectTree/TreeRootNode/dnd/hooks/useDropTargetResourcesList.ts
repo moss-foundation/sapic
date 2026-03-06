@@ -5,13 +5,13 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ProjectDragType } from "../../../constants";
 import { LocationResourcesListData } from "../../../dnd/types.dnd";
-import { ResourcesTree } from "../../../types";
+import { IResourcesTree } from "../../../types";
 import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
 import { canCombineToResourcesList } from "../validation/canCombineToResourcesList";
 
 interface UseDropTargetResourcesListProps {
   ref: RefObject<HTMLDivElement | null>;
-  resourcesTree: ResourcesTree;
+  resourcesTree: IResourcesTree;
 }
 
 export const useDropTargetResourcesList = ({ ref, resourcesTree }: UseDropTargetResourcesListProps) => {

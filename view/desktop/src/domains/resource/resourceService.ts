@@ -57,7 +57,9 @@ export const resourceService: IResourceService = {
     const output = await resourceIpc.delete(projectId, input);
 
     //TODO should delete all nested resources summaries too
-    resourceSummariesCollection.delete(input.id);
+    if (resourceSummariesCollection.has(input.id)) {
+      resourceSummariesCollection.delete(input.id);
+    }
 
     return output;
   },

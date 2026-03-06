@@ -26,6 +26,7 @@ import { isLocationProjectCreationZone } from "./validation/isLocationProjectCre
 
 export const useMonitorProjectCreationZone = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+
   const { data: projects } = useListProjects();
   const { mutateAsync: createProject } = useCreateProject();
   const { mutateAsync: createProjectResource } = useCreateProjectResource();

@@ -6,7 +6,7 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { useDraggableRootNode } from "../dnd/hooks/useDraggableRootNode";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../types";
+import { ProjectTree } from "../types";
 import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeHeaderContent } from "./TreeRootNodeHeaderContent";
@@ -15,7 +15,7 @@ import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
 import { calculateShouldRenderRootChildNodes } from "./utils/calculateShouldRenderRootChildNodes";
 
 interface TreeRootNodeProps {
-  tree: ProjectTreeRootNode;
+  tree: ProjectTree;
 }
 
 export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
@@ -82,6 +82,7 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
 
       {shouldRenderLists && (
         <TreeRootNodeLists
+          tree={tree}
           isAddingRootFileNode={isAddingRootFileNode}
           isAddingRootFolderNode={isAddingRootFolderNode}
           handleRootAddFormSubmit={handleRootAddFormSubmit}

@@ -5,13 +5,14 @@ import { Tree } from "@/lib/ui/Tree";
 import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/useGetResourcesListItemState";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
+import { IResourcesTree } from "../types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
-import { useResourcesTree } from "./hooks/useResourcesTree";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import { ResourcesTreeHeader } from "./ResourcesTreeHeader";
 
 interface ResourcesTreeProps {
+  tree: IResourcesTree;
   isAddingRootFileNode: boolean;
   isAddingRootFolderNode: boolean;
   handleRootAddFormSubmit: (name: string) => void;
@@ -19,6 +20,7 @@ interface ResourcesTreeProps {
 }
 
 export const ResourcesTree = ({
+  tree,
   isAddingRootFileNode,
   isAddingRootFolderNode,
   handleRootAddFormSubmit,
@@ -27,8 +29,6 @@ export const ResourcesTree = ({
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { id, treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const resourcesTree = useResourcesTree(id);
-
   const projectResourcesHeaderRef = useRef<HTMLHeadingElement>(null);
   const listHeaderOffset = treePaddingLeft * 2;
 
@@ -36,7 +36,7 @@ export const ResourcesTree = ({
 
   const { instruction } = useDropTargetResourcesList({
     ref: projectResourcesHeaderRef,
-    rootResourcesNodes: resourcesTree.childNodes,
+    rootResourcesNodes: tree.childNodes,
   });
 
   const shouldRenderChildren = expanded || isAddingRootFileNode;
@@ -46,17 +46,18 @@ export const ResourcesTree = ({
       <ResourcesTreeHeader expanded={expanded} offsetLeft={listHeaderOffset} ref={projectResourcesHeaderRef} />
 
       {shouldRenderChildren && (
-        <ResourcesTreeChildren rootResourcesNodes={resourcesTree.childNodes} parentNode={resourcesTree} depth={1} />
+        <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={1} />
       )}
-      {isAddingRootFileNode && (
-        <ResourceNodeAddForm
-          depth={1}
-          isAddingFolderNode={isAddingRootFolderNode}
-          handleAddFormSubmit={handleRootAddFormSubmit}
-          handleAddFormCancel={handleRootAddFormCancel}
-          restrictedNames={[]}
-        />
-      )}
+      {isAddingRootFileNode ||
+        (isAddingRootFolderNode && (
+          <ResourceNodeAddForm
+            depth={1}
+            isAddingFolderNode={isAddingRootFolderNode}
+            handleAddFormSubmit={handleRootAddFormSubmit}
+            handleAddFormCancel={handleRootAddFormCancel}
+            restrictedNames={[]}
+          />
+        ))}
     </Tree.List>
   );
 };

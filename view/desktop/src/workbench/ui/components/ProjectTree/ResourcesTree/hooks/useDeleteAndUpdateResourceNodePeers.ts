@@ -4,13 +4,13 @@ import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
-import { ResourceNode, ResourcesTree } from "../../types";
+import { IResourcesTree, ResourceNode } from "../../types";
 import { getAllNestedResources, siblingsAfterRemovalPayload } from "../../utils";
 
 interface UseDeleteAndUpdateResourceNodePeersProps {
   projectId: string;
   node: ResourceNode;
-  parentNode: ResourceNode | ResourcesTree;
+  parentNode: ResourceNode | IResourcesTree;
 }
 
 //TODO finish this hook

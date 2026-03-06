@@ -6,7 +6,7 @@ import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-d
 
 import { ProjectDragType } from "../../constants";
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../../types";
+import { ProjectTree } from "../../types";
 import { isSourceTreeRootNode } from "../../utils";
 import { getTreeRootNodeSourceData } from "../getters/getTreeRootNodeSourceData";
 import { DragTreeRootNodeData } from "../types.dnd";
@@ -14,7 +14,7 @@ import { DragTreeRootNodeData } from "../types.dnd";
 interface UseDraggableRootNodeProps {
   nodeRef: RefObject<HTMLUListElement | null>;
   headerRef: RefObject<HTMLLIElement | null>;
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   isRenamingNode: boolean;
 }
 

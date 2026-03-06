@@ -5,10 +5,10 @@ import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTreeRootNode } from "../../types";
+import { ProjectTree } from "../../types";
 import { createResourceKind } from "../../utils";
 
-export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
+export const useRootNodeAddForm = (node: ProjectTree) => {
   const { id } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
 
@@ -19,7 +19,7 @@ export const useRootNodeAddForm = (node: ProjectTreeRootNode) => {
 
   const handleRootAddFormSubmit = async (name: string) => {
     const newName = name.trim();
-    const newOrder = node.childNodes.length + 1;
+    const newOrder = node.resourcesTree.childNodes.length + 1;
     const newResource = createResourceKind({
       name: newName,
       path: "",
