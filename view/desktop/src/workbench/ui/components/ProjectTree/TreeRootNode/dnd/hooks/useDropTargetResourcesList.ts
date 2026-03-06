@@ -5,16 +5,16 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ProjectDragType } from "../../../constants";
 import { LocationResourcesListData } from "../../../dnd/types.dnd";
-import { ProjectTreeRootNode } from "../../../types";
+import { ResourcesTree } from "../../../types";
 import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
 import { canCombineToResourcesList } from "../validation/canCombineToResourcesList";
 
 interface UseDropTargetResourcesListProps {
   ref: RefObject<HTMLDivElement | null>;
-  tree: ProjectTreeRootNode;
+  resourcesTree: ResourcesTree;
 }
 
-export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResourcesListProps) => {
+export const useDropTargetResourcesList = ({ ref, resourcesTree }: UseDropTargetResourcesListProps) => {
   const [instruction, setInstruction] = useState<Instruction | null>(null);
 
   useEffect(() => {
@@ -28,7 +28,7 @@ export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResources
         const sourceData = getSourceProjectTreeNodeData(source);
         const locationData: LocationResourcesListData = {
           type: ProjectDragType.RESOURCES_LIST,
-          data: { tree },
+          data: { resourcesTree },
         };
 
         return attachInstruction(locationData, {
@@ -51,7 +51,7 @@ export const useDropTargetResourcesList = ({ ref, tree }: UseDropTargetResources
         setInstruction(null);
       },
     });
-  }, [ref, tree]);
+  }, [ref, resourcesTree]);
 
   return {
     instruction,

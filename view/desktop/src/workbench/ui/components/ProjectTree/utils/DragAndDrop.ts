@@ -58,7 +58,9 @@ export const getAllNestedResources = (node: ResourceNode): ListProjectResourceIt
     result.push(...getAllNestedResources(child));
   }
 
-  return result;
+  const sortedResult = result.sort((a, b) => a.path.segments.length - b.path.segments.length);
+
+  return sortedResult;
 };
 
 export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {

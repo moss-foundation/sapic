@@ -32,11 +32,6 @@ export const handleNodeOnNodeWithinProject = async ({
   locationTreeNodeData,
   operation,
 }: HandleNodeOnNodeWithinProjectProps) => {
-  console.log("handleNodeOnNodeWithinProject", {
-    sourceTreeNodeData,
-    locationTreeNodeData,
-    operation,
-  });
   const dropIndex =
     operation === "reorder-before" ? locationTreeNodeData.node.order! - 0.5 : locationTreeNodeData.node.order! + 0.5;
 

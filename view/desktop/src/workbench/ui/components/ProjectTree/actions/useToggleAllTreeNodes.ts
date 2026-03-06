@@ -5,7 +5,7 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 export const useToggleAllTreeNodes = (id: string) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const localResourceSummaries = useGetResourcesSummariesByProjectId(id);
+  const { data: localResourceSummaries } = useGetResourcesSummariesByProjectId(id);
 
   const expandAllNodes = async () => {
     const resourcesToUpdate = localResourceSummaries.filter(

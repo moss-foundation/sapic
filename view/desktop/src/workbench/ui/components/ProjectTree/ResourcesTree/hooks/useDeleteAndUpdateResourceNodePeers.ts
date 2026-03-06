@@ -4,13 +4,13 @@ import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
-import { ResourceNode } from "../../types";
+import { ResourceNode, ResourcesTree } from "../../types";
 import { getAllNestedResources, siblingsAfterRemovalPayload } from "../../utils";
 
 interface UseDeleteAndUpdateResourceNodePeersProps {
   projectId: string;
   node: ResourceNode;
-  parentNode?: ResourceNode;
+  parentNode: ResourceNode | ResourcesTree;
 }
 
 //TODO finish this hook
@@ -32,7 +32,8 @@ export const useDeleteAndUpdateResourceNodePeers = ({
       },
     });
 
-    const isResourcesListRoot = parentNode === undefined;
+    //TODO make another way to check if the parentNode is a resources list root
+    const isResourcesListRoot = "projectId" in parentNode;
 
     const peerNodes = isResourcesListRoot ? node.childNodes : parentNode.childNodes;
 

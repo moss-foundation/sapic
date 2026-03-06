@@ -1,18 +1,19 @@
 import { Tree } from "@/lib/ui/Tree";
 
-import { ResourceNode } from "../types";
+import { ResourceNode, ResourcesTree } from "../types";
 import { ResourcesTreeNode } from "./ResourcesTreeNode";
 
 interface ResourcesTreeChildrenProps {
   rootResourcesNodes: ResourceNode[];
+  parentNode: ResourcesTree | ResourceNode;
   depth: number;
 }
 
-export const ResourcesTreeChildren = ({ rootResourcesNodes, depth }: ResourcesTreeChildrenProps) => {
+export const ResourcesTreeChildren = ({ rootResourcesNodes, parentNode, depth }: ResourcesTreeChildrenProps) => {
   return (
     <Tree.ListChildren>
       {rootResourcesNodes.map((node) => (
-        <ResourcesTreeNode key={node.id} node={node} depth={depth + 1} />
+        <ResourcesTreeNode key={node.id} node={node} parentNode={parentNode} depth={depth + 1} />
       ))}
     </Tree.ListChildren>
   );

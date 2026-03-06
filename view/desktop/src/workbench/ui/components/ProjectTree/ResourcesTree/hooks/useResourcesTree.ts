@@ -3,18 +3,20 @@ import { useMemo } from "react";
 import { useGetResourcesSummariesByProjectId } from "@/db/resourceSummaries/hooks/useGetResourcesSummariesByProjectId";
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ResourceNode, ResourcesTree } from "@/workbench/ui/components/ProjectTree/types";
 
-export const useResourcesNodes = (projectId: string) => {
+export const useResourcesTree = (projectId: string): ResourcesTree => {
   const { data: localResourceSummaries } = useGetResourcesSummariesByProjectId(projectId);
 
-  const rootResourcesNodes = useMemo(() => {
-    return sortObjectsByOrder(buildResourceTreeNodes(projectId, localResourceSummaries));
+  const resourcesTree = useMemo(() => {
+    return {
+      id: `resources-tree-${projectId}`,
+      projectId,
+      childNodes: sortObjectsByOrder(buildResourceTreeNodes(projectId, localResourceSummaries)),
+    };
   }, [projectId, localResourceSummaries]);
 
-  return {
-    rootResourcesNodes,
-  };
+  return resourcesTree;
 };
 
 const resourceToTreeNode = (resource: LocalResourceSummary): ResourceNode => ({

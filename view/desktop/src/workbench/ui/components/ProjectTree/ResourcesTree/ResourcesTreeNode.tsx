@@ -3,7 +3,7 @@ import { useContext, useRef, useState } from "react";
 import { Tree } from "@/lib/ui/Tree";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ResourceNode } from "../types";
+import { ResourceNode, ResourcesTree } from "../types";
 import { getChildrenNames } from "../utils";
 import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
@@ -16,7 +16,7 @@ import ResourcesTreeNodeDetails from "./ResourcesTreeNodeDetails";
 
 interface ResourcesTreeNodeProps {
   node: ResourceNode;
-  parentNode?: ResourceNode;
+  parentNode: ResourceNode | ResourcesTree;
   depth: number;
 }
 
@@ -81,7 +81,9 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
         />
       )}
 
-      {shouldRenderChildNodes && <ResourcesTreeChildren rootResourcesNodes={node.childNodes} depth={depth + 1} />}
+      {shouldRenderChildNodes && (
+        <ResourcesTreeChildren rootResourcesNodes={node.childNodes} parentNode={parentNode} depth={depth + 1} />
+      )}
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <ResourceNodeAddForm

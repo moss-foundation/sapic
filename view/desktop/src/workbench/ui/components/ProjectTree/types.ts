@@ -16,17 +16,22 @@ export interface ResourceNode extends ListProjectResourceItem {
   childNodes: ResourceNode[];
 }
 
+export interface ResourcesTree {
+  id: string;
+  projectId: string;
+  childNodes: ResourceNode[];
+}
+
 export interface DragNode {
   projectId: string;
   node: ResourceNode;
-  parentNode: ResourceNode;
+  parentNode: ResourceNode | ResourcesTree;
 }
 
 export interface DropNode {
   projectId: string;
   node: ResourceNode;
-  parentNode: ResourceNode | ProjectTreeRootNode;
-  instruction?: Instruction;
+  parentNode: ResourceNode | ResourcesTree;
 }
 
 export interface DropRootNode {

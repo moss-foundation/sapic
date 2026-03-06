@@ -32,8 +32,8 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
     isAddingRootFolderNode,
     setIsAddingRootFileNode,
     setIsAddingRootFolderNode,
-    handleRootAddFormCancel,
     handleRootAddFormSubmit,
+    handleRootAddFormCancel,
   } = useRootNodeAddForm(tree);
 
   const {
@@ -82,7 +82,6 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
 
       {shouldRenderLists && (
         <TreeRootNodeLists
-          tree={tree}
           isAddingRootFileNode={isAddingRootFileNode}
           isAddingRootFolderNode={isAddingRootFolderNode}
           handleRootAddFormSubmit={handleRootAddFormSubmit}

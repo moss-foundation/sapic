@@ -1,5 +1,5 @@
 import { ProjectDragType } from "../constants";
-import { ProjectTreeRootNode } from "../types";
+import { ProjectTreeRootNode, ResourcesTree } from "../types";
 
 export interface DragTreeRootNodeData {
   type: ProjectDragType.ROOT_NODE;
@@ -13,7 +13,7 @@ export interface DragTreeRootNodeData {
 export interface LocationResourcesListData {
   type: ProjectDragType.RESOURCES_LIST;
   data: {
-    tree: ProjectTreeRootNode;
+    resourcesTree: ResourcesTree;
   };
   [key: string | symbol]: unknown;
 }

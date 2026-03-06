@@ -12,7 +12,7 @@ export const canCombineToResourcesList = (
     return "not-available";
   }
 
-  if (hasDirectDescendantWithSimilarName(locationData.data.tree, sourceData.node)) {
+  if (hasDirectDescendantWithSimilarName(locationData.data.resourcesTree, sourceData.node)) {
     return "blocked";
   }
 

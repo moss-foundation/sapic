@@ -11,7 +11,7 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { ResourceIcon } from "../../ResourceIcon";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ResourceNode } from "../types";
+import { ResourceNode, ResourcesTree } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import { ResourceNodePreview } from "./dnd/ResourceNodePreview";
 import { ResourcesTreeNodeActions } from "./ResourcesTreeNodeActions";
@@ -19,7 +19,7 @@ import { ResourcesTreeNodeActions } from "./ResourcesTreeNodeActions";
 interface ResourcesTreeNodeDetailsProps {
   ref?: React.Ref<HTMLDivElement>;
   node: ResourceNode;
-  parentNode?: ResourceNode;
+  parentNode: ResourceNode | ResourcesTree;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;

@@ -4,14 +4,31 @@ import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvi
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTree } from "../ResourcesTree/ResourcesTree";
 
-export const TreeRootNodeLists = () => {
+interface TreeRootNodeListsProps {
+  isAddingRootFileNode: boolean;
+  isAddingRootFolderNode: boolean;
+  handleRootAddFormSubmit: (name: string) => void;
+  handleRootAddFormCancel: () => void;
+}
+
+export const TreeRootNodeLists = ({
+  isAddingRootFileNode,
+  isAddingRootFolderNode,
+  handleRootAddFormSubmit,
+  handleRootAddFormCancel,
+}: TreeRootNodeListsProps) => {
   const { id } = useContext(ProjectTreeContext);
 
   return (
     <div className="flex flex-col gap-1">
       <ProjectEnvironmentsListRoot projectId={id} />
 
-      <ResourcesTree />
+      <ResourcesTree
+        isAddingRootFileNode={isAddingRootFileNode}
+        isAddingRootFolderNode={isAddingRootFolderNode}
+        handleRootAddFormSubmit={handleRootAddFormSubmit}
+        handleRootAddFormCancel={handleRootAddFormCancel}
+      />
     </div>
   );
 };
