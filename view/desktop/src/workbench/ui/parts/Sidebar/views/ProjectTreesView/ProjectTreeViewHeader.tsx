@@ -19,8 +19,8 @@ export const ProjectTreeViewHeader = () => {
 
   const { clearAllProjectResourcesCache } = useClearAllProjectResources();
 
-  const projectSummaries = useGetAllLocalProjectSummaries();
-  const resourceSummaries = useGetAllLocalResourceSummaries();
+  const { data: projectSummaries } = useGetAllLocalProjectSummaries();
+  const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 

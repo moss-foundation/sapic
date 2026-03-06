@@ -2,14 +2,14 @@ import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-dr
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 import { ProjectDragType } from "../constants";
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { ProjectTree, ResourceNode } from "../types";
 
 export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
   return source.data.type === ProjectDragType.ROOT_NODE;
 };
 
-export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRootNode): boolean => {
-  const checkIfAllNodesAreExpanded = (node: ProjectTreeNode): boolean => {
+export const checkIfAllFoldersAreExpanded = (tree: ProjectTree): boolean => {
+  const checkIfAllNodesAreExpanded = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (!node.expanded) return false;
@@ -19,13 +19,13 @@ export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRootNode): boolean
     return node.childNodes.every(checkIfAllNodesAreExpanded);
   };
 
-  if (!tree.childNodes || tree.childNodes.length === 0) return true;
+  if (!tree.resourcesTree.childNodes || tree.resourcesTree.childNodes.length === 0) return true;
 
-  return tree.childNodes.every(checkIfAllNodesAreExpanded);
+  return tree.resourcesTree.childNodes.every(checkIfAllNodesAreExpanded);
 };
 
-export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRootNode): boolean => {
-  const checkIfAllNodesAreCollapsed = (node: ProjectTreeNode): boolean => {
+export const checkIfAllFoldersAreCollapsed = (tree: ProjectTree): boolean => {
+  const checkIfAllNodesAreCollapsed = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
     if (node.expanded) return false;
@@ -35,19 +35,9 @@ export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRootNode): boolea
     return node.childNodes.every(checkIfAllNodesAreCollapsed);
   };
 
-  if (!tree.childNodes || tree.childNodes.length === 0) return true;
+  if (!tree.resourcesTree.childNodes || tree.resourcesTree.childNodes.length === 0) return true;
 
-  return tree.childNodes.every(checkIfAllNodesAreCollapsed);
-};
-
-export const getTreeRootNodeSourceData = (source: ElementDragPayload) => {
-  return source.data as {
-    type: "TreeRootNode";
-    data: {
-      projectId: string;
-      node: ProjectTreeRootNode;
-    };
-  };
+  return tree.resourcesTree.childNodes.every(checkIfAllNodesAreCollapsed);
 };
 
 export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
@@ -64,27 +54,11 @@ export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
     data: {
       instruction: Instruction;
       projectId: string;
-      node: ProjectTreeRootNode;
+      node: ProjectTree;
     };
   };
 };
 
-export const calculateShouldRenderRootChildNodes = (
-  node: ProjectTreeRootNode,
-  isAddingRootNodeFile: boolean,
-  isRenamingRootNode: boolean
-) => {
-  if (!node.expanded) {
-    return false;
-  }
-
-  if (isAddingRootNodeFile || isRenamingRootNode) {
-    return true;
-  }
-
-  return true;
-};
-
-export const getChildrenNames = (node: ProjectTreeNode | ProjectTreeRootNode) => {
+export const getChildrenNames = (node: ResourceNode) => {
   return node.childNodes.map((childNode) => childNode.name);
 };

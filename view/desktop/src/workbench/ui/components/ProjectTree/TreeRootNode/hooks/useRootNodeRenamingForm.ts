@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import { useUpdateProject } from "@/adapters/tanstackQuery/project";
 
-import { ProjectTreeRootNode } from "../../types";
+import { ProjectTree } from "../../types";
 
-export const useRootNodeRenamingForm = (node: ProjectTreeRootNode) => {
+export const useRootNodeRenamingForm = (node: ProjectTree) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
 
   const { mutateAsync: updateProject } = useUpdateProject();

@@ -9,15 +9,16 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { useDraggableEnvironmentItem } from "../dnd/hooks/useDraggableEnvironmentItem";
-import { EnvironmentItemControls } from "./EnvironmentItemControls";
+import { EnvironmentItemDetails } from "./EnvironmentItemDetails";
 import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
 interface EnvironmentItemProps {
   environment: EnvironmentSummary;
+  offsetLeft?: number;
 }
 
-export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
+export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
@@ -69,9 +70,11 @@ export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
           restrictedNames={restrictedNames}
           handleRename={handleRename}
           handleCancel={handleCancel}
+          offsetLeft={offsetLeft}
         />
       ) : (
-        <EnvironmentItemControls
+        <EnvironmentItemDetails
+          offsetLeft={offsetLeft}
           type={envType}
           environment={environment}
           instruction={instruction}

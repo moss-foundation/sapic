@@ -1,3 +1,4 @@
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { resourceIpc } from "@/infra/ipc/resourceIpc";
 import { ListProjectResourcesInput, ListProjectResourcesOutput } from "@repo/ipc";
 import {
@@ -28,7 +29,6 @@ interface IResourceService {
   batchUpdate: (projectId: string, input: BatchUpdateResourceInput, channelEvent: Channel<BatchUpdateResourceEvent>) => Promise<BatchUpdateResourceOutput>;
 
   delete: (projectId: string, input: DeleteResourceInput) => Promise<DeleteResourceOutput>;
-
 }
 
 export const resourceService: IResourceService = {
@@ -54,6 +54,23 @@ export const resourceService: IResourceService = {
   },
 
   delete: async (projectId, input) => {
-    return await resourceIpc.delete(projectId, input);
+    const output = await resourceIpc.delete(projectId, input);
+
+    const deletedSummary = resourceSummariesCollection.has(input.id) ? resourceSummariesCollection.get(input.id) : null;
+    if (deletedSummary) {
+      resourceSummariesCollection.delete(input.id);
+      resourceSummariesCollection.forEach((resource) => {
+        if (resource.path.segments.length > deletedSummary.path.segments.length) {
+          const isNested = deletedSummary.path.segments.every(
+            (segment, index) => resource.path.segments[index] === segment
+          );
+          if (isNested) {
+            resourceSummariesCollection.delete(resource.id);
+          }
+        }
+      });
+    }
+
+    return output;
   },
 };

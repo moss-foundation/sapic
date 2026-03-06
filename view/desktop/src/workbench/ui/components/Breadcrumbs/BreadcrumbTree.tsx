@@ -1,18 +1,18 @@
 import { useState } from "react";
 
-import { ProjectTreeNode } from "../ProjectTree/types";
+import { ResourceNode } from "../ProjectTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
 import { closeAllNodesInTree, updateTreeNode } from "./utils";
 
 interface BreadcrumbTreeProps {
-  tree: ProjectTreeNode;
+  tree: ResourceNode;
   projectId: string;
 }
 
 export const BreadcrumbTree = ({ tree: initialTree, projectId }: BreadcrumbTreeProps) => {
-  const [tree, setTree] = useState<ProjectTreeNode>(closeAllNodesInTree(initialTree));
+  const [tree, setTree] = useState<ResourceNode>(closeAllNodesInTree(initialTree));
 
-  const handleNodeUpdate = (updatedNode: ProjectTreeNode) => {
+  const handleNodeUpdate = (updatedNode: ResourceNode) => {
     setTree(updateTreeNode(tree, updatedNode));
   };
 

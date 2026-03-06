@@ -7,13 +7,13 @@ import { DirDepthIndicator } from "../DirDepthIndicator";
 interface NodeChildrenProps extends HTMLAttributes<HTMLUListElement> {
   children?: React.ReactNode;
   className?: string;
-  depth: number;
+  dirDepthIndicatorOffset: number;
 }
 
-export const NodeChildren = ({ children, className, depth, ...props }: NodeChildrenProps) => {
+export const NodeChildren = ({ children, className, dirDepthIndicatorOffset, ...props }: NodeChildrenProps) => {
   return (
     <ul className={cn("relative h-full", className)} {...props}>
-      <DirDepthIndicator depth={depth} />
+      <DirDepthIndicator offset={dirDepthIndicatorOffset} />
 
       {children}
     </ul>

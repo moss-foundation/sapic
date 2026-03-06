@@ -3,12 +3,12 @@ import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import Icon from "../../../../lib/ui/Icon";
-import { ProjectTreeNode } from "../ProjectTree/types";
+import { ResourceNode } from "../ProjectTree/types";
 import { ResourceIcon } from "../ResourceIcon";
 
 interface BreadcrumbNodeProps {
-  node: ProjectTreeNode;
-  onNodeUpdate: (node: ProjectTreeNode) => void;
+  node: ResourceNode;
+  onNodeUpdate: (node: ResourceNode) => void;
   depth?: number;
   paddingLeft?: number;
   paddingRight?: number;

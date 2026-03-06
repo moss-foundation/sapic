@@ -3,10 +3,10 @@ import { ListProjectResourceItem } from "@repo/ipc";
 import { BatchUpdateResourceKind } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-import { ProjectTreeNode, ProjectTreeRootNode } from "../types";
+import { IResourcesTree, ResourceNode } from "../types";
 
 export const getPathWithoutName = async (
-  node: ProjectTreeNode | ListProjectResourceItem
+  node: ResourceNode | ListProjectResourceItem
 ): Promise<ListProjectResourceItem["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
   const newRaw = newSegments.length > 0 ? await join(...newSegments) : "";
@@ -154,8 +154,8 @@ export const siblingsAfterRemovalPayload = ({
   nodes,
   removedNode,
 }: {
-  nodes: ProjectTreeNode[];
-  removedNode: ProjectTreeNode;
+  nodes: ResourceNode[];
+  removedNode: ResourceNode;
 }) => {
   const sortedChildren = sortObjectsByOrder(nodes);
   return sortedChildren
@@ -167,54 +167,13 @@ export const siblingsAfterRemovalPayload = ({
     );
 };
 
-export const reorderedNodesForSameDirPayload = ({
-  nodes,
-  movedId,
-  moveToIndex,
-}: {
-  nodes: ProjectTreeNode[];
-  movedId: string;
-  moveToIndex: number;
-}) => {
-  const nodeToMove = nodes.find((n) => n.id === movedId);
-
-  if (!nodeToMove) {
-    console.error("Node to move not found", { movedId, nodes });
-    return [];
-  }
-
-  const sortedParentNodes = sortObjectsByOrder(nodes);
-  const updatedSourceNodesPayload = [
-    ...sortedParentNodes.slice(0, moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
-    nodeToMove,
-    ...sortedParentNodes.slice(moveToIndex).filter((resource) => resource.id !== nodeToMove.id),
-  ]
-    .map((resource, index) => ({
-      ...resource,
-      order: index + 1,
-    }))
-    .filter((resource) => {
-      const nodeInLocation = nodes.find((n) => n.id === resource.id);
-      return nodeInLocation?.order !== resource.order;
-    })
-    .map((resource) => {
-      if (resource.kind === "Dir") {
-        return makeDirUpdatePayload({ id: resource.id, order: resource.order });
-      } else {
-        return makeItemUpdatePayload({ id: resource.id, order: resource.order });
-      }
-    });
-
-  return updatedSourceNodesPayload;
-};
-
 export const reorderedNodesForDifferentDirPayload = ({
   node,
   newNode,
   moveToIndex,
 }: {
-  node: ProjectTreeNode | ProjectTreeRootNode;
-  newNode: ProjectTreeNode;
+  node: ResourceNode | IResourcesTree;
+  newNode: ResourceNode;
   moveToIndex: number;
 }) => {
   const sortedTargetNodes = sortObjectsByOrder(node.childNodes);
@@ -254,5 +213,5 @@ export const reorderedNodesForDifferentDirPayload = ({
   return targetResourcesToUpdate;
 };
 
-export const resolveParentPath = (parentNode: ProjectTreeNode | ProjectTreeRootNode): string =>
+export const resolveParentPath = (parentNode: ResourceNode | IResourcesTree): string =>
   "path" in parentNode ? parentNode.path.raw : "";

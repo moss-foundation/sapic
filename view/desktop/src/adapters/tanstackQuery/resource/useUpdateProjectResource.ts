@@ -1,6 +1,6 @@
 import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceService } from "@/domains/resource/resourceService";
-import { ListProjectResourceItem } from "@repo/ipc";
+import { ListProjectResourcesOutput } from "@repo/ipc";
 import { UpdateResourceInput, UpdateResourceOutput } from "@repo/moss-project";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -23,8 +23,8 @@ export const useUpdateProjectResource = () => {
     onSuccess: async (data, variables) => {
       queryClient.setQueryData(
         [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, variables.projectId],
-        (old: ListProjectResourceItem[]) => {
-          return old.map((oldResource) => {
+        (old: ListProjectResourcesOutput): ListProjectResourcesOutput => {
+          const newResources = old.items.map((oldResource) => {
             const resourceDataFromBackend = "ITEM" in data ? data.ITEM : data.DIR;
             const updatedResourceData =
               "ITEM" in variables.updateResourceInput
@@ -39,6 +39,11 @@ export const useUpdateProjectResource = () => {
             }
             return oldResource;
           });
+
+          return {
+            ...old,
+            items: newResources,
+          };
         }
       );
       if ("ITEM" in data) {

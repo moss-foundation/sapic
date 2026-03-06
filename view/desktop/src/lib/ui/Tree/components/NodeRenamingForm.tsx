@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useClickOutside, useFocusInputOnMount, useValidateInput } from "@/hooks";
+import { cn } from "@/utils";
 import { platform } from "@tauri-apps/plugin-os";
 
 interface NodeRenamingFormProps {
@@ -18,7 +19,10 @@ const leadingClass = isMac || isLinux ? "leading-[19px]" : "";
 export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentName }: NodeRenamingFormProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
   const [value, setValue] = useState(String(currentName));
+
+  const isSameValue = value.trim().toLowerCase() === currentName.trim().toLowerCase();
 
   const { isInitialized } = useFocusInputOnMount({
     inputRef,
@@ -33,21 +37,12 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   });
 
   const finishEditing = () => {
-    if (!isValid) {
-      onCancel();
-      return;
-    }
-
-    onSubmit(value);
+    if (isValid) onSubmit(value);
+    else onCancel();
   };
 
   const handleKeyUp = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Escape") onCancel();
-  };
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    finishEditing();
   };
 
   // We use onBlur for Windows and useClickOutside for macOS
@@ -63,18 +58,20 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
   useEffect(() => {
     // Delay to avoid focus bug on macOS
     const timer = setTimeout(() => {
-      if (inputRef.current) {
-        inputRef.current.focus();
-        const dotIndex = inputRef.current.value.indexOf(".");
-        inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : inputRef.current.value.length);
-        isInitialized.current = true;
-      }
+      if (!inputRef.current) return;
+
+      inputRef.current.focus();
+      const dotIndex = inputRef.current.value.indexOf(".");
+      inputRef.current.setSelectionRange(0, dotIndex >= 0 ? dotIndex : inputRef.current.value.length);
+
+      isInitialized.current = true;
     }, 100);
+
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <form onSubmit={handleSubmit} className="w-full grow">
+    <form action={finishEditing} className="w-full grow">
       <div ref={containerRef}>
         <input
           ref={inputRef}
@@ -83,7 +80,13 @@ export const NodeRenamingForm = ({ onSubmit, onCancel, restrictedNames, currentN
           autoFocus
           minLength={1}
           maxLength={100}
-          className={`z-1 rounded-xs outline-(--moss-primary) flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 bg-white outline outline-offset-1 ${leadingClass}`}
+          className={cn(
+            `z-1 rounded-xs outline-(--moss-primary) flex w-[calc(100%-8px)] min-w-0 grow items-center gap-1 bg-white outline outline-offset-1`,
+            {
+              "outline-(--moss-error)": !isValid && !isSameValue,
+            },
+            leadingClass
+          )}
           onKeyUp={handleKeyUp}
           onBlur={isMac ? undefined : handleBlur}
           required

@@ -1,4 +1,5 @@
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import {
   batchGetItemExpanded,
   batchPutItemExpanded,
@@ -41,6 +42,11 @@ export const treeItemStateService: ITreeItemStateService = {
         draft.order = order;
       });
     }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
+        draft.order = order;
+      });
+    }
     return order;
   },
   batchGetOrder: async (ids, workspaceId) => {
@@ -54,12 +60,22 @@ export const treeItemStateService: ITreeItemStateService = {
         draft.order = order;
       });
     }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
+        draft.order = order;
+      });
+    }
   },
   batchPutOrder: async (items, workspaceId) => {
     await batchPutItemOrder(items, workspaceId);
     Object.entries(items).forEach(([id, order]) => {
       if (projectSummariesCollection.has(id)) {
         projectSummariesCollection.update(id, (draft) => {
+          draft.order = order;
+        });
+      }
+      if (resourceSummariesCollection.has(id)) {
+        resourceSummariesCollection.update(id, (draft) => {
           draft.order = order;
         });
       }
@@ -72,12 +88,22 @@ export const treeItemStateService: ITreeItemStateService = {
         draft.order = undefined;
       });
     }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
+        draft.order = undefined;
+      });
+    }
   },
   batchRemoveOrder: async (ids, workspaceId) => {
     await batchRemoveItemOrder(ids, workspaceId);
     ids.forEach((id) => {
       if (projectSummariesCollection.has(id)) {
         projectSummariesCollection.update(id, (draft) => {
+          draft.order = undefined;
+        });
+      }
+      if (resourceSummariesCollection.has(id)) {
+        resourceSummariesCollection.update(id, (draft) => {
           draft.order = undefined;
         });
       }
@@ -89,6 +115,11 @@ export const treeItemStateService: ITreeItemStateService = {
     const expanded = value === "none" ? false : (value.value as boolean);
     if (projectSummariesCollection.has(id)) {
       projectSummariesCollection.update(id, (draft) => {
+        draft.expanded = expanded;
+      });
+    }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
         draft.expanded = expanded;
       });
     }
@@ -105,12 +136,22 @@ export const treeItemStateService: ITreeItemStateService = {
         draft.expanded = expanded;
       });
     }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
+        draft.expanded = expanded;
+      });
+    }
   },
   batchPutExpanded: async (items, workspaceId) => {
     await batchPutItemExpanded(items, workspaceId);
     Object.entries(items).forEach(([id, expanded]) => {
       if (projectSummariesCollection.has(id)) {
         projectSummariesCollection.update(id, (draft) => {
+          draft.expanded = expanded;
+        });
+      }
+      if (resourceSummariesCollection.has(id)) {
+        resourceSummariesCollection.update(id, (draft) => {
           draft.expanded = expanded;
         });
       }
@@ -123,12 +164,22 @@ export const treeItemStateService: ITreeItemStateService = {
         draft.expanded = false;
       });
     }
+    if (resourceSummariesCollection.has(id)) {
+      resourceSummariesCollection.update(id, (draft) => {
+        draft.expanded = false;
+      });
+    }
   },
   batchRemoveExpanded: async (ids, workspaceId) => {
     await batchRemoveItemExpanded(ids, workspaceId);
     ids.forEach((id) => {
       if (projectSummariesCollection.has(id)) {
         projectSummariesCollection.update(id, (draft) => {
+          draft.expanded = false;
+        });
+      }
+      if (resourceSummariesCollection.has(id)) {
+        resourceSummariesCollection.update(id, (draft) => {
           draft.expanded = false;
         });
       }

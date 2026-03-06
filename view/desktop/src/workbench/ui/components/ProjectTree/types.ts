@@ -1,50 +1,51 @@
+import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { WorkspaceMode } from "@repo/base";
 import { ListProjectItem, ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "./constants";
 
-export interface ProjectTreeRootNode extends ListProjectItem {
+export interface ProjectTree extends ListProjectItem {
   order?: number | undefined;
   expanded: boolean;
-  childNodes: ProjectTreeNode[];
+  resourcesTree: IResourcesTree;
+  environmentsList: EnvironmentSummary[];
 }
 
-export interface ProjectTreeNode extends ListProjectResourceItem {
+export interface ResourceNode extends ListProjectResourceItem {
   order?: number | undefined;
   expanded: boolean;
-  childNodes: ProjectTreeNode[];
+  childNodes: ResourceNode[];
 }
 
-export interface ProjectTreeRootNodeProps {
-  node: ProjectTreeRootNode;
+export interface IResourcesTree {
+  id: string;
+  projectId: string;
+  childNodes: ResourceNode[];
 }
 
 export interface DragNode {
   projectId: string;
-  repository?: string;
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode;
+  node: ResourceNode;
+  parentNode: ResourceNode | IResourcesTree;
 }
 
 export interface DropNode {
   projectId: string;
-  repository?: string;
-  node: ProjectTreeNode;
-  parentNode: ProjectTreeNode | ProjectTreeRootNode;
-  instruction?: Instruction;
+  node: ResourceNode;
+  parentNode: ResourceNode | IResourcesTree;
 }
 
 export interface DropRootNode {
   type: ProjectDragType.ROOT_NODE;
   projectId: string;
   repository?: string;
-  node: ProjectTreeRootNode;
+  node: ProjectTree;
   instruction?: Instruction;
 }
 
 export interface ProjectTreeProps {
-  tree: ProjectTreeRootNode;
+  tree: ProjectTree;
 
   treePaddingLeft?: number;
   treePaddingRight?: number;

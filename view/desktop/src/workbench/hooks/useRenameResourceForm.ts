@@ -4,9 +4,9 @@ import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { join } from "@tauri-apps/api/path";
 
-import { ProjectTreeNode } from "../ui/components/ProjectTree/types";
+import { ResourceNode } from "../ui/components/ProjectTree/types";
 
-export const useRenameResourceForm = (resource: ProjectTreeNode, projectId: string) => {
+export const useRenameResourceForm = (resource: ResourceNode, projectId: string) => {
   const { fetchResourcesForPath } = useFetchResourcesForPath();
   const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { api } = useTabbedPaneStore();

@@ -13,7 +13,7 @@ import { isLocationProjectEnvironmentList } from "../validation/isLocationProjec
 import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 interface UseDropTargetProjectEnvironmentListProps {
-  refList: RefObject<HTMLUListElement | null>;
+  refList: RefObject<HTMLDivElement | null>;
   projectId: string;
   projectEnvironments: EnvironmentSummary[];
 }

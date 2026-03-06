@@ -1,59 +1,53 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
-import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
-import { cn } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
+import { ProjectTree } from "../../ProjectTree/types";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
-import { ProjectEnvironmentsListRootControls } from "./ProjectEnvironmentsListRootControls";
+import { ProjectEnvironmentsListRootHeaderDetails } from "./ProjectEnvironmentsListRootHeaderDetails";
 
 interface ProjectEnvironmentsListRootProps {
-  projectId: string;
+  tree: ProjectTree;
 }
 
-export const ProjectEnvironmentsListRoot = ({ projectId }: ProjectEnvironmentsListRootProps) => {
+export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRootProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
 
-  const projectEnvironmentsListRef = useRef<HTMLUListElement>(null);
+  const projectEnvironmentsListRef = useRef<HTMLDivElement>(null);
 
-  const { data: projects } = useListProjects();
-  const { projectEnvironments } = useGetProjectEnvironments(projectId);
+  const { data: expanded = false } = useGetEnvironmentListItemState(tree.id, currentWorkspaceId);
 
-  const project = projects?.items.find((project) => project.id === projectId);
-  const { data: expanded = false } = useGetEnvironmentListItemState(projectId, currentWorkspaceId);
+  const listHeaderOffset = treePaddingLeft * 2;
+  const listItemOffset = treePaddingLeft * 3;
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
-    projectId,
-    projectEnvironments: projectEnvironments ?? [],
+    projectId: tree.id,
+    projectEnvironments: tree.environmentsList ?? [],
   });
 
-  if (!project) {
-    console.error(`Project ${projectId} not found`);
-    return null;
-  }
-
   return (
-    <Tree.RootNode ref={projectEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
-      <Tree.RootNodeHeader disableIndicator={true}>
-        <ProjectEnvironmentsListRootControls
-          project={project}
+    <Tree.List ref={projectEnvironmentsListRef} combineInstruction={instruction}>
+      <Tree.ListHeader offsetLeft={listHeaderOffset}>
+        <ProjectEnvironmentsListRootHeaderDetails
+          project={tree}
           expanded={expanded}
-          count={projectEnvironments?.length ?? 0}
+          count={tree.environmentsList?.length ?? 0}
         />
-      </Tree.RootNodeHeader>
+      </Tree.ListHeader>
 
       {expanded && (
         <Tree.RootNodeChildren hideDirDepthIndicator>
-          {projectEnvironments?.map((environment) => (
-            <EnvironmentItem key={environment.id} environment={environment} />
+          {tree.environmentsList?.map((environment) => (
+            <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
           ))}
         </Tree.RootNodeChildren>
       )}
-    </Tree.RootNode>
+    </Tree.List>
   );
 };
