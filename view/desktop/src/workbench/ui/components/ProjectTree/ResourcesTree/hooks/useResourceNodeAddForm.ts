@@ -31,6 +31,8 @@ export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
     });
 
     try {
+      setIsAddingFileNode(false);
+      setIsAddingFolderNode(false);
       const createdResourceOutput = await resourceService.create(id, newResource);
 
       await treeItemStateService.putOrder(createdResourceOutput.id, newOrder, currentWorkspaceId);
@@ -44,9 +46,6 @@ export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
       });
     } catch (error) {
       console.error(error);
-    } finally {
-      setIsAddingFileNode(false);
-      setIsAddingFolderNode(false);
     }
   };
 
