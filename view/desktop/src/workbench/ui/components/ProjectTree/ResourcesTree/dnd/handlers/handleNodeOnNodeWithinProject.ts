@@ -1,22 +1,15 @@
-import { UseBatchUpdateProjectResourceInput } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
 import { resourceService } from "@/domains/resource/resourceService";
 import { computeSequentialOrders } from "@/utils/computeOrderUpdates";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { BatchUpdateResourceOutput } from "@repo/moss-project";
-import { UseMutateAsyncFunction } from "@tanstack/react-query";
+import { BatchUpdateResourceEvent } from "@repo/moss-project";
+import { Channel } from "@tauri-apps/api/core";
 
 import { DragNode, DropNode } from "../../../types";
 import { reorderedNodesForDifferentDirPayload, resolveParentPath, siblingsAfterRemovalPayload } from "../../../utils";
 
 interface HandleNodeOnNodeWithinProjectProps {
-  batchUpdateProjectResource: UseMutateAsyncFunction<
-    BatchUpdateResourceOutput,
-    Error,
-    UseBatchUpdateProjectResourceInput,
-    unknown
-  >;
   currentWorkspaceId: string;
   sourceTreeNodeData: DragNode;
   locationTreeNodeData: DropNode;
@@ -24,7 +17,6 @@ interface HandleNodeOnNodeWithinProjectProps {
 }
 
 export const handleNodeOnNodeWithinProject = async ({
-  batchUpdateProjectResource,
   currentWorkspaceId,
   sourceTreeNodeData,
   locationTreeNodeData,
@@ -65,12 +57,14 @@ export const handleNodeOnNodeWithinProject = async ({
 
   const allResourcesToUpdate = [...targetResourcesToUpdate, ...sourceResourcesToUpdate];
 
-  await batchUpdateProjectResource({
-    projectId: sourceTreeNodeData.projectId,
-    resources: {
+  const channelEvent = new Channel<BatchUpdateResourceEvent>();
+  await resourceService.batchUpdate(
+    sourceTreeNodeData.projectId,
+    {
       resources: allResourcesToUpdate,
     },
-  });
+    channelEvent
+  );
 
   const orderItems: Record<string, number> = {};
   const expandedItems: Record<string, boolean> = {};

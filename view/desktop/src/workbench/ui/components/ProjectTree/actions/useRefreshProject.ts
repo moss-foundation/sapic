@@ -1,15 +1,13 @@
-import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource/useListProjectResources";
+import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { resourceService } from "@/domains/resource/resourceService";
-import { useQueryClient } from "@tanstack/react-query";
 
 export const useRefreshProject = (projectId: string) => {
-  const queryClient = useQueryClient();
-
   const refreshProject = async () => {
-    queryClient.invalidateQueries({
-      queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, projectId],
+    resourceSummariesCollection.forEach((resource) => {
+      if (resource.projectId === projectId) {
+        resourceSummariesCollection.delete(resource.id);
+      }
     });
-    queryClient.removeQueries({ queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, projectId] });
 
     await resourceService.list({ projectId, mode: { "RELOAD_PATH": "" } });
   };

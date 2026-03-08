@@ -1,8 +1,7 @@
-import { UseBatchUpdateProjectResourceInput } from "@/adapters";
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { BatchUpdateResourceOutput } from "@repo/moss-project";
-import { UseMutateAsyncFunction } from "@tanstack/react-query";
+import { BatchUpdateResourceEvent } from "@repo/moss-project";
+import { Channel } from "@tauri-apps/api/core";
 
 import { DragNode, DropNode } from "../../../types";
 import {
@@ -13,19 +12,12 @@ import {
 } from "../../../utils";
 
 interface HandleNodeOnFolderWithinProjectProps {
-  batchUpdateProjectResource: UseMutateAsyncFunction<
-    BatchUpdateResourceOutput,
-    Error,
-    UseBatchUpdateProjectResourceInput,
-    unknown
-  >;
   currentWorkspaceId: string;
   sourceTreeNodeData: DragNode;
   locationTreeNodeData: DropNode;
 }
 
 export const handleNodeOnFolderWithinProject = async ({
-  batchUpdateProjectResource,
   currentWorkspaceId,
   sourceTreeNodeData,
   locationTreeNodeData,
@@ -52,12 +44,15 @@ export const handleNodeOnFolderWithinProject = async ({
   });
 
   const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-  await batchUpdateProjectResource({
-    projectId: sourceTreeNodeData.projectId,
-    resources: {
+
+  const channelEvent = new Channel<BatchUpdateResourceEvent>();
+  await resourceService.batchUpdate(
+    sourceTreeNodeData.projectId,
+    {
       resources: allUpdates,
     },
-  });
+    channelEvent
+  );
 
   await treeItemStateService.putOrder(sourceTreeNodeData.node.id, newOrder, currentWorkspaceId);
   await treeItemStateService.putExpanded(

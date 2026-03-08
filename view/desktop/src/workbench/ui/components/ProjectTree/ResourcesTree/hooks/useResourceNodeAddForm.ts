@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useCreateProjectResource, useUpdateProjectResource } from "@/adapters";
+import { resourceService } from "@/domains/resource/resourceService";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
@@ -12,9 +12,6 @@ export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
   const { id } = useContext(ProjectTreeContext);
 
   const { currentWorkspaceId } = useCurrentWorkspace();
-
-  const { mutateAsync: createProjectResource } = useCreateProjectResource();
-  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
   const [isAddingFileNode, setIsAddingFileNode] = useState(false);
   const [isAddingFolderNode, setIsAddingFolderNode] = useState(false);
@@ -34,24 +31,15 @@ export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
     });
 
     try {
-      setIsAddingFileNode(false);
-      setIsAddingFolderNode(false);
-
-      const createdResourceOutput = await createProjectResource({
-        projectId: id,
-        input: newResource,
-      });
+      const createdResourceOutput = await resourceService.create(id, newResource);
 
       await treeItemStateService.putOrder(createdResourceOutput.id, newOrder, currentWorkspaceId);
       await treeItemStateService.putExpanded(createdResourceOutput.id, true, currentWorkspaceId);
 
-      await updateProjectResource({
-        projectId: id,
-        updateResourceInput: {
-          DIR: {
-            id: parentNode.id,
-            expanded: true,
-          },
+      await resourceService.update(id, {
+        DIR: {
+          id: parentNode.id,
+          expanded: true,
         },
       });
     } catch (error) {

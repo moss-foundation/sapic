@@ -1,14 +1,9 @@
-import {
-  UseBatchCreateProjectResourceInput,
-  UseBatchUpdateProjectResourceInput,
-  UseDeleteProjectResourceInput,
-} from "@/adapters";
 import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { BatchCreateResourceOutput, BatchUpdateResourceOutput, DeleteResourceOutput } from "@repo/moss-project";
-import { UseMutateAsyncFunction } from "@tanstack/react-query";
+import { BatchUpdateResourceEvent } from "@repo/moss-project";
+import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
 import { DragNode, DropRootNode } from "../../../types";
@@ -21,28 +16,12 @@ import {
 } from "../../../utils";
 
 interface HandleNodeOnAnotherProjectRootProps {
-  deleteProjectResource: UseMutateAsyncFunction<DeleteResourceOutput, Error, UseDeleteProjectResourceInput, unknown>;
-  batchUpdateProjectResource: UseMutateAsyncFunction<
-    BatchUpdateResourceOutput,
-    Error,
-    UseBatchUpdateProjectResourceInput,
-    unknown
-  >;
-  batchCreateProjectResource: UseMutateAsyncFunction<
-    BatchCreateResourceOutput,
-    Error,
-    UseBatchCreateProjectResourceInput,
-    unknown
-  >;
   currentWorkspaceId: string;
   sourceTreeNodeData: DragNode;
   locationTreeRootNodeData: DropRootNode;
 }
 
 export const handleNodeOnAnotherProjectRoot = async ({
-  deleteProjectResource,
-  batchUpdateProjectResource,
-  batchCreateProjectResource,
   currentWorkspaceId,
   sourceTreeNodeData,
   locationTreeRootNodeData,
@@ -52,9 +31,8 @@ export const handleNodeOnAnotherProjectRoot = async ({
 
   const newOrder = locationTreeRootNodeData.node.resourcesTree.childNodes.length + 1;
 
-  await deleteProjectResource({
-    projectId: sourceTreeNodeData.projectId,
-    input: { id: sourceTreeNodeData.node.id },
+  await resourceService.delete(sourceTreeNodeData.projectId, {
+    id: sourceTreeNodeData.node.id,
   });
 
   for (const resource of allResources) {
@@ -97,18 +75,17 @@ export const handleNodeOnAnotherProjectRoot = async ({
     })
   );
 
-  await batchUpdateProjectResource({
-    projectId: sourceTreeNodeData.projectId,
-    resources: {
+  const channelEvent = new Channel<BatchUpdateResourceEvent>();
+  await resourceService.batchUpdate(
+    sourceTreeNodeData.projectId,
+    {
       resources: updatedSourceResourcesPayload,
     },
-  });
+    channelEvent
+  );
 
-  const batchCreateResourceOutput = await batchCreateProjectResource({
-    projectId: locationTreeRootNodeData.projectId,
-    input: {
-      resources: batchCreateResourceInput,
-    },
+  const batchCreateResourceOutput = await resourceService.batchCreate(locationTreeRootNodeData.projectId, {
+    resources: batchCreateResourceInput,
   });
 
   const orderItems: Record<string, number> = {};

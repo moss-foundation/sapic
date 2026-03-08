@@ -82,7 +82,7 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
       )}
 
       {shouldRenderChildNodes && (
-        <ResourcesTreeChildren rootResourcesNodes={node.childNodes} parentNode={parentNode} depth={depth + 1} />
+        <ResourcesTreeChildren rootResourcesNodes={node.childNodes} parentNode={node} depth={depth + 1} />
       )}
 
       {(isAddingFileNode || isAddingFolderNode) && (

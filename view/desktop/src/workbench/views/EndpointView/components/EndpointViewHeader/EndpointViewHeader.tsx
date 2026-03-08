@@ -1,7 +1,7 @@
 import { useCallback, useContext, useState } from "react";
 
-import { useDescribeProjectResource, useUpdateProjectResource } from "@/adapters";
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceService } from "@/domains/resource/resourceService";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
 import { cn } from "@/utils";
@@ -32,9 +32,6 @@ export const EndpointViewHeader = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedValue, setSelectedValue] = useState("Released");
 
-  const { data: backendResourceDetails } = useDescribeProjectResource({ projectId, resourceId });
-  const { mutate: updateProjectResource } = useUpdateProjectResource();
-
   const localResourceDetails = useGetLocalResourceDetails(resourceId);
 
   const {
@@ -45,9 +42,11 @@ export const EndpointViewHeader = () => {
     handleRenamingResourceDetailsCancel,
   } = useRenameResourceDetailsForm(localResourceDetails, projectId);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
+    const backendResourceDetails = await resourceService.describe(projectId, resourceId);
+
     if (!localResourceDetails || !backendResourceDetails) {
-      console.warn("Missing required data for save operation");
+      console.warn("Missing required data for save operation", { localResourceDetails, backendResourceDetails });
       return;
     }
 
@@ -165,22 +164,19 @@ export const EndpointViewHeader = () => {
 
     try {
       if (localResourceDetails.kind === "Item") {
-        updateProjectResource({
-          projectId,
-          updateResourceInput: {
-            ITEM: {
-              id: resourceId,
-              ...descriptionParamsToAdd,
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-              pathParamsToAdd,
-              pathParamsToUpdate,
-              pathParamsToRemove,
-              queryParamsToAdd,
-              queryParamsToUpdate,
-              queryParamsToRemove,
-            },
+        resourceService.update(projectId, {
+          ITEM: {
+            id: resourceId,
+            ...descriptionParamsToAdd,
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
+            pathParamsToAdd,
+            pathParamsToUpdate,
+            pathParamsToRemove,
+            queryParamsToAdd,
+            queryParamsToUpdate,
+            queryParamsToRemove,
           },
         });
       } else {
@@ -189,7 +185,7 @@ export const EndpointViewHeader = () => {
     } catch (error) {
       console.error("Error updating path params and query params:", error);
     }
-  }, [localResourceDetails, backendResourceDetails, updateProjectResource, projectId, resourceId]);
+  }, [localResourceDetails, projectId, resourceId]);
 
   if (!localResourceDetails) return null;
 

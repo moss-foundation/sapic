@@ -1,12 +1,5 @@
 import { useEffect } from "react";
 
-import {
-  useBatchCreateProjectResource,
-  useBatchUpdateProjectResource,
-  useCreateProjectResource,
-  useDeleteProjectResource,
-  useUpdateProjectResource,
-} from "@/adapters";
 import { useCurrentWorkspace } from "@/hooks";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -25,12 +18,6 @@ import { calculateNodeDropOperation } from "../validation/calculateNodeDropOpera
 
 export const useMonitorResourcesNodes = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-
-  const { mutateAsync: createProjectResource } = useCreateProjectResource();
-  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
-  const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
-  const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
-  const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
 
   useEffect(() => {
     return monitorForElements({
@@ -61,7 +48,6 @@ export const useMonitorResourcesNodes = () => {
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
-              batchUpdateProjectResource,
             });
             break;
           case NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT:
@@ -70,7 +56,6 @@ export const useMonitorResourcesNodes = () => {
               sourceTreeNodeData,
               locationTreeNodeData,
               operation: instruction.operation,
-              batchUpdateProjectResource,
             });
             break;
           case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
@@ -78,9 +63,6 @@ export const useMonitorResourcesNodes = () => {
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
-              batchCreateProjectResource,
-              batchUpdateProjectResource,
-              deleteProjectResource,
             });
             break;
           case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
@@ -89,9 +71,6 @@ export const useMonitorResourcesNodes = () => {
               sourceTreeNodeData,
               locationTreeNodeData,
               operation: instruction.operation,
-              batchUpdateProjectResource,
-              deleteProjectResource,
-              batchCreateProjectResource,
             });
             break;
           default:
@@ -99,12 +78,5 @@ export const useMonitorResourcesNodes = () => {
         }
       },
     });
-  }, [
-    batchCreateProjectResource,
-    batchUpdateProjectResource,
-    createProjectResource,
-    deleteProjectResource,
-    updateProjectResource,
-    currentWorkspaceId,
-  ]);
+  }, [currentWorkspaceId]);
 };

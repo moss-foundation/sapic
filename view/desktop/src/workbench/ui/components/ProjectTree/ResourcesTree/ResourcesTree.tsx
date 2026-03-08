@@ -40,6 +40,7 @@ export const ResourcesTree = ({
   });
 
   const shouldRenderChildren = expanded || isAddingRootFileNode;
+  const isAddingRootNode = isAddingRootFileNode || isAddingRootFolderNode;
 
   return (
     <Tree.List combineInstruction={instruction}>
@@ -48,16 +49,15 @@ export const ResourcesTree = ({
       {shouldRenderChildren && (
         <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={1} />
       )}
-      {isAddingRootFileNode ||
-        (isAddingRootFolderNode && (
-          <ResourceNodeAddForm
-            depth={1}
-            isAddingFolderNode={isAddingRootFolderNode}
-            handleAddFormSubmit={handleRootAddFormSubmit}
-            handleAddFormCancel={handleRootAddFormCancel}
-            restrictedNames={[]}
-          />
-        ))}
+      {isAddingRootNode && (
+        <ResourceNodeAddForm
+          depth={1}
+          isAddingFolderNode={isAddingRootFolderNode}
+          handleAddFormSubmit={handleRootAddFormSubmit}
+          handleAddFormCancel={handleRootAddFormCancel}
+          restrictedNames={[]}
+        />
+      )}
     </Tree.List>
   );
 };

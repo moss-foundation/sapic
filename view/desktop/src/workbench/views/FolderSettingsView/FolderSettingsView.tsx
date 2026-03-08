@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useListProjectResources } from "@/adapters/tanstackQuery/resource/useListProjectResources";
+import { useGetLocalResourceSummaryById } from "@/db/resourceSummaries/hooks/useGetLocalResourceSummaryById";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";
@@ -17,15 +17,14 @@ export type FolderSettingsViewProps = DefaultViewProps<{
 }>;
 
 export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
-  const { data: resources } = useListProjectResources(props.params?.projectId);
-  const node = resources?.items.find((resource) => resource.id === props.params?.node?.id);
+  const resourceSummary = useGetLocalResourceSummaryById(props.params?.node?.id);
 
   const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
     useRenameResourceForm(props?.params?.node, props?.params?.projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
-  if (!props?.params?.projectId || !node) {
+  if (!props?.params?.projectId || !resourceSummary) {
     return (
       <div className="text-(--moss-primary-foreground) flex h-full items-center justify-center">
         <div className="text-center">
@@ -104,13 +103,13 @@ export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
     },
   ];
 
-  const isRoot = node.path.segments.length === 1;
+  const isRoot = resourceSummary.path.segments.length === 1;
 
   return (
     <PageView>
       <PageHeader
         icon={getFolderIcon()}
-        title={node?.name}
+        title={resourceSummary?.name}
         disableTitleChange={isRoot}
         isRenamingTitle={isRenamingResource}
         setIsRenamingTitle={setIsRenamingResource}

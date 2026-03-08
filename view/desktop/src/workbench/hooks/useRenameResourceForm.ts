@@ -1,6 +1,5 @@
 import { useState } from "react";
 
-import { useUpdateProjectResource } from "@/adapters";
 import { resourceService } from "@/domains/resource/resourceService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { join } from "@tauri-apps/api/path";
@@ -8,7 +7,6 @@ import { join } from "@tauri-apps/api/path";
 import { ResourceNode } from "../ui/components/ProjectTree/types";
 
 export const useRenameResourceForm = (resource: ResourceNode, projectId: string) => {
-  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { api } = useTabbedPaneStore();
 
   const [isRenamingResource, setIsRenamingResource] = useState(false);
@@ -22,13 +20,10 @@ export const useRenameResourceForm = (resource: ResourceNode, projectId: string)
       }
 
       if (resource.kind === "Dir") {
-        await updateProjectResource({
-          projectId,
-          updateResourceInput: {
-            DIR: {
-              id: resource.id,
-              name: trimmedNewName,
-            },
+        await resourceService.update(projectId, {
+          DIR: {
+            id: resource.id,
+            name: trimmedNewName,
           },
         });
 
@@ -38,22 +33,19 @@ export const useRenameResourceForm = (resource: ResourceNode, projectId: string)
         );
         await resourceService.list({ projectId, mode: { "RELOAD_PATH": newPath } });
       } else {
-        await updateProjectResource({
-          projectId,
-          updateResourceInput: {
-            ITEM: {
-              id: resource.id,
-              name: trimmedNewName,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
+        await resourceService.update(projectId, {
+          ITEM: {
+            id: resource.id,
+            name: trimmedNewName,
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
           },
         });
       }

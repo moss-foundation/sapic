@@ -2,7 +2,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { resourceSummariesCollection } from "../resourceSummariesCollection";
 
-export const useGetLocalResourceSummary = (resourceId: string) => {
+export const useGetLocalResourceSummaryById = (resourceId: string) => {
   const { data: localResourceSummary } = useLiveQuery((q) =>
     q
       .from({ collection: resourceSummariesCollection })

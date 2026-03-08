@@ -1,14 +1,9 @@
 import { useEffect } from "react";
 
-import {
-  useBatchCreateProjectResource,
-  useBatchUpdateProjectResource,
-  useCreateProjectResource,
-  useDeleteProjectResource,
-} from "@/adapters";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { projectService } from "@/domains/project/projectService";
+import { resourceService } from "@/domains/resource/resourceService";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
@@ -21,6 +16,8 @@ import {
   siblingsAfterRemovalPayload,
 } from "@/workbench/ui/components/ProjectTree/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { BatchUpdateResourceEvent } from "@repo/moss-project";
+import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
 import { isLocationProjectCreationZone } from "./validation/isLocationProjectCreationZone";
@@ -29,10 +26,6 @@ export const useMonitorProjectCreationZone = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: projectSummaries } = useGetAllLocalProjectSummaries();
-  const { mutateAsync: createProjectResource } = useCreateProjectResource();
-  const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
-  const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
-  const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
 
   useEffect(() => {
     return monitorForElements({
@@ -69,9 +62,8 @@ export const useMonitorProjectCreationZone = () => {
         await treeItemStateService.putExpanded(newProjectSummary.id, false, currentWorkspaceId);
 
         try {
-          await deleteProjectResource({
-            projectId: sourceData.projectId,
-            input: { id: rootResource.id },
+          await resourceService.delete(sourceData.projectId, {
+            id: rootResource.id,
           });
 
           nestedResources.forEach(async (resource) => {
@@ -91,10 +83,14 @@ export const useMonitorProjectCreationZone = () => {
           });
 
           if (updatedSourceSiblings.length > 0) {
-            await batchUpdateProjectResource({
-              projectId: sourceData.projectId,
-              resources: { resources: updatedSourceSiblings },
-            });
+            const channelEvent = new Channel<BatchUpdateResourceEvent>();
+            await resourceService.batchUpdate(
+              sourceData.projectId,
+              {
+                resources: updatedSourceSiblings,
+              },
+              channelEvent
+            );
 
             const sortedSiblings = sortObjectsByOrder(sourceData.parentNode.childNodes);
             const removedIndex = sortedSiblings.findIndex((e) => e.id === sourceData.node.id);
@@ -134,11 +130,8 @@ export const useMonitorProjectCreationZone = () => {
             })
           );
 
-          const batchCreateOutput = await batchCreateProjectResource({
-            projectId: newProjectSummary.id,
-            input: {
-              resources: resourcesToCreate,
-            },
+          const batchCreateOutput = await resourceService.batchCreate(newProjectSummary.id, {
+            resources: resourcesToCreate,
           });
 
           const orderItems: Record<string, number> = {};
@@ -162,12 +155,5 @@ export const useMonitorProjectCreationZone = () => {
         }
       },
     });
-  }, [
-    batchCreateProjectResource,
-    batchUpdateProjectResource,
-    createProjectResource,
-    currentWorkspaceId,
-    deleteProjectResource,
-    projectSummaries.length,
-  ]);
+  }, [currentWorkspaceId, projectSummaries.length]);
 };
