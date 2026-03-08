@@ -132,10 +132,15 @@ export const resourceService: IResourceService = {
   },
   batchUpdate: async (projectId, input, channelEvent) => {
     const output = await resourceIpc.batchUpdate(projectId, input, channelEvent);
-    const resourceSummaries = batchUpdateInputToResourceSummary(projectId, input);
+    const resourceSummaries = await batchUpdateInputToResourceSummary(projectId, input);
     resourceSummaries.forEach((summary) => {
+      if (!summary.id) return;
       resourceSummariesCollection.update(summary.id, (draft) => {
-        Object.assign(draft, summary);
+        for (const [key, value] of Object.entries(summary)) {
+          if (value !== undefined) {
+            (draft as Record<string, unknown>)[key] = value;
+          }
+        }
       });
     });
     return output;
@@ -235,26 +240,26 @@ const batchCreateInputToResourceSummary = async (
     })
   );
 };
-const batchUpdateInputToResourceSummary = (
+
+const batchUpdateInputToResourceSummary = async (
   projectId: string,
   input: BatchUpdateResourceInput
-): LocalResourceSummary[] => {
-  const resourceSummaries: LocalResourceSummary[] = [];
-  input.resources.forEach((resource, index) => {
-    const id = "ITEM" in input[index] ? input[index].ITEM.id : input[index].DIR.id;
-    const summary: LocalResourceSummary = {
-      projectId,
-      id,
-      name: input[index].ITEM?.name ?? input[index].DIR?.name,
-      path: {
-        raw: input[index].ITEM?.path ?? input[index].DIR?.path,
-        segments: input[index].ITEM?.path?.split("/") ?? input[index].DIR?.path.split("/"),
-      },
-      class: input[index].ITEM?.class ?? input[index].DIR?.class,
-      kind: input[index].ITEM?.kind ?? input[index].DIR?.kind,
-      protocol: input[index].ITEM?.protocol ?? input[index].DIR?.protocol,
-    } satisfies LocalResourceSummary;
-    resourceSummaries.push(summary);
-  });
-  return resourceSummaries;
+): Promise<Partial<LocalResourceSummary>[]> => {
+  const platformSeparator = sep();
+
+  return await Promise.all(
+    input.resources.map(async (resource) => {
+      const isItem = "ITEM" in resource;
+      const params = isItem ? resource.ITEM : resource.DIR;
+      const rawPath = params.path && params.name ? await join(params.path, params.name) : undefined;
+      return {
+        projectId,
+        id: params.id,
+        name: params.name,
+        path: rawPath ? { raw: rawPath, segments: rawPath.split(platformSeparator) } : undefined,
+        kind: isItem ? "Item" : "Dir",
+        protocol: isItem ? resource.ITEM.protocol : undefined,
+      } satisfies Partial<LocalResourceSummary>;
+    })
+  );
 };

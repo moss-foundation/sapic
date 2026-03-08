@@ -73,6 +73,7 @@ export const useMonitorResourcesNodes = () => {
               operation: instruction.operation,
             });
             break;
+          //TODO handle node on resources list
           default:
             break;
         }
