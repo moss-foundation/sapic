@@ -32,7 +32,6 @@ export const useSyncResourceSummaries = () => {
         })
       )
     ).flatMap((items) => items);
-    console.log({ allResourcesWithProjectId });
 
     const allResourceIds = allResourcesWithProjectId.map(({ resource }) => resource.id);
 

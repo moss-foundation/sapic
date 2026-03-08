@@ -37,16 +37,22 @@ interface IResourceService {
 export const resourceService: IResourceService = {
   list: async (input) => {
     const output = await resourceIpc.list(input);
+    const platformSeparator = sep();
+
     output.items.forEach((resource) => {
       if (resourceSummariesCollection.has(resource.id)) {
         resourceSummariesCollection.update(resource.id, (draft) => {
-          Object.assign(draft, resource);
+          Object.assign(draft, {
+            ...resource,
+            path: { raw: resource.path.raw, segments: resource.path.raw.split(platformSeparator) },
+            protocol: resource.protocol ?? undefined,
+          });
         });
       } else {
         resourceSummariesCollection.insert({
           ...resource,
           projectId: input.projectId,
-          path: { raw: resource.path.raw, segments: resource.path.raw.split("/") },
+          path: { raw: resource.path.raw, segments: resource.path.raw.split(platformSeparator) },
           protocol: resource.protocol ?? undefined,
         });
       }
@@ -102,7 +108,15 @@ export const resourceService: IResourceService = {
         if (input.ITEM.protocol) draft.protocol = input.ITEM.protocol;
       }
       if ("DIR" in input) {
-        if (input.DIR.name) draft.name = input.DIR.name;
+        if (input.DIR.name) {
+          draft.name = input.DIR.name;
+          if (!input.DIR.path) {
+            const platformSeparator = sep();
+            const segments = [...draft.path.segments];
+            segments[segments.length - 1] = input.DIR.name;
+            draft.path = { raw: segments.join(platformSeparator), segments };
+          }
+        }
         if (input.DIR.path) draft.path = { raw: input.DIR.path, segments: input.DIR.path.split("/") };
         if (input.DIR.expanded) draft.expanded = input.DIR.expanded;
       }

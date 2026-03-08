@@ -17,7 +17,6 @@ export const useDeleteAndUpdateResourceNodePeers = ({
   node,
   parentNode,
 }: UseDeleteAndUpdateResourceNodePeersProps) => {
-  console.log({ node, parentNode });
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const deleteAndUpdatePeers = async () => {
