@@ -1,12 +1,11 @@
 import { PageContent } from "@/workbench/ui/components";
-import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
+import { useProjectsTreesData } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTreesData";
 
 import { FolderSettingsViewProps } from "../FolderSettingsView";
 import { findNodeInProject } from "../utils";
 
 export const OverviewTabContent = ({ params }: FolderSettingsViewProps) => {
-  //FIXME useProjectsTrees creates its own instance, meaning it will duplicate the data and will cause unnecessary re-renders
-  const { projectsTrees } = useProjectsTrees();
+  const { projectsTrees } = useProjectsTreesData();
   const project = projectsTrees?.find((col) => col.id === params?.projectId);
   const node = project ? findNodeInProject(project, params?.node?.id) : undefined;
 

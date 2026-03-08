@@ -1,7 +1,7 @@
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";
-import { useProjectsTrees } from "../ProjectTree/hooks/useProjectsTrees";
+import { useProjectsTreesData } from "../ProjectTree/hooks/useProjectsTreesData";
 import { ResourceIcon } from "../ResourceIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";
@@ -12,11 +12,7 @@ interface BreadcrumbsProps {
 }
 
 export const Breadcrumbs = ({ projectId, nodeId }: BreadcrumbsProps) => {
-  const { projectsTrees: projectsTrees, isLoading } = useProjectsTrees();
-
-  if (isLoading) {
-    return null;
-  }
+  const { projectsTrees } = useProjectsTreesData();
 
   if (!projectId || !nodeId) {
     return null;

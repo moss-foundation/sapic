@@ -59,16 +59,22 @@ export const resourceService: IResourceService = {
     });
     return output;
   },
-  describe: async (id, projectId) => {
-    const output = await resourceIpc.describe(id, projectId);
-    if (resourceDetailsCollection.has(id)) {
-      resourceDetailsCollection.update(id, (draft) => {
-        Object.assign(draft, output);
+  describe: async (projectId, resourceId) => {
+    const output = await resourceIpc.describe(projectId, resourceId);
+    const sanitized = {
+      ...output,
+      protocol: output.protocol ?? undefined,
+      url: output.url ?? undefined,
+      body: output.body ?? undefined,
+    };
+    if (resourceDetailsCollection.has(resourceId)) {
+      resourceDetailsCollection.update(resourceId, (draft) => {
+        Object.assign(draft, sanitized);
       });
     } else {
       resourceDetailsCollection.insert({
-        ...output,
-        id,
+        ...sanitized,
+        id: resourceId,
         metadata: {
           isDirty: false,
         },
