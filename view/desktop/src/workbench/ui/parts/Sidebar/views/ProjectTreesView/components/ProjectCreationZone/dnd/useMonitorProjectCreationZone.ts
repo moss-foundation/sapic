@@ -60,14 +60,14 @@ export const useMonitorProjectCreationZone = () => {
 
         const newProjectOrder = projectSummaries?.length ? projectSummaries.length + 1 : 1;
         await treeItemStateService.putOrder(newProjectSummary.id, newProjectOrder, currentWorkspaceId);
-        await treeItemStateService.putExpanded(newProjectSummary.id, false, currentWorkspaceId);
+        await treeItemStateService.putExpanded(newProjectSummary.id, true, currentWorkspaceId);
 
         try {
           await resourceService.delete(sourceData.projectId, {
             id: rootResource.id,
           });
 
-          nestedResources.forEach(async (resource) => {
+          nestedResources.forEach((resource) => {
             if (resourceSummariesCollection.has(resource.id)) {
               resourceSummariesCollection.delete(resource.id);
             }

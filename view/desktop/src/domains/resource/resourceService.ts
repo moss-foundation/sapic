@@ -93,7 +93,7 @@ export const resourceService: IResourceService = {
   },
   batchCreate: async (projectId, input) => {
     const output = await resourceIpc.batchCreate(projectId, input);
-    const resourceSummaries = batchCreateInputToResourceSummary(projectId, input, output);
+    const resourceSummaries = await batchCreateInputToResourceSummary(projectId, input, output);
 
     resourceSummaries.forEach((summary) => {
       resourceSummariesCollection.insert(summary);
@@ -199,34 +199,42 @@ const createInputToResourceSummary = async (
   throw new Error("Invalid input");
 };
 
-const batchCreateInputToResourceSummary = (
+const batchCreateInputToResourceSummary = async (
   projectId: string,
   input: BatchCreateResourceInput,
   output: BatchCreateResourceOutput
-): LocalResourceSummary[] => {
-  const resourceSummaries: LocalResourceSummary[] = [];
-  output.resources.forEach((resource, index) => {
-    const inputResource = input.resources[index];
-    const isItem = "ITEM" in inputResource;
-    const params = isItem ? inputResource.ITEM : inputResource.DIR;
-    const summary: LocalResourceSummary = {
-      projectId,
-      id: resource.id,
-      name: resource.name,
-      path: resource.path,
-      class: params.class,
-      kind: isItem ? "Item" : "Dir",
-      protocol: isItem ? inputResource.ITEM.protocol : undefined,
-      order: undefined,
-      expanded: undefined,
-    };
+): Promise<LocalResourceSummary[]> => {
+  const platformSeparator = sep();
 
-    resourceSummaries.push(summary);
-  });
+  return await Promise.all(
+    output.resources.map(async (resource) => {
+      const inputResource = input.resources.find((r) => {
+        const params = "ITEM" in r ? r.ITEM : r.DIR;
+        return params.path === resource.path.raw && params.name === resource.name;
+      });
 
-  return resourceSummaries;
+      if (!inputResource) {
+        throw new Error(`No matching input found for output resource: ${resource.name}`);
+      }
+
+      const isItem = "ITEM" in inputResource;
+      const params = isItem ? inputResource.ITEM : inputResource.DIR;
+      const rawPath = await join(params.path, params.name);
+
+      return {
+        projectId,
+        id: resource.id,
+        name: resource.name,
+        path: { raw: rawPath, segments: rawPath.split(platformSeparator) },
+        class: params.class,
+        kind: isItem ? "Item" : "Dir",
+        protocol: isItem ? inputResource.ITEM.protocol : undefined,
+        order: undefined,
+        expanded: undefined,
+      } satisfies LocalResourceSummary;
+    })
+  );
 };
-
 const batchUpdateInputToResourceSummary = (
   projectId: string,
   input: BatchUpdateResourceInput

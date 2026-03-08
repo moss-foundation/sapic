@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
@@ -11,15 +11,25 @@ export const useSyncResourceSummaries = () => {
 
   const { data: localProjectSummaries, isLoading: isLocalProjectSummariesLoading } = useGetAllLocalProjectSummaries();
   const [isResourceSummariesLoading, setIsResourceSummariesLoading] = useState(false);
+  const hasInitiallyLoaded = useRef(false);
 
   const isLoading = isLocalProjectSummariesLoading || isResourceSummariesLoading;
 
+  const projectIdsKey = useMemo(
+    () =>
+      localProjectSummaries
+        .map((p) => p.id)
+        .sort()
+        .join(","),
+    [localProjectSummaries]
+  );
+
   const updateResourceSummaries = useEffectEvent(async () => {
-    setIsResourceSummariesLoading(true);
-    //remove all local resource summaries in case some resources are deleted from the project
-    resourceSummariesCollection.forEach((resource) => {
-      resourceSummariesCollection.delete(resource.id);
-    });
+    if (!hasInitiallyLoaded.current) {
+      setIsResourceSummariesLoading(true);
+    }
+
+    const syncedProjectIds = new Set(localProjectSummaries.map((p) => p.id));
 
     const allResourcesWithProjectId = (
       await Promise.all(
@@ -34,6 +44,7 @@ export const useSyncResourceSummaries = () => {
     ).flatMap((items) => items);
 
     const allResourceIds = allResourcesWithProjectId.map(({ resource }) => resource.id);
+    const fetchedResourceIds = new Set(allResourceIds);
 
     const [treeItemOrders, treeItemExpanded] = await Promise.all([
       treeItemStateService.batchGetOrder(allResourceIds, currentWorkspaceId),
@@ -74,12 +85,21 @@ export const useSyncResourceSummaries = () => {
       }
     });
 
+    const staleIds: string[] = [];
+    resourceSummariesCollection.forEach((resource) => {
+      if (syncedProjectIds.has(resource.projectId) && !fetchedResourceIds.has(resource.id)) {
+        staleIds.push(resource.id);
+      }
+    });
+    staleIds.forEach((id) => resourceSummariesCollection.delete(id));
+
     setIsResourceSummariesLoading(false);
+    hasInitiallyLoaded.current = true;
   });
 
   useEffect(() => {
     updateResourceSummaries();
-  }, [localProjectSummaries]);
+  }, [projectIdsKey]);
 
   return { isLoading };
 };
