@@ -206,14 +206,17 @@ const batchCreateInputToResourceSummary = (
 ): LocalResourceSummary[] => {
   const resourceSummaries: LocalResourceSummary[] = [];
   output.resources.forEach((resource, index) => {
+    const inputResource = input.resources[index];
+    const isItem = "ITEM" in inputResource;
+    const params = isItem ? inputResource.ITEM : inputResource.DIR;
     const summary: LocalResourceSummary = {
       projectId,
       id: resource.id,
       name: resource.name,
       path: resource.path,
-      class: input[index].ITEM?.class ?? input[index].DIR?.class,
-      kind: input[index].ITEM?.kind ?? input[index].DIR?.kind,
-      protocol: input[index].ITEM?.protocol ?? input[index].DIR?.protocol,
+      class: params.class,
+      kind: isItem ? "Item" : "Dir",
+      protocol: isItem ? inputResource.ITEM.protocol : undefined,
       order: undefined,
       expanded: undefined,
     };
