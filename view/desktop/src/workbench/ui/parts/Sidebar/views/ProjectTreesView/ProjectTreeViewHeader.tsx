@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { useClearAllProjectResources } from "@/adapters/tanstackQuery/project";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { flushEnvironmentSummaries } from "@/db/environmentsSummaries/actions/flushEnvironmentSummaries";
+import { flushProjectSummaries } from "@/db/projectSummaries/actions/flushProjectSummaries";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
@@ -15,11 +15,7 @@ import { SidebarHeader } from "../../SidebarHeader";
 export const ProjectTreeViewHeader = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useListProjects();
-
-  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
-
-  const { data: projectSummaries } = useGetAllLocalProjectSummaries();
+  const { data: projectSummaries, isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
   const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
@@ -38,8 +34,8 @@ export const ProjectTreeViewHeader = () => {
   } = useModal();
 
   const handleRefreshProjects = () => {
-    clearProjectsCacheAndRefetch();
-    clearAllProjectResourcesCache();
+    flushProjectSummaries();
+    flushEnvironmentSummaries();
   };
 
   const handleCollapseAll = async () => {

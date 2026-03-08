@@ -1,24 +1,21 @@
 import { useState } from "react";
 
-import { useUpdateProject } from "@/adapters/tanstackQuery/project";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetLocalProjectSummaryById } from "@/db/projectSummaries/hooks/useGetLocalProjectSummaryById";
+import { projectService } from "@/domains/project/projectService";
 
 export const useRenameProjectForm = (projectId: string) => {
   const [isRenamingProject, setIsRenamingProject] = useState(false);
-  const { data: projects } = useListProjects();
-  const project = projects?.items.find((project) => project.id === projectId);
-
-  const { mutateAsync: updateProject } = useUpdateProject();
+  const projectSummary = useGetLocalProjectSummaryById(projectId);
 
   const handleRenamingProjectFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();
 
     try {
-      if (trimmedNewName === project?.name) {
+      if (trimmedNewName === projectSummary?.name) {
         return;
       }
 
-      await updateProject({
+      await projectService.updateProject({
         id: projectId,
         name: trimmedNewName,
       });

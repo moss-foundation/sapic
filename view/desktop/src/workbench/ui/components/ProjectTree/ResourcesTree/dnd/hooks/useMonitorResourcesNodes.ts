@@ -5,7 +5,6 @@ import {
   useBatchUpdateProjectResource,
   useCreateProjectResource,
   useDeleteProjectResource,
-  useFetchResourcesForPath,
   useUpdateProjectResource,
 } from "@/adapters";
 import { useCurrentWorkspace } from "@/hooks";
@@ -32,8 +31,6 @@ export const useMonitorResourcesNodes = () => {
   const { mutateAsync: deleteProjectResource } = useDeleteProjectResource();
   const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
-
-  const { fetchResourcesForPath } = useFetchResourcesForPath();
 
   useEffect(() => {
     return monitorForElements({
@@ -64,7 +61,6 @@ export const useMonitorResourcesNodes = () => {
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
-              fetchResourcesForPath,
               batchUpdateProjectResource,
             });
             break;
@@ -74,7 +70,6 @@ export const useMonitorResourcesNodes = () => {
               sourceTreeNodeData,
               locationTreeNodeData,
               operation: instruction.operation,
-              fetchResourcesForPath,
               batchUpdateProjectResource,
             });
             break;
@@ -86,7 +81,6 @@ export const useMonitorResourcesNodes = () => {
               batchCreateProjectResource,
               batchUpdateProjectResource,
               deleteProjectResource,
-              fetchResourcesForPath,
             });
             break;
           case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
@@ -97,7 +91,6 @@ export const useMonitorResourcesNodes = () => {
               operation: instruction.operation,
               batchUpdateProjectResource,
               deleteProjectResource,
-              fetchResourcesForPath,
               batchCreateProjectResource,
             });
             break;
@@ -111,7 +104,6 @@ export const useMonitorResourcesNodes = () => {
     batchUpdateProjectResource,
     createProjectResource,
     deleteProjectResource,
-    fetchResourcesForPath,
     updateProjectResource,
     currentWorkspaceId,
   ]);

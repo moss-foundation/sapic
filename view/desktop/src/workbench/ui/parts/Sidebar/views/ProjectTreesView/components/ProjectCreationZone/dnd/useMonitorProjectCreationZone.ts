@@ -3,12 +3,12 @@ import { useEffect } from "react";
 import {
   useBatchCreateProjectResource,
   useBatchUpdateProjectResource,
-  useCreateProject,
   useCreateProjectResource,
   useDeleteProjectResource,
-  useListProjects,
 } from "@/adapters";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
+import { projectService } from "@/domains/project/projectService";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
@@ -28,8 +28,7 @@ import { isLocationProjectCreationZone } from "./validation/isLocationProjectCre
 export const useMonitorProjectCreationZone = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useListProjects();
-  const { mutateAsync: createProject } = useCreateProject();
+  const { data: projectSummaries } = useGetAllLocalProjectSummaries();
   const { mutateAsync: createProjectResource } = useCreateProjectResource();
   const { mutateAsync: batchCreateProjectResource } = useBatchCreateProjectResource();
   const { mutateAsync: batchUpdateProjectResource } = useBatchUpdateProjectResource();
@@ -61,13 +60,13 @@ export const useMonitorProjectCreationZone = () => {
         const rootResource = resources[0];
         const nestedResources = resources.slice(1);
 
-        const newProject = await createProject({
+        const newProjectSummary = await projectService.createProject({
           name: rootResource.name,
         });
 
-        const newProjectOrder = projects?.items.length ? projects.items.length + 1 : 1;
-        await treeItemStateService.putOrder(newProject.id, newProjectOrder, currentWorkspaceId);
-        await treeItemStateService.putExpanded(newProject.id, false, currentWorkspaceId);
+        const newProjectOrder = projectSummaries?.length ? projectSummaries.length + 1 : 1;
+        await treeItemStateService.putOrder(newProjectSummary.id, newProjectOrder, currentWorkspaceId);
+        await treeItemStateService.putExpanded(newProjectSummary.id, false, currentWorkspaceId);
 
         try {
           await deleteProjectResource({
@@ -136,7 +135,7 @@ export const useMonitorProjectCreationZone = () => {
           );
 
           const batchCreateOutput = await batchCreateProjectResource({
-            projectId: newProject.id,
+            projectId: newProjectSummary.id,
             input: {
               resources: resourcesToCreate,
             },
@@ -166,10 +165,9 @@ export const useMonitorProjectCreationZone = () => {
   }, [
     batchCreateProjectResource,
     batchUpdateProjectResource,
-    createProject,
     createProjectResource,
     currentWorkspaceId,
     deleteProjectResource,
-    projects?.items?.length,
+    projectSummaries.length,
   ]);
 };

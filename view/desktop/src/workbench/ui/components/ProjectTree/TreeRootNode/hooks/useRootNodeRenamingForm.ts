@@ -1,13 +1,11 @@
 import { useState } from "react";
 
-import { useUpdateProject } from "@/adapters/tanstackQuery/project";
+import { projectService } from "@/domains/project/projectService";
 
 import { ProjectTree } from "../../types";
 
 export const useRootNodeRenamingForm = (node: ProjectTree) => {
   const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
-
-  const { mutateAsync: updateProject } = useUpdateProject();
 
   const handleRenamingRootNodeFormSubmit = async (name: string) => {
     const trimmedNewName = name.trim();
@@ -17,7 +15,7 @@ export const useRootNodeRenamingForm = (node: ProjectTree) => {
         return;
       }
 
-      await updateProject({
+      await projectService.updateProject({
         id: node.id,
         name: trimmedNewName,
       });

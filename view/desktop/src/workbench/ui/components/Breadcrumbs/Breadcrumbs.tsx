@@ -1,7 +1,7 @@
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { Icon } from "@/lib/ui";
 
 import { ActionMenu } from "..";
+import { useProjectsTrees } from "../ProjectTree/hooks/useProjectsTrees";
 import { ResourceIcon } from "../ResourceIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
 import { findNodeByIdInTree, findNodesSequence } from "./utils";

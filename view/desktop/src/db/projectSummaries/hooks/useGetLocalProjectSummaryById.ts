@@ -2,7 +2,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { projectSummariesCollection } from "../projectSummaries";
 
-export const useGetLocalProjectSummary = (projectId: string) => {
+export const useGetLocalProjectSummaryById = (projectId: string) => {
   const { data: localProjectSummary } = useLiveQuery((q) =>
     q
       .from({ collection: projectSummariesCollection })

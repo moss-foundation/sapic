@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
+import { useUpdateProjectResource } from "@/adapters";
+import { resourceService } from "@/domains/resource/resourceService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { join } from "@tauri-apps/api/path";
 
 import { ResourceNode } from "../ui/components/ProjectTree/types";
 
 export const useRenameResourceForm = (resource: ResourceNode, projectId: string) => {
-  const { fetchResourcesForPath } = useFetchResourcesForPath();
   const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
   const { api } = useTabbedPaneStore();
 
@@ -36,7 +36,7 @@ export const useRenameResourceForm = (resource: ResourceNode, projectId: string)
           ...resource.path.segments.slice(0, resource.path.segments.length - 1),
           trimmedNewName
         );
-        await fetchResourcesForPath(projectId, newPath);
+        await resourceService.list({ projectId, mode: { "RELOAD_PATH": newPath } });
       } else {
         await updateProjectResource({
           projectId,

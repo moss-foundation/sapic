@@ -3,9 +3,9 @@ import {
   UseBatchUpdateProjectResourceInput,
   UseDeleteProjectResourceInput,
 } from "@/adapters";
+import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { ListProjectResourcesOutput } from "@repo/ipc";
 import { BatchCreateResourceOutput, BatchUpdateResourceOutput, DeleteResourceOutput } from "@repo/moss-project";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 import { join } from "@tauri-apps/api/path";
@@ -28,7 +28,6 @@ interface HandleNodeOnNodeToAnotherProjectProps {
   >;
   deleteProjectResource: UseMutateAsyncFunction<DeleteResourceOutput, Error, UseDeleteProjectResourceInput, unknown>;
   currentWorkspaceId: string;
-  fetchResourcesForPath: (projectId: string, path: string) => Promise<ListProjectResourcesOutput>;
   batchCreateProjectResource: UseMutateAsyncFunction<
     BatchCreateResourceOutput,
     Error,
@@ -44,7 +43,6 @@ export const handleNodeOnNodeToAnotherProject = async ({
   batchUpdateProjectResource,
   deleteProjectResource,
   currentWorkspaceId,
-  fetchResourcesForPath,
   batchCreateProjectResource,
   sourceTreeNodeData,
   locationTreeNodeData,
@@ -171,12 +169,12 @@ export const handleNodeOnNodeToAnotherProject = async ({
     }
   }
 
-  await fetchResourcesForPath(
-    locationTreeNodeData.projectId,
-    "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : ""
-  );
-  await fetchResourcesForPath(
-    sourceTreeNodeData.projectId,
-    "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : ""
-  );
+  await resourceService.list({
+    projectId: locationTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": "path" in locationTreeNodeData.parentNode ? locationTreeNodeData.parentNode.path.raw : "" },
+  });
+  await resourceService.list({
+    projectId: sourceTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": "path" in sourceTreeNodeData.parentNode ? sourceTreeNodeData.parentNode.path.raw : "" },
+  });
 };

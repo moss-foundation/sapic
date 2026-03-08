@@ -3,8 +3,8 @@ import {
   UseBatchUpdateProjectResourceInput,
   UseDeleteProjectResourceInput,
 } from "@/adapters";
+import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { ListProjectResourcesOutput } from "@repo/ipc";
 import { BatchCreateResourceOutput, BatchUpdateResourceOutput, DeleteResourceOutput } from "@repo/moss-project";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 import { join } from "@tauri-apps/api/path";
@@ -33,7 +33,6 @@ interface HandleNodeOnFolderToAnotherProjectProps {
   >;
   deleteProjectResource: UseMutateAsyncFunction<DeleteResourceOutput, Error, UseDeleteProjectResourceInput, unknown>;
   currentWorkspaceId: string;
-  fetchResourcesForPath: (projectId: string, path: string) => Promise<ListProjectResourcesOutput>;
   sourceTreeNodeData: DragNode;
   locationTreeNodeData: DropNode;
 }
@@ -43,7 +42,6 @@ export const handleNodeOnFolderToAnotherProject = async ({
   batchUpdateProjectResource,
   deleteProjectResource,
   currentWorkspaceId,
-  fetchResourcesForPath,
   sourceTreeNodeData,
   locationTreeNodeData,
 }: HandleNodeOnFolderToAnotherProjectProps) => {
@@ -111,8 +109,14 @@ export const handleNodeOnFolderToAnotherProject = async ({
     input: { resources: batchCreateResourceInput },
   });
   //TODO Create orders for created resources
-  await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
-  await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+  await resourceService.list({
+    projectId: locationTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
+  });
+  await resourceService.list({
+    projectId: sourceTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
+  });
 
   return;
 };

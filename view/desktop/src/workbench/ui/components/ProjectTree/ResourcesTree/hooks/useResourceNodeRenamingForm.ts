@@ -1,6 +1,6 @@
 import { useContext, useState } from "react";
 
-import { useFetchResourcesForPath, useUpdateProjectResource } from "@/adapters";
+import { resourceService } from "@/domains/resource/resourceService";
 import { join } from "@tauri-apps/api/path";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
@@ -9,10 +9,7 @@ import { ResourceNode } from "../../types";
 export const useResourceNodeRenamingForm = (node: ResourceNode) => {
   const { id } = useContext(ProjectTreeContext);
 
-  const { fetchResourcesForPath } = useFetchResourcesForPath();
   const [isRenamingNode, setIsRenamingNode] = useState(false);
-
-  const { mutateAsync: updateProjectResource } = useUpdateProjectResource();
 
   const handleRenamingFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();
@@ -23,35 +20,29 @@ export const useResourceNodeRenamingForm = (node: ResourceNode) => {
       }
 
       if (node.kind === "Dir") {
-        await updateProjectResource({
-          projectId: id,
-          updateResourceInput: {
-            DIR: {
-              id: node.id,
-              name: trimmedNewName,
-            },
+        await resourceService.update(id, {
+          DIR: {
+            id: node.id,
+            name: trimmedNewName,
           },
         });
 
         const newPath = await join(...node.path.segments.slice(0, node.path.segments.length - 1), trimmedNewName);
-        await fetchResourcesForPath(id, newPath);
+        await resourceService.list({ projectId: id, mode: { "RELOAD_PATH": newPath } });
       } else {
-        await updateProjectResource({
-          projectId: id,
-          updateResourceInput: {
-            ITEM: {
-              id: node.id,
-              name: trimmedNewName,
-              queryParamsToAdd: [],
-              queryParamsToUpdate: [],
-              queryParamsToRemove: [],
-              pathParamsToAdd: [],
-              pathParamsToUpdate: [],
-              pathParamsToRemove: [],
-              headersToAdd: [],
-              headersToUpdate: [],
-              headersToRemove: [],
-            },
+        await resourceService.update(id, {
+          ITEM: {
+            id: node.id,
+            name: trimmedNewName,
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
           },
         });
       }

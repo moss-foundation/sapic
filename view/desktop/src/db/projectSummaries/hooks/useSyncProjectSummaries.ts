@@ -1,7 +1,7 @@
 import { useEffect, useEffectEvent } from "react";
 
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
+import { projectService } from "@/domains/project/projectService";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { ListProjectItem } from "@repo/ipc";
@@ -10,8 +10,6 @@ import { flushProjectSummaries } from "../actions/flushProjectSummaries";
 
 export const useSyncProjectSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-
-  const { data: projects, isLoading, isPending } = useListProjects();
 
   const updateProjectSummaries = useEffectEvent(async (projectItems: ListProjectItem[]) => {
     if (projectItems.length === 0) {
@@ -55,9 +53,12 @@ export const useSyncProjectSummaries = () => {
   useEffect(flushProjectSummaries, [currentWorkspaceId]);
 
   useEffect(() => {
-    if (!projects) return;
-    updateProjectSummaries(projects.items);
-  }, [projects]);
+    const syncProjects = async () => {
+      const projects = await projectService.listProjects();
+      updateProjectSummaries(projects.items);
+    };
+    syncProjects();
+  }, []);
 
-  return { isLoading, isPending };
+  return { isLoading: false, isPending: false };
 };

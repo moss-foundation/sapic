@@ -18,13 +18,13 @@ export interface UseProjectsTreesProps {
 
 export const useProjectsTrees = (): UseProjectsTreesProps => {
   const { isPending: areProjectsPending } = useSyncProjectSummaries();
-  const { isPending: areResourcesPending } = useSyncResourceSummaries();
+  const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
 
   const { data: localProjectSummaries = [] } = useGetAllLocalProjectSummaries();
   const { data: localResourceSummaries = [] } = useGetAllLocalResourceSummaries();
   const { projectEnvironments = [] } = useGetAllProjectEnvironments();
 
-  const isLoading = areResourcesPending || areProjectsPending;
+  const isLoading = areResourcesLoading || areProjectsPending;
 
   const projectsTrees = useMemo(() => {
     if (isLoading || localProjectSummaries.length === 0) return [];

@@ -1,11 +1,12 @@
 import { useEffect } from "react";
 
 import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { ProjectSummary } from "@/db/projectSummaries/types";
 import { environmentService } from "@/domains/environment/environmentService";
 import { useCurrentWorkspace } from "@/hooks";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
-import { ListEnvironmentItem, ListProjectsOutput } from "@repo/ipc";
+import { ListEnvironmentItem } from "@repo/ipc";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
 import { EnvironmentSummary } from "../types";
@@ -17,16 +18,16 @@ type ListEnvironmentItemWithProjectId = ListEnvironmentItem & {
 export const useSyncEnvironments = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects, isFetching: isProjectsLoading } = useListProjects();
+  const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
   const { data: workspaceEnvironments, isFetching: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
 
   useEffect(() => {
-    if (isProjectsLoading || isWorkspaceEnvironmentsLoading || !projects || !workspaceEnvironments) return;
+    if (isWorkspaceEnvironmentsLoading || !workspaceEnvironments) return;
 
     const syncEnvironments = async () => {
       clearExistingEnvironments();
 
-      const projectEnvironments = await fetchAllProjectEnvironments(projects);
+      const projectEnvironments = await fetchAllProjectEnvironments(localProjectSummaries);
 
       const allEnvironments: ListEnvironmentItemWithProjectId[] = [
         ...workspaceEnvironments.items.map((env) => ({ ...env, projectId: undefined })),
@@ -53,13 +54,11 @@ export const useSyncEnvironments = () => {
       insertEnvironmentSummaries(summaries);
     };
     syncEnvironments();
-  }, [currentWorkspaceId, isProjectsLoading, isWorkspaceEnvironmentsLoading, projects, workspaceEnvironments]);
+  }, [currentWorkspaceId, isWorkspaceEnvironmentsLoading, localProjectSummaries, workspaceEnvironments]);
 };
 
-const fetchAllProjectEnvironments = async (
-  projects: ListProjectsOutput
-): Promise<ListEnvironmentItemWithProjectId[]> => {
-  const promises = projects.items.map(async (project) => {
+const fetchAllProjectEnvironments = async (projects: ProjectSummary[]): Promise<ListEnvironmentItemWithProjectId[]> => {
+  const promises = projects.map(async (project) => {
     const result = await environmentService.listProjectEnvironments({
       projectId: project.id,
     });

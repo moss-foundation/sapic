@@ -1,9 +1,9 @@
 import { UseBatchUpdateProjectResourceInput } from "@/adapters/tanstackQuery/resource/useBatchUpdateProjectResource";
+import { resourceService } from "@/domains/resource/resourceService";
 import { computeSequentialOrders } from "@/utils/computeOrderUpdates";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
-import { ListProjectResourcesOutput } from "@repo/ipc";
 import { BatchUpdateResourceOutput } from "@repo/moss-project";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 
@@ -18,7 +18,6 @@ interface HandleNodeOnNodeWithinProjectProps {
     unknown
   >;
   currentWorkspaceId: string;
-  fetchResourcesForPath: (projectId: string, path: string) => Promise<ListProjectResourcesOutput>;
   sourceTreeNodeData: DragNode;
   locationTreeNodeData: DropNode;
   operation: Operation;
@@ -27,7 +26,6 @@ interface HandleNodeOnNodeWithinProjectProps {
 export const handleNodeOnNodeWithinProject = async ({
   batchUpdateProjectResource,
   currentWorkspaceId,
-  fetchResourcesForPath,
   sourceTreeNodeData,
   locationTreeNodeData,
   operation,
@@ -98,6 +96,12 @@ export const handleNodeOnNodeWithinProject = async ({
       : Promise.resolve(),
   ]);
 
-  await fetchResourcesForPath(locationTreeNodeData.projectId, resolveParentPath(locationTreeNodeData.parentNode));
-  await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+  await resourceService.list({
+    projectId: locationTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
+  });
+  await resourceService.list({
+    projectId: sourceTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
+  });
 };

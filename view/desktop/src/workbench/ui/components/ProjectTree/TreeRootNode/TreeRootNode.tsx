@@ -1,6 +1,6 @@
 import { useContext, useRef } from "react";
 
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
@@ -24,7 +24,7 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const rootNodeRef = useRef<HTMLUListElement>(null);
 
-  const { data: projects } = useListProjects();
+  const { data: projectSummaries } = useGetAllLocalProjectSummaries();
   const { activePanelId } = useTabbedPaneStore();
 
   const {
@@ -51,7 +51,7 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
   });
 
   const shouldRenderLists = calculateShouldRenderRootChildNodes({ node: tree, isAddingRootFileNode });
-  const restrictedNames = projects?.items.map((project) => project.name) ?? [];
+  const restrictedNames = projectSummaries?.map((projectSummary) => projectSummary.name) ?? [];
 
   return (
     <Tree.RootNode ref={rootNodeRef} reorderInstruction={instruction} isDragging={isDragging}>

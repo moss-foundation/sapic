@@ -5,8 +5,8 @@ import {
 } from "@/adapters";
 import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
+import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { ListProjectResourcesOutput } from "@repo/ipc";
 import { BatchCreateResourceOutput, BatchUpdateResourceOutput, DeleteResourceOutput } from "@repo/moss-project";
 import { UseMutateAsyncFunction } from "@tanstack/react-query";
 import { join } from "@tauri-apps/api/path";
@@ -35,7 +35,6 @@ interface HandleNodeOnAnotherProjectRootProps {
     unknown
   >;
   currentWorkspaceId: string;
-  fetchResourcesForPath: (projectId: string, path: string) => Promise<ListProjectResourcesOutput>;
   sourceTreeNodeData: DragNode;
   locationTreeRootNodeData: DropRootNode;
 }
@@ -45,7 +44,6 @@ export const handleNodeOnAnotherProjectRoot = async ({
   batchUpdateProjectResource,
   batchCreateProjectResource,
   currentWorkspaceId,
-  fetchResourcesForPath,
   sourceTreeNodeData,
   locationTreeRootNodeData,
 }: HandleNodeOnAnotherProjectRootProps) => {
@@ -136,6 +134,9 @@ export const handleNodeOnAnotherProjectRoot = async ({
   await treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId);
   await treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId);
 
-  await fetchResourcesForPath(locationTreeRootNodeData.projectId, "");
-  await fetchResourcesForPath(sourceTreeNodeData.projectId, resolveParentPath(sourceTreeNodeData.parentNode));
+  await resourceService.list({ projectId: locationTreeRootNodeData.projectId, mode: { "RELOAD_PATH": "" } });
+  await resourceService.list({
+    projectId: sourceTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
+  });
 };

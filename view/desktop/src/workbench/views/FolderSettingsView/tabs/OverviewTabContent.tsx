@@ -1,5 +1,5 @@
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project";
 import { PageContent } from "@/workbench/ui/components";
+import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
 
 import { FolderSettingsViewProps } from "../FolderSettingsView";
 import { findNodeInProject } from "../utils";
