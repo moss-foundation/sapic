@@ -7,6 +7,7 @@ import { resourceService } from "@/domains/resource/resourceService";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
+import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 import {
   convertResourceInfoToCreateInput,
   getAllNestedResources,
@@ -106,6 +107,23 @@ export const useMonitorProjectCreationZone = () => {
         }
 
         try {
+          const buildOrderMap = (node: ResourceNode): Map<string, number> => {
+            const map = new Map<string, number>();
+            const traverse = (n: ResourceNode) => {
+              if (n.order !== undefined) map.set(n.id, n.order);
+              for (const child of n.childNodes) traverse(child);
+            };
+            traverse(node);
+            return map;
+          };
+          const orderMap = buildOrderMap(sourceData.node);
+
+          const rootChildIds = new Set(sourceData.node.childNodes.map((c) => c.id));
+          const sortedRootChildren = sortObjectsByOrder(sourceData.node.childNodes);
+          const rootChildNewOrders = new Map<string, number>(
+            sortedRootChildren.map((child, idx) => [child.id, idx + 1])
+          );
+
           const resourcesToCreate = await Promise.all(
             nestedResources.map(async (resource, index) => {
               const rootResourceName = rootResource.name;
@@ -124,7 +142,12 @@ export const useMonitorProjectCreationZone = () => {
 
               const createInput = convertResourceInfoToCreateInput(resource, parentPath);
 
-              createInput[resource.kind === "Dir" ? "DIR" : "ITEM"].order = index + 1;
+              const isRootChild = rootChildIds.has(resource.id);
+              const order = isRootChild
+                ? rootChildNewOrders.get(resource.id)!
+                : (orderMap.get(resource.id) ?? index + 1);
+
+              createInput[resource.kind === "Dir" ? "DIR" : "ITEM"].order = order;
 
               return createInput;
             })
