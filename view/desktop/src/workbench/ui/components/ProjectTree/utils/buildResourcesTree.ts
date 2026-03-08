@@ -8,10 +8,11 @@ export interface BuildResourcesTreeProps {
 }
 
 export const buildResourcesTree = ({ projectId, localResourceSummaries }: BuildResourcesTreeProps): IResourcesTree => {
+  const projectResources = localResourceSummaries.filter((summary) => summary.projectId === projectId);
   return {
     id: `resources-tree-${projectId}`,
     projectId,
-    childNodes: buildResourceTreeNodes(projectId, localResourceSummaries),
+    childNodes: buildResourceTreeNodes(projectId, projectResources),
   };
 };
 

@@ -48,6 +48,8 @@ export const useProjectsTrees = (): UseProjectsTreesProps => {
     return sortObjectsByOrder(projectsTrees);
   }, [projectsTrees]);
 
+  console.log({ projectsTreesSortedByOrder });
+
   return {
     projectsTrees,
     projectsTreesSortedByOrder,
