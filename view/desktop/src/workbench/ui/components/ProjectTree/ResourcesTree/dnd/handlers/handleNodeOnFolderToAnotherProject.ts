@@ -50,14 +50,29 @@ export const handleNodeOnFolderToAnotherProject = async ({
     channelEvent
   );
 
+  const orderItems: Record<string, number> = {};
+  const expandedItems: Record<string, boolean> = {};
+
   for (const resource of updatedSourceResourcesPayload) {
     if ("ITEM" in resource) {
-      await treeItemStateService.putExpanded(resource.ITEM.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      expandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      if ("order" in resource.ITEM) {
+        orderItems[resource.ITEM.id] = resource.ITEM.order as number;
+      }
     } else if ("DIR" in resource) {
-      await treeItemStateService.putOrder(resource.DIR.id, resource.DIR.order!, currentWorkspaceId);
-      await treeItemStateService.putExpanded(resource.DIR.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      orderItems[resource.DIR.id] = resource.DIR.order!;
+      expandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
     }
   }
+
+  await Promise.all([
+    Object.keys(orderItems).length > 0
+      ? treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId)
+      : Promise.resolve(),
+    Object.keys(expandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId)
+      : Promise.resolve(),
+  ]);
 
   const batchCreateResourceInput = await Promise.all(
     resourcesPreparedForCreation.map(async (resource, index) => {
@@ -84,10 +99,28 @@ export const handleNodeOnFolderToAnotherProject = async ({
     })
   );
 
-  await resourceService.batchCreate(locationTreeNodeData.projectId, {
+  const batchCreateOutput = await resourceService.batchCreate(locationTreeNodeData.projectId, {
     resources: batchCreateResourceInput,
   });
-  //TODO Create orders for created resources
+
+  const newOrderItems: Record<string, number> = {};
+  for (const created of batchCreateOutput.resources) {
+    const matchingInput = batchCreateResourceInput.find((r) => {
+      const params = "ITEM" in r ? r.ITEM : r.DIR;
+      return params.path === created.path.raw && params.name === created.name;
+    });
+    if (matchingInput) {
+      const params = "ITEM" in matchingInput ? matchingInput.ITEM : matchingInput.DIR;
+      if (params.order !== -1) {
+        newOrderItems[created.id] = params.order;
+      }
+    }
+  }
+
+  if (Object.keys(newOrderItems).length > 0) {
+    await treeItemStateService.batchPutOrder(newOrderItems, currentWorkspaceId);
+  }
+
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },

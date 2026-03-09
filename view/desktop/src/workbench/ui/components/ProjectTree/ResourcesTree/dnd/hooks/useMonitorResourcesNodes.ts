@@ -62,20 +62,20 @@ export const useMonitorResourcesNodes = () => {
             });
             break;
 
-          case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
-            handleNodeOnFolderToAnotherProject({
-              currentWorkspaceId,
-              sourceTreeNodeData,
-              locationTreeNodeData,
-            });
-            break;
-
           case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
             handleNodeOnNodeToAnotherProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
               operation: instruction.operation,
+            });
+            break;
+
+          case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
+            handleNodeOnFolderToAnotherProject({
+              currentWorkspaceId,
+              sourceTreeNodeData,
+              locationTreeNodeData,
             });
             break;
 
