@@ -11,7 +11,7 @@ export const hasPeersWithSimilarNameOrId = ({
   locationData,
 }: HasPeersWithSimilarNameOrIdProps): boolean => {
   if (locationData.data.parentNode.id === sourceData.parentNode.id) return false;
-  if (!locationData.data.parentNode.childNodes) return false;
+  if (locationData.data.parentNode.childNodes.length === 0) return false;
 
   return locationData.data.parentNode.childNodes.some(
     (child) => child.id === sourceData.node.id || child.name.toLowerCase() === sourceData.node.name.toLowerCase()

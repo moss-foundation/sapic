@@ -40,7 +40,7 @@ export const useDropTargetResourcesList = ({ ref, rootResourcesNodes }: UseDropT
           operations: {
             "reorder-before": "not-available",
             "reorder-after": "not-available",
-            combine: canCombineToResourcesList(sourceData, locationData),
+            combine: canCombineToResourcesList({ sourceData, locationData }),
           },
         });
       },
