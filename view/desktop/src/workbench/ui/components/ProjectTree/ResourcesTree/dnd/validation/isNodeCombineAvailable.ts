@@ -13,7 +13,7 @@ export const isNodeCombineAvailable = (sourceTarget: DragNode | null, locationNo
   }
 
   if (sourceTarget.node.id === locationNode.id) {
-    return "blocked";
+    return "not-available";
   }
 
   if (sourceTarget.node.class !== locationNode.class) {
@@ -21,7 +21,7 @@ export const isNodeCombineAvailable = (sourceTarget: DragNode | null, locationNo
   }
 
   if (hasDescendant(sourceTarget.node, locationNode)) {
-    return "blocked";
+    return "not-available";
   }
 
   if (hasDirectSimilarDescendant(locationNode, sourceTarget.node)) {

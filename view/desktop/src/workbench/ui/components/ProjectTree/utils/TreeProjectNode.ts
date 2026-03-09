@@ -1,12 +1,12 @@
 import { IResourcesTree, ResourceNode } from "../types";
 
-export const hasDescendant = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
-  if (parentNode.id === dropNode.id) return true;
-  if (parentNode.childNodes.length === 0) return false;
+export const hasDescendant = (sourceNode: ResourceNode, locationNode: ResourceNode): boolean => {
+  if (sourceNode.id === locationNode.id) return true;
+  if (sourceNode.childNodes.length === 0) return false;
 
-  return parentNode.childNodes.some((child) => {
-    if (child.id === dropNode.id) return true;
-    return hasDescendant(child, dropNode);
+  return sourceNode.childNodes.some((child) => {
+    if (child.id === locationNode.id) return true;
+    return hasDescendant(child, locationNode);
   });
 };
 

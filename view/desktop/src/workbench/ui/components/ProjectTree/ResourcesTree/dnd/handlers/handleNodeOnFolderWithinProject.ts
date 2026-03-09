@@ -54,12 +54,29 @@ export const handleNodeOnFolderWithinProject = async ({
     channelEvent
   );
 
-  await treeItemStateService.putOrder(sourceTreeNodeData.node.id, newOrder, currentWorkspaceId);
-  await treeItemStateService.putExpanded(
-    sourceTreeNodeData.node.id,
-    sourceTreeNodeData.node.expanded,
-    currentWorkspaceId
-  );
+  const orderItems: Record<string, number> = {};
+  const expandedItems: Record<string, boolean> = {};
+
+  for (const resource of allUpdates) {
+    if ("ITEM" in resource) {
+      expandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      if ("order" in resource.ITEM) {
+        orderItems[resource.ITEM.id] = resource.ITEM.order as number;
+      }
+    } else if ("DIR" in resource) {
+      orderItems[resource.DIR.id] = resource.DIR.order!;
+      expandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
+    }
+  }
+
+  await Promise.all([
+    Object.keys(orderItems).length > 0
+      ? treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId)
+      : Promise.resolve(),
+    Object.keys(expandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId)
+      : Promise.resolve(),
+  ]);
 
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,

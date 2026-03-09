@@ -42,14 +42,9 @@ export const useMonitorResourcesNodes = () => {
           instruction,
         });
 
+        console.log("nodeDropOperation", nodeDropOperation);
+
         switch (nodeDropOperation) {
-          case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:
-            handleNodeOnFolderWithinProject({
-              currentWorkspaceId,
-              sourceTreeNodeData,
-              locationTreeNodeData,
-            });
-            break;
           case NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT:
             handleNodeOnNodeWithinProject({
               currentWorkspaceId,
@@ -58,6 +53,15 @@ export const useMonitorResourcesNodes = () => {
               operation: instruction.operation,
             });
             break;
+
+          case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:
+            handleNodeOnFolderWithinProject({
+              currentWorkspaceId,
+              sourceTreeNodeData,
+              locationTreeNodeData,
+            });
+            break;
+
           case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
             handleNodeOnFolderToAnotherProject({
               currentWorkspaceId,
@@ -65,6 +69,7 @@ export const useMonitorResourcesNodes = () => {
               locationTreeNodeData,
             });
             break;
+
           case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
             handleNodeOnNodeToAnotherProject({
               currentWorkspaceId,
@@ -73,6 +78,7 @@ export const useMonitorResourcesNodes = () => {
               operation: instruction.operation,
             });
             break;
+
           //TODO handle node on resources list
           default:
             break;
