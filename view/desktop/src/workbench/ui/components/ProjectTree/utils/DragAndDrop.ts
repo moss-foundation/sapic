@@ -3,6 +3,7 @@ import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-dra
 import { ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "../constants";
+import { LocationResourcesListData } from "../ResourcesTree/dnd/types.dnd";
 import { DraggedResourceNode, DropNode, ResourceNode } from "../types";
 
 //source
@@ -34,6 +35,18 @@ export const getLocationProjectTreeNodeData = (location: DragLocationHistory): D
 export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {
   if (location.current.dropTargets.length === 0) return null;
   return extractInstruction(location.current.dropTargets[0].data);
+};
+
+export const getFirstDropTargetType = (location: DragLocationHistory): ProjectDragType | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  return location.current.dropTargets[0].data.type as ProjectDragType;
+};
+
+export const getLocationResourcesListData = (location: DragLocationHistory): LocationResourcesListData | null => {
+  if (location.current.dropTargets.length === 0) return null;
+  if (location.current.dropTargets[0].data.type !== ProjectDragType.RESOURCES_LIST) return null;
+
+  return location.current.dropTargets[0].data as LocationResourcesListData;
 };
 
 //other checks

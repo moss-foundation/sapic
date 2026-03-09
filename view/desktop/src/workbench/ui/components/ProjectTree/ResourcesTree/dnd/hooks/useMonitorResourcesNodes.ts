@@ -3,15 +3,20 @@ import { useEffect } from "react";
 import { useCurrentWorkspace } from "@/hooks";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
+import { ProjectDragType } from "../../../constants";
 import {
+  getFirstDropTargetType,
   getInstructionFromLocation,
   getLocationProjectTreeNodeData,
+  getLocationResourcesListData,
   getSourceProjectTreeNodeData,
   isSourceProjectTreeNode,
 } from "../../../utils";
 import { NodeDropOperation } from "../constants";
 import { handleNodeOnFolderToAnotherProject } from "../handlers/handleNodeOnFolderToAnotherProject";
 import { handleNodeOnFolderWithinProject } from "../handlers/handleNodeOnFolderWithinProject";
+import { handleNodeOnListRootToAnotherProject } from "../handlers/handleNodeOnListRootToAnotherProject";
+import { handleNodeOnListRootWithinProject } from "../handlers/handleNodeOnListRootWithinProject";
 import { handleNodeOnNodeToAnotherProject } from "../handlers/handleNodeOnNodeToAnotherProject";
 import { handleNodeOnNodeWithinProject } from "../handlers/handleNodeOnNodeWithinProject";
 import { calculateNodeDropOperation } from "../validation/calculateNodeDropOperation";
@@ -26,23 +31,43 @@ export const useMonitorResourcesNodes = () => {
       },
       onDrop: async ({ location, source }) => {
         const sourceTreeNodeData = getSourceProjectTreeNodeData(source);
+        if (!sourceTreeNodeData) return;
+
+        const dropTargetType = getFirstDropTargetType(location);
+
+        if (dropTargetType === ProjectDragType.RESOURCES_LIST) {
+          const listRootData = getLocationResourcesListData(location);
+          const instruction = getInstructionFromLocation(location);
+          if (!listRootData || !instruction) return;
+
+          const isSameProject = sourceTreeNodeData.projectId === listRootData.data.projectId;
+
+          if (isSameProject) {
+            handleNodeOnListRootWithinProject({
+              currentWorkspaceId,
+              sourceTreeNodeData,
+              locationResourcesListData: listRootData,
+            });
+          } else {
+            handleNodeOnListRootToAnotherProject({
+              currentWorkspaceId,
+              sourceTreeNodeData,
+              locationResourcesListData: listRootData,
+            });
+          }
+          return;
+        }
+
         const locationTreeNodeData = getLocationProjectTreeNodeData(location);
         const instruction = getInstructionFromLocation(location);
 
-        if (!sourceTreeNodeData || !locationTreeNodeData || !instruction) {
-          if (!sourceTreeNodeData) console.warn("Invalid source tree node data", { sourceTreeNodeData });
-          if (!locationTreeNodeData) console.warn("Invalid location tree node data", { locationTreeNodeData });
-          if (!instruction) console.warn("Invalid instruction", { instruction });
-          return;
-        }
+        if (!locationTreeNodeData || !instruction) return;
 
         const nodeDropOperation = calculateNodeDropOperation({
           sourceTreeNodeData,
           locationTreeNodeData,
           instruction,
         });
-
-        console.log("nodeDropOperation", nodeDropOperation);
 
         switch (nodeDropOperation) {
           case NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT:
@@ -79,7 +104,6 @@ export const useMonitorResourcesNodes = () => {
             });
             break;
 
-          //TODO handle node on resources list
           default:
             break;
         }

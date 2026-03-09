@@ -6,7 +6,7 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
-import { DraggedResourceNode, DropRootNode } from "../../../types";
+import { DraggedResourceNode } from "../../../types";
 import {
   createResourceKind,
   getAllNestedResources,
@@ -14,22 +14,23 @@ import {
   resolveParentPath,
   siblingsAfterRemovalPayload,
 } from "../../../utils";
+import { LocationResourcesListData } from "../types.dnd";
 
-interface HandleNodeOnAnotherProjectRootProps {
+interface HandleNodeOnListRootToAnotherProjectProps {
   currentWorkspaceId: string;
   sourceTreeNodeData: DraggedResourceNode;
-  locationTreeRootNodeData: DropRootNode;
+  locationResourcesListData: LocationResourcesListData;
 }
 
-export const handleNodeOnAnotherProjectRoot = async ({
+export const handleNodeOnListRootToAnotherProject = async ({
   currentWorkspaceId,
   sourceTreeNodeData,
-  locationTreeRootNodeData,
-}: HandleNodeOnAnotherProjectRootProps) => {
+  locationResourcesListData,
+}: HandleNodeOnListRootToAnotherProjectProps) => {
   const allResources = getAllNestedResources(sourceTreeNodeData.node);
   const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
 
-  const newOrder = locationTreeRootNodeData.node.resourcesTree.childNodes.length + 1;
+  const newOrder = locationResourcesListData.data.rootResourcesNodes.length + 1;
 
   await resourceService.delete(sourceTreeNodeData.projectId, {
     id: sourceTreeNodeData.node.id,
@@ -84,7 +85,7 @@ export const handleNodeOnAnotherProjectRoot = async ({
     channelEvent
   );
 
-  const batchCreateResourceOutput = await resourceService.batchCreate(locationTreeRootNodeData.projectId, {
+  const batchCreateResourceOutput = await resourceService.batchCreate(locationResourcesListData.data.projectId, {
     resources: batchCreateResourceInput,
   });
 
@@ -108,10 +109,20 @@ export const handleNodeOnAnotherProjectRoot = async ({
     expandedItems[resource.id] = sourceTreeNodeData.node.expanded;
   }
 
+  for (const resource of updatedSourceResourcesPayload) {
+    if ("ITEM" in resource) {
+      if ("order" in resource.ITEM) {
+        orderItems[resource.ITEM.id] = resource.ITEM.order as number;
+      }
+    } else if ("DIR" in resource) {
+      orderItems[resource.DIR.id] = resource.DIR.order!;
+    }
+  }
+
   await treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId);
   await treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId);
 
-  await resourceService.list({ projectId: locationTreeRootNodeData.projectId, mode: { "RELOAD_PATH": "" } });
+  await resourceService.list({ projectId: locationResourcesListData.data.projectId, mode: { "RELOAD_PATH": "" } });
   await resourceService.list({
     projectId: sourceTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
