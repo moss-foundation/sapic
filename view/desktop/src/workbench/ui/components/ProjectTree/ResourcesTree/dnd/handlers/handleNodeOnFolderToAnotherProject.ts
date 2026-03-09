@@ -129,6 +129,4 @@ export const handleNodeOnFolderToAnotherProject = async ({
     projectId: sourceTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
   });
-
-  return;
 };
