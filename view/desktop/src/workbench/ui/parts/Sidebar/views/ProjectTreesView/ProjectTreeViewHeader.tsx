@@ -1,8 +1,8 @@
 import { useState } from "react";
 
 import { useListWorkspaceEnvironments } from "@/adapters";
+import { refreshProjectSummaries } from "@/db/projectSummaries/actions/refreshProjectSummaries";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
-import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
@@ -17,7 +17,6 @@ export const ProjectTreeViewHeader = () => {
 
   const { data: projectSummaries, isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
   const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
-  const { refreshProjectSummaries } = useSyncProjectSummaries();
   const { flushWorkspaceEnvironments } = useListWorkspaceEnvironments();
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
