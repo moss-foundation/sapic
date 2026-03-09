@@ -6,7 +6,7 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
-import { DragNode, DropRootNode } from "../../../types";
+import { DraggedResourceNode, DropRootNode } from "../../../types";
 import {
   createResourceKind,
   getAllNestedResources,
@@ -17,7 +17,7 @@ import {
 
 interface HandleNodeOnAnotherProjectRootProps {
   currentWorkspaceId: string;
-  sourceTreeNodeData: DragNode;
+  sourceTreeNodeData: DraggedResourceNode;
   locationTreeRootNodeData: DropRootNode;
 }
 

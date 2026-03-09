@@ -1,44 +1,37 @@
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DragNode, ResourceNode } from "../../../types";
-import { hasDescendant, hasDirectDescendantWithSimilarName, hasDirectSimilarDescendant } from "../../../utils";
+import { DraggedResourceNode } from "../../../types";
+import { hasDescendant } from "../../../utils";
+import { DragResourceNode } from "../types.dnd";
+import { hasDirectSimilarDescendant } from "./hasDirectSimilarDescendant";
 
-export const isNodeCombineAvailable = (sourceTarget: DragNode | null, locationNode: ResourceNode): Availability => {
-  if (!sourceTarget || !locationNode) {
+export const isNodeCombineAvailable = (
+  sourceData: DraggedResourceNode | null,
+  locationData: DragResourceNode
+): Availability => {
+  if (!sourceData || !locationData) {
     return "not-available";
   }
 
-  if (locationNode.kind !== "Dir") {
+  if (locationData.data.node.kind !== "Dir") {
     return "not-available";
   }
 
-  if (sourceTarget.node.id === locationNode.id) {
+  if (sourceData.node.id === locationData.data.node.id) {
     return "not-available";
   }
 
-  if (sourceTarget.node.class !== locationNode.class) {
+  if (sourceData.node.class !== locationData.data.node.class) {
     return "blocked";
   }
 
-  if (hasDescendant(sourceTarget.node, locationNode)) {
+  if (hasDescendant(sourceData.node, locationData.data.node)) {
     return "not-available";
   }
 
-  if (hasDirectSimilarDescendant(locationNode, sourceTarget.node)) {
+  if (hasDirectSimilarDescendant({ locationData, sourceData })) {
     return "blocked";
   }
 
   return "available";
-};
-
-export const evaluateIsChildDropBlocked = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
-  if (parentNode.class !== dropNode.class) {
-    return true;
-  }
-
-  if (hasDirectDescendantWithSimilarName(parentNode, dropNode)) {
-    return true;
-  }
-
-  return false;
 };

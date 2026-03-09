@@ -1,21 +1,17 @@
 import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import {
-  DragLocationHistory,
-  DropTargetRecord,
-  ElementDragPayload,
-} from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import { ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "../constants";
-import { DragNode, DropNode, ResourceNode } from "../types";
+import { DraggedResourceNode, DropNode, ResourceNode } from "../types";
 
 //source
-export const getSourceProjectTreeNodeData = (source: ElementDragPayload): DragNode | null => {
+export const getSourceProjectTreeNodeData = (source: ElementDragPayload): DraggedResourceNode | null => {
   if (source.data.type !== ProjectDragType.NODE) {
     return null;
   }
 
-  return source.data.data as DragNode;
+  return source.data.data as DraggedResourceNode;
 };
 
 export const isSourceProjectTreeNode = (source: ElementDragPayload): boolean => {
@@ -30,7 +26,7 @@ export const getLocationProjectTreeNodeData = (location: DragLocationHistory): D
   const instruction = extractInstruction(location.current.dropTargets[0].data);
 
   return {
-    ...(location.current.dropTargets[0].data.data as DragNode),
+    ...(location.current.dropTargets[0].data.data as DraggedResourceNode),
     "instruction": instruction ?? undefined,
   };
 };
@@ -61,8 +57,4 @@ export const getAllNestedResources = (node: ResourceNode): ListProjectResourceIt
   const sortedResult = result.sort((a, b) => a.path.segments.length - b.path.segments.length);
 
   return sortedResult;
-};
-
-export const getInstructionFromSelf = (self: DropTargetRecord): Instruction | null => {
-  return extractInstruction(self.data);
 };

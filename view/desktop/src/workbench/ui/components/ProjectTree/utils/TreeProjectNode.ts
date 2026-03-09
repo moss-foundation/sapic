@@ -1,8 +1,7 @@
-import { IResourcesTree, ResourceNode } from "../types";
+import { ResourceNode } from "../types";
 
 export const hasDescendant = (sourceNode: ResourceNode, locationNode: ResourceNode): boolean => {
   if (sourceNode.id === locationNode.id) return true;
-  if (sourceNode.childNodes.length === 0) return false;
 
   return sourceNode.childNodes.some((child) => {
     if (child.id === locationNode.id) return true;
@@ -13,26 +12,6 @@ export const hasDescendant = (sourceNode: ResourceNode, locationNode: ResourceNo
 export const hasDirectDescendant = (parentNode: ResourceNode, dropNode: ResourceNode): boolean => {
   if (!parentNode.childNodes) return false;
   return parentNode.childNodes.some((child) => child.id === dropNode.id);
-};
-
-export const hasDirectSimilarDescendant = (
-  parentNode: ResourceNode | IResourcesTree,
-  dropNode: ResourceNode
-): boolean => {
-  if (!parentNode.childNodes) return false;
-  return parentNode.childNodes.some(
-    (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
-  );
-};
-
-export const hasDirectDescendantWithSimilarName = (
-  parentNode: ResourceNode | IResourcesTree,
-  dropNode: ResourceNode
-): boolean => {
-  if (!parentNode.childNodes) return false;
-  return parentNode.childNodes.some(
-    (child) => child.id === dropNode.id || child.name.toLowerCase() === dropNode.name.toLowerCase()
-  );
 };
 
 const doesStringIncludePartialString = (str: string, partialStr: string) => {

@@ -5,7 +5,7 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
-import { DragNode, DropNode } from "../../../types";
+import { DraggedResourceNode, DropNode } from "../../../types";
 import {
   createResourceKind,
   getAllNestedResources,
@@ -17,7 +17,7 @@ import {
 interface HandleNodeOnNodeToAnotherProjectProps {
   currentWorkspaceId: string;
 
-  sourceTreeNodeData: DragNode;
+  sourceTreeNodeData: DraggedResourceNode;
   locationTreeNodeData: DropNode;
   operation: Operation;
 }
@@ -59,14 +59,29 @@ export const handleNodeOnNodeToAnotherProject = async ({
     batchUpdateChannelEvent
   );
 
+  const sourceOrderItems: Record<string, number> = {};
+  const sourceExpandedItems: Record<string, boolean> = {};
+
   for (const resource of updatedSourceResourcesPayload) {
     if ("ITEM" in resource) {
-      await treeItemStateService.putExpanded(resource.ITEM.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      sourceExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      if ("order" in resource.ITEM) {
+        sourceOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
+      }
     } else if ("DIR" in resource) {
-      await treeItemStateService.putOrder(resource.DIR.id, resource.DIR.order!, currentWorkspaceId);
-      await treeItemStateService.putExpanded(resource.DIR.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      sourceOrderItems[resource.DIR.id] = resource.DIR.order!;
+      sourceExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
     }
   }
+
+  await Promise.all([
+    Object.keys(sourceOrderItems).length > 0
+      ? treeItemStateService.batchPutOrder(sourceOrderItems, currentWorkspaceId)
+      : Promise.resolve(),
+    Object.keys(sourceExpandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(sourceExpandedItems, currentWorkspaceId)
+      : Promise.resolve(),
+  ]);
 
   //Update items in target project
   await resourceService.batchUpdate(
@@ -77,14 +92,30 @@ export const handleNodeOnNodeToAnotherProject = async ({
     batchUpdateChannelEvent
   );
 
+  const targetOrderItems: Record<string, number> = {};
+  const targetExpandedItems: Record<string, boolean> = {};
+
   for (const resource of targetResourcesToUpdate) {
     if ("ITEM" in resource) {
-      await treeItemStateService.putExpanded(resource.ITEM.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      targetExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      if ("order" in resource.ITEM) {
+        targetOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
+      }
     } else if ("DIR" in resource) {
-      await treeItemStateService.putOrder(resource.DIR.id, resource.DIR.order!, currentWorkspaceId);
-      await treeItemStateService.putExpanded(resource.DIR.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+      targetOrderItems[resource.DIR.id] = resource.DIR.order!;
+      targetExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
     }
   }
+
+  await Promise.all([
+    Object.keys(targetOrderItems).length > 0
+      ? treeItemStateService.batchPutOrder(targetOrderItems, currentWorkspaceId)
+      : Promise.resolve(),
+    Object.keys(targetExpandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(targetExpandedItems, currentWorkspaceId)
+      : Promise.resolve(),
+  ]);
+
   //Delete item in source project
   await resourceService.delete(sourceTreeNodeData.projectId, {
     id: sourceTreeNodeData.node.id,
@@ -129,25 +160,32 @@ export const handleNodeOnNodeToAnotherProject = async ({
     resources: batchCreateResourceInput,
   });
 
-  for (const resource of batchCreateResourceOutput.resources) {
-    const resourceInput = batchCreateResourceInput.find((input) => {
-      if ("ITEM" in input) {
-        return input.ITEM.path === resource.path.raw && input.ITEM.name === resource.name;
-      } else {
-        return input.DIR.path === resource.path.raw && input.DIR.name === resource.name;
-      }
+  const newOrderItems: Record<string, number> = {};
+  const newExpandedItems: Record<string, boolean> = {};
+
+  for (const created of batchCreateResourceOutput.resources) {
+    const matchingInput = batchCreateResourceInput.find((input) => {
+      const params = "ITEM" in input ? input.ITEM : input.DIR;
+      return params.path === created.path.raw && params.name === created.name;
     });
 
-    if (resourceInput) {
-      if ("ITEM" in resourceInput) {
-        await treeItemStateService.putOrder(resource.id, resourceInput.ITEM.order, currentWorkspaceId);
-        await treeItemStateService.putExpanded(resource.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
-      } else {
-        await treeItemStateService.putOrder(resource.id, resourceInput.DIR.order, currentWorkspaceId);
-        await treeItemStateService.putExpanded(resource.id, sourceTreeNodeData.node.expanded, currentWorkspaceId);
+    if (matchingInput) {
+      const params = "ITEM" in matchingInput ? matchingInput.ITEM : matchingInput.DIR;
+      if (params.order !== -1) {
+        newOrderItems[created.id] = params.order;
       }
+      newExpandedItems[created.id] = sourceTreeNodeData.node.expanded;
     }
   }
+
+  await Promise.all([
+    Object.keys(newOrderItems).length > 0
+      ? treeItemStateService.batchPutOrder(newOrderItems, currentWorkspaceId)
+      : Promise.resolve(),
+    Object.keys(newExpandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(newExpandedItems, currentWorkspaceId)
+      : Promise.resolve(),
+  ]);
 
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,

@@ -24,7 +24,7 @@ export interface IResourcesTree {
   childNodes: ResourceNode[];
 }
 
-export interface DragNode {
+export interface DraggedResourceNode {
   projectId: string;
   node: ResourceNode;
   parentNode: ResourceNode | IResourcesTree;
