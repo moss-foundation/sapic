@@ -1,8 +1,8 @@
 import { useState } from "react";
 
-import { flushEnvironmentSummaries } from "@/db/environmentsSummaries/actions/flushEnvironmentSummaries";
-import { flushProjectSummaries } from "@/db/projectSummaries/actions/flushProjectSummaries";
+import { useListWorkspaceEnvironments } from "@/adapters";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
@@ -17,7 +17,8 @@ export const ProjectTreeViewHeader = () => {
 
   const { data: projectSummaries, isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
   const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
-
+  const { refreshProjectSummaries } = useSyncProjectSummaries();
+  const { flushWorkspaceEnvironments } = useListWorkspaceEnvironments();
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
   //TODO project and resource summaries that is linked to manipulating all states is broken for now
@@ -33,9 +34,9 @@ export const ProjectTreeViewHeader = () => {
     openModal: openNewProjectModal,
   } = useModal();
 
-  const handleRefreshProjects = () => {
-    flushProjectSummaries();
-    flushEnvironmentSummaries();
+  const handleRefreshProjects = async () => {
+    flushWorkspaceEnvironments();
+    await refreshProjectSummaries({ currentWorkspaceId });
   };
 
   const handleCollapseAll = async () => {

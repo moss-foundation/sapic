@@ -45,7 +45,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     const newOrder = projects?.length ? projects.length + 1 : 1;
 
     if (tab === CREATE_TAB) {
-      const result = await projectService.createProject({
+      const result = await projectService.create({
         name,
         gitParams: createParams,
       });
@@ -74,7 +74,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     } else {
       if (!importParams) return;
 
-      const result = await projectService.importProject({
+      const result = await projectService.import({
         name,
         source: importParams,
         iconPath: "",

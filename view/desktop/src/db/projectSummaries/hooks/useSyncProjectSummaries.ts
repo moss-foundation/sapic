@@ -1,32 +1,30 @@
-import { useEffect, useEffectEvent } from "react";
+import { useEffect } from "react";
 
 import { projectSummariesCollection } from "@/db/projectSummaries/projectSummaries";
 import { projectService } from "@/domains/project/projectService";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { ListProjectItem } from "@repo/ipc";
 
 import { flushProjectSummaries } from "../actions/flushProjectSummaries";
 
 export const useSyncProjectSummaries = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const updateProjectSummaries = useEffectEvent(async (projectItems: ListProjectItem[]) => {
-    if (projectItems.length === 0) {
-      flushProjectSummaries();
-      return;
-    }
+  const refreshProjectSummaries = async ({ currentWorkspaceId }: { currentWorkspaceId: string }) => {
+    flushProjectSummaries();
+
+    const projects = await projectService.list();
 
     const treeItemOrders = await treeItemStateService.batchGetOrder(
-      projectItems.map((project) => project.id),
+      projects.items.map((project) => project.id),
       currentWorkspaceId
     );
     const treeItemExpanded = await treeItemStateService.batchGetExpanded(
-      projectItems.map((project) => project.id),
+      projects.items.map((project) => project.id),
       currentWorkspaceId
     );
 
-    projectItems.forEach((project, index) => {
+    projects.items.forEach((project, index) => {
       const order = treeItemOrders?.[index];
       const expanded = treeItemExpanded?.[index];
 
@@ -45,20 +43,14 @@ export const useSyncProjectSummaries = () => {
     });
 
     projectSummariesCollection.forEach((project) => {
-      const doesProjectExistInRemote = projectItems.some((p) => p.id === project.id);
+      const doesProjectExistInRemote = projects.items.some((p) => p.id === project.id);
       if (!doesProjectExistInRemote) projectSummariesCollection.delete(project.id);
     });
-  });
-
-  useEffect(flushProjectSummaries, [currentWorkspaceId]);
+  };
 
   useEffect(() => {
-    const syncProjects = async () => {
-      const projects = await projectService.listProjects();
-      updateProjectSummaries(projects.items);
-    };
-    syncProjects();
-  }, []);
+    refreshProjectSummaries({ currentWorkspaceId });
+  }, [currentWorkspaceId]);
 
-  return { isLoading: false, isPending: false };
+  return { isLoading: false, isPending: false, refreshProjectSummaries };
 };

@@ -15,7 +15,7 @@ export const useRenameProjectForm = (projectId: string) => {
         return;
       }
 
-      await projectService.updateProject({
+      await projectService.update({
         id: projectId,
         name: trimmedNewName,
       });

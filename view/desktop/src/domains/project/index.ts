@@ -13,14 +13,14 @@ import {
 } from "@repo/ipc";
 
 export interface IProjectIpc {
-  batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
+  batchUpdate: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
 
-  createProject: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
-  deleteProject: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
+  create: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
+  delete: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
 
-  importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
+  import: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
-  listProjects: () => Promise<ListProjectsOutput>;
+  list: () => Promise<ListProjectsOutput>;
 
-  updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
+  update: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
 }

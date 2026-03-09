@@ -15,7 +15,7 @@ export const useRootNodeRenamingForm = (node: ProjectTree) => {
         return;
       }
 
-      await projectService.updateProject({
+      await projectService.update({
         id: node.id,
         name: trimmedNewName,
       });

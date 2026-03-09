@@ -38,7 +38,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
       return;
     }
     try {
-      await projectService.updateProject({
+      await projectService.update({
         id: projectSummary.id,
         name,
       });
@@ -60,7 +60,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     }
 
     try {
-      await projectService.updateProject({
+      await projectService.update({
         id: projectSummary.id,
         // repository: !repository ? "REMOVE" : { UPDATE: repository },
       });

@@ -23,7 +23,7 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
   const handleSubmit = async () => {
     try {
       setIsDeleteProjectLoading(true);
-      await projectService.deleteProject({ id });
+      await projectService.delete({ id });
 
       await treeItemStateService.removeOrder(id, currentWorkspaceId);
 

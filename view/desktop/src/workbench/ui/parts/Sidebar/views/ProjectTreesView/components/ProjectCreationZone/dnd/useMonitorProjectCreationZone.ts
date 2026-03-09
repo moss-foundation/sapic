@@ -54,7 +54,7 @@ export const useMonitorProjectCreationZone = () => {
         const rootResource = resources[0];
         const nestedResources = resources.slice(1);
 
-        const newProjectSummary = await projectService.createProject({
+        const newProjectSummary = await projectService.create({
           name: rootResource.name,
         });
 
