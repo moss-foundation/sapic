@@ -25,8 +25,6 @@ export const useSyncEnvironments = () => {
     if (isWorkspaceEnvironmentsLoading || !workspaceEnvironments) return;
 
     const syncEnvironments = async () => {
-      clearExistingEnvironments();
-
       const projectEnvironments = await fetchAllProjectEnvironments(localProjectSummaries);
 
       const allEnvironments: ListEnvironmentItemWithProjectId[] = [
@@ -55,6 +53,10 @@ export const useSyncEnvironments = () => {
     };
     syncEnvironments();
   }, [currentWorkspaceId, isWorkspaceEnvironmentsLoading, localProjectSummaries, workspaceEnvironments]);
+
+  useEffect(() => {
+    clearExistingEnvironments();
+  }, [currentWorkspaceId]);
 };
 
 const fetchAllProjectEnvironments = async (projects: ProjectSummary[]): Promise<ListEnvironmentItemWithProjectId[]> => {

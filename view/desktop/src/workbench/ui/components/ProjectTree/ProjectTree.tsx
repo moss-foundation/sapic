@@ -10,7 +10,7 @@ export const ProjectTree = ({
   nodeOffset = 12,
   searchInput,
   displayMode = "LIVE",
-  showOrders = true,
+  showOrders = false,
   showRootNodeIds = false,
 }: ProjectTreeProps) => {
   return (
