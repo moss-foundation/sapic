@@ -80,8 +80,8 @@ export const useDraggableResourceNode = ({
             input,
             element,
             operations: {
-              "reorder-before": isNodeReorderAvailable(sourceData, locationData),
-              "reorder-after": isNodeReorderAvailable(sourceData, locationData),
+              "reorder-before": isNodeReorderAvailable(sourceData, locationData, "reorder-before"),
+              "reorder-after": isNodeReorderAvailable(sourceData, locationData, "reorder-after"),
               combine: isNodeCombineAvailable(sourceData, locationData),
             },
           });

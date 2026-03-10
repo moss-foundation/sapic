@@ -1,4 +1,4 @@
-import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
+import { Availability, Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { DraggedResourceNode } from "../../../types";
 import { hasDescendant } from "../../../utils/TreeProjectNode";
@@ -7,7 +7,8 @@ import { hasPeersWithSimilarNameOrId } from "./hasPeersWithSimilarNameOrId";
 
 export const isNodeReorderAvailable = (
   sourceData: DraggedResourceNode | null,
-  locationData: DragResourceNode
+  locationData: DragResourceNode,
+  operation: Omit<Operation, "combine">
 ): Availability => {
   if (!sourceData || !locationData) {
     return "not-available";
@@ -17,7 +18,7 @@ export const isNodeReorderAvailable = (
     return "not-available";
   }
 
-  if (locationData.data.node.kind === "Dir" && locationData.data.node.expanded) {
+  if (locationData.data.node.kind === "Dir" && operation === "reorder-after") {
     return "not-available";
   }
 
