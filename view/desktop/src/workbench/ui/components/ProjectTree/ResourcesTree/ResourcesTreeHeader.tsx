@@ -7,14 +7,25 @@ import { cn } from "@/utils";
 import { usePutResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/usePutResourcesListItemState";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
+import { ResourcesTreeActions } from "./ResourcesTreeActions";
 
 interface ResourcesTreeHeaderProps {
+  ref: RefObject<HTMLHeadingElement | null>;
   expanded: boolean;
   offsetLeft: number;
-  ref: RefObject<HTMLHeadingElement | null>;
+  offsetRight: number;
+  setIsAddingFileNode: () => void;
+  setIsAddingFolderNode: () => void;
 }
 
-export const ResourcesTreeHeader = ({ expanded, offsetLeft, ref }: ResourcesTreeHeaderProps) => {
+export const ResourcesTreeHeader = ({
+  ref,
+  expanded,
+  offsetLeft,
+  offsetRight,
+  setIsAddingFileNode,
+  setIsAddingFolderNode,
+}: ResourcesTreeHeaderProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { id } = useContext(ProjectTreeContext);
 
@@ -40,7 +51,7 @@ export const ResourcesTreeHeader = ({ expanded, offsetLeft, ref }: ResourcesTree
   };
 
   return (
-    <Tree.ListHeader offsetLeft={offsetLeft} ref={ref}>
+    <Tree.ListHeader offsetLeft={offsetLeft} offsetRight={offsetRight} ref={ref}>
       <Tree.ListHeaderDetails className="cursor-pointer text-sm" onClick={onHeaderClick}>
         <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
@@ -49,6 +60,8 @@ export const ResourcesTreeHeader = ({ expanded, offsetLeft, ref }: ResourcesTree
         <Tree.ListLabel label="Resources" />
         <Tree.ListDirCount count={-1} />
       </Tree.ListHeaderDetails>
+
+      <ResourcesTreeActions setIsAddingFileNode={setIsAddingFileNode} setIsAddingFolderNode={setIsAddingFolderNode} />
     </Tree.ListHeader>
   );
 };

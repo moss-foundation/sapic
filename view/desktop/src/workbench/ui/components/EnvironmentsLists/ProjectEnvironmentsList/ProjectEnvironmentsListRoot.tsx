@@ -7,7 +7,10 @@ import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQue
 import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { ProjectTree } from "../../ProjectTree/types";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
+import { ProjectEnvironmentAddForm } from "../EnvironmentAddForm/ProjectEnvironmentAddForm";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
+import { useAddProjectEnvironmentForm } from "./hooks/useAddProjectEnvironmentForm";
+import { ProjectEnvironmentsListRootHeaderActions } from "./ProjectEnvironmentsListRootHeaderActions";
 import { ProjectEnvironmentsListRootHeaderDetails } from "./ProjectEnvironmentsListRootHeaderDetails";
 
 interface ProjectEnvironmentsListRootProps {
@@ -16,7 +19,7 @@ interface ProjectEnvironmentsListRootProps {
 
 export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRootProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { treePaddingLeft } = useContext(ProjectTreeContext);
+  const { treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
 
   const projectEnvironmentsListRef = useRef<HTMLDivElement>(null);
 
@@ -24,6 +27,7 @@ export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRoo
 
   const listHeaderOffset = treePaddingLeft * 2;
   const listItemOffset = treePaddingLeft * 3;
+  const listItemOffsetForAddForm = treePaddingLeft * 6;
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
@@ -31,22 +35,45 @@ export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRoo
     projectEnvironments: tree.environmentsList ?? [],
   });
 
+  const {
+    isAddingProjectEnvironment,
+    setIsAddingProjectEnvironment,
+    handleAddProjectEnvironmentSubmit,
+    handleAddProjectEnvironmentFormCancel,
+  } = useAddProjectEnvironmentForm({
+    environmentsList: tree.environmentsList ?? [],
+  });
+
+  const showChildren = expanded || isAddingProjectEnvironment;
+  const restrictedNames = tree.environmentsList?.map((environment) => environment.name) ?? [];
+
   return (
     <Tree.List ref={projectEnvironmentsListRef} combineInstruction={instruction}>
-      <Tree.ListHeader offsetLeft={listHeaderOffset}>
+      <Tree.ListHeader offsetLeft={listHeaderOffset} offsetRight={treePaddingRight}>
         <ProjectEnvironmentsListRootHeaderDetails
           project={tree}
           expanded={expanded}
           count={tree.environmentsList?.length ?? 0}
         />
+
+        <ProjectEnvironmentsListRootHeaderActions setIsAddingProjectEnvironment={setIsAddingProjectEnvironment} />
       </Tree.ListHeader>
 
-      {expanded && (
+      {showChildren && (
         <Tree.RootNodeChildren hideDirDepthIndicator>
           {tree.environmentsList?.map((environment) => (
             <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
           ))}
         </Tree.RootNodeChildren>
+      )}
+
+      {isAddingProjectEnvironment && (
+        <ProjectEnvironmentAddForm
+          offsetLeft={listItemOffsetForAddForm}
+          onSubmit={handleAddProjectEnvironmentSubmit}
+          restrictedNames={restrictedNames}
+          onCancel={handleAddProjectEnvironmentFormCancel}
+        />
       )}
     </Tree.List>
   );

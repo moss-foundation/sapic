@@ -8,26 +8,17 @@ import { ProjectTreeContext } from "../ProjectTreeContext";
 import { IResourcesTree } from "../types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
+import { useRootResourceNodeAddForm } from "./hooks/useRootResourceNodeAddForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import { ResourcesTreeHeader } from "./ResourcesTreeHeader";
 
 interface ResourcesTreeProps {
   tree: IResourcesTree;
-  isAddingRootFileNode: boolean;
-  isAddingRootFolderNode: boolean;
-  handleRootAddFormSubmit: (name: string) => void;
-  handleRootAddFormCancel: () => void;
 }
 
-export const ResourcesTree = ({
-  tree,
-  isAddingRootFileNode,
-  isAddingRootFolderNode,
-  handleRootAddFormSubmit,
-  handleRootAddFormCancel,
-}: ResourcesTreeProps) => {
+export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { id, treePaddingLeft } = useContext(ProjectTreeContext);
+  const { id, treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
 
   const projectResourcesHeaderRef = useRef<HTMLHeadingElement>(null);
   const listHeaderOffset = treePaddingLeft * 2;
@@ -39,22 +30,39 @@ export const ResourcesTree = ({
     rootResourcesNodes: tree.childNodes,
   });
 
-  const shouldRenderChildren = expanded || isAddingRootFileNode;
-  const isAddingRootNode = isAddingRootFileNode || isAddingRootFolderNode;
+  const {
+    isAddingFileNode,
+    isAddingFolderNode,
+    setIsAddingFileNode,
+    setIsAddingFolderNode,
+    handleAddFormSubmit,
+    handleAddFormCancel,
+  } = useRootResourceNodeAddForm({ tree });
+
+  const isAddingRootNode = isAddingFileNode || isAddingFolderNode;
+  const shouldRenderChildren = expanded || isAddingRootNode;
 
   return (
     <Tree.List combineInstruction={instruction}>
-      <ResourcesTreeHeader expanded={expanded} offsetLeft={listHeaderOffset} ref={projectResourcesHeaderRef} />
+      <ResourcesTreeHeader
+        expanded={expanded}
+        offsetLeft={listHeaderOffset}
+        offsetRight={treePaddingRight}
+        ref={projectResourcesHeaderRef}
+        setIsAddingFileNode={() => setIsAddingFileNode(true)}
+        setIsAddingFolderNode={() => setIsAddingFolderNode(true)}
+      />
 
       {shouldRenderChildren && (
         <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={1} />
       )}
+
       {isAddingRootNode && (
         <ResourceNodeAddForm
-          depth={1}
-          isAddingFolderNode={isAddingRootFolderNode}
-          handleAddFormSubmit={handleRootAddFormSubmit}
-          handleAddFormCancel={handleRootAddFormCancel}
+          depth={0}
+          isAddingFolderNode={isAddingFolderNode}
+          handleAddFormSubmit={handleAddFormSubmit}
+          handleAddFormCancel={handleAddFormCancel}
           restrictedNames={[]}
         />
       )}

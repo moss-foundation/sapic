@@ -11,24 +11,13 @@ import { TreeRootNodeActions } from "./TreeRootNodeActions";
 
 interface TreeRootNodeHeaderContentProps {
   node: ProjectTree;
-  isAddingRootFileNode: boolean;
-  setIsAddingRootFileNode: (isAdding: boolean) => void;
-  setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;
 }
 
-export const TreeRootNodeHeaderContent = ({
-  node,
-  isAddingRootFileNode,
-  setIsAddingRootFileNode,
-  setIsAddingRootFolderNode,
-  setIsRenamingRootNode,
-}: TreeRootNodeHeaderContentProps) => {
+export const TreeRootNodeHeaderContent = ({ node, setIsRenamingRootNode }: TreeRootNodeHeaderContentProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { id, showOrders, showRootNodeIds } = useContext(ProjectTreeContext);
-
-  const rotateIcon = node.expanded || isAddingRootFileNode;
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -58,18 +47,13 @@ export const TreeRootNodeHeaderContent = ({
     <>
       <Tree.RootNodeDetails>
         <Tree.RootNodeTriggers className="overflow-hidden">
-          <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={rotateIcon} />
+          <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
           {showOrders && <Tree.RootNodeOrder order={node.order} />}
           <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />
           {showRootNodeIds && <Tree.RootNodeLabel label={node.id} />}
         </Tree.RootNodeTriggers>
 
-        <TreeRootNodeActions
-          node={node}
-          setIsAddingRootFileNode={setIsAddingRootFileNode}
-          setIsAddingRootFolderNode={setIsAddingRootFolderNode}
-          setIsRenamingRootNode={setIsRenamingRootNode}
-        />
+        <TreeRootNodeActions node={node} setIsRenamingRootNode={setIsRenamingRootNode} />
       </Tree.RootNodeDetails>
     </>
   );

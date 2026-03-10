@@ -14,17 +14,10 @@ import { TreeRootNodeBranchIcon } from "./TreeRootNodeBranchIcon";
 
 interface TreeRootNodeActionsProps {
   node: ProjectTree;
-  setIsAddingRootFileNode: (isAdding: boolean) => void;
-  setIsAddingRootFolderNode: (isAdding: boolean) => void;
   setIsRenamingRootNode: (isRenaming: boolean) => void;
 }
 
-export const TreeRootNodeActions = ({
-  node,
-  setIsAddingRootFileNode,
-  setIsAddingRootFolderNode,
-  setIsRenamingRootNode,
-}: TreeRootNodeActionsProps) => {
+export const TreeRootNodeActions = ({ node, setIsRenamingRootNode }: TreeRootNodeActionsProps) => {
   const { allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(ProjectTreeContext);
 
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
@@ -56,7 +49,6 @@ export const TreeRootNodeActions = ({
         )}
 
         <Tree.ActionsHover>
-          <ActionButton icon="Add" onClick={() => setIsAddingRootFileNode(true)} hoverVariant="list" />
           <ActionButton
             icon="CollapseAll"
             disabled={allFoldersAreCollapsed}
@@ -71,12 +63,6 @@ export const TreeRootNodeActions = ({
             </ActionMenu.Trigger>
             <ActionMenu.Portal>
               <ActionMenu.Content className="z-40" align="center">
-                <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFileNode(true)}>
-                  Add File
-                </ActionMenu.Item>
-                <ActionMenu.Item alignWithIcons onClick={() => setIsAddingRootFolderNode(true)}>
-                  Add Folder
-                </ActionMenu.Item>
                 <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
                   Rename...
                 </ActionMenu.Item>

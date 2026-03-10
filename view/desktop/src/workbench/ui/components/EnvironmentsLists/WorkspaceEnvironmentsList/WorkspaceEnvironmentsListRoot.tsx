@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useContext, useRef } from "react";
 
 import { useCreateEnvironment } from "@/adapters";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
@@ -7,13 +7,16 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn, sortObjectsByOrder } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
+import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 import { useDropTargetWorkspaceEnvironmentList } from "../dnd/hooks/useDropTargetWorkspaceEnvironmentList";
-import { EnvironmentAddForm } from "../EnvironmentAddForm/EnvironmentAddForm";
+import { WorkspaceEnvironmentAddForm } from "../EnvironmentAddForm/WorkspaceEnvironmentAddForm";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
 import { WorkspaceEnvironmentsListRootDetails } from "./WorkspaceEnvironmentsListRootDetails";
 
 export const WorkspaceEnvironmentsListRoot = () => {
+  const { treePaddingLeft } = useContext(ProjectTreeContext);
+
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
 
@@ -41,14 +44,15 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const sortedWorkspaceEnvironments = sortObjectsByOrder(workspaceEnvironments, "name");
 
   //TODO this is hardcoded for now, we need another way to get the offset
-  const listHeaderOffset = 8;
-  const listItemOffset = listHeaderOffset * 2;
+  const listHeaderOffset = treePaddingLeft;
+  const listItemOffset = treePaddingLeft * 2;
 
   return (
     <Tree.List ref={workspaceEnvironmentsListRef} combineInstruction={instruction} className={cn("cursor-pointer")}>
       <Tree.ListHeader
         className="text-(--moss-secondary-foreground) cursor-pointer text-sm"
-        style={{ paddingLeft: listHeaderOffset }}
+        offsetLeft={listHeaderOffset}
+        offsetRight={0}
       >
         <WorkspaceEnvironmentsListRootDetails expanded={expanded} />
       </Tree.ListHeader>
@@ -61,7 +65,7 @@ export const WorkspaceEnvironmentsListRoot = () => {
             ))}
           </Tree.RootNodeChildren>
 
-          <EnvironmentAddForm onSubmit={handleAddEnvironment} restrictedNames={restrictedNames} />
+          <WorkspaceEnvironmentAddForm onSubmit={handleAddEnvironment} restrictedNames={restrictedNames} />
         </>
       )}
     </Tree.List>

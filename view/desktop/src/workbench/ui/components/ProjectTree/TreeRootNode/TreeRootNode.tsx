@@ -7,12 +7,10 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 import { useDraggableRootNode } from "../dnd/hooks/useDraggableRootNode";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTree } from "../types";
-import { useRootNodeAddForm } from "./hooks/useRootNodeAddForm";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeHeaderContent } from "./TreeRootNodeHeaderContent";
 import { TreeRootNodeLists } from "./TreeRootNodeLists";
 import { TreeRootNodeRenamingForm } from "./TreeRootNodeRenamingForm";
-import { calculateShouldRenderRootChildNodes } from "./utils/calculateShouldRenderRootChildNodes";
 
 interface TreeRootNodeProps {
   tree: ProjectTree;
@@ -28,15 +26,6 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
   const { activePanelId } = useTabbedPaneStore();
 
   const {
-    isAddingRootFileNode,
-    isAddingRootFolderNode,
-    setIsAddingRootFileNode,
-    setIsAddingRootFolderNode,
-    handleRootAddFormSubmit,
-    handleRootAddFormCancel,
-  } = useRootNodeAddForm(tree);
-
-  const {
     isRenamingRootNode,
     setIsRenamingRootNode,
     handleRenamingRootNodeFormSubmit,
@@ -50,7 +39,6 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
     isRenamingNode: isRenamingRootNode,
   });
 
-  const shouldRenderLists = calculateShouldRenderRootChildNodes({ node: tree, isAddingRootFileNode });
   const restrictedNames = projectSummaries?.map((projectSummary) => projectSummary.name) ?? [];
 
   return (
@@ -64,31 +52,17 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm
             node={tree}
-            shouldRenderChildNodes={shouldRenderLists}
+            shouldRenderChildNodes={tree.expanded}
             restrictedNames={restrictedNames}
             handleRenamingFormSubmit={handleRenamingRootNodeFormSubmit}
             handleRenamingFormCancel={handleRenamingRootNodeFormCancel}
           />
         ) : (
-          <TreeRootNodeHeaderContent
-            node={tree}
-            isAddingRootFileNode={isAddingRootFileNode}
-            setIsAddingRootFileNode={setIsAddingRootFileNode}
-            setIsAddingRootFolderNode={setIsAddingRootFolderNode}
-            setIsRenamingRootNode={setIsRenamingRootNode}
-          />
+          <TreeRootNodeHeaderContent node={tree} setIsRenamingRootNode={setIsRenamingRootNode} />
         )}
       </Tree.RootNodeHeader>
 
-      {shouldRenderLists && (
-        <TreeRootNodeLists
-          tree={tree}
-          isAddingRootFileNode={isAddingRootFileNode}
-          isAddingRootFolderNode={isAddingRootFolderNode}
-          handleRootAddFormSubmit={handleRootAddFormSubmit}
-          handleRootAddFormCancel={handleRootAddFormCancel}
-        />
-      )}
+      {tree.expanded && <TreeRootNodeLists tree={tree} />}
     </Tree.RootNode>
   );
 };
