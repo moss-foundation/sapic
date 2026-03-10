@@ -12,7 +12,7 @@ export const ListHeader = ({ ref, children, className, offsetLeft = 0, ...props 
   return (
     <h3
       ref={ref}
-      className={cn("py-0.75 relative flex w-full min-w-0 items-center justify-between", className)}
+      className={cn("relative flex w-full min-w-0 items-center justify-between py-[6.5px]", className)}
       style={{ paddingLeft: offsetLeft }}
       {...props}
     >
