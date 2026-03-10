@@ -5,9 +5,7 @@ interface CombineDNDIndicatorProps {
 }
 
 export const CombineDNDIndicator = ({ combineInstruction }: CombineDNDIndicatorProps) => {
-  if (!combineInstruction) return null;
-
-  if (combineInstruction.operation === "combine") {
+  if (combineInstruction?.operation === "combine") {
     return (
       <div
         style={{

@@ -6,6 +6,7 @@ import { ProjectTreeContext } from "../ProjectTreeContext";
 import { IResourcesTree, ResourceNode } from "../types";
 import { getChildrenNames } from "../utils";
 import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
+import { useMonitorDirForBlockedChildOperation } from "./dnd/hooks/useMonitorDirForBlockedChildOperation";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
 import ResourceNodeRenamingForm from "./forms/ResourceNodeRenamingForm";
 import { useDeleteAndUpdateResourceNodePeers } from "./hooks/useDeleteAndUpdateResourceNodePeers";
@@ -24,7 +25,7 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
   const { id } = useContext(ProjectTreeContext);
 
   const triggerRef = useRef<HTMLDivElement>(null);
-  const dropTargetListRef = useRef<HTMLLIElement>(null);
+  const nodeRef = useRef<HTMLLIElement>(null);
 
   const { deleteAndUpdatePeers } = useDeleteAndUpdateResourceNodePeers({ projectId: id, node, parentNode });
 
@@ -52,11 +53,22 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
     setPreview,
   });
 
+  const { childNodeHasBlockedOperation } = useMonitorDirForBlockedChildOperation({
+    nodeRef,
+    node,
+    parentNode,
+  });
+
   const shouldRenderChildNodes = node.expanded || isAddingFileNode || isAddingFolderNode;
   const restrictedNames = getChildrenNames(node);
 
   return (
-    <Tree.Node ref={dropTargetListRef} combineInstruction={instruction} isDragging={isDragging}>
+    <Tree.Node
+      ref={nodeRef}
+      combineInstruction={instruction}
+      isDragging={isDragging}
+      childNodeHasBlockedOperation={childNodeHasBlockedOperation}
+    >
       {isRenamingNode ? (
         <ResourceNodeRenamingForm
           node={node}
