@@ -4,10 +4,15 @@ import { useLiveQuery } from "@tanstack/react-db";
 import { resourceSummariesCollection } from "../resourceSummariesCollection";
 
 export const useGetResourcesSummariesByProjectId = (projectId: string) => {
-  return useLiveQuery((q) =>
+  const { data, isLoading } = useLiveQuery((q) =>
     q
       .from({ collection: resourceSummariesCollection })
       .where(({ collection }) => eq(collection.projectId, projectId))
       .orderBy(({ collection }) => collection.order)
   );
+
+  return {
+    data,
+    isLoading,
+  };
 };
