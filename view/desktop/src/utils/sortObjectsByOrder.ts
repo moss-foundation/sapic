@@ -1,6 +1,6 @@
 export const sortObjectsByOrder = <
   T extends {
-    id: any;
+    id: unknown;
     order?: number | null;
   },
 >(
