@@ -10,6 +10,7 @@ interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   iconClassName?: string;
   asChild?: boolean;
   hoverVariant?: "default" | "list";
+  forceHoverStyles?: boolean;
 }
 //prettier-ignore
 const actionButtonStyles = cva(`
@@ -28,14 +29,34 @@ const actionButtonStyles = cva(`
         default: "hover:background-(--moss-toolbarItem-background-hover)",
         list: "hover:background-(--moss-list-toolbarItem-background-hover)",
       },
+      forceHoverStyles: {
+        true: "background-(--moss-toolbarItem-background-hover)",
+        false: "",
+      },
     },
+    compoundVariants: [
+      {
+        forceHoverStyles: true,
+        hoverVariant: "default",
+        class: "background-(--moss-toolbarItem-background-hover)",
+      },
+      {
+        forceHoverStyles: true,
+        hoverVariant: "list", 
+        class: "background-(--moss-list-toolbarItem-background-hover)",
+      },
+    ],
   }
 );
 
 export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
-  ({ className, disabled, icon, hoverVariant = "default", iconClassName, ...props }, ref) => {
+  ({ className, disabled, icon, hoverVariant = "default", iconClassName, forceHoverStyles = false, ...props }, ref) => {
     return (
-      <button ref={ref} className={actionButtonStyles({ disabled, hoverVariant, className })} {...props}>
+      <button
+        ref={ref}
+        className={actionButtonStyles({ disabled, hoverVariant, className, forceHoverStyles })}
+        {...props}
+      >
         <Icon icon={icon} className={cn(iconClassName)} />
       </button>
     );

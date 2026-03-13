@@ -9,7 +9,7 @@ export const useListProjects = () => {
 
   const query = useQuery<ListProjectsOutput, Error>({
     queryKey: [USE_LIST_PROJECTS_QUERY_KEY],
-    queryFn: projectService.listProjects,
+    queryFn: projectService.list,
   });
 
   const clearProjectsCacheAndRefetch = () => {

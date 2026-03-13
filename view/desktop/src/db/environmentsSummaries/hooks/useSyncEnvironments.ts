@@ -1,38 +1,23 @@
 import { useEffect } from "react";
 
-import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
-import { environmentService } from "@/domains/environment/environmentService";
+import { useAllEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllEnvironments";
 import { useCurrentWorkspace } from "@/hooks";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
-import { ListEnvironmentItem, ListProjectsOutput } from "@repo/ipc";
 
+import { flushEnvironmentSummaries } from "../actions/flushEnvironmentSummaries";
 import { environmentSummariesCollection } from "../environmentSummaries";
 import { EnvironmentSummary } from "../types";
 
-type ListEnvironmentItemWithProjectId = ListEnvironmentItem & {
-  projectId?: string;
-};
-
 export const useSyncEnvironments = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
+  const { data: allEnvironments, isPending: isAllEnvironmentsLoading } = useAllEnvironments();
 
-  const { data: projects, isFetching: isProjectsLoading } = useListProjects();
-  const { data: workspaceEnvironments, isFetching: isWorkspaceEnvironmentsLoading } = useListWorkspaceEnvironments();
+  useEffect(flushEnvironmentSummaries, [currentWorkspaceId]);
 
   useEffect(() => {
-    if (isProjectsLoading || isWorkspaceEnvironmentsLoading || !projects || !workspaceEnvironments) return;
+    if (isAllEnvironmentsLoading || !allEnvironments) return;
 
     const syncEnvironments = async () => {
-      clearExistingEnvironments();
-
-      const projectEnvironments = await fetchAllProjectEnvironments(projects);
-
-      const allEnvironments: ListEnvironmentItemWithProjectId[] = [
-        ...workspaceEnvironments.items.map((env) => ({ ...env, projectId: undefined })),
-        ...projectEnvironments,
-      ];
-
       const envIds = allEnvironments.map((env) => env.id);
       const [envOrders, envExpanded] = await Promise.all([
         environmentItemStateService.batchGetOrder(envIds, currentWorkspaceId),
@@ -50,40 +35,25 @@ export const useSyncEnvironments = () => {
         expanded: envExpanded[index] ?? false,
       }));
 
-      insertEnvironmentSummaries(summaries);
+      // Fill environment summaries
+      summaries.forEach((summary) => {
+        if (!environmentSummariesCollection.has(summary.id)) {
+          environmentSummariesCollection.insert(summary);
+        } else {
+          environmentSummariesCollection.update(summary.id, (draft) => {
+            Object.assign(draft, summary);
+          });
+        }
+      });
+
+      // Remove environment summaries that are not on the backend
+      environmentSummariesCollection.forEach((summary) => {
+        if (!summaries.some((s) => s.id === summary.id)) {
+          environmentSummariesCollection.delete(summary.id);
+        }
+      });
     };
+
     syncEnvironments();
-  }, [currentWorkspaceId, isProjectsLoading, isWorkspaceEnvironmentsLoading, projects, workspaceEnvironments]);
-};
-
-const fetchAllProjectEnvironments = async (
-  projects: ListProjectsOutput
-): Promise<ListEnvironmentItemWithProjectId[]> => {
-  const promises = projects.items.map(async (project) => {
-    const result = await environmentService.listProjectEnvironments({
-      projectId: project.id,
-    });
-
-    return result.items.map((env) => ({
-      ...env,
-      projectId: project.id,
-    }));
-  });
-
-  const results = await Promise.all(promises);
-  return results.flat();
-};
-
-const clearExistingEnvironments = () => {
-  environmentSummariesCollection.forEach((env) => {
-    environmentSummariesCollection.delete(env.id);
-  });
-};
-
-const insertEnvironmentSummaries = (summaries: EnvironmentSummary[]) => {
-  summaries.forEach((summary) => {
-    if (!environmentSummariesCollection.has(summary.id)) {
-      environmentSummariesCollection.insert(summary);
-    }
-  });
+  }, [currentWorkspaceId, isAllEnvironmentsLoading, allEnvironments]);
 };

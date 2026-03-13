@@ -1,8 +1,7 @@
 import { FormEvent, useCallback, useState } from "react";
 
-import { useCreateProject } from "@/adapters/tanstackQuery/project/useCreateProject";
-import { useImportProject } from "@/adapters/tanstackQuery/project/useImportProject";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { projectService } from "@/domains/project/projectService";
 import { useCurrentWorkspace } from "@/hooks";
 import { Modal, Scrollbar } from "@/lib/ui";
 import { UnderlinedTabs } from "@/lib/ui/Tabs/index";
@@ -25,9 +24,7 @@ interface NewProjectModalProps extends ModalWrapperProps {
 export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB }: NewProjectModalProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useListProjects();
-  const { mutateAsync: createProject } = useCreateProject();
-  const { mutateAsync: importProject } = useImportProject();
+  const { data: projects } = useGetAllLocalProjectSummaries();
 
   const { mutateAsync: putEnvironmentListItemState } = usePutEnvironmentListItemState();
 
@@ -45,16 +42,16 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const newOrder = projects?.items.length ? projects.items.length + 1 : 1;
+    const newOrder = projects?.length ? projects.length + 1 : 1;
 
     if (tab === CREATE_TAB) {
-      const result = await createProject({
+      const result = await projectService.create({
         name,
         gitParams: createParams,
       });
 
       await treeItemStateService.putOrder(result.id, newOrder, currentWorkspaceId);
-      await treeItemStateService.putExpanded(result.id, true, currentWorkspaceId);
+      await treeItemStateService.putExpanded(result.id, false, currentWorkspaceId);
 
       await putEnvironmentListItemState({
         id: result.id,
@@ -77,7 +74,7 @@ export const NewProjectModal = ({ closeModal, showModal, initialTab = CREATE_TAB
     } else {
       if (!importParams) return;
 
-      const result = await importProject({
+      const result = await projectService.import({
         name,
         source: importParams,
         iconPath: "",

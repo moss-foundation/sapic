@@ -1,26 +1,29 @@
 import { useState } from "react";
 
-import { useClearAllProjectResources } from "@/adapters/tanstackQuery/project";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useAllEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllEnvironments";
+import { USE_LIST_PROJECTS_QUERY_KEY } from "@/adapters/tanstackQuery/project";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource";
+import { flushProjectSummaries } from "@/db/projectSummaries/actions/flushProjectSummaries";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { flushResourceSummaries } from "@/db/resourceSummaries/actions/flushResourceSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { useCurrentWorkspace, useModal } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constants";
 import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { SidebarHeader } from "../../SidebarHeader";
 
 export const ProjectTreeViewHeader = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { isLoading: areProjectsLoading, clearProjectsCacheAndRefetch } = useListProjects();
+  const queryClient = useQueryClient();
 
-  const { clearAllProjectResourcesCache } = useClearAllProjectResources();
-
-  const projectSummaries = useGetAllLocalProjectSummaries();
-  const resourceSummaries = useGetAllLocalResourceSummaries();
+  const { data: projectSummaries, isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
+  const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
+  const { refreshAllEnvironments } = useAllEnvironments();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
 
@@ -37,9 +40,15 @@ export const ProjectTreeViewHeader = () => {
     openModal: openNewProjectModal,
   } = useModal();
 
-  const handleRefreshProjects = () => {
-    clearProjectsCacheAndRefetch();
-    clearAllProjectResourcesCache();
+  const handleRefreshProjects = async () => {
+    refreshAllEnvironments();
+
+    //TODO ideally we should have designated functions for flushing collection and resetting queries
+    flushProjectSummaries();
+    queryClient.resetQueries({ queryKey: [USE_LIST_PROJECTS_QUERY_KEY] });
+
+    flushResourceSummaries();
+    queryClient.resetQueries({ queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY] });
   };
 
   const handleCollapseAll = async () => {

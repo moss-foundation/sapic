@@ -11,7 +11,7 @@ export const useImportProject = () => {
 
   return useMutation<ImportProjectOutput, Error, ImportProjectInput>({
     mutationKey: [IMPORT_PROJECT_QUERY_KEY],
-    mutationFn: (input) => projectService.importProject(input),
+    mutationFn: (input) => projectService.import(input),
     onSuccess: (data) => {
       queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
         const newItem: ListProjectItem = {

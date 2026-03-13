@@ -1,10 +1,10 @@
 import { useMemo, useRef, useState } from "react";
 
 import { useCreateEnvironment } from "@/adapters/tanstackQuery/environment";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetProjectEnvironmentsByProjectId } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironmentsByProjectId";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useCurrentWorkspace, useFocusInputOnMount, useValidateInput } from "@/hooks";
 import { Button } from "@/lib/ui";
 import CheckboxWithLabel from "@/lib/ui/CheckboxWithLabel";
@@ -18,7 +18,7 @@ import { ModalWrapperProps } from "../types";
 export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projects } = useListProjects();
+  const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
   const { workspaceEnvironments } = useGetWorkspaceEnvironments();
   const { mutateAsync: createEnvironment } = useCreateEnvironment();
 
@@ -29,7 +29,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { projectEnvironments } = useGetProjectEnvironments(projectId);
+  const { projectEnvironments } = useGetProjectEnvironmentsByProjectId(projectId);
 
   const restrictedNames = useMemo(() => {
     const list = mode === "Workspace" ? workspaceEnvironments : projectEnvironments;
@@ -141,8 +141,8 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
                   value="Project"
                   checked={mode === "Project"}
                   onClick={() => setMode("Project")}
-                  disabled={!projects || projects.items.length === 0}
-                  options={projects?.items.map((project) => ({
+                  disabled={!localProjectSummaries || localProjectSummaries.length === 0}
+                  options={localProjectSummaries?.map((project) => ({
                     label: project.name,
                     value: project.id,
                   }))}

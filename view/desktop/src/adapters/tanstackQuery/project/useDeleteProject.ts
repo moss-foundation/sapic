@@ -17,7 +17,7 @@ export const useDeleteProject = () => {
   const { data: projectsWithResources } = useProjectsWithResources();
 
   return useMutation<DeleteProjectOutput, Error, DeleteProjectInput>({
-    mutationFn: (input) => projectService.deleteProject(input),
+    mutationFn: (input) => projectService.delete(input),
     onSuccess: (data) => {
       queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
         return {

@@ -1,5 +1,4 @@
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
-import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils/cn";
 
@@ -12,6 +11,7 @@ interface EnvironmentItemRenamingFormProps {
   restrictedNames: string[];
   className?: string;
   type: ENVIRONMENT_ITEM_DRAG_TYPE;
+  offsetLeft?: number;
 }
 
 export const EnvironmentItemRenamingForm = ({
@@ -21,16 +21,16 @@ export const EnvironmentItemRenamingForm = ({
   environment,
   restrictedNames,
   type,
+  offsetLeft,
 }: EnvironmentItemRenamingFormProps) => {
   return (
-    <Tree.NodeControls
+    <Tree.NodeDetails
       depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
-      className={cn("min-h-[22px] py-1", className)}
+      className={cn("pb-[4px] pt-[5px]", className)}
     >
-      <Tree.NodeTriggers>
-        <div className="flex h-5 shrink-0 items-center justify-start">
-          <Icon icon={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? "ProjectEnvironment" : "WorkspaceEnvironment"} />
-        </div>
+      <Tree.NodeTriggers style={{ paddingLeft: offsetLeft }}>
+        <Tree.Decorator />
+
         <Tree.NodeRenamingForm
           onSubmit={handleRename}
           onCancel={handleCancel}
@@ -38,6 +38,6 @@ export const EnvironmentItemRenamingForm = ({
           restrictedNames={restrictedNames}
         />
       </Tree.NodeTriggers>
-    </Tree.NodeControls>
+    </Tree.NodeDetails>
   );
 };

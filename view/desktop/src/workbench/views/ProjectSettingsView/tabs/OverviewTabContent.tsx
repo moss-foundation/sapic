@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
-import { useUpdateProject } from "@/adapters/tanstackQuery/project";
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
+import { useGetLocalProjectSummaryById } from "@/db/projectSummaries/hooks/useGetLocalProjectSummaryById";
+import { projectService } from "@/domains/project/projectService";
 import { useModal } from "@/hooks";
 import Input from "@/lib/ui/Input";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
@@ -12,40 +12,39 @@ import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 import { ProjectSummarySection } from "../ProjectSummarySection";
 
 export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsViewProps) => {
-  const { data: projects } = useListProjects();
-  const { mutateAsync: updateProject } = useUpdateProject();
+  const projectSummary = useGetLocalProjectSummaryById(params.projectId);
 
-  const project = projects?.items.find((p) => p.id === params.projectId);
+  const [name, setName] = useState(projectSummary?.name || "");
+  const [repository, setRepository] = useState("");
 
   const { showModal, closeModal, openModal } = useModal();
 
-  const [name, setName] = useState(project?.name || "");
-  const [repository, setRepository] = useState("");
-
+  //TODO try to derive name directory from project summary
   useEffect(() => {
-    if (project) {
-      setName(project.name);
-      setRepository("");
-      const currentPanel = containerApi.getPanel(project.id);
-      currentPanel?.api.setTitle(project.name);
-    }
-  }, [project, containerApi]);
+    if (!projectSummary) return;
+
+    setName(projectSummary.name);
+    setRepository("");
+
+    const currentPanel = containerApi.getPanel(projectSummary.id);
+    currentPanel?.api.setTitle(projectSummary.name);
+  }, [containerApi, projectSummary]);
 
   const handleUpdateProjectName = async () => {
-    if (!project) return;
+    if (!projectSummary) return;
 
-    if (!name || name === project.name) {
-      setName(project?.name);
+    if (!name || name === projectSummary.name) {
+      setName(projectSummary.name);
       return;
     }
     try {
-      await updateProject({
-        id: project.id,
+      await projectService.update({
+        id: projectSummary.id,
         name,
       });
     } catch (e) {
       console.error("handleUpdateProjectName", e);
-      setName(project?.name);
+      setName(projectSummary.name);
     }
   };
   const handleNameBlur = () => {
@@ -53,7 +52,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
   };
 
   const handleUpdateProjectRepository = async () => {
-    if (!project) return;
+    if (!projectSummary) return;
 
     if (!repository) {
       setRepository("");
@@ -61,8 +60,8 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     }
 
     try {
-      await updateProject({
-        id: project.id,
+      await projectService.update({
+        id: projectSummary.id,
         // repository: !repository ? "REMOVE" : { UPDATE: repository },
       });
     } catch (e) {
@@ -75,7 +74,7 @@ export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsView
     handleUpdateProjectRepository();
   };
 
-  if (!project) {
+  if (!projectSummary) {
     return (
       <div className="text-(--moss-primary-foreground) flex h-full items-center justify-center">
         <div className="text-center">

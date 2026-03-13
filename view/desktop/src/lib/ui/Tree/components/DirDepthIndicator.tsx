@@ -1,16 +1,7 @@
-import { useContext } from "react";
-
-import { ProjectTreeContext } from "@/workbench/ui/components/ProjectTree/ProjectTreeContext";
-
-import { TreeContext } from "./TreeContext";
-
-export const DirDepthIndicator = ({ depth }: { depth: number }) => {
-  const { treePaddingLeft } = useContext(ProjectTreeContext);
-  const { nodeOffset } = useContext(TreeContext);
-
-  const iconSize = 16;
-  const left = depth * nodeOffset + treePaddingLeft + iconSize + 1;
-
+interface DirDepthIndicatorProps {
+  offset?: number;
+}
+export const DirDepthIndicator = ({ offset }: DirDepthIndicatorProps) => {
   return (
     <div
       //prettier-ignore
@@ -21,10 +12,10 @@ export const DirDepthIndicator = ({ depth }: { depth: number }) => {
         background-(--moss-border) 
         transition-[display,opacity] transition-discrete duration-100
         hidden opacity-0
-        group-hover/TreeRootNode:flex 
-        group-hover/TreeRootNode:opacity-100
+        group-hover/TreeRoot:flex 
+        group-hover/TreeRoot:opacity-100
       `}
-      style={{ left }}
+      style={{ left: offset }}
     />
   );
 };

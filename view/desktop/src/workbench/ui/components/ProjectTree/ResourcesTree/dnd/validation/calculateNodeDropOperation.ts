@@ -1,0 +1,34 @@
+import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
+
+import { NodeDropOperation } from "../constants";
+import { DragResourceNodeData } from "../types.dnd";
+
+interface CalculateNodeDropOperationProps {
+  sourceTreeNodeData: DragResourceNodeData;
+  locationTreeNodeData: DragResourceNodeData;
+  instruction: Instruction;
+}
+
+export const calculateNodeDropOperation = ({
+  sourceTreeNodeData,
+  locationTreeNodeData,
+  instruction,
+}: CalculateNodeDropOperationProps): NodeDropOperation | null => {
+  if (instruction.blocked) {
+    return null;
+  }
+
+  const isCombine = instruction.operation === "combine";
+  const isSameProject = sourceTreeNodeData.projectId === locationTreeNodeData.projectId;
+
+  if (isSameProject) {
+    //prettier-ignore
+    return isCombine 
+        ? NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT 
+        : NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT;
+  }
+
+  return isCombine
+    ? NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT
+    : NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT;
+};
