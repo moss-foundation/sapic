@@ -4,7 +4,7 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ResourcesTreeRoot } from "../../TreeRoot/types";
-import { getAllNestedResources } from "../../utils";
+import { getAllNestedResources } from "../getters/getAllNestedResources";
 import { ResourceNode } from "../types";
 
 interface UseDeleteAndUpdateResourceNodePeersProps {

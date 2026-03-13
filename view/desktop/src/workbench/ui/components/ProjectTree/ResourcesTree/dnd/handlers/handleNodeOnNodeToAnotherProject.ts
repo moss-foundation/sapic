@@ -7,11 +7,11 @@ import { join } from "@tauri-apps/api/path";
 
 import {
   createResourceKind,
-  getAllNestedResources,
   prepareNestedDirResourcesForDrop,
   reorderedNodesForDifferentDirPayload,
   siblingsAfterRemovalPayload,
-} from "../../../utils";
+} from "../../../utils/index.ts";
+import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { DragResourceNodeData } from "../types.dnd";
 
 interface HandleNodeOnNodeToAnotherProjectProps {

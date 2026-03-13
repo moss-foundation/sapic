@@ -1,6 +1,7 @@
 import { RefObject, useEffect, useState } from "react";
 
-import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
+import { getSourceProjectTreeNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getSourceProjectTreeNodeData";
+import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode";
 import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
@@ -22,7 +23,7 @@ export const useDropTargetProjectCreationZone = ({ ref }: UseDropTargetProjectCr
     return dropTargetForElements({
       element,
       canDrop({ source }) {
-        return isSourceProjectTreeNode(source);
+        return isSourceResourceNode(source);
       },
       getData: ({ input, source }) => {
         const sourceData = getSourceProjectTreeNodeData(source);

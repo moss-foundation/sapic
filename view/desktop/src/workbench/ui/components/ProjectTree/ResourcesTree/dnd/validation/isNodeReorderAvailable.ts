@@ -1,7 +1,7 @@
 import { Availability, Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { hasDescendant } from "../../../utils/TreeProjectNode";
 import { DragResourceNode, DragResourceNodeData } from "../types.dnd";
+import { hasDescendant } from "./hasDescendant";
 import { hasPeersWithSimilarNameOrId } from "./hasPeersWithSimilarNameOrId";
 
 export const isNodeReorderAvailable = (

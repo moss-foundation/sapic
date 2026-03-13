@@ -1,6 +1,6 @@
 import { RefObject, useEffect, useState } from "react";
 
-import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
+import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode.ts";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 interface UseToggleProjectCreationZoneProps {
@@ -17,7 +17,7 @@ export const useToggleProjectCreationZone = ({ ref }: UseToggleProjectCreationZo
     return dropTargetForElements({
       element,
       canDrop({ source }) {
-        return isSourceProjectTreeNode(source);
+        return isSourceResourceNode(source);
       },
       onDragStart() {
         setShowProjectCreationZone(true);

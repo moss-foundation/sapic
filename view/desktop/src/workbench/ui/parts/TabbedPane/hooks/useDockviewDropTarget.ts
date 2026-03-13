@@ -1,7 +1,8 @@
 import React from "react";
 
+import { getSourceProjectTreeNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getSourceProjectTreeNodeData.ts";
 import { DragResourceNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/types.dnd";
-import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
+import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode.ts";
 import { dropTargetForElements, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 export const useTabbedPaneDropTarget = (
@@ -17,7 +18,7 @@ export const useTabbedPaneDropTarget = (
     const evaluateDropTarget = ({ source }: { source: ElementDragPayload }) => {
       setIsDragging(true);
 
-      if (isSourceProjectTreeNode(source)) {
+      if (isSourceResourceNode(source)) {
         setCanDrop(true);
 
         const sourceTarget = getSourceProjectTreeNodeData(source);

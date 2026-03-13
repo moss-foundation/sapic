@@ -13,10 +13,10 @@ import { ResourceIcon } from "../../ResourceIcon";
 import { NODE_OFFSET, NODE_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../TreeRoot/types";
-import { countNumberOfAllNestedChildNodes } from "../utils";
 import { ResourceNodePreview } from "./dnd/ResourceNodePreview";
 import { ResourcesTreeNodeActions } from "./ResourcesTreeNodeActions";
 import { ResourceNode } from "./types";
+import { countNumberOfAllNestedItems } from "./utils/countNumberOfAllNestedItems";
 
 interface ResourcesTreeNodeDetailsProps {
   ref?: React.Ref<HTMLDivElement>;
@@ -54,7 +54,7 @@ const ResourcesTreeNodeDetails = ({
 
   const localResourceSummary = useGetLocalResourceDetails(node.id);
 
-  const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
+  const numberOfAllNestedChildNodes = countNumberOfAllNestedItems(node);
 
   const handleDetailsClick = async () => {
     if (node.kind === "Dir") {

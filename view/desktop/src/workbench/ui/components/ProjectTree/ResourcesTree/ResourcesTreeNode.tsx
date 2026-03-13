@@ -4,7 +4,7 @@ import { Tree } from "@/lib/ui/Tree";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../TreeRoot/types";
-import { getChildrenNames } from "../utils";
+import { getChildrenNames } from "../TreeRoot/validation/getChildrenNames";
 import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
 import { useMonitorDirForBlockedChildOperation } from "./dnd/hooks/useMonitorDirForBlockedChildOperation";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";

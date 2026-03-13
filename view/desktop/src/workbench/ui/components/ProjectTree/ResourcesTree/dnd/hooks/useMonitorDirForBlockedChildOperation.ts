@@ -6,9 +6,9 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../../../TreeRoot/types";
-import { isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
 import { ResourceNode } from "../../types";
 import { DragResourceNode } from "../types.dnd";
+import { isSourceResourceNode } from "../validation/isSourceResourceTreeNode.ts";
 
 interface UseMonitorDirNodeBlockedChildOperationProps {
   nodeRef: React.RefObject<HTMLLIElement | null>;
@@ -29,7 +29,7 @@ export const useMonitorDirForBlockedChildOperation = ({
 
     return dropTargetForElements({
       element,
-      canDrop: ({ source }) => isSourceProjectTreeNode(source),
+      canDrop: ({ source }) => isSourceResourceNode(source),
       getData: () => {
         const locationData: DragResourceNode = {
           type: ProjectDragType.NODE,

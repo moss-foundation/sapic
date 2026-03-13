@@ -8,11 +8,13 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../../../TreeRoot/types";
-import { getLocationProjectTreeNodeData, getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils";
 import { ResourceNode } from "../../types";
+import { getLocationProjectTreeNodeData } from "../getters/getLocationProjectTreeNodeData.ts";
+import { getSourceProjectTreeNodeData } from "../getters/getSourceProjectTreeNodeData.ts";
 import { DragResourceNode } from "../types.dnd";
 import { isNodeCombineAvailable } from "../validation/isNodeCombineAvailable";
 import { isNodeReorderAvailable } from "../validation/isNodeReorderAvailable";
+import { isSourceResourceNode } from "../validation/isSourceResourceTreeNode.ts";
 
 interface UseDraggableResourceNodeProps {
   node: ResourceNode;
@@ -88,7 +90,7 @@ export const useDraggableResourceNode = ({
           });
         },
         canDrop({ source }) {
-          return isSourceProjectTreeNode(source);
+          return isSourceResourceNode(source);
         },
         onDrag({ location, source, self }) {
           const sourceTarget = getSourceProjectTreeNodeData(source);

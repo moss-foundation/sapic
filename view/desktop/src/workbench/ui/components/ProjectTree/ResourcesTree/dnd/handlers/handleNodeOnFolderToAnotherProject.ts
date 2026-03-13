@@ -6,11 +6,11 @@ import { join } from "@tauri-apps/api/path";
 
 import {
   createResourceKind,
-  getAllNestedResources,
   prepareResourcesForCreation,
   resolveParentPath,
   siblingsAfterRemovalPayload,
-} from "../../../utils";
+} from "../../../utils/index.ts";
+import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { DragResourceNodeData } from "../types.dnd";
 
 interface HandleNodeOnFolderToAnotherProjectProps {

@@ -7,13 +7,13 @@ import { resourceService } from "@/domains/resource/resourceService";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
+import { getInstructionFromFirstLocation } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getInstructionFromFirstLocation";
+import { getSourceProjectTreeNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getSourceProjectTreeNodeData";
+import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode";
+import { getAllNestedResources } from "@/workbench/ui/components/ProjectTree/ResourcesTree/getters/getAllNestedResources";
 import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
 import {
   convertResourceInfoToCreateInput,
-  getAllNestedResources,
-  getInstructionFromLocation,
-  getSourceProjectTreeNodeData,
-  isSourceProjectTreeNode,
   siblingsAfterRemovalPayload,
 } from "@/workbench/ui/components/ProjectTree/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
@@ -31,11 +31,11 @@ export const useMonitorProjectCreationZone = () => {
   useEffect(() => {
     return monitorForElements({
       canMonitor: ({ source }) => {
-        return isSourceProjectTreeNode(source);
+        return isSourceResourceNode(source);
       },
       onDrop: async ({ source, location }) => {
         const sourceData = getSourceProjectTreeNodeData(source);
-        const instruction = getInstructionFromLocation(location);
+        const instruction = getInstructionFromFirstLocation(location);
 
         if (!sourceData || instruction?.blocked) {
           console.warn("Invalid source data or instruction for project creation zone", {

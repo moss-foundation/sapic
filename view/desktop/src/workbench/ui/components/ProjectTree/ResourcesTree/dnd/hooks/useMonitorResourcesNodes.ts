@@ -4,15 +4,12 @@ import { useCurrentWorkspace } from "@/hooks";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
 import { ProjectDragType } from "../../../constants";
-import {
-  getFirstDropTargetType,
-  getInstructionFromLocation,
-  getLocationProjectTreeNodeData,
-  getLocationResourcesListData,
-  getSourceProjectTreeNodeData,
-  isSourceProjectTreeNode,
-} from "../../../utils";
 import { NodeDropOperation } from "../constants";
+import { getFirstDropTargetType } from "../getters/getFirstDropTargetType";
+import { getInstructionFromFirstLocation } from "../getters/getInstructionFromFirstLocation";
+import { getLocationProjectTreeNodeData } from "../getters/getLocationProjectTreeNodeData";
+import { getLocationResourcesListData } from "../getters/getLocationResourcesListData";
+import { getSourceProjectTreeNodeData } from "../getters/getSourceProjectTreeNodeData";
 import { handleNodeOnFolderToAnotherProject } from "../handlers/handleNodeOnFolderToAnotherProject";
 import { handleNodeOnFolderWithinProject } from "../handlers/handleNodeOnFolderWithinProject";
 import { handleNodeOnListRootToAnotherProject } from "../handlers/handleNodeOnListRootToAnotherProject";
@@ -20,6 +17,7 @@ import { handleNodeOnListRootWithinProject } from "../handlers/handleNodeOnListR
 import { handleNodeOnNodeToAnotherProject } from "../handlers/handleNodeOnNodeToAnotherProject";
 import { handleNodeOnNodeWithinProject } from "../handlers/handleNodeOnNodeWithinProject";
 import { calculateNodeDropOperation } from "../validation/calculateNodeDropOperation";
+import { isSourceResourceNode } from "../validation/isSourceResourceTreeNode";
 
 export const useMonitorResourcesNodes = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -27,7 +25,7 @@ export const useMonitorResourcesNodes = () => {
   useEffect(() => {
     return monitorForElements({
       canMonitor({ source }) {
-        return isSourceProjectTreeNode(source);
+        return isSourceResourceNode(source);
       },
       onDrop: async ({ location, source }) => {
         const sourceTreeNodeData = getSourceProjectTreeNodeData(source);
@@ -37,7 +35,7 @@ export const useMonitorResourcesNodes = () => {
 
         if (dropTargetType === ProjectDragType.RESOURCES_LIST) {
           const listRootData = getLocationResourcesListData(location);
-          const instruction = getInstructionFromLocation(location);
+          const instruction = getInstructionFromFirstLocation(location);
           if (!listRootData || !instruction) return;
 
           const isSameProject = sourceTreeNodeData.projectId === listRootData.data.projectId;
@@ -59,7 +57,7 @@ export const useMonitorResourcesNodes = () => {
         }
 
         const locationTreeNodeData = getLocationProjectTreeNodeData(location);
-        const instruction = getInstructionFromLocation(location);
+        const instruction = getInstructionFromFirstLocation(location);
 
         if (!locationTreeNodeData || !instruction) return;
 

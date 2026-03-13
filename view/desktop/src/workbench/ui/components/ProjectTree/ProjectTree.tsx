@@ -2,8 +2,9 @@ import { WorkspaceMode } from "@repo/base";
 
 import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
 import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
+import { checkIfAllFoldersAreCollapsed } from "./TreeRoot/validation/checkIfAllFoldersAreCollapsed.ts";
+import { checkIfAllFoldersAreExpanded } from "./TreeRoot/validation/checkIfAllFoldersAreExpanded.ts";
 import { ProjectTreeRoot } from "./types.ts";
-import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
 
 interface ProjectTreeProps {
   tree: ProjectTreeRoot;
