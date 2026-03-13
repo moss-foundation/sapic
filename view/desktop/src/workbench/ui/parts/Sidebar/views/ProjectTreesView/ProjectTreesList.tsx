@@ -56,15 +56,15 @@ export const ProjectTreesHeader = () => {
 
   //TODO this is a list, not a ROOT node
   return (
-    <Tree.RootNodeDetails>
-      <Tree.RootNodeTriggers
+    <Tree.RootDetails>
+      <Tree.RootTriggers
         onClick={handleToggleProjectList}
         className="flex cursor-pointer items-center gap-1 py-[5px]"
         style={{ paddingLeft: TREE_HEADER_PADDING_LEFT }}
       >
         <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
-        <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
-      </Tree.RootNodeTriggers>
-    </Tree.RootNodeDetails>
+        <Tree.RootLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
+      </Tree.RootTriggers>
+    </Tree.RootDetails>
   );
 };

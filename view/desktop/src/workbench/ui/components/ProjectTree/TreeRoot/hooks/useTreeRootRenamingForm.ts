@@ -4,10 +4,10 @@ import { projectService } from "@/domains/project/projectService";
 
 import { ProjectTree } from "../../types";
 
-export const useRootNodeRenamingForm = (node: ProjectTree) => {
-  const [isRenamingRootNode, setIsRenamingRootNode] = useState(false);
+export const useTreeRootRenamingForm = (node: ProjectTree) => {
+  const [isRenamingTreeRoot, setIsRenamingTreeRoot] = useState(false);
 
-  const handleRenamingRootNodeFormSubmit = async (name: string) => {
+  const handleRenamingTreeRootFormSubmit = async (name: string) => {
     const trimmedNewName = name.trim();
 
     try {
@@ -22,18 +22,18 @@ export const useRootNodeRenamingForm = (node: ProjectTree) => {
     } catch (error) {
       console.error(error);
     } finally {
-      setIsRenamingRootNode(false);
+      setIsRenamingTreeRoot(false);
     }
   };
 
-  const handleRenamingRootNodeFormCancel = () => {
-    setIsRenamingRootNode(false);
+  const handleRenamingTreeRootFormCancel = () => {
+    setIsRenamingTreeRoot(false);
   };
 
   return {
-    isRenamingRootNode,
-    setIsRenamingRootNode,
-    handleRenamingRootNodeFormSubmit,
-    handleRenamingRootNodeFormCancel,
+    isRenamingTreeRoot,
+    setIsRenamingTreeRoot,
+    handleRenamingTreeRootFormSubmit,
+    handleRenamingTreeRootFormCancel,
   };
 };

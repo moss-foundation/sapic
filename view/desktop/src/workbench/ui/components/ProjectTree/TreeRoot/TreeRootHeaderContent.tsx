@@ -7,17 +7,17 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTree } from "../types";
-import { TreeRootNodeActions } from "./TreeRootNodeActions";
+import { TreeRootActions } from "./TreeRootActions";
 
-interface TreeRootNodeHeaderContentProps {
+interface TreeRootHeaderContentProps {
   node: ProjectTree;
-  setIsRenamingRootNode: (isRenaming: boolean) => void;
+  setIsRenamingTreeRoot: (isRenaming: boolean) => void;
 }
 
-export const TreeRootNodeHeaderContent = ({ node, setIsRenamingRootNode }: TreeRootNodeHeaderContentProps) => {
+export const TreeRootHeaderContent = ({ node, setIsRenamingTreeRoot }: TreeRootHeaderContentProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { id, showOrders, showRootNodeIds } = useContext(ProjectTreeContext);
+  const { id, showOrders, showTreeRootIds } = useContext(ProjectTreeContext);
 
   const { addOrFocusPanel } = useTabbedPaneStore();
 
@@ -45,16 +45,16 @@ export const TreeRootNodeHeaderContent = ({ node, setIsRenamingRootNode }: TreeR
 
   return (
     <>
-      <Tree.RootNodeDetails>
-        <Tree.RootNodeTriggers className="overflow-hidden">
-          <Tree.RootNodeIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
-          {showOrders && <Tree.RootNodeOrder order={node.order} />}
-          <Tree.RootNodeLabel label={node.name} onClick={handleLabelClick} />
-          {showRootNodeIds && <Tree.RootNodeLabel label={node.id} />}
-        </Tree.RootNodeTriggers>
+      <Tree.RootDetails>
+        <Tree.RootTriggers className="overflow-hidden">
+          <Tree.RootIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
+          {showOrders && <Tree.RootOrder order={node.order} />}
+          <Tree.RootLabel label={node.name} onClick={handleLabelClick} />
+          {showTreeRootIds && <Tree.RootLabel label={node.id} />}
+        </Tree.RootTriggers>
 
-        <TreeRootNodeActions node={node} setIsRenamingRootNode={setIsRenamingRootNode} />
-      </Tree.RootNodeDetails>
+        <TreeRootActions node={node} setIsRenamingTreeRoot={setIsRenamingTreeRoot} />
+      </Tree.RootDetails>
     </>
   );
 };

@@ -2,7 +2,7 @@ import { cn } from "@/utils";
 
 import { DirDepthIndicator } from "../DirDepthIndicator";
 
-interface RootNodeChildrenProps {
+interface RootChildrenProps {
   children?: React.ReactNode;
   className?: string;
   hideDirDepthIndicator?: boolean;
@@ -11,7 +11,7 @@ interface RootNodeChildrenProps {
   treeOffset?: number;
 }
 
-export const RootNodeChildren = ({
+export const RootChildren = ({
   children,
   className,
   hideDirDepthIndicator,
@@ -19,7 +19,7 @@ export const RootNodeChildren = ({
   depth,
   treeOffset,
   ...props
-}: RootNodeChildrenProps) => {
+}: RootChildrenProps) => {
   const dirDepthIndicatorOffset = depth && offset && treeOffset ? treeOffset + depth * offset : 0;
   return (
     <ul className={cn("relative w-full", className)} {...props}>

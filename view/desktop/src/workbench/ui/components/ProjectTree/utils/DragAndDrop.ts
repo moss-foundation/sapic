@@ -4,7 +4,7 @@ import { ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "../constants";
 import { LocationResourcesListData } from "../ResourcesTree/dnd/types.dnd";
-import { DraggedResourceNode, DropNode, ResourceNode } from "../types";
+import { DraggedResourceNode, ResourceNode } from "../types";
 
 //source
 export const getSourceProjectTreeNodeData = (source: ElementDragPayload): DraggedResourceNode | null => {
@@ -20,7 +20,7 @@ export const isSourceProjectTreeNode = (source: ElementDragPayload): boolean => 
 };
 
 //location
-export const getLocationProjectTreeNodeData = (location: DragLocationHistory): DropNode | null => {
+export const getLocationProjectTreeNodeData = (location: DragLocationHistory): DraggedResourceNode | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== ProjectDragType.NODE) return null;
 

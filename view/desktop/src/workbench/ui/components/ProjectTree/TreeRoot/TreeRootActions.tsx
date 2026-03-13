@@ -6,18 +6,18 @@ import { ActionMenu } from "@/workbench/ui/components";
 import { ActionButton } from "@/workbench/ui/components/ActionButton";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
-import { useRefreshProject } from "../actions/useRefreshProject";
-import { useToggleAllTreeNodes } from "../actions/useToggleAllTreeNodes";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTree } from "../types";
-import { TreeRootNodeBranchIcon } from "./TreeRootNodeBranchIcon";
+import { useRefreshProject } from "./dnd/hooks/useRefreshProject";
+import { useToggleAllTreeNodes } from "./dnd/hooks/useToggleAllTreeNodes";
+import { TreeRootBranchIcon } from "./TreeRootBranchIcon";
 
-interface TreeRootNodeActionsProps {
+interface TreeRootActionsProps {
   node: ProjectTree;
-  setIsRenamingRootNode: (isRenaming: boolean) => void;
+  setIsRenamingTreeRoot: (isRenaming: boolean) => void;
 }
 
-export const TreeRootNodeActions = ({ node, setIsRenamingRootNode }: TreeRootNodeActionsProps) => {
+export const TreeRootActions = ({ node, setIsRenamingTreeRoot }: TreeRootActionsProps) => {
   const { allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(ProjectTreeContext);
 
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
@@ -31,16 +31,16 @@ export const TreeRootNodeActions = ({ node, setIsRenamingRootNode }: TreeRootNod
 
   return (
     <>
-      <Tree.RootNodeActions>
+      <Tree.RootActions>
         {node?.branch && (
           <Tree.ActionLabel className="flex shrink-0 items-center gap-1">
             <div className="flex shrink-0 items-center">
               <span>{node?.branch.behind || 0}</span>
-              <TreeRootNodeBranchIcon icon="down" />
+              <TreeRootBranchIcon icon="down" />
             </div>
             <div className="flex shrink-0 items-center">
               <span>{node?.branch.ahead || 0}</span>
-              <TreeRootNodeBranchIcon icon="up" />
+              <TreeRootBranchIcon icon="up" />
             </div>
             <div className="text-(--moss-accent) background-(--moss-accent-secondary) rounded-sm px-[5px] text-sm">
               {node?.branch.name}
@@ -63,7 +63,7 @@ export const TreeRootNodeActions = ({ node, setIsRenamingRootNode }: TreeRootNod
             </ActionMenu.Trigger>
             <ActionMenu.Portal>
               <ActionMenu.Content className="z-40" align="center">
-                <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingRootNode(true)}>
+                <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingTreeRoot(true)}>
                   Rename...
                 </ActionMenu.Item>
                 <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
@@ -84,7 +84,7 @@ export const TreeRootNodeActions = ({ node, setIsRenamingRootNode }: TreeRootNod
             </ActionMenu.Portal>
           </ActionMenu.Root>
         </Tree.ActionsPersistent>
-      </Tree.RootNodeActions>
+      </Tree.RootActions>
       {showDeleteProjectModal && (
         <DeleteProjectModal
           id={node.id}

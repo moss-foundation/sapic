@@ -59,11 +59,11 @@ export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRoo
       </Tree.ListHeader>
 
       {showChildren && (
-        <Tree.RootNodeChildren hideDirDepthIndicator>
+        <Tree.RootChildren hideDirDepthIndicator>
           {tree.environmentsList?.map((environment) => (
             <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
           ))}
-        </Tree.RootNodeChildren>
+        </Tree.RootChildren>
       )}
 
       {isAddingProjectEnvironment && (

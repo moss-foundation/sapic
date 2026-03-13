@@ -4,21 +4,21 @@ import { attachInstruction, extractInstruction, Instruction } from "@atlaskit/pr
 import { combine } from "@atlaskit/pragmatic-drag-and-drop/combine";
 import { draggable, dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 
-import { ProjectDragType } from "../../constants";
-import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ProjectTree } from "../../types";
-import { isSourceTreeRootNode } from "../../utils";
-import { getTreeRootNodeSourceData } from "../getters/getTreeRootNodeSourceData";
-import { DragTreeRootNodeData } from "../types.dnd";
+import { ProjectDragType } from "../../../constants";
+import { ProjectTreeContext } from "../../../ProjectTreeContext";
+import { ProjectTree } from "../../../types";
+import { isSourceTreeRoot } from "../../../utils";
+import { getTreeRootSourceData } from "../getters/getTreeRootSourceData";
+import { DragTreeRootData } from "../types.dnd";
 
-interface UseDraggableRootNodeProps {
+interface UseDraggableTreeRootProps {
   nodeRef: RefObject<HTMLUListElement | null>;
   headerRef: RefObject<HTMLLIElement | null>;
   node: ProjectTree;
-  isRenamingNode: boolean;
+  isRenamingTreeRoot: boolean;
 }
 
-export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode }: UseDraggableRootNodeProps) => {
+export const useDraggableTreeRoot = ({ nodeRef, headerRef, node, isRenamingTreeRoot }: UseDraggableTreeRootProps) => {
   const { id, displayMode } = useContext(ProjectTreeContext);
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
@@ -28,10 +28,10 @@ export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode 
     const headerElement = headerRef.current;
     const nodeElement = nodeRef.current;
 
-    if (!headerElement || !nodeElement || isRenamingNode) return;
+    if (!headerElement || !nodeElement || isRenamingTreeRoot) return;
 
-    const rootNodeData: DragTreeRootNodeData = {
-      type: ProjectDragType.ROOT_NODE,
+    const treeRootData: DragTreeRootData = {
+      type: ProjectDragType.TREE_ROOT,
       data: {
         projectId: id,
         node,
@@ -41,7 +41,7 @@ export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode 
     return combine(
       draggable({
         element: headerElement,
-        getInitialData: () => rootNodeData,
+        getInitialData: () => treeRootData,
         onDragStart: () => {
           setIsDragging(true);
         },
@@ -51,13 +51,13 @@ export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode 
       }),
       dropTargetForElements({
         element: nodeElement,
-        canDrop: ({ source }) => isSourceTreeRootNode(source),
+        canDrop: ({ source }) => isSourceTreeRoot(source),
         getIsSticky: () => false,
         getData: ({ input, source }) => {
-          const getSourceData = getTreeRootNodeSourceData(source);
-          const areDifferentProjects = getSourceData.data.projectId !== rootNodeData.data.projectId;
+          const getSourceData = getTreeRootSourceData(source);
+          const areDifferentProjects = getSourceData.data.projectId !== treeRootData.data.projectId;
 
-          return attachInstruction(rootNodeData, {
+          return attachInstruction(treeRootData, {
             element: nodeElement,
             input,
             operations: {
@@ -79,7 +79,7 @@ export const useDraggableRootNode = ({ nodeRef, headerRef, node, isRenamingNode 
         },
       })
     );
-  }, [displayMode, id, isRenamingNode, node, nodeRef, headerRef]);
+  }, [displayMode, id, isRenamingTreeRoot, node, nodeRef, headerRef]);
 
   return { isDragging, instruction };
 };

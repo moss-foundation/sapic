@@ -6,8 +6,8 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 import { extractInstruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
-import { getTreeRootNodeLocationData } from "../getters/getTreeRootNodeLocationData";
-import { getTreeRootNodeSourceData } from "../getters/getTreeRootNodeSourceData";
+import { getTreeRootLocationData } from "../getters/getTreeRootLocationData";
+import { getTreeRootSourceData } from "../getters/getTreeRootSourceData";
 
 interface HandleReorderProjectsProps {
   location: DragLocationHistory;
@@ -18,8 +18,8 @@ interface HandleReorderProjectsProps {
 export const handleReorderProjects = async ({ location, source, currentWorkspaceId }: HandleReorderProjectsProps) => {
   if (location.current?.dropTargets.length === 0) return;
 
-  const sourceData = getTreeRootNodeSourceData(source);
-  const locationData = getTreeRootNodeLocationData(location);
+  const sourceData = getTreeRootSourceData(source);
+  const locationData = getTreeRootLocationData(location);
   const instruction = extractInstruction(locationData);
 
   if (locationData.data.projectId === sourceData.data.projectId) {

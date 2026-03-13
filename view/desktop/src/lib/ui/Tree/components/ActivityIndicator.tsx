@@ -17,7 +17,7 @@ export const ActivityIndicator = ({ isActive, isDirty = false, className, ...pro
         {
           "background-(--moss-secondary-background-hover) border-l-(--moss-accent) border-l": isActive && !isDirty,
           "bg-orange-200": isDirty,
-          "group-hover/TreeRootNodeHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeDetails:background-(--moss-secondary-background-hover)":
+          "group-hover/TreeRootHeader:background-(--moss-secondary-background-hover) group-hover/TreeNodeDetails:background-(--moss-secondary-background-hover)":
             !isDirty,
         },
         className

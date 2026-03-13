@@ -1,11 +1,10 @@
-import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
-import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
+import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 import { ProjectDragType } from "../constants";
 import { ProjectTree, ResourceNode } from "../types";
 
-export const isSourceTreeRootNode = (source: ElementDragPayload): boolean => {
-  return source.data.type === ProjectDragType.ROOT_NODE;
+export const isSourceTreeRoot = (source: ElementDragPayload): boolean => {
+  return source.data.type === ProjectDragType.TREE_ROOT;
 };
 
 export const checkIfAllFoldersAreExpanded = (tree: ProjectTree): boolean => {
@@ -38,25 +37,6 @@ export const checkIfAllFoldersAreCollapsed = (tree: ProjectTree): boolean => {
   if (!tree.resourcesTree.childNodes || tree.resourcesTree.childNodes.length === 0) return true;
 
   return tree.resourcesTree.childNodes.every(checkIfAllNodesAreCollapsed);
-};
-
-export const getTreeRootNodeTargetData = (location: DragLocationHistory) => {
-  const instruction = extractInstruction(location.current?.dropTargets[0].data);
-
-  return {
-    type: "TreeRootNode",
-    data: {
-      ...location.current?.dropTargets[0].data,
-      instruction,
-    },
-  } as {
-    type: "TreeRootNode";
-    data: {
-      instruction: Instruction;
-      projectId: string;
-      node: ProjectTree;
-    };
-  };
 };
 
 export const getChildrenNames = (node: ResourceNode) => {

@@ -5,20 +5,20 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 
 import { ReorderDNDIndicator } from "../ReorderDNDIndicator";
 
-interface RootNodeProps extends HTMLAttributes<HTMLUListElement> {
+interface RootProps extends HTMLAttributes<HTMLUListElement> {
   children: React.ReactNode;
   className?: string;
   reorderInstruction?: Instruction | null;
   isDragging?: boolean;
 }
 
-export const RootNode = forwardRef<HTMLUListElement, RootNodeProps>(
-  ({ children, className, reorderInstruction, isDragging, ...props }: RootNodeProps, ref) => {
+export const Root = forwardRef<HTMLUListElement, RootProps>(
+  ({ children, className, reorderInstruction, isDragging, ...props }: RootProps, ref) => {
     return (
       <ul
         ref={ref}
         className={cn(
-          "group/TreeRootNode relative w-full list-none",
+          "group/TreeRoot relative w-full list-none",
           {
             "opacity-50": isDragging,
           },

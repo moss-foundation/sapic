@@ -1,11 +1,11 @@
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DraggedResourceNode, DropNode } from "../../../types";
+import { DraggedResourceNode } from "../../../types";
 import { NodeDropOperation } from "../constants";
 
 interface CalculateNodeDropOperationProps {
   sourceTreeNodeData: DraggedResourceNode;
-  locationTreeNodeData: DropNode;
+  locationTreeNodeData: DraggedResourceNode;
   instruction: Instruction;
 }
 

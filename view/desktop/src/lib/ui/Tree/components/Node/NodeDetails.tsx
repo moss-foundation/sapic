@@ -11,7 +11,6 @@ interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
   ref?: Ref<HTMLDivElement | null>;
   depth?: number;
   isActive?: boolean;
-  isRootNode?: boolean;
   reorderInstruction?: Instruction | null;
   hideDragHandle?: boolean;
   isDirty?: boolean;
@@ -22,7 +21,6 @@ interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
 export const NodeDetails = ({
   ref,
   depth = 0,
-  isRootNode = false,
   isActive = false,
   children,
   reorderInstruction = null,
@@ -46,7 +44,7 @@ export const NodeDetails = ({
     >
       <ActivityIndicator isActive={isActive} isDirty={isDirty} />
 
-      {!isRootNode && !hideDragHandle && (
+      {!hideDragHandle && (
         <DragHandleButton
           className="group-hover/TreeNodeDetails:delay-400 absolute left-[1px] top-1/2 -translate-y-1/2 opacity-0 transition-all duration-0 group-hover/TreeNodeDetails:opacity-100 group-hover/TreeNodeDetails:duration-150"
           slim

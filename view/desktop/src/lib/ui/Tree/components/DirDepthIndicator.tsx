@@ -12,8 +12,8 @@ export const DirDepthIndicator = ({ offset }: DirDepthIndicatorProps) => {
         background-(--moss-border) 
         transition-[display,opacity] transition-discrete duration-100
         hidden opacity-0
-        group-hover/TreeRootNode:flex 
-        group-hover/TreeRootNode:opacity-100
+        group-hover/TreeRoot:flex 
+        group-hover/TreeRoot:opacity-100
       `}
       style={{ left: offset }}
     />

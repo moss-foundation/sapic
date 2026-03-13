@@ -85,7 +85,7 @@ export const EnvironmentItemDetails = ({
         depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden" style={{ paddingLeft: offsetLeft }}>
-          {showOrders && <Tree.RootNodeOrder order={environment.order} />}
+          {showOrders && <Tree.RootOrder order={environment.order} />}
           <Tree.Decorator />
           <Tree.NodeLabel label={environment.name} />
           <Tree.NodeDirCount count={environment.totalVariables} />

@@ -4,8 +4,8 @@ import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnv
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
-import { useMonitorProjectRootNodes } from "@/workbench/ui/components/ProjectTree/dnd/hooks/useMonitorProjectRootNodes";
 import { useMonitorResourcesNodes } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/hooks/useMonitorResourcesNodes";
+import { useMonitorProjectsRoots } from "@/workbench/ui/components/ProjectTree/TreeRoot/dnd/hooks/useMonitorProjectsRoots";
 
 import { ProjectCreationZone } from "./components/ProjectCreationZone";
 import { useToggleProjectCreationZone } from "./components/ProjectCreationZone/dnd/useToggleProjectCreationZone";
@@ -15,7 +15,7 @@ import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  useMonitorProjectRootNodes();
+  useMonitorProjectsRoots();
   useMonitorResourcesNodes();
 
   useSyncEnvironments();

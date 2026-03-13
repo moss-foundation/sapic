@@ -1,8 +1,8 @@
-import { ProjectDragType } from "../constants";
-import { IResourcesTree, ProjectTree } from "../types";
+import { ProjectDragType } from "../../constants";
+import { IResourcesTree, ProjectTree } from "../../types";
 
-export interface DragTreeRootNodeData {
-  type: ProjectDragType.ROOT_NODE;
+export interface DragTreeRootData {
+  type: ProjectDragType.TREE_ROOT;
   data: {
     projectId: string;
     node: ProjectTree;

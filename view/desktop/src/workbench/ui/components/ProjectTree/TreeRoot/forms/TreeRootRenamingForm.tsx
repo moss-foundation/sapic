@@ -4,10 +4,10 @@ import { Icon } from "@/lib/ui/Icon";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
-import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTree } from "../types";
+import { ProjectTreeContext } from "../../ProjectTreeContext";
+import { ProjectTree } from "../../types";
 
-interface TreeRootNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
+interface TreeRootRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
   node: ProjectTree;
   shouldRenderChildNodes: boolean;
   restrictedNames: string[];
@@ -15,7 +15,7 @@ interface TreeRootNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
   handleRenamingFormCancel: () => void;
 }
 
-export const TreeRootNodeRenamingForm = ({
+export const TreeRootRenamingForm = ({
   node,
   shouldRenderChildNodes,
   restrictedNames,
@@ -23,7 +23,7 @@ export const TreeRootNodeRenamingForm = ({
   handleRenamingFormCancel,
   className,
   ...props
-}: TreeRootNodeRenamingFormProps) => {
+}: TreeRootRenamingFormProps) => {
   const { iconPath } = useContext(ProjectTreeContext);
 
   return (

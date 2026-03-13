@@ -4,7 +4,7 @@ import { cn } from "@/utils";
 
 import { ActivityIndicator } from "../ActivityIndicator";
 
-interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
+interface RootHeaderProps extends HTMLAttributes<HTMLLIElement> {
   isActive?: boolean;
   children: React.ReactNode;
   disableIndicator?: boolean;
@@ -12,7 +12,7 @@ interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
   paddingRight?: number;
 }
 
-export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
+export const RootHeader = forwardRef<HTMLLIElement, RootHeaderProps>(
   (
     {
       isActive = false,
@@ -22,14 +22,14 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
       paddingLeft = 0,
       paddingRight = 0,
       ...props
-    }: RootNodeHeaderProps,
+    }: RootHeaderProps,
     ref
   ) => {
     return (
       <li
         ref={ref}
         className={cn(
-          "group/TreeRootNodeHeader py-0.75 relative flex w-full min-w-0 items-center justify-between",
+          "group/TreeRootHeader py-0.75 relative flex w-full min-w-0 items-center justify-between",
           className
         )}
         style={{

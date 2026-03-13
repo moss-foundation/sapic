@@ -1,6 +1,6 @@
 export enum ProjectDragType {
   NODE = "ProjectNode",
-  ROOT_NODE = "ProjectRootNode",
+  TREE_ROOT = "ProjectTreeRoot",
   RESOURCES_LIST = "ProjectResourcesList",
 }
 

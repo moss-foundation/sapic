@@ -7,7 +7,7 @@ export interface ProjectTreeContextProps {
   name: string;
   order: number;
   showOrders?: boolean;
-  showRootNodeIds?: boolean;
+  showTreeRootIds?: boolean;
   iconPath?: string;
   allFoldersAreExpanded: boolean;
   allFoldersAreCollapsed: boolean;
@@ -25,5 +25,5 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   searchInput: "",
   displayMode: "LIVE",
   showOrders: false,
-  showRootNodeIds: false,
+  showTreeRootIds: false,
 });

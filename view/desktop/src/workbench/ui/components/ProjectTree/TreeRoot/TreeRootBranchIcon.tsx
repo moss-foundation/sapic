@@ -4,7 +4,7 @@ interface BranchIconProps extends React.SVGProps<SVGSVGElement> {
   icon: BranchIcon;
 }
 
-export const TreeRootNodeBranchIcon = ({ icon, ...props }: BranchIconProps) => {
+export const TreeRootBranchIcon = ({ icon, ...props }: BranchIconProps) => {
   switch (icon) {
     case "down":
       return (

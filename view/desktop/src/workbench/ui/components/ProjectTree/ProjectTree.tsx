@@ -1,5 +1,5 @@
 import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
-import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
+import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
 import { ProjectTreeProps } from "./types.ts";
 import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
 
@@ -8,7 +8,7 @@ export const ProjectTree = ({
   searchInput,
   displayMode = "LIVE",
   showOrders = false,
-  showRootNodeIds = false,
+  showTreeRootIds = false,
 }: ProjectTreeProps) => {
   return (
     <div>
@@ -27,10 +27,10 @@ export const ProjectTree = ({
           displayMode,
 
           showOrders,
-          showRootNodeIds,
+          showTreeRootIds,
         }}
       >
-        <TreeRootNode tree={tree} />
+        <TreeRoot tree={tree} />
       </ProjectTreeContext.Provider>
     </div>
   );

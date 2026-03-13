@@ -20,28 +20,28 @@ import { NodeOrder } from "./components/Node/NodeOrders";
 import { NodeTriggers } from "./components/Node/NodeTriggers";
 import { NodeAddForm } from "./components/NodeAddForm";
 import { NodeRenamingForm } from "./components/NodeRenamingForm";
-import { RootNode } from "./components/RootNode/RootNode";
-import { RootNodeActions } from "./components/RootNode/RootNodeActions";
-import { RootNodeChildren } from "./components/RootNode/RootNodeChildren";
-import { RootNodeDetails } from "./components/RootNode/RootNodeDetails";
-import { RootNodeHeader } from "./components/RootNode/RootNodeHeader";
-import { RootNodeIcon } from "./components/RootNode/RootNodeIcon";
-import { RootNodeLabel } from "./components/RootNode/RootNodeLabel";
-import { RootNodeOrder } from "./components/RootNode/RootNodeOrder";
-import { RootNodeTriggers } from "./components/RootNode/RootNodeTriggers";
+import { Root } from "./components/Root/Root";
+import { RootActions } from "./components/Root/RootActions";
+import { RootChildren } from "./components/Root/RootChildren";
+import { RootDetails } from "./components/Root/RootDetails";
+import { RootHeader } from "./components/Root/RootHeader";
+import { RootIcon } from "./components/Root/RootIcon";
+import { RootLabel } from "./components/Root/RootLabel";
+import { RootOrder } from "./components/Root/RootOrder";
+import { RootTriggers } from "./components/Root/RootTriggers";
 import { Tree } from "./Tree";
 
 interface TreeWithSubComponents {
   (props: React.ComponentProps<typeof Tree>): React.ReactElement;
-  RootNode: typeof RootNode;
-  RootNodeActions: typeof RootNodeActions;
-  RootNodeChildren: typeof RootNodeChildren;
-  RootNodeDetails: typeof RootNodeDetails;
-  RootNodeHeader: typeof RootNodeHeader;
-  RootNodeIcon: typeof RootNodeIcon;
-  RootNodeLabel: typeof RootNodeLabel;
-  RootNodeOrder: typeof RootNodeOrder;
-  RootNodeTriggers: typeof RootNodeTriggers;
+  Root: typeof Root;
+  RootActions: typeof RootActions;
+  RootChildren: typeof RootChildren;
+  RootDetails: typeof RootDetails;
+  RootHeader: typeof RootHeader;
+  RootIcon: typeof RootIcon;
+  RootLabel: typeof RootLabel;
+  RootOrder: typeof RootOrder;
+  RootTriggers: typeof RootTriggers;
 
   List: typeof List;
   ListHeader: typeof ListHeader;
@@ -73,15 +73,15 @@ interface TreeWithSubComponents {
 
 const TreeWithSubs = Tree as TreeWithSubComponents;
 
-TreeWithSubs.RootNode = RootNode;
-TreeWithSubs.RootNodeActions = RootNodeActions;
-TreeWithSubs.RootNodeChildren = RootNodeChildren;
-TreeWithSubs.RootNodeDetails = RootNodeDetails;
-TreeWithSubs.RootNodeHeader = RootNodeHeader;
-TreeWithSubs.RootNodeIcon = RootNodeIcon;
-TreeWithSubs.RootNodeLabel = RootNodeLabel;
-TreeWithSubs.RootNodeOrder = RootNodeOrder;
-TreeWithSubs.RootNodeTriggers = RootNodeTriggers;
+TreeWithSubs.Root = Root;
+TreeWithSubs.RootActions = RootActions;
+TreeWithSubs.RootChildren = RootChildren;
+TreeWithSubs.RootDetails = RootDetails;
+TreeWithSubs.RootHeader = RootHeader;
+TreeWithSubs.RootIcon = RootIcon;
+TreeWithSubs.RootLabel = RootLabel;
+TreeWithSubs.RootOrder = RootOrder;
+TreeWithSubs.RootTriggers = RootTriggers;
 
 TreeWithSubs.Node = Node;
 TreeWithSubs.NodeActions = NodeActions;

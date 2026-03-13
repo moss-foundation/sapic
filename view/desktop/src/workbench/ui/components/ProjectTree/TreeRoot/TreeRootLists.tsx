@@ -2,11 +2,11 @@ import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvi
 import { ResourcesTree } from "../ResourcesTree/ResourcesTree";
 import { ProjectTree } from "../types";
 
-interface TreeRootNodeListsProps {
+interface TreeRootListsProps {
   tree: ProjectTree;
 }
 
-export const TreeRootNodeLists = ({ tree }: TreeRootNodeListsProps) => {
+export const TreeRootLists = ({ tree }: TreeRootListsProps) => {
   return (
     <div className="flex flex-col">
       <ProjectEnvironmentsListRoot tree={tree} />
