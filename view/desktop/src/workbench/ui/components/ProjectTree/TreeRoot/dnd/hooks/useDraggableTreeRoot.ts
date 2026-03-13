@@ -41,7 +41,7 @@ export const useDraggableTreeRoot = ({ nodeRef, headerRef, node, isRenamingTreeR
     return combine(
       draggable({
         element: headerElement,
-        getInitialData: () => treeRootData,
+        getInitialData: (): DragTreeRootData => treeRootData,
         onDragStart: () => {
           setIsDragging(true);
         },
