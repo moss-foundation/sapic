@@ -56,7 +56,7 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
       />
 
       {shouldRenderChildren && (
-        <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={3} />
+        <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={4} />
       )}
 
       {isAddingRootNode && (
