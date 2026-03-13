@@ -1,9 +1,8 @@
-import { DraggedResourceNode } from "../../../types";
-import { DragResourceNode } from "../types.dnd";
+import { DragResourceNode, DragResourceNodeData } from "../types.dnd";
 
 interface HasDirectSimilarDescendantProps {
   locationData: DragResourceNode;
-  sourceData: DraggedResourceNode;
+  sourceData: DragResourceNodeData;
 }
 
 export const hasDirectSimilarDescendant = ({ locationData, sourceData }: HasDirectSimilarDescendantProps): boolean => {

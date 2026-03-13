@@ -1,12 +1,13 @@
 import { Tree } from "@/lib/ui/Tree";
 
 import { NODE_OFFSET } from "../constants";
-import { IResourcesTree, ResourceNode } from "../types";
+import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { ResourcesTreeNode } from "./ResourcesTreeNode";
+import { ResourceNode } from "./types";
 
 interface ResourcesTreeChildrenProps {
   rootResourcesNodes: ResourceNode[];
-  parentNode: IResourcesTree | ResourceNode;
+  parentNode: ResourcesTreeRoot | ResourceNode;
   depth: number;
 }
 

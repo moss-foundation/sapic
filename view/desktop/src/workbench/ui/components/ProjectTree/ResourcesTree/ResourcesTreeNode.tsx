@@ -3,7 +3,7 @@ import { useContext, useRef, useState } from "react";
 import { Tree } from "@/lib/ui/Tree";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { IResourcesTree, ResourceNode } from "../types";
+import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { getChildrenNames } from "../utils";
 import { useDraggableResourceNode } from "./dnd/hooks/useDraggableResourceNode";
 import { useMonitorDirForBlockedChildOperation } from "./dnd/hooks/useMonitorDirForBlockedChildOperation";
@@ -14,10 +14,11 @@ import { useResourceNodeAddForm } from "./hooks/useResourceNodeAddForm";
 import { useResourceNodeRenamingForm } from "./hooks/useResourceNodeRenamingForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import ResourcesTreeNodeDetails from "./ResourcesTreeNodeDetails";
+import { ResourceNode } from "./types";
 
 interface ResourcesTreeNodeProps {
   node: ResourceNode;
-  parentNode: ResourceNode | IResourcesTree;
+  parentNode: ResourceNode | ResourcesTreeRoot;
   depth: number;
 }
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { ResourceNode } from "../ProjectTree/types";
+import { ResourceNode } from "../ProjectTree/ResourcesTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
 import { closeAllNodesInTree, updateTreeNode } from "./utils";
 

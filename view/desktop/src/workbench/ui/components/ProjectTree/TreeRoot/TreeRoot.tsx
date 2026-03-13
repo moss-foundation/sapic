@@ -5,7 +5,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
-import { ProjectTree } from "../types";
+import { ProjectTreeRoot } from "../types";
 import { useDraggableTreeRoot } from "./dnd/hooks/useDraggableTreeRoot";
 import { TreeRootRenamingForm } from "./forms/TreeRootRenamingForm";
 import { useTreeRootRenamingForm } from "./hooks/useTreeRootRenamingForm";
@@ -13,7 +13,7 @@ import { TreeRootHeaderContent } from "./TreeRootHeaderContent";
 import { TreeRootLists } from "./TreeRootLists";
 
 interface TreeRootProps {
-  tree: ProjectTree;
+  tree: ProjectTreeRoot;
 }
 
 export const TreeRoot = ({ tree }: TreeRootProps) => {

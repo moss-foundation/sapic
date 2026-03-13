@@ -4,7 +4,7 @@ import { cn } from "@/utils";
 
 import { ResourceIcon } from "../../../ResourceIcon";
 import { NODE_OFFSET } from "../../constants";
-import { ResourceNode } from "../../types";
+import { ResourceNode } from "../types";
 
 interface ResourceNodeAddFormProps {
   depth: number;

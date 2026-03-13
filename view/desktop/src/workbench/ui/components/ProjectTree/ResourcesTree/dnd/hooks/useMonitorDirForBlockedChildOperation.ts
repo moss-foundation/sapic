@@ -5,14 +5,15 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
-import { IResourcesTree, ResourceNode } from "../../../types";
+import { ResourcesTreeRoot } from "../../../TreeRoot/types";
 import { isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
+import { ResourceNode } from "../../types";
 import { DragResourceNode } from "../types.dnd";
 
 interface UseMonitorDirNodeBlockedChildOperationProps {
   nodeRef: React.RefObject<HTMLLIElement | null>;
   node: ResourceNode;
-  parentNode: ResourceNode | IResourcesTree;
+  parentNode: ResourceNode | ResourcesTreeRoot;
 }
 export const useMonitorDirForBlockedChildOperation = ({
   nodeRef,

@@ -6,7 +6,7 @@ import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery
 
 import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { IResourcesTree } from "../types";
+import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
 import { useRootResourceNodeAddForm } from "./hooks/useRootResourceNodeAddForm";
@@ -14,7 +14,7 @@ import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import { ResourcesTreeHeader } from "./ResourcesTreeHeader";
 
 interface ResourcesTreeProps {
-  tree: IResourcesTree;
+  tree: ResourcesTreeRoot;
 }
 
 const listHeaderOffset = NODE_OFFSET * 3;

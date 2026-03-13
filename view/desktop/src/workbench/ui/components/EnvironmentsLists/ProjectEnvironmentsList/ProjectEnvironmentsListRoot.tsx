@@ -5,7 +5,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
 import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../../ProjectTree/constants";
-import { ProjectTree } from "../../ProjectTree/types";
+import { ProjectTreeRoot } from "../../ProjectTree/types";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { ProjectEnvironmentAddForm } from "../EnvironmentAddForm/ProjectEnvironmentAddForm";
 import { EnvironmentItem } from "../EnvironmentItem/EnvironmentItem";
@@ -14,7 +14,7 @@ import { ProjectEnvironmentsListRootHeaderActions } from "./ProjectEnvironmentsL
 import { ProjectEnvironmentsListRootHeaderDetails } from "./ProjectEnvironmentsListRootHeaderDetails";
 
 interface ProjectEnvironmentsListRootProps {
-  tree: ProjectTree;
+  tree: ProjectTreeRoot;
 }
 
 const listHeaderOffset = NODE_OFFSET * 3;

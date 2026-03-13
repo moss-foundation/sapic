@@ -3,13 +3,14 @@ import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
-import { IResourcesTree, ResourceNode } from "../../types";
+import { ResourcesTreeRoot } from "../../TreeRoot/types";
 import { getAllNestedResources } from "../../utils";
+import { ResourceNode } from "../types";
 
 interface UseDeleteAndUpdateResourceNodePeersProps {
   projectId: string;
   node: ResourceNode;
-  parentNode: ResourceNode | IResourcesTree;
+  parentNode: ResourceNode | ResourcesTreeRoot;
 }
 
 export const useDeleteAndUpdateResourceNodePeers = ({

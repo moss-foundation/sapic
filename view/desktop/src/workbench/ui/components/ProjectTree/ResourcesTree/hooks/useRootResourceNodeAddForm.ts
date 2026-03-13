@@ -5,11 +5,11 @@ import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { IResourcesTree } from "../../types";
+import { ResourcesTreeRoot } from "../../TreeRoot/types";
 import { createResourceKind } from "../../utils";
 
 interface UseRootResourceNodeAddFormProps {
-  tree: IResourcesTree;
+  tree: ResourcesTreeRoot;
 }
 
 export const useRootResourceNodeAddForm = ({ tree }: UseRootResourceNodeAddFormProps) => {

@@ -1,10 +1,9 @@
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DraggedResourceNode } from "../../../types";
-import { LocationResourcesListData } from "../types.dnd";
+import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
 
 interface CanCombineToResourcesListProps {
-  sourceData: DraggedResourceNode | null;
+  sourceData: DragResourceNodeData | null;
   locationData: LocationResourcesListData;
 }
 

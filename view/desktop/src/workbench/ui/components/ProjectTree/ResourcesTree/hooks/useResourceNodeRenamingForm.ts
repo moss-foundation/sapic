@@ -6,7 +6,7 @@ import { resourceService } from "@/domains/resource/resourceService";
 import { createTransaction } from "@tanstack/db";
 import { join } from "@tauri-apps/api/path";
 
-import { ResourceNode } from "../../types";
+import { ResourceNode } from "../types";
 
 interface UseResourceNodeRenamingFormProps {
   node: ResourceNode;

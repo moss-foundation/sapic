@@ -1,13 +1,17 @@
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { IResourcesTree, ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
+import { ResourcesTreeRoot } from "@/workbench/ui/components/ProjectTree/TreeRoot/types";
 
 export interface BuildResourcesTreeProps {
   projectId: string;
   localResourceSummaries: LocalResourceSummary[];
 }
 
-export const buildResourcesTree = ({ projectId, localResourceSummaries }: BuildResourcesTreeProps): IResourcesTree => {
+export const buildResourcesTree = ({
+  projectId,
+  localResourceSummaries,
+}: BuildResourcesTreeProps): ResourcesTreeRoot => {
   const projectResources = localResourceSummaries.filter((summary) => summary.projectId === projectId);
   return {
     id: `resources-tree-${projectId}`,

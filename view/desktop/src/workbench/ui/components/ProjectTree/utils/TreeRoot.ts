@@ -1,13 +1,14 @@
 import { ElementDragPayload } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 import { ProjectDragType } from "../constants";
-import { ProjectTree, ResourceNode } from "../types";
+import { ResourceNode } from "../ResourcesTree/types";
+import { ProjectTreeRoot } from "../types";
 
 export const isSourceTreeRoot = (source: ElementDragPayload): boolean => {
   return source.data.type === ProjectDragType.TREE_ROOT;
 };
 
-export const checkIfAllFoldersAreExpanded = (tree: ProjectTree): boolean => {
+export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRoot): boolean => {
   const checkIfAllNodesAreExpanded = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 
@@ -23,7 +24,7 @@ export const checkIfAllFoldersAreExpanded = (tree: ProjectTree): boolean => {
   return tree.resourcesTree.childNodes.every(checkIfAllNodesAreExpanded);
 };
 
-export const checkIfAllFoldersAreCollapsed = (tree: ProjectTree): boolean => {
+export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRoot): boolean => {
   const checkIfAllNodesAreCollapsed = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 

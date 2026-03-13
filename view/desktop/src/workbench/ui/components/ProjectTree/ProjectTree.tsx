@@ -1,7 +1,22 @@
+import { WorkspaceMode } from "@repo/base";
+
 import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
 import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
-import { ProjectTreeProps } from "./types.ts";
+import { ProjectTreeRoot } from "./types.ts";
 import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
+
+interface ProjectTreeProps {
+  tree: ProjectTreeRoot;
+
+  treePaddingLeft?: number;
+  treePaddingRight?: number;
+  nodeOffset?: number;
+  searchInput?: string;
+  displayMode?: WorkspaceMode;
+
+  showOrders?: boolean;
+  showTreeRootIds?: boolean;
+}
 
 export const ProjectTree = ({
   tree,

@@ -1,8 +1,7 @@
-import { DraggedResourceNode } from "../../../types";
-import { DragResourceNode } from "../types.dnd";
+import { DragResourceNode, DragResourceNodeData } from "../types.dnd";
 
 interface HasPeersWithSimilarNameOrIdProps {
-  sourceData: DraggedResourceNode;
+  sourceData: DragResourceNodeData;
   locationData: DragResourceNode;
 }
 

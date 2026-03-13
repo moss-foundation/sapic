@@ -7,15 +7,16 @@ import { setCustomNativeDragPreview } from "@atlaskit/pragmatic-drag-and-drop/el
 
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
-import { IResourcesTree, ResourceNode } from "../../../types";
+import { ResourcesTreeRoot } from "../../../TreeRoot/types";
 import { getLocationProjectTreeNodeData, getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils";
+import { ResourceNode } from "../../types";
 import { DragResourceNode } from "../types.dnd";
 import { isNodeCombineAvailable } from "../validation/isNodeCombineAvailable";
 import { isNodeReorderAvailable } from "../validation/isNodeReorderAvailable";
 
 interface UseDraggableResourceNodeProps {
   node: ResourceNode;
-  parentNode: ResourceNode | IResourcesTree;
+  parentNode: ResourceNode | ResourcesTreeRoot;
   triggerRef: RefObject<HTMLDivElement | null>;
   setPreview: React.Dispatch<React.SetStateAction<HTMLElement | null>>;
 }

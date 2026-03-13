@@ -5,7 +5,7 @@ import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { PageHeader, PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
 import { useResourceNodeRenamingForm } from "@/workbench/ui/components/ProjectTree/ResourcesTree/hooks/useResourceNodeRenamingForm";
-import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
 import { OverviewTabContent } from "./tabs/OverviewTabContent";

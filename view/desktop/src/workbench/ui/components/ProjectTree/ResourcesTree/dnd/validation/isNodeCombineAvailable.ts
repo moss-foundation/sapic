@@ -1,12 +1,11 @@
 import { Availability } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DraggedResourceNode } from "../../../types";
 import { hasDescendant } from "../../../utils";
-import { DragResourceNode } from "../types.dnd";
+import { DragResourceNode, DragResourceNodeData } from "../types.dnd";
 import { hasDirectSimilarDescendant } from "./hasDirectSimilarDescendant";
 
 export const isNodeCombineAvailable = (
-  sourceData: DraggedResourceNode | null,
+  sourceData: DragResourceNodeData | null,
   locationData: DragResourceNode
 ): Availability => {
   if (!sourceData || !locationData) {

@@ -5,8 +5,8 @@ import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element
 
 import { ProjectDragType } from "../../../constants";
 import { ProjectTreeContext } from "../../../ProjectTreeContext";
-import { ResourceNode } from "../../../types";
 import { getSourceProjectTreeNodeData, isSourceProjectTreeNode } from "../../../utils/DragAndDrop";
+import { ResourceNode } from "../../types";
 import { LocationResourcesListData } from "../types.dnd";
 import { canCombineToResourcesList } from "../validation/canCombineToResourcesList";
 

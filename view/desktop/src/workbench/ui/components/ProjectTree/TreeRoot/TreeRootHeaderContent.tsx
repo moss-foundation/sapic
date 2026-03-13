@@ -6,11 +6,11 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTree } from "../types";
+import { ProjectTreeRoot } from "../types";
 import { TreeRootActions } from "./TreeRootActions";
 
 interface TreeRootHeaderContentProps {
-  node: ProjectTree;
+  node: ProjectTreeRoot;
   setIsRenamingTreeRoot: (isRenaming: boolean) => void;
 }
 

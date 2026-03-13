@@ -4,13 +4,13 @@ import { useGetAllProjectEnvironments } from "@/db/environmentsSummaries/hooks/u
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
-import { ProjectTree } from "@/workbench/ui/components/ProjectTree/types";
+import { ProjectTreeRoot } from "@/workbench/ui/components/ProjectTree/types";
 
 import { buildResourcesTree } from "../utils/buildResourcesTree";
 
 export interface UseProjectsTreesDataResult {
-  projectsTrees: ProjectTree[];
-  projectsTreesSortedByOrder: ProjectTree[];
+  projectsTrees: ProjectTreeRoot[];
+  projectsTreesSortedByOrder: ProjectTreeRoot[];
 }
 
 export const useProjectsTrees = (): UseProjectsTreesDataResult => {
@@ -22,7 +22,7 @@ export const useProjectsTrees = (): UseProjectsTreesDataResult => {
     if (localProjectSummaries.length === 0) return [];
 
     return localProjectSummaries.map(
-      (projectSummary): ProjectTree => ({
+      (projectSummary): ProjectTreeRoot => ({
         ...projectSummary,
         id: projectSummary.id,
         name: projectSummary.name,

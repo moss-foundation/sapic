@@ -3,7 +3,7 @@ import { cn } from "@/utils";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import Icon from "../../../../lib/ui/Icon";
-import { ResourceNode } from "../ProjectTree/types";
+import { ResourceNode } from "../ProjectTree/ResourcesTree/types";
 import { ResourceIcon } from "../ResourceIcon";
 
 interface BreadcrumbNodeProps {

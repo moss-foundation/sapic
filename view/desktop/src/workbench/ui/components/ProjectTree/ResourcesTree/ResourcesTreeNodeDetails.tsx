@@ -12,15 +12,16 @@ import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types
 import { ResourceIcon } from "../../ResourceIcon";
 import { NODE_OFFSET, NODE_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { IResourcesTree, ResourceNode } from "../types";
+import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
 import { ResourceNodePreview } from "./dnd/ResourceNodePreview";
 import { ResourcesTreeNodeActions } from "./ResourcesTreeNodeActions";
+import { ResourceNode } from "./types";
 
 interface ResourcesTreeNodeDetailsProps {
   ref?: React.Ref<HTMLDivElement>;
   node: ResourceNode;
-  parentNode: ResourceNode | IResourcesTree;
+  parentNode: ResourceNode | ResourcesTreeRoot;
   depth: number;
   onAddFile: () => void;
   onAddFolder: () => void;

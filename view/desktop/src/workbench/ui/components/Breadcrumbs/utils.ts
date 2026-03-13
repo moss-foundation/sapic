@@ -1,6 +1,7 @@
-import { ProjectTree, ResourceNode } from "../ProjectTree/types";
+import { ResourceNode } from "../ProjectTree/ResourcesTree/types";
+import { ProjectTreeRoot } from "../ProjectTree/types";
 
-export const findNodeByIdInTree = (tree: ProjectTree, id: string): ResourceNode | undefined => {
+export const findNodeByIdInTree = (tree: ProjectTreeRoot, id: string): ResourceNode | undefined => {
   for (const child of tree.childNodes) {
     const found = findNodeById(child, id);
     if (found) return found;
@@ -22,7 +23,7 @@ export const findNodeById = (topNode: ResourceNode, id: string): ResourceNode | 
   return undefined;
 };
 
-export const findNodesSequence = (tree: ProjectTree, node: ResourceNode) => {
+export const findNodesSequence = (tree: ProjectTreeRoot, node: ResourceNode) => {
   for (const child of tree.childNodes) {
     const found = findSequence(child, node.path.segments);
     if (found) return found;

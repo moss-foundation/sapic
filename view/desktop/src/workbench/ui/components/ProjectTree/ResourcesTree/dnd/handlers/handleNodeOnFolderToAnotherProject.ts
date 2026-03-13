@@ -4,7 +4,6 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
-import { DraggedResourceNode } from "../../../types";
 import {
   createResourceKind,
   getAllNestedResources,
@@ -12,11 +11,12 @@ import {
   resolveParentPath,
   siblingsAfterRemovalPayload,
 } from "../../../utils";
+import { DragResourceNodeData } from "../types.dnd";
 
 interface HandleNodeOnFolderToAnotherProjectProps {
   currentWorkspaceId: string;
-  sourceTreeNodeData: DraggedResourceNode;
-  locationTreeNodeData: DraggedResourceNode;
+  sourceTreeNodeData: DragResourceNodeData;
+  locationTreeNodeData: DragResourceNodeData;
 }
 
 export const handleNodeOnFolderToAnotherProject = async ({

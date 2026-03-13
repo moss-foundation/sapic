@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import { projectService } from "@/domains/project/projectService";
 
-import { ProjectTree } from "../../types";
+import { ProjectTreeRoot } from "../../types";
 
-export const useTreeRootRenamingForm = (node: ProjectTree) => {
+export const useTreeRootRenamingForm = (node: ProjectTreeRoot) => {
   const [isRenamingTreeRoot, setIsRenamingTreeRoot] = useState(false);
 
   const handleRenamingTreeRootFormSubmit = async (name: string) => {

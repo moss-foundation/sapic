@@ -7,7 +7,7 @@ import { resourceService } from "@/domains/resource/resourceService";
 import { useCurrentWorkspace } from "@/hooks";
 import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
+import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
 import {
   convertResourceInfoToCreateInput,
   getAllNestedResources,

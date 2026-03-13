@@ -1,9 +1,9 @@
 import { ProjectEnvironmentsListRoot } from "../../EnvironmentsLists/ProjectEnvironmentsList/ProjectEnvironmentsListRoot";
 import { ResourcesTree } from "../ResourcesTree/ResourcesTree";
-import { ProjectTree } from "../types";
+import { ProjectTreeRoot } from "../types";
 
 interface TreeRootListsProps {
-  tree: ProjectTree;
+  tree: ProjectTreeRoot;
 }
 
 export const TreeRootLists = ({ tree }: TreeRootListsProps) => {

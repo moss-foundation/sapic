@@ -3,8 +3,8 @@ import { createPortal } from "react-dom";
 import { Icon } from "@/lib/ui";
 import { cn } from "@/utils";
 
-import { ResourceNode } from "../../types";
 import { ResourcesTreeNode } from "../ResourcesTreeNode";
+import { ResourceNode } from "../types";
 
 interface ResourceNodePreviewProps {
   node: ResourceNode;

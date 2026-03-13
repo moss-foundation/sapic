@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 
 import { useGetLayout } from "@/workbench/adapters";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
-import { DraggedResourceNode } from "@/workbench/ui/components/ProjectTree/types";
+import { DragResourceNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/types.dnd";
 
 import { TabbedPaneToolBar, Watermark } from "./components";
 import { AddPanelButton } from "./components/AddPanelButton";
@@ -19,7 +19,7 @@ export const TabbedPane = () => {
   const dockviewRef = useRef<HTMLDivElement>(null);
   const dockviewRefWrapper = useRef<HTMLDivElement>(null);
 
-  const [pragmaticDropElement, setPragmaticDropElement] = useState<DraggedResourceNode | null>(null);
+  const [pragmaticDropElement, setPragmaticDropElement] = useState<DragResourceNodeData | null>(null);
 
   const { api, showDebugPanels, addOrFocusPanel, setApi } = useTabbedPaneStore();
   const { data: layout } = useGetLayout();

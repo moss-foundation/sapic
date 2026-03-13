@@ -7,13 +7,13 @@ import { ActionButton } from "@/workbench/ui/components/ActionButton";
 import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/DeleteProjectModal";
 
 import { ProjectTreeContext } from "../ProjectTreeContext";
-import { ProjectTree } from "../types";
+import { ProjectTreeRoot } from "../types";
 import { useRefreshProject } from "./dnd/hooks/useRefreshProject";
 import { useToggleAllTreeNodes } from "./dnd/hooks/useToggleAllTreeNodes";
 import { TreeRootBranchIcon } from "./TreeRootBranchIcon";
 
 interface TreeRootActionsProps {
-  node: ProjectTree;
+  node: ProjectTreeRoot;
   setIsRenamingTreeRoot: (isRenaming: boolean) => void;
 }
 

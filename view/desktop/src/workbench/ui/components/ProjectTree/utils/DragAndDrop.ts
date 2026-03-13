@@ -3,16 +3,16 @@ import { DragLocationHistory, ElementDragPayload } from "@atlaskit/pragmatic-dra
 import { ListProjectResourceItem } from "@repo/ipc";
 
 import { ProjectDragType } from "../constants";
-import { LocationResourcesListData } from "../ResourcesTree/dnd/types.dnd";
-import { DraggedResourceNode, ResourceNode } from "../types";
+import { DragResourceNodeData, LocationResourcesListData } from "../ResourcesTree/dnd/types.dnd";
+import { ResourceNode } from "../ResourcesTree/types";
 
 //source
-export const getSourceProjectTreeNodeData = (source: ElementDragPayload): DraggedResourceNode | null => {
+export const getSourceProjectTreeNodeData = (source: ElementDragPayload): DragResourceNodeData | null => {
   if (source.data.type !== ProjectDragType.NODE) {
     return null;
   }
 
-  return source.data.data as DraggedResourceNode;
+  return source.data.data as DragResourceNodeData;
 };
 
 export const isSourceProjectTreeNode = (source: ElementDragPayload): boolean => {
@@ -20,16 +20,11 @@ export const isSourceProjectTreeNode = (source: ElementDragPayload): boolean => 
 };
 
 //location
-export const getLocationProjectTreeNodeData = (location: DragLocationHistory): DraggedResourceNode | null => {
+export const getLocationProjectTreeNodeData = (location: DragLocationHistory): DragResourceNodeData | null => {
   if (location.current.dropTargets.length === 0) return null;
   if (location.current.dropTargets[0].data.type !== ProjectDragType.NODE) return null;
 
-  const instruction = extractInstruction(location.current.dropTargets[0].data);
-
-  return {
-    ...(location.current.dropTargets[0].data.data as DraggedResourceNode),
-    "instruction": instruction ?? undefined,
-  };
+  return location.current.dropTargets[0].data.data as DragResourceNodeData;
 };
 
 export const getInstructionFromLocation = (location: DragLocationHistory): Instruction | null => {

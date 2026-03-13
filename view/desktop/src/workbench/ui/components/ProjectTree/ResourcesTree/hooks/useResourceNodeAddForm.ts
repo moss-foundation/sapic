@@ -5,8 +5,8 @@ import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { ResourceNode } from "../../types";
 import { createResourceKind } from "../../utils";
+import { ResourceNode } from "../types";
 
 export const useResourceNodeAddForm = (parentNode: ResourceNode) => {
   const { id } = useContext(ProjectTreeContext);

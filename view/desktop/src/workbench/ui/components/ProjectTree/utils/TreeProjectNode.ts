@@ -1,4 +1,4 @@
-import { ResourceNode } from "../types";
+import { ResourceNode } from "../ResourcesTree/types";
 
 export const hasDescendant = (sourceNode: ResourceNode, locationNode: ResourceNode): boolean => {
   if (sourceNode.id === locationNode.id) return true;
