@@ -3,10 +3,10 @@ import { ListProjectResourceItem } from "@repo/ipc";
 import { BatchUpdateResourceKind } from "@repo/moss-project";
 import { join } from "@tauri-apps/api/path";
 
-import { ResourceNode } from "../ResourcesTree/types";
-import { ResourcesTreeRoot } from "../TreeRoot/types";
+import { ResourcesTreeRoot } from "../../../TreeRoot/types";
+import { ResourceNode } from "../../types";
 
-export const getPathWithoutName = async (
+const getPathWithoutName = async (
   node: ResourceNode | ListProjectResourceItem
 ): Promise<ListProjectResourceItem["path"]> => {
   const newSegments = node.path.segments.filter((segment) => segment !== node.name);
@@ -18,20 +18,7 @@ export const getPathWithoutName = async (
   };
 };
 
-export const getPathWithoutParentPath = async (
-  path: ListProjectResourceItem["path"],
-  parentPath: ListProjectResourceItem["path"]
-): Promise<ListProjectResourceItem["path"]> => {
-  const newSegments = path.segments.filter((segment) => !parentPath.segments.includes(segment));
-  const newRaw = await join(...newSegments);
-
-  return {
-    segments: newSegments,
-    raw: newRaw,
-  };
-};
-
-export const removePathBeforeName = async (path: ListProjectResourceItem["path"], name: string) => {
+const removePathBeforeName = async (path: ListProjectResourceItem["path"], name: string) => {
   const nameIndex = path.segments.findIndex((segment) => segment === name);
 
   if (nameIndex === -1) {

@@ -4,7 +4,7 @@ import { ActionMenu } from "..";
 import { useProjectsTrees } from "../ProjectTree/hooks/useProjectsTrees";
 import { ResourceIcon } from "../ResourceIcon";
 import BreadcrumbTree from "./BreadcrumbTree";
-import { findNodeByIdInTree, findNodesSequence } from "./utils";
+import { findNodeByIdInTree, findNodesSequence } from "./getters/findResourceNode";
 
 interface BreadcrumbsProps {
   projectId?: string;

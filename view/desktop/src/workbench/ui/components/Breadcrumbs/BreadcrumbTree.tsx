@@ -2,7 +2,8 @@ import { useState } from "react";
 
 import { ResourceNode } from "../ProjectTree/ResourcesTree/types";
 import BreadcrumbNode from "./BreadcrumbNode";
-import { closeAllNodesInTree, updateTreeNode } from "./utils";
+import { closeAllNodesInTree } from "./transforms/closeAllNodesInTree";
+import { updateTreeNode } from "./transforms/updateTreeNode";
 
 interface BreadcrumbTreeProps {
   tree: ResourceNode;
@@ -24,4 +25,5 @@ export const BreadcrumbTree = ({ tree: initialTree, projectId }: BreadcrumbTreeP
     </ul>
   );
 };
+
 export default BreadcrumbTree;

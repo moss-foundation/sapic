@@ -3,13 +3,13 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
+import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
 import {
   makeDirUpdatePayload,
   makeItemUpdatePayload,
   resolveParentPath,
   siblingsAfterRemovalPayload,
-} from "../../../utils";
-import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
+} from "../utils/path";
 
 interface HandleNodeOnListRootWithinProjectProps {
   currentWorkspaceId: string;

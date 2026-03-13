@@ -9,18 +9,16 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { getInstructionFromFirstLocation } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getInstructionFromFirstLocation";
 import { getSourceProjectTreeNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getSourceProjectTreeNodeData";
+import { siblingsAfterRemovalPayload } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/utils/path";
 import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode";
 import { getAllNestedResources } from "@/workbench/ui/components/ProjectTree/ResourcesTree/getters/getAllNestedResources";
 import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
-import {
-  convertResourceInfoToCreateInput,
-  siblingsAfterRemovalPayload,
-} from "@/workbench/ui/components/ProjectTree/utils";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
+import { convertResourceToCreateInput } from "./utils/convertResourceToCreateInput";
 import { isLocationProjectCreationZone } from "./validation/isLocationProjectCreationZone";
 
 export const useMonitorProjectCreationZone = () => {
@@ -140,7 +138,7 @@ export const useMonitorProjectCreationZone = () => {
               const parentSegments = adjustedSegments.slice(0, -1);
               const parentPath = parentSegments.length > 0 ? await join(...parentSegments) : "";
 
-              const createInput = convertResourceInfoToCreateInput(resource, parentPath);
+              const createInput = convertResourceToCreateInput(resource, parentPath);
 
               const isRootChild = rootChildIds.has(resource.id);
               const order = isRootChild

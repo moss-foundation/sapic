@@ -4,14 +4,10 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
-import {
-  createResourceKind,
-  prepareResourcesForCreation,
-  resolveParentPath,
-  siblingsAfterRemovalPayload,
-} from "../../../utils/index.ts";
 import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { DragResourceNodeData } from "../types.dnd";
+import { createResourceKind } from "../utils/createResourceKind.ts";
+import { prepareResourcesForCreation, resolveParentPath, siblingsAfterRemovalPayload } from "../utils/path";
 
 interface HandleNodeOnFolderToAnotherProjectProps {
   currentWorkspaceId: string;

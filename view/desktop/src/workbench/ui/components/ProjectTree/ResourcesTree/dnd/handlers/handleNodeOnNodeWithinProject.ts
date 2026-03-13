@@ -6,8 +6,8 @@ import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/l
 import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 
-import { reorderedNodesForDifferentDirPayload, resolveParentPath, siblingsAfterRemovalPayload } from "../../../utils";
 import { DragResourceNodeData } from "../types.dnd";
+import { reorderedNodesForDifferentDirPayload, resolveParentPath, siblingsAfterRemovalPayload } from "../utils/path";
 
 interface HandleNodeOnNodeWithinProjectProps {
   currentWorkspaceId: string;
