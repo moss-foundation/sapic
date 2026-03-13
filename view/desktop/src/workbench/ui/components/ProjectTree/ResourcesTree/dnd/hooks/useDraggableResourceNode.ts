@@ -93,11 +93,11 @@ export const useDraggableResourceNode = ({
           return isSourceResourceNode(source);
         },
         onDrag({ location, source, self }) {
-          const sourceTarget = getSourceProjectTreeNodeData(source);
-          const locationTarget = getLocationProjectTreeNodeData(location);
+          const sourceData = getSourceProjectTreeNodeData(source);
+          const locationData = getLocationProjectTreeNodeData(location);
           const instruction: Instruction | null = extractInstruction(self.data);
 
-          if (!sourceTarget || !locationTarget || !instruction) {
+          if (!sourceData || !locationData || !instruction) {
             return;
           }
 

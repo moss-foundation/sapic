@@ -33,7 +33,7 @@ export const handleNodeOnNodeToAnotherProject = async ({
   const dropIndex =
     operation === "reorder-before" ? locationTreeNodeData.node.order! - 0.5 : locationTreeNodeData.node.order! + 0.5;
 
-  const targetResourcesToUpdate = reorderedNodesForDifferentDirPayload({
+  const locationResourcesToUpdate = reorderedNodesForDifferentDirPayload({
     node: locationTreeNodeData.parentNode,
     newNode: sourceTreeNodeData.node,
     moveToIndex: dropIndex,
@@ -83,36 +83,36 @@ export const handleNodeOnNodeToAnotherProject = async ({
       : Promise.resolve(),
   ]);
 
-  //Update items in target project
+  //Update items in location project
   await resourceService.batchUpdate(
     locationTreeNodeData.projectId,
     {
-      resources: targetResourcesToUpdate,
+      resources: locationResourcesToUpdate,
     },
     batchUpdateChannelEvent
   );
 
-  const targetOrderItems: Record<string, number> = {};
-  const targetExpandedItems: Record<string, boolean> = {};
+  const locationOrderItems: Record<string, number> = {};
+  const locationExpandedItems: Record<string, boolean> = {};
 
-  for (const resource of targetResourcesToUpdate) {
+  for (const resource of locationResourcesToUpdate) {
     if ("ITEM" in resource) {
-      targetExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      locationExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
       if ("order" in resource.ITEM) {
-        targetOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
+        locationOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
       }
     } else if ("DIR" in resource) {
-      targetOrderItems[resource.DIR.id] = resource.DIR.order!;
-      targetExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
+      locationOrderItems[resource.DIR.id] = resource.DIR.order!;
+      locationExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
     }
   }
 
   await Promise.all([
-    Object.keys(targetOrderItems).length > 0
-      ? treeItemStateService.batchPutOrder(targetOrderItems, currentWorkspaceId)
+    Object.keys(locationOrderItems).length > 0
+      ? treeItemStateService.batchPutOrder(locationOrderItems, currentWorkspaceId)
       : Promise.resolve(),
-    Object.keys(targetExpandedItems).length > 0
-      ? treeItemStateService.batchPutExpanded(targetExpandedItems, currentWorkspaceId)
+    Object.keys(locationExpandedItems).length > 0
+      ? treeItemStateService.batchPutExpanded(locationExpandedItems, currentWorkspaceId)
       : Promise.resolve(),
   ]);
 

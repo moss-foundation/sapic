@@ -164,12 +164,12 @@ export const reorderedNodesForDifferentDirPayload = ({
   newNode: ResourceNode;
   moveToIndex: number;
 }) => {
-  const sortedTargetNodes = sortObjectsByOrder(node.childNodes);
+  const sortedLocationNodes = sortObjectsByOrder(node.childNodes);
 
-  const targetResourcesToUpdate = [
-    ...sortedTargetNodes.slice(0, moveToIndex),
+  const locationResourcesToUpdate = [
+    ...sortedLocationNodes.slice(0, moveToIndex),
     newNode,
-    ...sortedTargetNodes.slice(moveToIndex),
+    ...sortedLocationNodes.slice(moveToIndex),
   ]
     .map((resource, index) => ({
       ...resource,
@@ -198,7 +198,7 @@ export const reorderedNodesForDifferentDirPayload = ({
       }
     });
 
-  return targetResourcesToUpdate;
+  return locationResourcesToUpdate;
 };
 
 export const resolveParentPath = (parentNode: ResourceNode | ResourcesTreeRoot): string =>

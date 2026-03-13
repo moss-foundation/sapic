@@ -28,8 +28,8 @@ export const handleNodeOnNodeWithinProject = async ({
   const inSameDir = sourceTreeNodeData.parentNode.id === locationTreeNodeData.parentNode.id;
   if (inSameDir) {
     const sortedNodes = sortObjectsByOrder(sourceTreeNodeData.parentNode.childNodes);
-    const targetIndex = sortedNodes.findIndex((n) => n.id === locationTreeNodeData.node.id);
-    const dropOrder = operation === "reorder-before" ? targetIndex : targetIndex + 1;
+    const locationIndex = sortedNodes.findIndex((n) => n.id === locationTreeNodeData.node.id);
+    const dropOrder = operation === "reorder-before" ? locationIndex : locationIndex + 1;
 
     const reorderedNodes = [
       ...sortedNodes.slice(0, dropOrder).filter((n) => n.id !== sourceTreeNodeData.node.id),
@@ -44,7 +44,7 @@ export const handleNodeOnNodeWithinProject = async ({
     return;
   }
 
-  const targetResourcesToUpdate = reorderedNodesForDifferentDirPayload({
+  const locationResourcesToUpdate = reorderedNodesForDifferentDirPayload({
     node: locationTreeNodeData.parentNode,
     newNode: sourceTreeNodeData.node,
     moveToIndex: dropIndex,
@@ -55,7 +55,7 @@ export const handleNodeOnNodeWithinProject = async ({
     removedNode: sourceTreeNodeData.node,
   });
 
-  const allResourcesToUpdate = [...targetResourcesToUpdate, ...sourceResourcesToUpdate];
+  const allResourcesToUpdate = [...locationResourcesToUpdate, ...sourceResourcesToUpdate];
 
   const channelEvent = new Channel<BatchUpdateResourceEvent>();
   await resourceService.batchUpdate(
