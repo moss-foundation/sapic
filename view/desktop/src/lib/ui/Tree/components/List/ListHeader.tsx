@@ -5,16 +5,16 @@ import { cn } from "@/utils";
 interface ListHeaderProps extends HTMLAttributes<HTMLHeadingElement> {
   ref?: RefObject<HTMLHeadingElement | null>;
   children: ReactNode;
-  offsetLeft?: number;
-  offsetRight?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
 }
 
 export const ListHeader = ({
   ref,
   children,
   className,
-  offsetLeft = 0,
-  offsetRight = 0,
+  paddingLeft = 0,
+  paddingRight = 0,
   ...props
 }: ListHeaderProps) => {
   return (
@@ -24,7 +24,7 @@ export const ListHeader = ({
         "group/TreeListActions relative flex w-full min-w-0 items-center justify-between py-[6px]",
         className
       )}
-      style={{ paddingLeft: offsetLeft, paddingRight: offsetRight }}
+      style={{ paddingLeft, paddingRight }}
       {...props}
     >
       {children}

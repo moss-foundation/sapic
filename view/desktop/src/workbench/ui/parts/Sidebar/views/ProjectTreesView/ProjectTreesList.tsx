@@ -9,6 +9,7 @@ import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/proje
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
 import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
+import { TREE_HEADER_PADDING_LEFT } from "@/workbench/ui/components/ProjectTree/constants";
 import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
 
 export const ProjectTreesList = () => {
@@ -53,11 +54,13 @@ export const ProjectTreesHeader = () => {
     });
   };
 
+  //TODO this is a list, not a ROOT node
   return (
     <Tree.RootNodeDetails>
       <Tree.RootNodeTriggers
         onClick={handleToggleProjectList}
-        className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
+        className="flex cursor-pointer items-center gap-1 py-[5px]"
+        style={{ paddingLeft: TREE_HEADER_PADDING_LEFT }}
       >
         <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
         <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />

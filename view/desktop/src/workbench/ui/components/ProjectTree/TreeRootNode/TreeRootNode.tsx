@@ -1,11 +1,11 @@
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { Tree } from "@/lib/ui/Tree";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
+import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
 import { useDraggableRootNode } from "../dnd/hooks/useDraggableRootNode";
-import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTree } from "../types";
 import { useRootNodeRenamingForm } from "./hooks/useRootNodeRenamingForm";
 import { TreeRootNodeHeaderContent } from "./TreeRootNodeHeaderContent";
@@ -17,8 +17,6 @@ interface TreeRootNodeProps {
 }
 
 export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
-  const { treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
-
   const draggableHeaderRef = useRef<HTMLLIElement>(null);
   const rootNodeRef = useRef<HTMLUListElement>(null);
 
@@ -46,8 +44,8 @@ export const TreeRootNode = ({ tree }: TreeRootNodeProps) => {
       <Tree.RootNodeHeader
         ref={draggableHeaderRef}
         isActive={activePanelId === tree.id}
-        treePaddingLeft={treePaddingLeft}
-        treePaddingRight={treePaddingRight}
+        paddingLeft={NODE_OFFSET * 2}
+        paddingRight={TREE_HEADER_PADDING_RIGHT}
       >
         {isRenamingRootNode ? (
           <TreeRootNodeRenamingForm

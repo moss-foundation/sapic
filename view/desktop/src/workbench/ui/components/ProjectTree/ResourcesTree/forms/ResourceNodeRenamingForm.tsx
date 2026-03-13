@@ -1,11 +1,11 @@
-import { HTMLAttributes, useContext } from "react";
+import { HTMLAttributes } from "react";
 
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { ResourceIcon } from "../../../ResourceIcon";
-import { ProjectTreeContext } from "../../ProjectTreeContext";
+import { NODE_OFFSET } from "../../constants";
 import { ResourceNode } from "../../types";
 
 interface TreeNodeRenamingFormProps extends HTMLAttributes<HTMLDivElement> {
@@ -27,8 +27,7 @@ const TreeNodeRenamingForm = ({
   className,
   ...props
 }: TreeNodeRenamingFormProps) => {
-  const { nodeOffset, treePaddingLeft } = useContext(ProjectTreeContext);
-  const nodePaddingLeft = depth * treePaddingLeft;
+  const nodePaddingLeft = depth * NODE_OFFSET;
   const shouldRenderChildNodes = node.kind === "Dir" && node.expanded;
 
   return (

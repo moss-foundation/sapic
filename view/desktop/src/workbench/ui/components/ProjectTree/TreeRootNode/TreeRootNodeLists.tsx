@@ -8,7 +8,7 @@ interface TreeRootNodeListsProps {
 
 export const TreeRootNodeLists = ({ tree }: TreeRootNodeListsProps) => {
   return (
-    <div className="flex flex-col gap-1">
+    <div className="flex flex-col">
       <ProjectEnvironmentsListRoot tree={tree} />
 
       <ResourcesTree tree={tree.resourcesTree} />

@@ -10,6 +10,7 @@ import { ActionMenu } from "@/workbench/ui/components";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
 import { ResourceIcon } from "../../ResourceIcon";
+import { NODE_OFFSET, NODE_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { IResourcesTree, ResourceNode } from "../types";
 import { countNumberOfAllNestedChildNodes } from "../utils";
@@ -28,6 +29,7 @@ interface ResourcesTreeNodeDetailsProps {
   isDragging: boolean;
   preview: HTMLElement | null;
   reorderInstruction: Instruction | null;
+  shouldRenderChildNodes: boolean;
 }
 
 const ResourcesTreeNodeDetails = ({
@@ -41,16 +43,16 @@ const ResourcesTreeNodeDetails = ({
   onDelete,
   preview,
   reorderInstruction,
+  shouldRenderChildNodes,
 }: ResourcesTreeNodeDetailsProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { id, searchInput, showOrders } = useContext(ProjectTreeContext);
+  const { id, showOrders } = useContext(ProjectTreeContext);
 
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
   const localResourceSummary = useGetLocalResourceDetails(node.id);
 
-  const shouldRenderChildNodes = !!searchInput || (!searchInput && node.kind === "Dir" && node.expanded);
   const numberOfAllNestedChildNodes = countNumberOfAllNestedChildNodes(node);
 
   const handleDetailsClick = async () => {
@@ -116,6 +118,8 @@ const ResourcesTreeNodeDetails = ({
           ref={ref}
           reorderInstruction={reorderInstruction}
           depth={depth}
+          nodeOffset={NODE_OFFSET}
+          paddingRight={NODE_PADDING_RIGHT}
           isActive={activePanelId === node.id}
           isDirty={localResourceSummary?.metadata.isDirty ?? false}
         >

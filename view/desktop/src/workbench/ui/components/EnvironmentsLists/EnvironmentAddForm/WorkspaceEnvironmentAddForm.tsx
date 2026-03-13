@@ -10,6 +10,7 @@ interface WorkspaceEnvironmentAddFormProps {
   onCancel?: () => void;
   restrictedNames?: string[];
   className?: string;
+  offsetLeft?: number;
 }
 
 export const WorkspaceEnvironmentAddForm = ({
@@ -17,6 +18,7 @@ export const WorkspaceEnvironmentAddForm = ({
   onCancel,
   restrictedNames,
   className,
+  offsetLeft,
 }: WorkspaceEnvironmentAddFormProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isInitialized = useRef(false);
@@ -67,9 +69,12 @@ export const WorkspaceEnvironmentAddForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className={cn("pl-5.5 flex h-full w-full grow items-center gap-1.5 py-1 pr-1", className)}
+      className={cn("flex h-full w-full grow items-center gap-1.5 py-1 pr-1", className)}
+      style={{ paddingLeft: offsetLeft }}
     >
-      <Icon icon="Add" className="shrink-0 opacity-50" />
+      <div className="flex items-center p-0.5">
+        <Icon icon="Add" className="shrink-0 opacity-50" />
+      </div>
 
       <input
         ref={inputRef}

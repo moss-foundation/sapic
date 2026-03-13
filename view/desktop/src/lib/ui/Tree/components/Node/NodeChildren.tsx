@@ -7,6 +7,7 @@ import { DirDepthIndicator } from "../DirDepthIndicator";
 interface NodeChildrenProps extends HTMLAttributes<HTMLUListElement> {
   children?: React.ReactNode;
   className?: string;
+  depth: number;
   dirDepthIndicatorOffset: number;
 }
 

@@ -90,6 +90,7 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
           isDragging={isDragging}
           reorderInstruction={instruction}
           preview={preview}
+          shouldRenderChildNodes={shouldRenderChildNodes}
         />
       )}
 
@@ -99,7 +100,7 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
 
       {(isAddingFileNode || isAddingFolderNode) && (
         <ResourceNodeAddForm
-          depth={depth}
+          depth={depth - 1}
           isAddingFolderNode={isAddingFolderNode}
           handleAddFormSubmit={handleAddFormSubmit}
           handleAddFormCancel={handleAddFormCancel}

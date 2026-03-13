@@ -1,10 +1,10 @@
-import { useContext, useRef } from "react";
+import { useRef } from "react";
 
 import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
-import { ProjectTreeContext } from "../../ProjectTree/ProjectTreeContext";
+import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../../ProjectTree/constants";
 import { ProjectTree } from "../../ProjectTree/types";
 import { useDropTargetProjectEnvironmentList } from "../dnd/hooks/useDropTargetProjectEnvironmentList";
 import { ProjectEnvironmentAddForm } from "../EnvironmentAddForm/ProjectEnvironmentAddForm";
@@ -17,17 +17,16 @@ interface ProjectEnvironmentsListRootProps {
   tree: ProjectTree;
 }
 
+const listHeaderOffset = NODE_OFFSET * 3;
+const listItemOffset = NODE_OFFSET * 4;
+const listItemOffsetForAddForm = NODE_OFFSET * 7;
+
 export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRootProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
 
   const projectEnvironmentsListRef = useRef<HTMLDivElement>(null);
 
   const { data: expanded = false } = useGetEnvironmentListItemState(tree.id, currentWorkspaceId);
-
-  const listHeaderOffset = treePaddingLeft * 2;
-  const listItemOffset = treePaddingLeft * 3;
-  const listItemOffsetForAddForm = treePaddingLeft * 6;
 
   const { instruction } = useDropTargetProjectEnvironmentList({
     refList: projectEnvironmentsListRef,
@@ -49,7 +48,7 @@ export const ProjectEnvironmentsListRoot = ({ tree }: ProjectEnvironmentsListRoo
 
   return (
     <Tree.List ref={projectEnvironmentsListRef} combineInstruction={instruction}>
-      <Tree.ListHeader offsetLeft={listHeaderOffset} offsetRight={treePaddingRight}>
+      <Tree.ListHeader paddingLeft={listHeaderOffset} paddingRight={TREE_HEADER_PADDING_RIGHT}>
         <ProjectEnvironmentsListRootHeaderDetails
           project={tree}
           expanded={expanded}

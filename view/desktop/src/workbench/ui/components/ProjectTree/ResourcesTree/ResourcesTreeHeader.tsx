@@ -51,7 +51,7 @@ export const ResourcesTreeHeader = ({
   };
 
   return (
-    <Tree.ListHeader offsetLeft={offsetLeft} offsetRight={offsetRight} ref={ref}>
+    <Tree.ListHeader paddingLeft={offsetLeft} paddingRight={offsetRight} ref={ref}>
       <Tree.ListHeaderDetails className="cursor-pointer text-sm" onClick={onHeaderClick}>
         <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
           <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />

@@ -5,9 +5,6 @@ import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./u
 
 export const ProjectTree = ({
   tree,
-  treePaddingLeft = 8,
-  treePaddingRight = 8,
-  nodeOffset = 12,
   searchInput,
   displayMode = "LIVE",
   showOrders = false,
@@ -21,10 +18,6 @@ export const ProjectTree = ({
           name: tree.name,
           order: tree.order ?? 0,
           iconPath: tree.iconPath,
-
-          treePaddingLeft,
-          treePaddingRight,
-          nodeOffset,
 
           allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
           allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),

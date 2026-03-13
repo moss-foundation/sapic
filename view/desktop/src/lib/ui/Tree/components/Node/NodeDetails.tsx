@@ -16,8 +16,7 @@ interface NodeDetailsProps extends HTMLAttributes<HTMLDivElement> {
   hideDragHandle?: boolean;
   isDirty?: boolean;
   nodeOffset?: number;
-  nodePaddingLeft?: number;
-  treePaddingRight?: number;
+  paddingRight?: number;
 }
 
 export const NodeDetails = ({
@@ -29,12 +28,11 @@ export const NodeDetails = ({
   reorderInstruction = null,
   hideDragHandle = false,
   isDirty = false,
-  nodePaddingLeft = 12,
-  treePaddingRight = 8,
+  nodeOffset = 0,
+  paddingRight = 0,
   ...props
 }: NodeDetailsProps) => {
-  const offsetLeft = nodePaddingLeft * depth;
-  const offsetRight = treePaddingRight;
+  const offsetLeft = nodeOffset * depth;
 
   return (
     <div
@@ -56,10 +54,7 @@ export const NodeDetails = ({
         />
       )}
 
-      <div
-        style={{ paddingLeft: offsetLeft, paddingRight: offsetRight }}
-        className="flex min-w-0 grow items-center justify-between"
-      >
+      <div style={{ paddingLeft: offsetLeft, paddingRight }} className="flex min-w-0 grow items-center justify-between">
         <ReorderDNDIndicator reorderInstruction={reorderInstruction} offsetLeft={offsetLeft} />
         {children}
       </div>

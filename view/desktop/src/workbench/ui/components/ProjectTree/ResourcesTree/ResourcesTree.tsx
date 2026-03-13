@@ -4,6 +4,7 @@ import { useCurrentWorkspace } from "@/hooks";
 import { Tree } from "@/lib/ui/Tree";
 import { useGetResourcesListItemState } from "@/workbench/adapters/tanstackQuery/resourcesListItemState/useGetResourcesListItemState";
 
+import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { IResourcesTree } from "../types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
@@ -16,12 +17,13 @@ interface ResourcesTreeProps {
   tree: IResourcesTree;
 }
 
+const listHeaderOffset = NODE_OFFSET * 3;
+
 export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { id, treePaddingLeft, treePaddingRight } = useContext(ProjectTreeContext);
+  const { id } = useContext(ProjectTreeContext);
 
   const projectResourcesHeaderRef = useRef<HTMLHeadingElement>(null);
-  const listHeaderOffset = treePaddingLeft * 2;
 
   const { data: expanded = false } = useGetResourcesListItemState(id, currentWorkspaceId);
 
@@ -47,19 +49,19 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
       <ResourcesTreeHeader
         expanded={expanded}
         offsetLeft={listHeaderOffset}
-        offsetRight={treePaddingRight}
+        offsetRight={TREE_HEADER_PADDING_RIGHT}
         ref={projectResourcesHeaderRef}
         setIsAddingFileNode={() => setIsAddingFileNode(true)}
         setIsAddingFolderNode={() => setIsAddingFolderNode(true)}
       />
 
       {shouldRenderChildren && (
-        <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={1} />
+        <ResourcesTreeChildren rootResourcesNodes={tree.childNodes} parentNode={tree} depth={3} />
       )}
 
       {isAddingRootNode && (
         <ResourceNodeAddForm
-          depth={0}
+          depth={1}
           isAddingFolderNode={isAddingFolderNode}
           handleAddFormSubmit={handleAddFormSubmit}
           handleAddFormCancel={handleAddFormCancel}

@@ -1,11 +1,9 @@
-import { useContext } from "react";
-
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
 
 import { ResourceIcon } from "../../../ResourceIcon";
-import { ProjectTreeContext } from "../../ProjectTreeContext";
+import { NODE_OFFSET } from "../../constants";
 import { ResourceNode } from "../../types";
 
 interface ResourceNodeAddFormProps {
@@ -24,13 +22,11 @@ const ResourceNodeAddForm = ({
   handleAddFormSubmit,
   handleAddFormCancel,
 }: ResourceNodeAddFormProps) => {
-  const { nodeOffset } = useContext(ProjectTreeContext);
-
-  const nodePaddingLeftForAddForm = (depth + 2) * nodeOffset;
+  const nodePaddingLeftForAddForm = depth * NODE_OFFSET;
 
   return (
     <div style={{ paddingLeft: nodePaddingLeftForAddForm }} className="flex w-full min-w-0 items-center gap-1.5">
-      <Icon icon="ChevronRight" className={cn("shrink-0 opacity-0")} />
+      <Icon icon="ChevronRight" className={cn("size-[20px] shrink-0 opacity-0")} />
       <ResourceIcon
         resource={{
           id: "Placeholder_AddingNodeId",
@@ -45,7 +41,7 @@ const ResourceNodeAddForm = ({
           },
           protocol: "Get",
         }}
-        className={cn("ml-auto", {
+        className={cn("ml-auto size-[18px]", {
           "opacity-0": !isAddingFolderNode,
         })}
       />

@@ -8,8 +8,8 @@ interface RootNodeHeaderProps extends HTMLAttributes<HTMLLIElement> {
   isActive?: boolean;
   children: React.ReactNode;
   disableIndicator?: boolean;
-  treePaddingLeft?: number;
-  treePaddingRight?: number;
+  paddingLeft?: number;
+  paddingRight?: number;
 }
 
 export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
@@ -19,8 +19,8 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
       children,
       className,
       disableIndicator = false,
-      treePaddingLeft = 0,
-      treePaddingRight = 0,
+      paddingLeft = 0,
+      paddingRight = 0,
       ...props
     }: RootNodeHeaderProps,
     ref
@@ -33,8 +33,8 @@ export const RootNodeHeader = forwardRef<HTMLLIElement, RootNodeHeaderProps>(
           className
         )}
         style={{
-          paddingLeft: treePaddingLeft,
-          paddingRight: treePaddingRight,
+          paddingLeft,
+          paddingRight,
         }}
         {...props}
       >

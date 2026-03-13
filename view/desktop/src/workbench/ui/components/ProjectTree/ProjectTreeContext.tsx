@@ -6,9 +6,6 @@ export interface ProjectTreeContextProps {
   id: string;
   name: string;
   order: number;
-  treePaddingLeft: number;
-  treePaddingRight: number;
-  nodeOffset: number;
   showOrders?: boolean;
   showRootNodeIds?: boolean;
   iconPath?: string;
@@ -23,9 +20,6 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   name: "",
   order: 0,
   iconPath: undefined,
-  treePaddingLeft: 8,
-  treePaddingRight: 8,
-  nodeOffset: 8,
   allFoldersAreExpanded: false,
   allFoldersAreCollapsed: true,
   searchInput: "",
