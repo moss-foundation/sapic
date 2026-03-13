@@ -12,7 +12,7 @@ export type EndpointViewProps = DefaultViewProps<{
   projectId: string;
 }>;
 
-const EndpointView = ({ params }: EndpointViewProps) => {
+const EndpointView = ({ params, ...props }: EndpointViewProps) => {
   const localResourceDetails = useGetLocalResourceDetails(params.resourceId);
 
   useSyncResourceDetails({ resourceId: params.resourceId, projectId: params.projectId });
@@ -37,7 +37,7 @@ const EndpointView = ({ params }: EndpointViewProps) => {
       }}
     >
       <PageView>
-        <EndpointViewHeader />
+        <EndpointViewHeader dockviewPanelApi={props.api} />
         <EndpointViewBody />
       </PageView>
     </EndpointViewContext.Provider>

@@ -39,7 +39,7 @@ export const ResourcesTreeNode = ({ node, parentNode, depth }: ResourcesTreeNode
   } = useResourceNodeAddForm(node);
 
   const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } =
-    useResourceNodeRenamingForm(node);
+    useResourceNodeRenamingForm({ node, projectId: id });
 
   const handleDeleteNode = async () => {
     await deleteAndUpdatePeers();

@@ -1,26 +1,47 @@
-import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
-import { useSyncResourceSummaries } from "@/db/resourceSummaries/hooks/useSyncResourceSummaries";
+import { useMemo } from "react";
+
+import { useGetAllProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetAllProjectEnvironments";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
+import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { ProjectTree } from "@/workbench/ui/components/ProjectTree/types";
 
-import { useProjectsTreesData } from "./useProjectsTreesData";
+import { buildResourcesTree } from "../utils/buildResourcesTree";
 
-export interface UseProjectsTreesProps {
+export interface UseProjectsTreesDataResult {
   projectsTrees: ProjectTree[];
   projectsTreesSortedByOrder: ProjectTree[];
-  isLoading: boolean;
 }
 
-export const useProjectsTrees = (): UseProjectsTreesProps => {
-  const { isPending: areProjectsPending } = useSyncProjectSummaries();
-  const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
+export const useProjectsTrees = (): UseProjectsTreesDataResult => {
+  const { data: localProjectSummaries = [] } = useGetAllLocalProjectSummaries();
+  const { data: localResourceSummaries = [] } = useGetAllLocalResourceSummaries();
+  const { projectEnvironments = [] } = useGetAllProjectEnvironments();
 
-  const { projectsTrees, projectsTreesSortedByOrder } = useProjectsTreesData();
+  const projectsTrees = useMemo(() => {
+    if (localProjectSummaries.length === 0) return [];
 
-  const isLoading = areResourcesLoading || areProjectsPending;
+    return localProjectSummaries.map(
+      (projectSummary): ProjectTree => ({
+        ...projectSummary,
+        id: projectSummary.id,
+        name: projectSummary.name,
+        expanded: projectSummary.expanded,
+        archived: projectSummary.archived,
+        branch: projectSummary.branch ?? undefined,
+        iconPath: projectSummary.iconPath ?? undefined,
+        resourcesTree: buildResourcesTree({ projectId: projectSummary.id, localResourceSummaries }),
+        environmentsList: projectEnvironments.filter((env) => env.projectId === projectSummary.id),
+      })
+    );
+  }, [localProjectSummaries, localResourceSummaries, projectEnvironments]);
+
+  const projectsTreesSortedByOrder = useMemo(() => {
+    return sortObjectsByOrder(projectsTrees);
+  }, [projectsTrees]);
 
   return {
-    projectsTrees: isLoading ? [] : projectsTrees,
-    projectsTreesSortedByOrder: isLoading ? [] : projectsTreesSortedByOrder,
-    isLoading,
+    projectsTrees,
+    projectsTreesSortedByOrder,
   };
 };

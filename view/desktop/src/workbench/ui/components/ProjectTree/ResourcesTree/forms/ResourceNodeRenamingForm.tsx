@@ -28,7 +28,7 @@ const TreeNodeRenamingForm = ({
   ...props
 }: TreeNodeRenamingFormProps) => {
   const { nodeOffset, treePaddingLeft } = useContext(ProjectTreeContext);
-  const nodePaddingLeft = depth * nodeOffset + treePaddingLeft;
+  const nodePaddingLeft = depth * treePaddingLeft;
   const shouldRenderChildNodes = node.kind === "Dir" && node.expanded;
 
   return (

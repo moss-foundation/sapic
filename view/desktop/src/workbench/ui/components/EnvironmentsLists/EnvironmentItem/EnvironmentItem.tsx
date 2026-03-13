@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 
 import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
-import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetProjectEnvironmentsByProjectId } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironmentsByProjectId";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -22,7 +22,7 @@ export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProp
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
-  const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
+  const { projectEnvironments } = useGetProjectEnvironmentsByProjectId(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const envType = environment.projectId ? ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT : ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE;

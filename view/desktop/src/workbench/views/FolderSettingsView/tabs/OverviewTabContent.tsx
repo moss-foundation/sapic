@@ -1,11 +1,11 @@
 import { PageContent } from "@/workbench/ui/components";
-import { useProjectsTreesData } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTreesData";
+import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
 
 import { FolderSettingsViewProps } from "../FolderSettingsView";
 import { findNodeInProject } from "../utils";
 
 export const OverviewTabContent = ({ params }: FolderSettingsViewProps) => {
-  const { projectsTrees } = useProjectsTreesData();
+  const { projectsTrees } = useProjectsTrees();
   const project = projectsTrees?.find((col) => col.id === params?.projectId);
   const node = project ? findNodeInProject(project, params?.node?.id) : undefined;
 

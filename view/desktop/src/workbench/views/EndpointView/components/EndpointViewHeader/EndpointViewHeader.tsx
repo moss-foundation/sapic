@@ -1,4 +1,5 @@
-import { useCallback, useContext, useState } from "react";
+import { DockviewPanelApi } from "moss-tabs";
+import { useCallback, useContext, useEffect, useState } from "react";
 
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
 import { resourceService } from "@/domains/resource/resourceService";
@@ -18,6 +19,10 @@ import { EndpointViewContext } from "../../EndpointViewContext";
 import { EditableHeader } from "./EditableHeader";
 import { buildDescriptionParamsToAdd, buildPathParamUpdateObject, buildQueryParamUpdateObject } from "./utils";
 
+interface EndpointViewHeaderProps {
+  dockviewPanelApi: DockviewPanelApi;
+}
+
 const optionsPlaceholder = [
   { label: "All", value: "All" },
   { label: "Released", value: "Released" },
@@ -26,13 +31,19 @@ const optionsPlaceholder = [
   { label: "Some very long name", value: "Some very long name" },
 ];
 
-export const EndpointViewHeader = () => {
+export const EndpointViewHeader = ({ dockviewPanelApi }: EndpointViewHeaderProps) => {
   const { projectId, resourceId } = useContext(EndpointViewContext);
 
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedValue, setSelectedValue] = useState("Released");
 
   const localResourceDetails = useGetLocalResourceDetails(resourceId);
+
+  useEffect(() => {
+    if (localResourceDetails) {
+      dockviewPanelApi.setTitle(localResourceDetails.name ?? "");
+    }
+  }, [localResourceDetails, dockviewPanelApi]);
 
   const {
     isRenamingResourceDetails,

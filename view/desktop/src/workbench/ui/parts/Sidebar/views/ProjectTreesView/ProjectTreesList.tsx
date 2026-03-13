@@ -1,3 +1,5 @@
+import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
+import { useSyncResourceSummaries } from "@/db/resourceSummaries/hooks/useSyncResourceSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -11,12 +13,16 @@ import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/us
 
 export const ProjectTreesList = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
 
   const { displayMode } = useWorkspaceModeStore();
 
+  const { isPending: areProjectsPending } = useSyncProjectSummaries();
+  const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
+  const { projectsTreesSortedByOrder } = useProjectsTrees();
   const { data: expanded } = useGetProjectListState(currentWorkspaceId);
   useMonitorEnvironmentsLists();
+
+  const isLoading = areResourcesLoading || areProjectsPending;
 
   return (
     <div>

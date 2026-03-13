@@ -2,9 +2,9 @@ import { useState } from "react";
 
 import { useGetLocalResourceSummaryById } from "@/db/resourceSummaries/hooks/useGetLocalResourceSummaryById";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
-import { useRenameResourceForm } from "@/workbench/hooks/useRenameResourceForm";
 import { PageHeader, PageView } from "@/workbench/ui/components";
 import { PageWrapper } from "@/workbench/ui/components/PageView/PageWrapper";
+import { useResourceNodeRenamingForm } from "@/workbench/ui/components/ProjectTree/ResourcesTree/hooks/useResourceNodeRenamingForm";
 import { ResourceNode } from "@/workbench/ui/components/ProjectTree/types";
 import { DefaultViewProps } from "@/workbench/ui/parts/TabbedPane/types";
 
@@ -19,8 +19,8 @@ export type FolderSettingsViewProps = DefaultViewProps<{
 export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
   const resourceSummary = useGetLocalResourceSummaryById(props.params?.node?.id);
 
-  const { isRenamingResource, setIsRenamingResource, handleRenamingResourceSubmit, handleRenamingResourceCancel } =
-    useRenameResourceForm(props?.params?.node, props?.params?.projectId);
+  const { isRenamingNode, setIsRenamingNode, handleRenamingFormSubmit, handleRenamingFormCancel } =
+    useResourceNodeRenamingForm({ node: props?.params?.node, projectId: props?.params?.projectId });
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
@@ -111,10 +111,10 @@ export const FolderSettingsView = ({ ...props }: FolderSettingsViewProps) => {
         icon={getFolderIcon()}
         title={resourceSummary?.name}
         disableTitleChange={isRoot}
-        isRenamingTitle={isRenamingResource}
-        setIsRenamingTitle={setIsRenamingResource}
-        handleRenamingFormCancel={handleRenamingResourceCancel}
-        onTitleChange={handleRenamingResourceSubmit}
+        isRenamingTitle={isRenamingNode}
+        setIsRenamingTitle={setIsRenamingNode}
+        handleRenamingFormCancel={handleRenamingFormCancel}
+        onTitleChange={handleRenamingFormSubmit}
         {...props}
       />
       <PageWrapper>

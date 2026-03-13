@@ -3,7 +3,7 @@ import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { environmentSummariesCollection } from "../environmentSummaries";
 
-export const useGetProjectEnvironments = (projectId?: string | null) => {
+export const useGetProjectEnvironmentsByProjectId = (projectId: string | null | undefined) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
   const { data: projectEnvironments, isLoading } = useLiveQuery(

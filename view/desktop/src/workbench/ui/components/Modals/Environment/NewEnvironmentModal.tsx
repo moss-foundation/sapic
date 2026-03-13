@@ -2,7 +2,7 @@ import { useMemo, useRef, useState } from "react";
 
 import { useCreateEnvironment } from "@/adapters/tanstackQuery/environment";
 import { VALID_NAME_PATTERN } from "@/constants/validation";
-import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetProjectEnvironmentsByProjectId } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironmentsByProjectId";
 import { useGetWorkspaceEnvironments } from "@/db/environmentsSummaries/hooks/useGetWorkspaceEnvironments";
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useCurrentWorkspace, useFocusInputOnMount, useValidateInput } from "@/hooks";
@@ -29,7 +29,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { projectEnvironments } = useGetProjectEnvironments(projectId);
+  const { projectEnvironments } = useGetProjectEnvironmentsByProjectId(projectId);
 
   const restrictedNames = useMemo(() => {
     const list = mode === "Workspace" ? workspaceEnvironments : projectEnvironments;

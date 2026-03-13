@@ -84,29 +84,7 @@ export const environmentService: IEnvironmentService = {
     return output;
   },
   listWorkspaceEnvironments: async () => {
-    const output = await environmentIpc.listWorkspaceEnvironments();
-    output.items.forEach((environment) => {
-      if (environmentSummariesCollection.has(environment.id)) {
-        environmentSummariesCollection.update(environment.id, (draft) => {
-          draft.name = environment.name;
-          draft.color = environment.color;
-          draft.totalVariables = environment.totalVariables;
-          draft.expanded = true;
-          draft.isActive = environment.isActive;
-        });
-      } else {
-        environmentSummariesCollection.insert({
-          id: environment.id,
-          projectId: undefined,
-          name: environment.name,
-          color: environment.color,
-          totalVariables: environment.totalVariables,
-          expanded: true,
-          isActive: environment.isActive,
-        });
-      }
-    });
-    return output;
+    return await environmentIpc.listWorkspaceEnvironments();
   },
   listProjectEnvironments: async (input) => {
     return await environmentIpc.listProjectEnvironments(input);
