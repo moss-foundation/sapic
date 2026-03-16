@@ -37,7 +37,7 @@ export const EndpointViewHeader = ({ dockviewPanelApi }: EndpointViewHeaderProps
   const [isEnabled, setIsEnabled] = useState(false);
   const [selectedValue, setSelectedValue] = useState("Released");
 
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   useEffect(() => {
     if (localResourceDetails) {

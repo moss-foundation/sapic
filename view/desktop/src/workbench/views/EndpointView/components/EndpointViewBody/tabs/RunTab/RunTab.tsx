@@ -17,7 +17,7 @@ import { createPathParam, createQueryParam, extractParsedValueString } from "./u
 export const RunTab = () => {
   const { resourceId } = useContext(EndpointViewContext);
   const { mutateAsync: parseUrl } = useTokenizer();
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   const [isResizableVertical, setIsResizableVertical] = useState(false);
 

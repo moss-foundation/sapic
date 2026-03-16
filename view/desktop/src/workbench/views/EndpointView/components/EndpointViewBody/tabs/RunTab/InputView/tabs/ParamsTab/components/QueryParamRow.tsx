@@ -28,7 +28,7 @@ export const QueryParamRow = memo(
   ({ param, onChange, keyToFocusOnMount, onDelete, paramType, setColumnToFocusOnMount }: ParamRowProps) => {
     const { resourceId } = useContext(EndpointViewContext);
 
-    const localResourceDetails = useGetLocalResourceDetails(resourceId);
+    const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
     const keyRef = useRef<HTMLInputElement>(null);
     const valueRef = useRef<HTMLInputElement>(null);

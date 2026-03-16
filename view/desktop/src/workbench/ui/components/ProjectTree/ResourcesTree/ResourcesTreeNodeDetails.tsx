@@ -52,7 +52,7 @@ const ResourcesTreeNodeDetails = ({
 
   const { addOrFocusPanel, activePanelId } = useTabbedPaneStore();
 
-  const localResourceSummary = useGetLocalResourceDetails(node.id);
+  const { localResourceDetails } = useGetLocalResourceDetails(node.id);
 
   const numberOfAllNestedChildNodes = countNumberOfAllNestedItems(node);
 
@@ -122,7 +122,7 @@ const ResourcesTreeNodeDetails = ({
           nodeOffset={NODE_OFFSET}
           paddingRight={NODE_PADDING_RIGHT}
           isActive={activePanelId === node.id}
-          isDirty={localResourceSummary?.metadata.isDirty ?? false}
+          isDirty={localResourceDetails?.metadata.isDirty ?? false}
         >
           <Tree.NodeTriggers onClick={handleDetailsClick} className="overflow-hidden">
             <Tree.NodeDirToggleIcon

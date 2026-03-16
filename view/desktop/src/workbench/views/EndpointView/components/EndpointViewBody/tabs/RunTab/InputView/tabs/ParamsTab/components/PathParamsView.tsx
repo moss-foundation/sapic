@@ -14,7 +14,7 @@ import { PathParamRow } from "./PathParamRow";
 export const PathParamsView = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   const handleParamRowChange = (updatedParam: QueryParamInfo) => {
     resourceDetailsCollection.update(resourceId, (draft) => {

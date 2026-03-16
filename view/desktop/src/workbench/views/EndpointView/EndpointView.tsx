@@ -13,16 +13,39 @@ export type EndpointViewProps = DefaultViewProps<{
 }>;
 
 const EndpointView = ({ params, ...props }: EndpointViewProps) => {
-  const localResourceDetails = useGetLocalResourceDetails(params.resourceId);
-
+  const { localResourceDetails, isLoading, isError } = useGetLocalResourceDetails(params.resourceId);
   useSyncResourceDetails({ resourceId: params.resourceId, projectId: params.projectId });
+
+  if (isLoading) {
+    return (
+      <PageWrapper className="h-full">
+        <div className="flex h-full flex-1 items-center justify-center">
+          <div className="text-center">
+            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Loading endpoint details...</p>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
+
+  if (isError) {
+    return (
+      <PageWrapper className="h-full">
+        <div className="flex h-full flex-1 items-center justify-center">
+          <div className="text-center">
+            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Error loading endpoint</p>
+          </div>
+        </div>
+      </PageWrapper>
+    );
+  }
 
   if (!localResourceDetails) {
     return (
       <PageWrapper className="h-full">
         <div className="flex h-full flex-1 items-center justify-center">
           <div className="text-center">
-            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Loading endpoint details...</p>
+            <p className="text-(--moss-secondary-foreground) mb-4 text-lg">Endpoint not found</p>
           </div>
         </div>
       </PageWrapper>
