@@ -1,4 +1,4 @@
-import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
+import { extractInstruction, Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/list-item";
 import { DragLocationHistory } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 
 export const getInstructionFromFirstLocation = (location: DragLocationHistory): Instruction | null => {
