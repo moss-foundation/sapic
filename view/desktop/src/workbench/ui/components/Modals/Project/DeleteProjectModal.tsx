@@ -16,7 +16,7 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
   const [isDeleteProjectLoading, setIsDeleteProjectLoading] = useState(false);
 
   const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
-  const projectSummaryToDelete = useGetLocalProjectSummaryById(id);
+  const { data: projectSummaryToDelete } = useGetLocalProjectSummaryById(id);
 
   const { removePanel } = useTabbedPaneStore();
 

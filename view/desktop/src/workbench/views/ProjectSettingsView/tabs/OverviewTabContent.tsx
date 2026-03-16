@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { VALID_NAME_PATTERN } from "@/constants/validation";
 import { useGetLocalProjectSummaryById } from "@/db/projectSummaries/hooks/useGetLocalProjectSummaryById";
@@ -12,23 +12,17 @@ import { ProjectSettingsViewProps } from "../ProjectSettingsView";
 import { ProjectSummarySection } from "../ProjectSummarySection";
 
 export const OverviewTabContent = ({ params, containerApi }: ProjectSettingsViewProps) => {
-  const projectSummary = useGetLocalProjectSummaryById(params.projectId);
+  const { data: projectSummary } = useGetLocalProjectSummaryById(params.projectId);
 
   const [name, setName] = useState(projectSummary?.name || "");
   const [repository, setRepository] = useState("");
 
   const { showModal, closeModal, openModal } = useModal();
 
-  //TODO try to derive name directory from project summary
-  useEffect(() => {
-    if (!projectSummary) return;
-
-    setName(projectSummary.name);
-    setRepository("");
-
+  if (projectSummary) {
     const currentPanel = containerApi.getPanel(projectSummary.id);
     currentPanel?.api.setTitle(projectSummary.name);
-  }, [containerApi, projectSummary]);
+  }
 
   const handleUpdateProjectName = async () => {
     if (!projectSummary) return;

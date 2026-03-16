@@ -5,7 +5,7 @@ import { projectService } from "@/domains/project/projectService";
 
 export const useRenameProjectForm = (projectId: string) => {
   const [isRenamingProject, setIsRenamingProject] = useState(false);
-  const projectSummary = useGetLocalProjectSummaryById(projectId);
+  const { data: projectSummary } = useGetLocalProjectSummaryById(projectId);
 
   const handleRenamingProjectFormSubmit = async (newName: string) => {
     const trimmedNewName = newName.trim();

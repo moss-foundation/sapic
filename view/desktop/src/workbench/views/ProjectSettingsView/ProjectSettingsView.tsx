@@ -22,7 +22,7 @@ export type ProjectSettingsViewProps = DefaultViewProps<{
 export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
   const { projectId } = props.params;
 
-  const projectSummary = useGetLocalProjectSummaryById(projectId);
+  const { data: projectSummary } = useGetLocalProjectSummaryById(projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
