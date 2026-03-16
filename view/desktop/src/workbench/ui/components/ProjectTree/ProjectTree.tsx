@@ -1,9 +1,8 @@
 import { WorkspaceMode } from "@repo/base";
 
 import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
+import { useTrackAllProjectStates } from "./hooks/useTrackAllProjectStates.ts";
 import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
-import { checkIfAllFoldersAreCollapsed } from "./TreeRoot/validation/checkIfAllFoldersAreCollapsed.ts";
-import { checkIfAllFoldersAreExpanded } from "./TreeRoot/validation/checkIfAllFoldersAreExpanded.ts";
 import { ProjectTreeRoot } from "./types.ts";
 
 interface ProjectTreeProps {
@@ -26,6 +25,8 @@ export const ProjectTree = ({
   showOrders = false,
   showTreeRootIds = false,
 }: ProjectTreeProps) => {
+  const { isFullyExpanded, isFullyCollapsed } = useTrackAllProjectStates(tree);
+
   return (
     <div>
       <ProjectTreeContext.Provider
@@ -35,8 +36,8 @@ export const ProjectTree = ({
           order: tree.order ?? 0,
           iconPath: tree.iconPath,
 
-          allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
-          allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
+          isFullyExpanded,
+          isFullyCollapsed,
 
           searchInput: searchInput ?? "",
 

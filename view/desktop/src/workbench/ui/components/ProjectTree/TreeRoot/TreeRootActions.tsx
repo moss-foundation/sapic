@@ -9,7 +9,7 @@ import { DeleteProjectModal } from "@/workbench/ui/components/Modals/Project/Del
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ProjectTreeRoot } from "../types";
 import { useRefreshProject } from "./dnd/hooks/useRefreshProject";
-import { useToggleAllTreeNodes } from "./dnd/hooks/useToggleAllTreeNodes";
+import { useToggleProjectExpandedStates } from "./dnd/hooks/useToggleProjectExpandedStates";
 import { TreeRootBranchIcon } from "./TreeRootBranchIcon";
 
 interface TreeRootActionsProps {
@@ -18,16 +18,12 @@ interface TreeRootActionsProps {
 }
 
 export const TreeRootActions = ({ node, setIsRenamingTreeRoot }: TreeRootActionsProps) => {
-  const { allFoldersAreCollapsed, allFoldersAreExpanded, id } = useContext(ProjectTreeContext);
+  const { isFullyCollapsed, isFullyExpanded, id } = useContext(ProjectTreeContext);
 
   const { showModal: showDeleteProjectModal, setShowModal: setShowDeleteProjectModal } = useModal();
 
-  const { expandAllNodes, collapseAllNodes } = useToggleAllTreeNodes(id);
+  const { expandAll, collapseAll } = useToggleProjectExpandedStates(id);
   const { refreshProject } = useRefreshProject(id);
-
-  const handleRefresh = () => {
-    refreshProject();
-  };
 
   return (
     <>
@@ -49,12 +45,7 @@ export const TreeRootActions = ({ node, setIsRenamingTreeRoot }: TreeRootActions
         )}
 
         <Tree.ActionsHover>
-          <ActionButton
-            icon="CollapseAll"
-            disabled={allFoldersAreCollapsed}
-            onClick={collapseAllNodes}
-            hoverVariant="list"
-          />
+          <ActionButton icon="CollapseAll" disabled={isFullyCollapsed} onClick={collapseAll} hoverVariant="list" />
         </Tree.ActionsHover>
         <Tree.ActionsPersistent>
           <ActionMenu.Root>
@@ -66,18 +57,13 @@ export const TreeRootActions = ({ node, setIsRenamingTreeRoot }: TreeRootActions
                 <ActionMenu.Item alignWithIcons onClick={() => setIsRenamingTreeRoot(true)}>
                   Rename...
                 </ActionMenu.Item>
-                <ActionMenu.Item alignWithIcons onClick={handleRefresh}>
+                <ActionMenu.Item alignWithIcons onClick={refreshProject}>
                   Refresh
                 </ActionMenu.Item>
                 <ActionMenu.Item alignWithIcons onClick={() => setShowDeleteProjectModal(true)} icon="Trash">
                   Delete
                 </ActionMenu.Item>
-                <ActionMenu.Item
-                  alignWithIcons
-                  disabled={allFoldersAreExpanded}
-                  onClick={expandAllNodes}
-                  icon="ExpandAll"
-                >
+                <ActionMenu.Item alignWithIcons disabled={isFullyExpanded} onClick={expandAll} icon="ExpandAll">
                   ExpandAll
                 </ActionMenu.Item>
               </ActionMenu.Content>

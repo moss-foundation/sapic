@@ -29,7 +29,7 @@ export const NewEnvironmentModal = ({ closeModal, showModal }: ModalWrapperProps
   const [mode, setMode] = useState<"Workspace" | "Project">("Workspace");
   const [openAutomatically, setOpenAutomatically] = useState(true);
 
-  const { projectEnvironments } = useGetProjectEnvironmentsByProjectId(projectId);
+  const { data: projectEnvironments } = useGetProjectEnvironmentsByProjectId(projectId);
 
   const restrictedNames = useMemo(() => {
     const list = mode === "Workspace" ? workspaceEnvironments : projectEnvironments;

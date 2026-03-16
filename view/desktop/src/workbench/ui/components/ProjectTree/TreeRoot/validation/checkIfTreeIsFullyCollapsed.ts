@@ -1,7 +1,19 @@
 import { ResourceNode } from "../../ResourcesTree/types";
 import { ProjectTreeRoot } from "../../types";
 
-export const checkIfAllFoldersAreCollapsed = (tree: ProjectTreeRoot): boolean => {
+interface CheckIfTreeIsFullyCollapsedParams {
+  tree: ProjectTreeRoot;
+  resourcesListExpanded: boolean;
+  environmentsListExpanded: boolean;
+}
+
+export const checkIfTreeIsFullyCollapsed = ({
+  tree,
+  resourcesListExpanded,
+  environmentsListExpanded,
+}: CheckIfTreeIsFullyCollapsedParams): boolean => {
+  if (resourcesListExpanded || environmentsListExpanded) return false;
+
   const checkIfAllNodesAreCollapsed = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 

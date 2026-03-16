@@ -9,8 +9,8 @@ export interface ProjectTreeContextProps {
   showOrders?: boolean;
   showTreeRootIds?: boolean;
   iconPath?: string;
-  allFoldersAreExpanded: boolean;
-  allFoldersAreCollapsed: boolean;
+  isFullyExpanded: boolean;
+  isFullyCollapsed: boolean;
   searchInput: string;
   displayMode: WorkspaceMode;
 }
@@ -20,8 +20,8 @@ export const ProjectTreeContext = createContext<ProjectTreeContextProps>({
   name: "",
   order: 0,
   iconPath: undefined,
-  allFoldersAreExpanded: false,
-  allFoldersAreCollapsed: true,
+  isFullyExpanded: false,
+  isFullyCollapsed: false,
   searchInput: "",
   displayMode: "LIVE",
   showOrders: false,

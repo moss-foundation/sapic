@@ -1,7 +1,19 @@
 import { ResourceNode } from "../../ResourcesTree/types";
 import { ProjectTreeRoot } from "../../types";
 
-export const checkIfAllFoldersAreExpanded = (tree: ProjectTreeRoot): boolean => {
+interface CheckIfTreeIsFullyExpandedParams {
+  tree: ProjectTreeRoot;
+  resourcesListExpanded: boolean;
+  environmentsListExpanded: boolean;
+}
+
+export const checkIfTreeIsFullyExpanded = ({
+  tree,
+  resourcesListExpanded,
+  environmentsListExpanded,
+}: CheckIfTreeIsFullyExpandedParams): boolean => {
+  if (!resourcesListExpanded || !environmentsListExpanded) return false;
+
   const checkIfAllNodesAreExpanded = (node: ResourceNode): boolean => {
     if (!node || node.kind === "Item") return true;
 

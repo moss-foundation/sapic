@@ -6,7 +6,7 @@ import { environmentSummariesCollection } from "../environmentSummaries";
 export const useGetProjectEnvironmentsByProjectId = (projectId: string | null | undefined) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
 
-  const { data: projectEnvironments, isLoading } = useLiveQuery(
+  const { data, isLoading } = useLiveQuery(
     (q) => {
       if (!projectId) return undefined;
 
@@ -18,5 +18,5 @@ export const useGetProjectEnvironmentsByProjectId = (projectId: string | null | 
     [projectId, currentWorkspaceId]
   );
 
-  return { projectEnvironments, isLoading };
+  return { data, isLoading };
 };
