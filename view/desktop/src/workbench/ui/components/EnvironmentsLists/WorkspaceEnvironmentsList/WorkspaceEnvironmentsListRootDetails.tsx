@@ -40,15 +40,13 @@ export const WorkspaceEnvironmentsListRootDetails = ({ expanded }: WorkspaceEnvi
   };
 
   return (
-    <Tree.RootDetails>
-      <Tree.RootTriggers className="overflow-hidden py-[2px]" onClick={onHeaderClick}>
-        <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
-          <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
-        </button>
+    <Tree.ListHeaderDetails className="overflow-hidden py-[2px]" onClick={onHeaderClick}>
+      <button onClick={onIconClick} className="flex cursor-pointer items-center justify-center rounded-full">
+        <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
+      </button>
 
-        {showOrders && <Tree.RootOrder order={0} />}
-        <Tree.RootLabel label="Globals" />
-      </Tree.RootTriggers>
-    </Tree.RootDetails>
+      {showOrders && <Tree.RootOrder order={0} />}
+      <Tree.ListLabel label="Globals" />
+    </Tree.ListHeaderDetails>
   );
 };

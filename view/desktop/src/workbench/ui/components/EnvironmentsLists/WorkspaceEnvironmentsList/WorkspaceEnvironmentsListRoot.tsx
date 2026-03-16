@@ -55,11 +55,11 @@ export const WorkspaceEnvironmentsListRoot = () => {
 
       {expanded && (
         <>
-          <Tree.RootChildren>
+          <Tree.ListChildren>
             {sortedWorkspaceEnvironments?.map((environment) => (
               <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
             ))}
-          </Tree.RootChildren>
+          </Tree.ListChildren>
 
           <WorkspaceEnvironmentAddForm
             onSubmit={handleAddEnvironment}
