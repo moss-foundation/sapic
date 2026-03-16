@@ -41,7 +41,6 @@ export const WorkspaceEnvironmentsListRoot = () => {
   const restrictedNames = workspaceEnvironments?.map((environment) => environment.name) ?? [];
   const sortedWorkspaceEnvironments = sortObjectsByOrder(workspaceEnvironments, "name");
 
-  //TODO this is hardcoded for now, we need another way to get the offset
   const listHeaderOffset = TREE_HEADER_PADDING_LEFT;
   const listItemOffset = NODE_OFFSET * 2;
 

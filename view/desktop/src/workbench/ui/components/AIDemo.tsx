@@ -61,7 +61,7 @@ async function setupToolAgent() {
       schema: mainWindowCreateWorkspaceInputSchema,
     }
   );
-
+  // @ts-expect-error TS2589 — @langchain/core tool() type recursion
   return createReactAgent({ llm: model, tools: [alertTool, createWorkspaceTool] });
 }
 
