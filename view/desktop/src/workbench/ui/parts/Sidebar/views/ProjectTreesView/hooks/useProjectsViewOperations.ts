@@ -79,7 +79,7 @@ export const useProjectsViewOperations = () => {
   ]);
 
   // 5. HELPER ACTIONS
-  const collapseTreeItems = async (items) => {
+  const collapseTreeItems = async (items: { id: string }[]) => {
     if (!items || items.length === 0) return;
 
     if (items.length === 1) {
