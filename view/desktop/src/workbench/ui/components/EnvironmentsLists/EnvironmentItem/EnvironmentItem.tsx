@@ -22,7 +22,7 @@ export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProp
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
-  const { projectEnvironments } = useGetProjectEnvironmentsByProjectId(environment.projectId);
+  const { data: projectEnvironments } = useGetProjectEnvironmentsByProjectId(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const envType = environment.projectId ? ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT : ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE;
