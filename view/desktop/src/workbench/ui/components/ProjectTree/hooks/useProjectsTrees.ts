@@ -11,12 +11,17 @@ import { buildResourcesTree } from "../utils/buildResourcesTree";
 export interface UseProjectsTreesDataResult {
   projectsTrees: ProjectTreeRoot[];
   projectsTreesSortedByOrder: ProjectTreeRoot[];
+  isProjectsTreesLoading: boolean;
 }
 
 export const useProjectsTrees = (): UseProjectsTreesDataResult => {
-  const { data: localProjectSummaries = [] } = useGetAllLocalProjectSummaries();
-  const { data: localResourceSummaries = [] } = useGetAllLocalResourceSummaries();
-  const { projectEnvironments = [] } = useGetAllProjectEnvironments();
+  const { data: localProjectSummaries = [], isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
+  const { data: localResourceSummaries = [], isLoading: areResourcesLoading } = useGetAllLocalResourceSummaries();
+  const { projectEnvironments = [], isLoading: areProjectEnvironmentsLoading } = useGetAllProjectEnvironments();
+
+  const isProjectsTreesLoading = useMemo(() => {
+    return areProjectsLoading || areResourcesLoading || areProjectEnvironmentsLoading;
+  }, [areProjectsLoading, areResourcesLoading, areProjectEnvironmentsLoading]);
 
   const projectsTrees = useMemo(() => {
     if (localProjectSummaries.length === 0) return [];
@@ -43,5 +48,6 @@ export const useProjectsTrees = (): UseProjectsTreesDataResult => {
   return {
     projectsTrees,
     projectsTreesSortedByOrder,
+    isProjectsTreesLoading,
   };
 };

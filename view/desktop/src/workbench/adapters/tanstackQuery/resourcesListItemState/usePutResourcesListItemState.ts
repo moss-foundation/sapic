@@ -7,15 +7,12 @@ export const USE_PUT_RESOURCES_LIST_ITEM_STATE_MUTATION_KEY = "putResourcesListI
 
 export const usePutResourcesListItemState = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, { expanded: boolean; resourcesListItemId: string; workspaceId: string }>({
+  return useMutation<void, Error, { expanded: boolean; projectId: string; workspaceId: string }>({
     mutationKey: [USE_PUT_RESOURCES_LIST_ITEM_STATE_MUTATION_KEY],
-    mutationFn: ({ expanded, resourcesListItemId, workspaceId }) =>
-      resourcesListItemStateService.put(resourcesListItemId, expanded, workspaceId),
-    onSuccess: (_, { expanded, resourcesListItemId, workspaceId }) => {
-      queryClient.setQueryData(
-        [USE_GET_RESOURCES_LIST_ITEM_STATE_QUERY_KEY, resourcesListItemId, workspaceId],
-        expanded
-      );
+    mutationFn: ({ expanded, projectId, workspaceId }) =>
+      resourcesListItemStateService.put(projectId, expanded, workspaceId),
+    onSuccess: (_, { expanded, projectId, workspaceId }) => {
+      queryClient.setQueryData([USE_GET_RESOURCES_LIST_ITEM_STATE_QUERY_KEY, projectId, workspaceId], expanded);
     },
   });
 };

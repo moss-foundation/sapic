@@ -50,7 +50,7 @@ export const projectService: IProjectService = {
           archived: project.archived,
           branch: project.branch,
           iconPath: project.iconPath,
-          expanded: true,
+          expanded: false,
         });
       }
     });
@@ -66,7 +66,7 @@ export const projectService: IProjectService = {
       archived: false,
       branch: null,
       iconPath: output.iconPath,
-      expanded: true,
+      expanded: false,
     });
 
     return output;
@@ -81,7 +81,7 @@ export const projectService: IProjectService = {
       archived: false,
       branch: null,
       iconPath: output.iconPath,
-      expanded: true,
+      expanded: false,
     });
 
     return output;

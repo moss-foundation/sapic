@@ -21,6 +21,7 @@ export const ProjectTreesList = () => {
   const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
   const { projectsTreesSortedByOrder } = useProjectsTrees();
   const { data: expanded } = useGetProjectListState(currentWorkspaceId);
+
   useMonitorEnvironmentsLists();
 
   const isLoading = areResourcesLoading || areProjectsPending;

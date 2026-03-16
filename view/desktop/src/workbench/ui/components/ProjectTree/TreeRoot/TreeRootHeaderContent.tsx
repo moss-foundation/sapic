@@ -23,7 +23,6 @@ export const TreeRootHeaderContent = ({ node, setIsRenamingTreeRoot }: TreeRootH
 
   const handleIconClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
-
     await treeItemStateService.putExpanded(node.id, !node.expanded, currentWorkspaceId);
   };
 
@@ -44,17 +43,15 @@ export const TreeRootHeaderContent = ({ node, setIsRenamingTreeRoot }: TreeRootH
   };
 
   return (
-    <>
-      <Tree.RootDetails>
-        <Tree.RootTriggers className="overflow-hidden">
-          <Tree.RootIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
-          {showOrders && <Tree.RootOrder order={node.order} />}
-          <Tree.RootLabel label={node.name} onClick={handleLabelClick} />
-          {showTreeRootIds && <Tree.RootLabel label={node.id} />}
-        </Tree.RootTriggers>
+    <Tree.RootDetails>
+      <Tree.RootTriggers className="overflow-hidden">
+        <Tree.RootIcon handleIconClick={handleIconClick} isFolderExpanded={node.expanded} />
+        {showOrders && <Tree.RootOrder order={node.order} />}
+        <Tree.RootLabel label={node.name} onClick={handleLabelClick} />
+        {showTreeRootIds && <Tree.RootLabel label={node.id} />}
+      </Tree.RootTriggers>
 
-        <TreeRootActions node={node} setIsRenamingTreeRoot={setIsRenamingTreeRoot} />
-      </Tree.RootDetails>
-    </>
+      <TreeRootActions node={node} setIsRenamingTreeRoot={setIsRenamingTreeRoot} />
+    </Tree.RootDetails>
   );
 };

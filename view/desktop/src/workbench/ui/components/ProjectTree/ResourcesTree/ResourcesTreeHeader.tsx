@@ -35,7 +35,7 @@ export const ResourcesTreeHeader = ({
     if (expanded) return;
 
     updateResourcesListState({
-      resourcesListItemId: id,
+      projectId: id,
       expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });
@@ -44,7 +44,7 @@ export const ResourcesTreeHeader = ({
   const onIconClick = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.stopPropagation();
     updateResourcesListState({
-      resourcesListItemId: id,
+      projectId: id,
       expanded: !expanded,
       workspaceId: currentWorkspaceId,
     });

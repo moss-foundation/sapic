@@ -1,90 +1,24 @@
 import { useState } from "react";
 
-import { useAllEnvironments } from "@/adapters/tanstackQuery/environment/derived/useAllEnvironments";
-import { USE_LIST_PROJECTS_QUERY_KEY } from "@/adapters/tanstackQuery/project";
-import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource";
-import { flushProjectSummaries } from "@/db/projectSummaries/actions/flushProjectSummaries";
-import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
-import { flushResourceSummaries } from "@/db/resourceSummaries/actions/flushResourceSummaries";
-import { useGetAllLocalResourceSummaries } from "@/db/resourceSummaries/hooks/useGetAllLocalResourceSummaries";
-import { useCurrentWorkspace, useModal } from "@/hooks";
-import { treeItemStateService } from "@/workbench/services/treeItemStateService";
+import { useModal } from "@/hooks";
 import { ActionButton, ActionMenu } from "@/workbench/ui/components";
 import { CREATE_TAB, IMPORT_TAB } from "@/workbench/ui/components/Modals/Project/NewProjectModal/constants";
 import { NewProjectModal } from "@/workbench/ui/components/Modals/Project/NewProjectModal/NewProjectModal";
-import { useQueryClient } from "@tanstack/react-query";
 
 import { SidebarHeader } from "../../SidebarHeader";
+import { useProjectsViewOperations } from "./hooks/useProjectsViewOperations";
 
 export const ProjectTreeViewHeader = () => {
-  const { currentWorkspaceId } = useCurrentWorkspace();
-
-  const queryClient = useQueryClient();
-
-  const { data: projectSummaries, isLoading: areProjectsLoading } = useGetAllLocalProjectSummaries();
-  const { data: resourceSummaries } = useGetAllLocalResourceSummaries();
-  const { refreshAllEnvironments } = useAllEnvironments();
+  const { handleRefreshProjectsView, handleCollapseAll, isReloadingProjectsView, everythingIsCollapsed } =
+    useProjectsViewOperations();
 
   const [initialTab, setInitialTab] = useState<typeof CREATE_TAB | typeof IMPORT_TAB>(CREATE_TAB);
-
-  //TODO project and resource summaries that is linked to manipulating all states is broken for now
-  //until all the resources and projects summaries start using state from shared storage
-  const areAllProjectsCollapsed = resourceSummaries?.every((p) => !p.expanded);
-  const areAllDirNodesCollapsed = resourceSummaries?.every(() => {
-    return resourceSummaries?.filter((resource) => resource.kind === "Dir").every((resource) => !resource.expanded);
-  });
 
   const {
     showModal: showNewProjectModal,
     closeModal: closeNewProjectModal,
     openModal: openNewProjectModal,
   } = useModal();
-
-  const handleRefreshProjects = async () => {
-    refreshAllEnvironments();
-
-    //TODO ideally we should have designated functions for flushing collection and resetting queries
-    flushProjectSummaries();
-    queryClient.resetQueries({ queryKey: [USE_LIST_PROJECTS_QUERY_KEY] });
-
-    flushResourceSummaries();
-    queryClient.resetQueries({ queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY] });
-  };
-
-  const handleCollapseAll = async () => {
-    await collapseExpandedProjects();
-    await collapseExpandedDirResources();
-  };
-
-  const collapseExpandedProjects = async () => {
-    const openedProjectSummaries = projectSummaries?.filter((p) => p.expanded);
-
-    if (openedProjectSummaries.length === 0) return;
-
-    if (openedProjectSummaries.length === 1) {
-      treeItemStateService.putExpanded(openedProjectSummaries[0].id, false, currentWorkspaceId);
-    } else {
-      treeItemStateService.batchPutExpanded(
-        Object.fromEntries(openedProjectSummaries.map((p) => [p.id, false])),
-        currentWorkspaceId
-      );
-    }
-  };
-
-  const collapseExpandedDirResources = async () => {
-    const expandedDirResources = resourceSummaries?.filter((resource) => resource.kind === "Dir" && resource.expanded);
-
-    if (expandedDirResources.length === 0) return;
-
-    if (expandedDirResources.length === 1) {
-      treeItemStateService.putExpanded(expandedDirResources[0].id, false, currentWorkspaceId);
-    } else {
-      treeItemStateService.batchPutExpanded(
-        Object.fromEntries(expandedDirResources.map((resource) => [resource.id, false])),
-        currentWorkspaceId
-      );
-    }
-  };
 
   return (
     <>
@@ -101,7 +35,7 @@ export const ProjectTreeViewHeader = () => {
             />
             <ActionButton
               title="Collapse all Projects"
-              disabled={areAllDirNodesCollapsed && areAllProjectsCollapsed}
+              disabled={everythingIsCollapsed}
               icon="CollapseAll"
               onClick={handleCollapseAll}
             />
@@ -115,9 +49,9 @@ export const ProjectTreeViewHeader = () => {
             />
             <ActionButton
               icon="Refresh"
-              onClick={handleRefreshProjects}
+              onClick={handleRefreshProjectsView}
               title="Refresh Projects"
-              disabled={areProjectsLoading}
+              disabled={isReloadingProjectsView}
             />
 
             <PlaceholderDropdownMenu />
