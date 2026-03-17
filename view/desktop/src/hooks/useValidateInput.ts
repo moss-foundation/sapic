@@ -15,10 +15,11 @@ export function useValidateInput({ value, restrictedValues, inputRef, isInitiali
   useEffect(() => {
     if (!inputRef?.current) return;
     if (isInitialized !== null && isInitialized.current === false) return;
+    if (!value) return;
 
     inputRef.current.setCustomValidity(message);
     inputRef.current.reportValidity();
-  }, [message, inputRef, isInitialized]);
+  }, [message, inputRef, isInitialized, value]);
 
   return { isValid, message };
 }

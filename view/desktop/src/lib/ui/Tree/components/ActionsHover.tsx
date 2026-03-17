@@ -11,14 +11,18 @@ interface ActionsHoverProps {
   showOnTreeHover?: boolean;
 }
 
-const actionsHoverStyles = cva(["transition-[display,opacity] transition-discrete duration-100"], {
+const actionsHoverStyles = cva(["transition-discrete transition-[display,opacity] duration-100"], {
   variants: {
     invisible: {
-      false: ["sr-only group-hover/TreeNodeControls:contents group-hover/TreeRootNodeControls:contents"],
-      true: ["opacity-0 group-hover/TreeNodeControls:opacity-100 group-hover/TreeRootNodeControls:opacity-100"],
+      false: [
+        "sr-only group-hover/TreeListActions:contents group-hover/TreeNodeDetails:contents group-hover/TreeRootDetails:contents",
+      ],
+      true: [
+        "opacity-0 group-hover/TreeListActions:opacity-100 group-hover/TreeNodeDetails:opacity-100 group-hover/TreeRootDetails:opacity-100",
+      ],
     },
     showOnTreeHover: {
-      true: ["group-hover/TreeRootNode:contents"],
+      true: ["group-hover/TreeRoot:contents"],
       false: [""],
     },
     forceVisible: {

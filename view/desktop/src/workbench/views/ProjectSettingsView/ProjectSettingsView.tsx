@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetLocalProjectSummaryById } from "@/db/projectSummaries/hooks/useGetLocalProjectSummaryById";
 import { FolderTabs, Icon, TabItemProps } from "@/lib/ui";
 import { RoundedCounter } from "@/lib/ui/RoundedCounter";
 import { useRenameProjectForm } from "@/workbench/hooks/useRenameProjectForm";
@@ -22,8 +22,7 @@ export type ProjectSettingsViewProps = DefaultViewProps<{
 export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
   const { projectId } = props.params;
 
-  const { data: projects } = useListProjects();
-  const project = projects?.items.find((p) => p.id === projectId);
+  const { data: projectSummary } = useGetLocalProjectSummaryById(projectId);
 
   const [activeTabId, setActiveTabId] = useState("overview");
 
@@ -111,7 +110,7 @@ export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
     <PageView>
       <PageHeader
         icon="Project"
-        title={project?.name}
+        title={projectSummary?.name}
         disableTitleChange={false}
         onTitleChange={handleRenamingProjectFormSubmit}
         isRenamingTitle={isRenamingProject}

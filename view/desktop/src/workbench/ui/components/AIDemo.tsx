@@ -30,7 +30,7 @@ async function setupToolAgent() {
     message: z.string().describe("Message to be shown in the alert popup"),
   });
 
-  // @ts-expect-error We will fix the demo when we revisit AI
+  // @ts-expect-error TS2589 — @langchain/core tool() type recursion
   const alertTool = tool(
     async ({ message }) => {
       alert(message);
@@ -43,7 +43,7 @@ async function setupToolAgent() {
     }
   );
 
-  // @ts-expect-error We will fix the demo when we revisit AI
+  // @ts-expect-error TS2589 — @langchain/core tool() type recursion
   const createWorkspaceTool = tool(
     async (input) => {
       try {
@@ -61,7 +61,7 @@ async function setupToolAgent() {
       schema: mainWindowCreateWorkspaceInputSchema,
     }
   );
-  // @ts-expect-error We will fix the demo when we revisit AI
+  // @ts-expect-error TS2589 — @langchain/core tool() type recursion
   return createReactAgent({ llm: model, tools: [alertTool, createWorkspaceTool] });
 }
 

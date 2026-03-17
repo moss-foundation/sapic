@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-import { useUpdateProjectResource } from "@/adapters";
 import { ResourceDetails } from "@/db/resourceDetails/types";
+import { resourceService } from "@/domains/resource/resourceService";
 
 import { useTabbedPaneStore } from "../store/tabbedPane";
 
@@ -10,33 +10,31 @@ export const useRenameResourceDetailsForm = (
   projectId: string | undefined
 ) => {
   const { api } = useTabbedPaneStore();
-  const { mutateAsync: updateProjectResource, isPending: isUpdatingResourceDetails } = useUpdateProjectResource();
 
   const [isRenamingResourceDetails, setIsRenamingResourceDetails] = useState(false);
+  const [isUpdatingResourceDetails, setIsUpdatingResourceDetails] = useState(false);
 
   const handleRenamingResourceDetailsSubmit = async (newName: string) => {
     if (!resourceDetails || !projectId) return;
 
     const trimmedNewName = newName.trim();
-
     if (trimmedNewName === resourceDetails.name) return;
 
-    await updateProjectResource({
-      projectId,
-      updateResourceInput: {
-        ITEM: {
-          id: resourceDetails.id,
-          name: trimmedNewName,
-          headersToAdd: [],
-          headersToUpdate: [],
-          headersToRemove: [],
-          pathParamsToAdd: [],
-          pathParamsToUpdate: [],
-          pathParamsToRemove: [],
-          queryParamsToAdd: [],
-          queryParamsToUpdate: [],
-          queryParamsToRemove: [],
-        },
+    setIsUpdatingResourceDetails(true);
+
+    await resourceService.update(projectId, {
+      ITEM: {
+        id: resourceDetails.id,
+        name: trimmedNewName,
+        headersToAdd: [],
+        headersToUpdate: [],
+        headersToRemove: [],
+        pathParamsToAdd: [],
+        pathParamsToUpdate: [],
+        pathParamsToRemove: [],
+        queryParamsToAdd: [],
+        queryParamsToUpdate: [],
+        queryParamsToRemove: [],
       },
     });
 
@@ -44,6 +42,7 @@ export const useRenameResourceDetailsForm = (
     panel?.setTitle(trimmedNewName);
 
     setIsRenamingResourceDetails(false);
+    setIsUpdatingResourceDetails(false);
   };
   const handleRenamingResourceDetailsCancel = () => {
     setIsRenamingResourceDetails(false);
@@ -51,8 +50,9 @@ export const useRenameResourceDetailsForm = (
 
   return {
     isRenamingResourceDetails,
-    setIsRenamingResourceDetails,
     isUpdatingResourceDetails,
+    setIsRenamingResourceDetails,
+    setIsUpdatingResourceDetails,
     handleRenamingResourceDetailsSubmit,
     handleRenamingResourceDetailsCancel,
   };

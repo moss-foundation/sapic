@@ -8,12 +8,15 @@ interface NodeChildrenProps extends HTMLAttributes<HTMLUListElement> {
   children?: React.ReactNode;
   className?: string;
   depth: number;
+  nodeOffset: number;
 }
 
-export const NodeChildren = ({ children, className, depth, ...props }: NodeChildrenProps) => {
+export const NodeChildren = ({ children, className, depth, nodeOffset, ...props }: NodeChildrenProps) => {
+  const offset = depth * nodeOffset;
+
   return (
     <ul className={cn("relative h-full", className)} {...props}>
-      <DirDepthIndicator depth={depth} />
+      <DirDepthIndicator offset={offset} />
 
       {children}
     </ul>

@@ -1,4 +1,12 @@
-export const sortObjectsByOrder = <T extends { order?: number | null }>(objects: T[], nameKey?: keyof T) => {
+export const sortObjectsByOrder = <
+  T extends {
+    id: unknown;
+    order?: number | null;
+  },
+>(
+  objects: T[],
+  nameKey?: keyof T
+) => {
   return [...objects].sort((a, b) => {
     const aHasOrder = a.order !== undefined && a.order !== null;
     const bHasOrder = b.order !== undefined && b.order !== null;

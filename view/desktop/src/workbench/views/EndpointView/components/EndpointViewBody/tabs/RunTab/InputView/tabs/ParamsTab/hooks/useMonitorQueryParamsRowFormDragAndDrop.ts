@@ -18,7 +18,7 @@ import {
 export const useMonitorQueryParamsRowFormDragAndDrop = () => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   const sortedQueryList = useMemo(() => {
     return sortObjectsByOrder(localResourceDetails?.queryParams ?? []);

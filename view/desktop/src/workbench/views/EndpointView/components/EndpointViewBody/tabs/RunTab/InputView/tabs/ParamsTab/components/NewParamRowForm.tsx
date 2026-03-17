@@ -19,7 +19,7 @@ interface NewParamRowFormProps {
 export const NewParamRowForm = ({ onAdd, paramType }: NewParamRowFormProps) => {
   const { resourceId } = useContext(EndpointViewContext);
 
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   const newParamRowFormRef = useRef<HTMLDivElement>(null);
 

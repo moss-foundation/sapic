@@ -3,20 +3,30 @@ import { forwardRef, HTMLAttributes, ReactNode } from "react";
 import { cn } from "@/utils";
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 
-import { DropIndicatorForDir } from "../DropIndicatorForDir";
+import { CombineDNDIndicator } from "../CombineDNDIndicator";
 
 interface NodeProps extends HTMLAttributes<HTMLLIElement> {
   children: ReactNode;
-  isChildDropBlocked?: boolean | null;
-  dropInstructionForDir?: Instruction | null;
+  combineInstruction?: Instruction | null;
   className?: string;
+  isDragging?: boolean;
+  childNodeHasBlockedOperation?: boolean;
 }
 
 export const Node = forwardRef<HTMLLIElement, NodeProps>(
-  ({ children, className, isChildDropBlocked, dropInstructionForDir, ...props }: NodeProps, ref) => {
+  ({ children, className, combineInstruction, isDragging, childNodeHasBlockedOperation, ...props }: NodeProps, ref) => {
     return (
-      <li ref={ref} className={cn("relative", className)} {...props}>
-        <DropIndicatorForDir isChildDropBlocked={isChildDropBlocked} instruction={dropInstructionForDir ?? null} />
+      <li ref={ref} className={cn("relative", className, { "opacity-50": isDragging })} {...props}>
+        <CombineDNDIndicator combineInstruction={combineInstruction} />
+        {childNodeHasBlockedOperation && (
+          <CombineDNDIndicator
+            combineInstruction={{
+              operation: "combine",
+              blocked: true,
+              axis: "vertical",
+            }}
+          />
+        )}
 
         {children}
       </li>

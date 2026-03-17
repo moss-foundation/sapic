@@ -2,10 +2,10 @@ import { Icon } from "@/lib/ui/Icon";
 import { cn } from "@/utils";
 import { ListProjectResourceItem } from "@repo/ipc";
 
-import { ProjectTreeNode } from "./ProjectTree/types";
+import { ResourceNode } from "./ProjectTree/ResourcesTree/types";
 
 interface ResourceIconProps {
-  resource?: ProjectTreeNode | ListProjectResourceItem;
+  resource?: ResourceNode | ListProjectResourceItem;
   className?: string;
 }
 

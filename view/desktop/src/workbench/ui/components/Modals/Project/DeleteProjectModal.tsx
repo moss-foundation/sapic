@@ -1,5 +1,8 @@
-import { useDeleteProject } from "@/adapters/tanstackQuery/project";
+import { useState } from "react";
+
 import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
+import { useGetLocalProjectSummaryById } from "@/db/projectSummaries/hooks/useGetLocalProjectSummaryById";
+import { projectService } from "@/domains/project/projectService";
 import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
@@ -9,25 +12,23 @@ import { ModalWrapperProps } from "../types";
 
 export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperProps & { id: string }) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { mutateAsync: deleteProject, isPending: isDeleteProjectLoading } = useDeleteProject();
-  const localProjectSummaries = useGetAllLocalProjectSummaries();
+
+  const [isDeleteProjectLoading, setIsDeleteProjectLoading] = useState(false);
+
+  const { data: localProjectSummaries } = useGetAllLocalProjectSummaries();
+  const { data: projectSummaryToDelete } = useGetLocalProjectSummaryById(id);
 
   const { removePanel } = useTabbedPaneStore();
 
-  const project = localProjectSummaries?.find((p) => p.id === id);
-
   const handleSubmit = async () => {
-    const projectToDelete = localProjectSummaries?.find((p) => p.id === id);
-
-    if (!projectToDelete) return;
-
     try {
-      await deleteProject({ id: projectToDelete.id });
+      setIsDeleteProjectLoading(true);
+      await projectService.delete({ id });
 
-      await treeItemStateService.removeOrder(projectToDelete.id, currentWorkspaceId);
+      await treeItemStateService.removeOrder(id, currentWorkspaceId);
 
       const projectsAfterDeleted = localProjectSummaries?.filter(
-        (p) => p.order && p.order > (projectToDelete.order ?? 0)
+        (p) => p.order && p.order > (projectSummaryToDelete?.order ?? 0)
       );
 
       if (projectsAfterDeleted) {
@@ -41,6 +42,8 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
       removePanel(id);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsDeleteProjectLoading(false);
     }
   };
 
@@ -53,7 +56,7 @@ export const DeleteProjectModal = ({ closeModal, showModal, id }: ModalWrapperPr
       showModal={showModal}
       closeModal={closeModal}
       title="Delete Project"
-      message={`Are you sure you want to delete ${project?.name} project?`}
+      message={`Are you sure you want to delete ${projectSummaryToDelete?.name} project?`}
       onConfirm={handleSubmit}
       onCancel={handleCancel}
       loading={isDeleteProjectLoading}

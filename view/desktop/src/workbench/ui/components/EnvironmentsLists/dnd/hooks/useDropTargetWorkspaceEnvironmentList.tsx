@@ -13,7 +13,7 @@ import { isLocationWorkspaceEnvironmentList } from "../validation/isLocationWork
 import { isSourceEnvironmentItem } from "../validation/isSourceEnvironmentItem";
 
 interface UseDropTargetWorkspaceEnvironmentListProps {
-  refList: RefObject<HTMLUListElement | null>;
+  refList: RefObject<HTMLDivElement | null>;
   workspaceEnvironments: EnvironmentSummary[];
 }
 

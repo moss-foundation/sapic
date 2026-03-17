@@ -1,4 +1,4 @@
-import { useListProjects } from "@/adapters/tanstackQuery/project/useListProjects";
+import { useGetAllLocalProjectSummaries } from "@/db/projectSummaries/hooks/useGetAllLocalProjectSummaries";
 import { useGetLayout } from "@/workbench/adapters";
 import { TabbedPane } from "@/workbench/ui/parts";
 
@@ -10,7 +10,7 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   const effectiveWorkspaceName = workspaceName ?? null;
 
   const { isFetching: isFetchingLayout } = useGetLayout();
-  const { isLoading: areProjectsLoading, error: projectsError } = useListProjects();
+  const { isLoading: areProjectsLoading, isError: areProjectsError } = useGetAllLocalProjectSummaries();
 
   // Show loading state while any critical data is loading
   if (areProjectsLoading || isFetchingLayout) {
@@ -23,12 +23,11 @@ export const Workspace = ({ workspaceName }: WorkspaceProps) => {
   }
 
   // Handle actual errors loading workspace data
-  if (projectsError) {
+  if (areProjectsError) {
     return (
       <div className="flex h-full w-full items-center justify-center">
         <div className="text-center">
           <p className="text-red-600">Error loading workspace: {effectiveWorkspaceName}</p>
-          <p className="mt-2 text-sm text-gray-500">{projectsError?.message || "Unknown error"}</p>
         </div>
       </div>
     );

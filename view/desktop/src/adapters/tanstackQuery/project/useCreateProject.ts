@@ -8,7 +8,7 @@ export const useCreateProject = () => {
   const queryClient = useQueryClient();
 
   return useMutation<CreateProjectOutput, Error, CreateProjectInput>({
-    mutationFn: (input) => projectService.createProject(input),
+    mutationFn: (input) => projectService.create(input),
     onSuccess: (data, variables) => {
       queryClient.setQueryData([USE_LIST_PROJECTS_QUERY_KEY], (old: ListProjectsOutput | undefined) => {
         return {

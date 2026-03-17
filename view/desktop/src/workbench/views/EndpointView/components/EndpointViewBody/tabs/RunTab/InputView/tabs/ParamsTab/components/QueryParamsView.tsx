@@ -23,7 +23,7 @@ export const QueryParamsView = () => {
 
   const [columnToFocusOnMount, setColumnToFocusOnMount] = useState<string | null>(null);
 
-  const localResourceDetails = useGetLocalResourceDetails(resourceId);
+  const { localResourceDetails } = useGetLocalResourceDetails(resourceId);
 
   useMonitorQueryRowsDragAndDrop();
   useMonitorQueryParamsRowFormDragAndDrop();

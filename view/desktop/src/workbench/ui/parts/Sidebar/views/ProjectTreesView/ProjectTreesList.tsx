@@ -1,4 +1,5 @@
-import { useProjectsTrees } from "@/adapters/tanstackQuery/project/derivedHooks/useProjectsTrees";
+import { useSyncProjectSummaries } from "@/db/projectSummaries/hooks/useSyncProjectSummaries";
+import { useSyncResourceSummaries } from "@/db/resourceSummaries/hooks/useSyncResourceSummaries";
 import { useCurrentWorkspace } from "@/hooks";
 import { Icon } from "@/lib/ui";
 import { Tree } from "@/lib/ui/Tree";
@@ -8,15 +9,22 @@ import { usePutProjectListState } from "@/workbench/adapters/tanstackQuery/proje
 import { useWorkspaceModeStore } from "@/workbench/store/workspaceMode";
 import { ProjectTree } from "@/workbench/ui/components";
 import { useMonitorEnvironmentsLists } from "@/workbench/ui/components/EnvironmentsLists/dnd/hooks/useMonitorEnvironmentsLists";
+import { TREE_HEADER_PADDING_LEFT } from "@/workbench/ui/components/ProjectTree/constants";
+import { useProjectsTrees } from "@/workbench/ui/components/ProjectTree/hooks/useProjectsTrees";
 
 export const ProjectTreesList = () => {
   const { currentWorkspaceId } = useCurrentWorkspace();
-  const { projectsTreesSortedByOrder, isLoading } = useProjectsTrees();
 
   const { displayMode } = useWorkspaceModeStore();
 
+  const { isPending: areProjectsPending } = useSyncProjectSummaries();
+  const { isLoading: areResourcesLoading } = useSyncResourceSummaries();
+  const { projectsTreesSortedByOrder } = useProjectsTrees();
   const { data: expanded } = useGetProjectListState(currentWorkspaceId);
+
   useMonitorEnvironmentsLists();
+
+  const isLoading = areResourcesLoading || areProjectsPending;
 
   return (
     <div>
@@ -48,14 +56,17 @@ export const ProjectTreesHeader = () => {
   };
 
   return (
-    <Tree.RootNodeControls>
-      <Tree.RootNodeTriggers
+    <Tree.List>
+      <Tree.ListHeader
         onClick={handleToggleProjectList}
-        className="flex cursor-pointer items-center gap-1 py-[5px] pl-2"
+        className="flex cursor-pointer items-center gap-1 py-[5px]"
+        style={{ paddingLeft: TREE_HEADER_PADDING_LEFT }}
       >
-        <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
-        <Tree.RootNodeLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
-      </Tree.RootNodeTriggers>
-    </Tree.RootNodeControls>
+        <Tree.ListHeaderDetails>
+          <Icon icon="ChevronRight" className={cn(expanded && "rotate-90")} />
+          <Tree.ListLabel className="text-(--moss-secondary-foreground) text-sm" label="Projects" />
+        </Tree.ListHeaderDetails>
+      </Tree.ListHeader>
+    </Tree.List>
   );
 };

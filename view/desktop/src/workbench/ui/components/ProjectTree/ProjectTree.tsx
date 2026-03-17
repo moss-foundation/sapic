@@ -1,18 +1,32 @@
-import { ProjectTreeContext, TreeContextBridge } from "./ProjectTreeContext.tsx";
-import { TreeRootNode } from "./TreeRootNode/TreeRootNode.tsx";
-import { ProjectTreeProps } from "./types.ts";
-import { checkIfAllFoldersAreCollapsed, checkIfAllFoldersAreExpanded } from "./utils/TreeRoot.ts";
+import { WorkspaceMode } from "@repo/base";
+
+import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
+import { useTrackAllProjectStates } from "./hooks/useTrackAllProjectStates.ts";
+import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
+import { ProjectTreeRoot } from "./types.ts";
+
+interface ProjectTreeProps {
+  tree: ProjectTreeRoot;
+
+  treePaddingLeft?: number;
+  treePaddingRight?: number;
+  nodeOffset?: number;
+  searchInput?: string;
+  displayMode?: WorkspaceMode;
+
+  showOrders?: boolean;
+  showTreeRootIds?: boolean;
+}
 
 export const ProjectTree = ({
   tree,
-  treePaddingLeft = 12,
-  treePaddingRight = 8,
-  nodeOffset = 12,
   searchInput,
   displayMode = "LIVE",
   showOrders = false,
-  showRootNodeIds = false,
+  showTreeRootIds = false,
 }: ProjectTreeProps) => {
+  const { isFullyExpanded, isFullyCollapsed } = useTrackAllProjectStates(tree);
+
   return (
     <div>
       <ProjectTreeContext.Provider
@@ -21,20 +35,19 @@ export const ProjectTree = ({
           name: tree.name,
           order: tree.order ?? 0,
           iconPath: tree.iconPath,
-          treePaddingLeft,
-          treePaddingRight,
-          nodeOffset,
-          allFoldersAreExpanded: checkIfAllFoldersAreExpanded(tree),
-          allFoldersAreCollapsed: checkIfAllFoldersAreCollapsed(tree),
+
+          isFullyExpanded,
+          isFullyCollapsed,
+
           searchInput: searchInput ?? "",
+
           displayMode,
+
           showOrders,
-          showRootNodeIds,
+          showTreeRootIds,
         }}
       >
-        <TreeContextBridge>
-          <TreeRootNode node={tree} />
-        </TreeContextBridge>
+        <TreeRoot tree={tree} />
       </ProjectTreeContext.Provider>
     </div>
   );

@@ -1,0 +1,18 @@
+import { eq, useLiveQuery } from "@tanstack/react-db";
+
+import { projectSummariesCollection } from "../projectSummaries";
+
+export const useGetLocalProjectSummaryById = (projectId: string) => {
+  const { data, isLoading, isError } = useLiveQuery((q) =>
+    q
+      .from({ collection: projectSummariesCollection })
+      .where(({ collection }) => eq(collection.id, projectId))
+      .findOne()
+  );
+
+  return {
+    data,
+    isLoading,
+    isError,
+  };
+};

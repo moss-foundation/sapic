@@ -1,54 +1,26 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef } from "react";
 
 import { useSyncEnvironments } from "@/db/environmentsSummaries/hooks/useSyncEnvironments";
 import { Scrollbar } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
 import { WorkspaceEnvironmentsList } from "@/workbench/ui/components";
-import { useNodeDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useNodeDragAndDropHandler";
-import { useProjectDragAndDropHandler } from "@/workbench/ui/components/ProjectTree/hooks/useProjectDragAndDropHandler";
-import { isSourceProjectTreeNode } from "@/workbench/ui/components/ProjectTree/utils";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { useMonitorResourcesNodes } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/hooks/useMonitorResourcesNodes";
+import { useMonitorProjectsRoots } from "@/workbench/ui/components/ProjectTree/TreeRoot/dnd/hooks/useMonitorProjectsRoots";
 
-import { ProjectCreationZone } from "./ProjectCreationZone";
+import { ProjectCreationZone } from "./components/ProjectCreationZone";
+import { useToggleProjectCreationZone } from "./components/ProjectCreationZone/dnd/useToggleProjectCreationZone";
 import { ProjectTreesList } from "./ProjectTreesList";
 import { ProjectTreeViewHeader } from "./ProjectTreeViewHeader";
 
 export const ProjectTreesView = () => {
   const dropTargetToggleRef = useRef<HTMLDivElement>(null);
 
-  useProjectDragAndDropHandler();
-  useNodeDragAndDropHandler();
+  useMonitorProjectsRoots();
+  useMonitorResourcesNodes();
 
   useSyncEnvironments();
 
-  const [showProjectCreationZone, setShowProjectCreationZone] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!dropTargetToggleRef.current) return;
-    const element = dropTargetToggleRef.current;
-
-    return dropTargetForElements({
-      element,
-      getData: () => ({
-        type: "ProjectCreationZone",
-      }),
-      canDrop({ source }) {
-        return isSourceProjectTreeNode(source);
-      },
-      onDrop() {
-        setShowProjectCreationZone(false);
-      },
-      onDragLeave() {
-        setShowProjectCreationZone(false);
-      },
-      onDragStart() {
-        setShowProjectCreationZone(true);
-      },
-      onDragEnter() {
-        setShowProjectCreationZone(true);
-      },
-    });
-  }, []);
+  const { showProjectCreationZone } = useToggleProjectCreationZone({ ref: dropTargetToggleRef });
 
   return (
     <div ref={dropTargetToggleRef} className="flex h-full flex-col">

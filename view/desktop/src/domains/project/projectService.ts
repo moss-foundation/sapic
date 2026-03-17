@@ -20,27 +20,45 @@ import {
 } from "./handlers/updateProjectSummaryDraftFromParams";
 
 interface IProjectService {
-  listProjects: () => Promise<ListProjectsOutput>;
-  importProject: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
+  list: () => Promise<ListProjectsOutput>;
+  import: (input: ImportProjectInput) => Promise<ImportProjectOutput>;
 
-  createProject: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
+  create: (input: CreateProjectInput) => Promise<CreateProjectOutput>;
 
-  updateProject: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
-  batchUpdateProject: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
+  update: (input: UpdateProjectInput) => Promise<UpdateProjectOutput>;
+  batchUpdate: (input: BatchUpdateProjectInput) => Promise<BatchUpdateProjectOutput>;
 
-  deleteProject: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
+  delete: (input: DeleteProjectInput) => Promise<DeleteProjectOutput>;
 }
 
 export const projectService: IProjectService = {
-  listProjects: async () => {
-    return await projectIpc.listProjects();
-  },
-  importProject: async (input) => {
-    return await projectIpc.importProject(input);
-  },
+  list: async () => {
+    const output = await projectIpc.list();
 
-  createProject: async (input) => {
-    const output = await projectIpc.createProject(input);
+    output.items.forEach((project) => {
+      if (projectSummariesCollection.has(project.id)) {
+        projectSummariesCollection.update(project.id, (draft) => {
+          draft.name = project.name;
+          draft.archived = project.archived;
+          draft.branch = project.branch;
+          draft.iconPath = project.iconPath;
+        });
+      } else {
+        projectSummariesCollection.insert({
+          id: project.id,
+          name: project.name,
+          archived: project.archived,
+          branch: project.branch,
+          iconPath: project.iconPath,
+          expanded: false,
+        });
+      }
+    });
+
+    return output;
+  },
+  import: async (input) => {
+    const output = await projectIpc.import(input);
 
     projectSummariesCollection.insert({
       id: output.id,
@@ -48,30 +66,44 @@ export const projectService: IProjectService = {
       archived: false,
       branch: null,
       iconPath: output.iconPath,
-
-      expanded: true,
+      expanded: false,
     });
 
     return output;
   },
 
-  updateProject: async (input) => {
-    const output = await projectIpc.updateProject(input);
+  create: async (input) => {
+    const output = await projectIpc.create(input);
+
+    projectSummariesCollection.insert({
+      id: output.id,
+      name: input.name,
+      archived: false,
+      branch: null,
+      iconPath: output.iconPath,
+      expanded: false,
+    });
+
+    return output;
+  },
+
+  update: async (input) => {
+    const output = await projectIpc.update(input);
 
     updateProjectSummaryCollectionFromInput(input);
 
     return output;
   },
-  batchUpdateProject: async (input) => {
-    const output = await projectIpc.batchUpdateProject(input);
+  batchUpdate: async (input) => {
+    const output = await projectIpc.batchUpdate(input);
 
     batchUpdateProjectSummaryCollectionFromInput(input);
 
     return output;
   },
 
-  deleteProject: async (input) => {
-    const output = await projectIpc.deleteProject(input);
+  delete: async (input) => {
+    const output = await projectIpc.delete(input);
 
     projectSummariesCollection.delete(input.id);
 

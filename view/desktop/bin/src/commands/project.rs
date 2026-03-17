@@ -103,6 +103,7 @@ pub async fn batch_create_project_resource<'a, R: tauri::Runtime>(
     .await
 }
 
+//FIXME remove channel
 #[tauri::command(async)]
 #[instrument(level = "trace", skip(ctx, app), fields(window = window.label(), channel = channel.id()))]
 pub async fn batch_update_project_resource<'a, R: tauri::Runtime>(

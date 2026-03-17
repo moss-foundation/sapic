@@ -1,7 +1,7 @@
 import { useMemo, useRef } from "react";
 
 import { useListWorkspaceEnvironments } from "@/adapters/tanstackQuery/environment/useListWorkspaceEnvironments";
-import { useGetProjectEnvironments } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironments";
+import { useGetProjectEnvironmentsByProjectId } from "@/db/environmentsSummaries/hooks/useGetProjectEnvironmentsByProjectId";
 import { EnvironmentSummary } from "@/db/environmentsSummaries/types";
 import { Tree } from "@/lib/ui/Tree";
 import { cn } from "@/utils";
@@ -9,19 +9,20 @@ import { useTabbedPaneStore } from "@/workbench/store/tabbedPane";
 
 import { ENVIRONMENT_ITEM_DRAG_TYPE } from "../constants";
 import { useDraggableEnvironmentItem } from "../dnd/hooks/useDraggableEnvironmentItem";
-import { EnvironmentItemControls } from "./EnvironmentItemControls";
+import { EnvironmentItemDetails } from "./EnvironmentItemDetails";
 import { EnvironmentItemRenamingForm } from "./EnvironmentItemRenamingForm";
 import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenamingForm";
 
 interface EnvironmentItemProps {
   environment: EnvironmentSummary;
+  offsetLeft?: number;
 }
 
-export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
+export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
-  const { projectEnvironments } = useGetProjectEnvironments(environment.projectId);
+  const { data: projectEnvironments } = useGetProjectEnvironmentsByProjectId(environment.projectId);
   const { addOrFocusPanel } = useTabbedPaneStore();
 
   const envType = environment.projectId ? ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT : ENVIRONMENT_ITEM_DRAG_TYPE.WORKSPACE;
@@ -69,9 +70,11 @@ export const EnvironmentItem = ({ environment }: EnvironmentItemProps) => {
           restrictedNames={restrictedNames}
           handleRename={handleRename}
           handleCancel={handleCancel}
+          offsetLeft={offsetLeft}
         />
       ) : (
-        <EnvironmentItemControls
+        <EnvironmentItemDetails
+          offsetLeft={offsetLeft}
           type={envType}
           environment={environment}
           instruction={instruction}
