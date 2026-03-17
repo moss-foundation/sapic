@@ -48,10 +48,5 @@
   "packageManager": "pnpm@10.14.0",
   "engines": {
     "node": ">=18"
-  },
-  "pnpm": {
-    "overrides": {
-      "brace-expansion": "2.0.2"
-    }
   }
 }
