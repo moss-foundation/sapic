@@ -128,6 +128,15 @@ export const resourceService: IResourceService = {
       }
     });
 
+    resourceDetailsCollection.update(id, (draft) => {
+      if ("ITEM" in input) {
+        if (input.ITEM.name) draft.name = input.ITEM.name;
+      }
+      if ("DIR" in input) {
+        if (input.DIR.name) draft.name = input.DIR.name;
+      }
+    });
+
     return output;
   },
   batchUpdate: async (projectId, input, channelEvent) => {

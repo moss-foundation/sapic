@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceService } from "@/domains/resource/resourceService";
 
@@ -36,6 +37,10 @@ export const useRenameResourceDetailsForm = (
         queryParamsToUpdate: [],
         queryParamsToRemove: [],
       },
+    });
+
+    resourceDetailsCollection.update(resourceDetails.id, (draft) => {
+      draft.name = trimmedNewName;
     });
 
     const panel = api?.getPanel(resourceDetails.id);

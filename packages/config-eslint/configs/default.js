@@ -2,14 +2,13 @@ import { createTypeScriptImportResolver } from "eslint-import-resolver-typescrip
 import importX, { createNodeResolver } from "eslint-plugin-import-x";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import reactYouMightNotNeedAnEffect from "eslint-plugin-react-you-might-not-need-an-effect";
+import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
-
-import tseslintParser from "@typescript-eslint/parser";
 
 import mossLintPlugin from "../moss-lint-plugin/index.js";
 
-export default tseslint.config(
-  ...tseslint.configs.recommended,
+export default defineConfig(
+  tseslint.configs.recommended,
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   reactYouMightNotNeedAnEffect.configs.recommended,
@@ -29,7 +28,7 @@ export default tseslint.config(
   },
   {
     languageOptions: {
-      parser: tseslintParser,
+      parser: tseslint.parser,
       parserOptions: {
         ecmaVersion: "latest",
         sourceType: "module",
@@ -66,12 +65,11 @@ export default tseslint.config(
       mossLint: mossLintPlugin,
     },
     rules: {
-      //TODO: errors for some react-hooks rules are changed to warns because we have too much code that cannot be optimized + some radix ui code.
       "react-hooks/exhaustive-deps": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/use-memo": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/purity": "warn",
+      "react-hooks/refs": "error",
+      "react-hooks/use-memo": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/purity": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import { Button } from "@/lib/ui";
 
 import { ModalForm } from "../ModalForm";
@@ -30,21 +28,6 @@ export const ConfirmationModal = ({
   onCancel,
   loading = false,
 }: ConfirmationModalProps) => {
-  const [allowBackdropClick, setAllowBackdropClick] = useState(false);
-
-  useEffect(() => {
-    if (showModal) {
-      const timer = setTimeout(() => {
-        setAllowBackdropClick(true);
-      }, 100);
-
-      return () => clearTimeout(timer);
-    }
-
-    setAllowBackdropClick(false);
-    return undefined;
-  }, [showModal]);
-
   const handleConfirm = () => {
     if (loading) return;
     onConfirm();
@@ -57,7 +40,7 @@ export const ConfirmationModal = ({
   };
 
   const handleBackdropClick = () => {
-    if (!loading && allowBackdropClick) {
+    if (!loading) {
       handleCancel();
     }
   };

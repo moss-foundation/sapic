@@ -3,8 +3,6 @@ export * as ActionMenu from "./ActionMenu";
 export * from "./Divider";
 export * from "./DropIndicator";
 
-export * from "./Inputs";
-
 export * from "./IconLabelButton";
 export * from "./Modals/ConfirmationModal";
 export * from "./PageLoader";

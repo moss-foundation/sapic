@@ -37,9 +37,8 @@ export const PageHeader = ({
   const [title, setTitle] = useState(initialTitle);
 
   useEffect(() => {
-    if (initialTitle) {
-      setTitle(initialTitle);
-      api?.setTitle(initialTitle);
+    if (initialTitle && api) {
+      api.setTitle(initialTitle);
     }
   }, [initialTitle, api]);
 
@@ -113,7 +112,7 @@ export const PageHeader = ({
                 }
               )}
             >
-              <h2 className="truncate">{title}</h2>
+              <h2 className="truncate">{initialTitle}</h2>
             </button>
           )}
           {tabs && (
