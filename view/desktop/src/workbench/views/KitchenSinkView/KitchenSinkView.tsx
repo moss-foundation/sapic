@@ -8,7 +8,6 @@ import { CheckboxSection } from "./Sections/CheckboxSection";
 import { CommandSection } from "./Sections/CommandSection";
 import { IconsSection } from "./Sections/IconsSections";
 import { InputsSection } from "./Sections/InputsSection";
-import { InputTemplatingSection } from "./Sections/InputTemplatingSection";
 import { NotificationsSection } from "./Sections/NotificationsSection";
 import { RadioSection } from "./Sections/RadioSection";
 import { SelectSection } from "./Sections/SelectSection";
@@ -39,8 +38,6 @@ export const KitchenSinkView = ({}: KitchenSinkViewProps) => {
       <ActionMenusSection />
 
       <NotificationsSection />
-
-      <InputTemplatingSection />
 
       <CommandSection />
 

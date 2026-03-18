@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import SelectOutlined from "@/workbench/ui/components/SelectOutlined";
 import { AccountInfo } from "@repo/base";
@@ -14,13 +14,7 @@ export const AccountSelect = ({ accounts, onValueChange, disabled }: AccountSele
 
   const isDisabled = disabled || accounts.length === 0;
 
-  useEffect(() => {
-    if (accounts.length === 1 && selectedValue !== accounts[0].id) {
-      const accountId = accounts[0].id;
-      setSelectedValue(accountId);
-      onValueChange(accountId);
-    }
-  }, [accounts, selectedValue, onValueChange]);
+  const effectiveValue = accounts.length === 1 ? accounts[0].id : selectedValue;
 
   const handleValueChange = (value: string) => {
     setSelectedValue(value);
@@ -31,7 +25,7 @@ export const AccountSelect = ({ accounts, onValueChange, disabled }: AccountSele
     <div className="col-span-2 grid grid-cols-subgrid items-center">
       <div>Account:</div>
 
-      <SelectOutlined.Root value={selectedValue} onValueChange={handleValueChange} disabled={isDisabled}>
+      <SelectOutlined.Root value={effectiveValue} onValueChange={handleValueChange} disabled={isDisabled}>
         <SelectOutlined.Trigger disabled={isDisabled} className="w-full max-w-72" />
         <SelectOutlined.Content>
           {accounts.map((account) => (

@@ -66,12 +66,11 @@ export default tseslint.config(
       mossLint: mossLintPlugin,
     },
     rules: {
-      //TODO: errors for some react-hooks rules are changed to warns because we have too much code that cannot be optimized + some radix ui code.
       "react-hooks/exhaustive-deps": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/use-memo": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/purity": "warn",
+      "react-hooks/refs": "error",
+      "react-hooks/use-memo": "error",
+      "react-hooks/set-state-in-effect": "error",
+      "react-hooks/purity": "error",
       "@typescript-eslint/no-unused-vars": [
         "warn",
         {

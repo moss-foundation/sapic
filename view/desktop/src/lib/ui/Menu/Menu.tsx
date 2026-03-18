@@ -118,41 +118,66 @@ const Trigger = React.forwardRef<ActionMenuTriggerElement, ActionMenuTriggerProp
             {...triggerProps}
             ref={forwardedRef}
             // prevent iOS context menu from appearing
+
             style={{ WebkitTouchCallout: "none", ...props.style }}
             // if trigger is disabled, enable the native Context Menu
+
             onContextMenu={
               disabled
                 ? props.onContextMenu
-                : composeEventHandlers(props.onContextMenu, (event) => {
-                    // clearing the long press here because some platforms already support
-                    // long press to trigger a `contextmenu` event
-                    clearLongPress();
-                    handleOpen(event);
-                    event.preventDefault();
-                  })
+                : (event) => {
+                    props.onContextMenu?.(event);
+                    if (!event.defaultPrevented) {
+                      // clearing the long press here because some platforms already support
+                      // long press to trigger a `contextmenu` event
+                      clearLongPress();
+                      handleOpen(event);
+                      event.preventDefault();
+                    }
+                  }
             }
             onPointerDown={
               disabled
                 ? props.onPointerDown
-                : composeEventHandlers(
-                    props.onPointerDown,
-                    whenTouchOrPen((event) => {
+                : (event) => {
+                    props.onPointerDown?.(event);
+                    if (!event.defaultPrevented && event.pointerType !== "mouse") {
                       // clear the long press here in case there's multiple touch points
+
                       clearLongPress();
                       longPressTimerRef.current = window.setTimeout(() => handleOpen(event), 700);
-                    })
-                  )
+                    }
+                  }
             }
             onPointerMove={
-              disabled ? props.onPointerMove : composeEventHandlers(props.onPointerMove, whenTouchOrPen(clearLongPress))
+              disabled
+                ? props.onPointerMove
+                : (event) => {
+                    props.onPointerMove?.(event);
+                    if (!event.defaultPrevented && event.pointerType !== "mouse") {
+                      clearLongPress();
+                    }
+                  }
             }
             onPointerCancel={
               disabled
                 ? props.onPointerCancel
-                : composeEventHandlers(props.onPointerCancel, whenTouchOrPen(clearLongPress))
+                : (event) => {
+                    props.onPointerCancel?.(event);
+                    if (!event.defaultPrevented && event.pointerType !== "mouse") {
+                      clearLongPress();
+                    }
+                  }
             }
             onPointerUp={
-              disabled ? props.onPointerUp : composeEventHandlers(props.onPointerUp, whenTouchOrPen(clearLongPress))
+              disabled
+                ? props.onPointerUp
+                : (event) => {
+                    props.onPointerUp?.(event);
+                    if (!event.defaultPrevented && event.pointerType !== "mouse") {
+                      clearLongPress();
+                    }
+                  }
             }
           />
         </>
@@ -254,10 +279,6 @@ const Item = forwardRef<ItemElement, ItemProps>(
     );
   }
 );
-
-function whenTouchOrPen<E>(handler: React.PointerEventHandler<E>): React.PointerEventHandler<E> {
-  return (event) => (event.pointerType !== "mouse" ? handler(event) : undefined);
-}
 
 export default function mergeRefs<T>(...inputRefs: (React.Ref<T> | undefined)[]): React.Ref<T> | React.RefCallback<T> {
   const filteredInputRefs = inputRefs.filter(Boolean);

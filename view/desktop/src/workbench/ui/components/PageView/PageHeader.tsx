@@ -1,5 +1,5 @@
 import { IDockviewPanelProps } from "moss-tabs";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useState } from "react";
 
 import { Icon, Icons } from "@/lib/ui";
 import Input from "@/lib/ui/Input";
@@ -36,12 +36,9 @@ export const PageHeader = ({
 }: PageHeaderProps) => {
   const [title, setTitle] = useState(initialTitle);
 
-  useEffect(() => {
-    if (initialTitle) {
-      setTitle(initialTitle);
-      api?.setTitle(initialTitle);
-    }
-  }, [initialTitle, api]);
+  if (initialTitle && initialTitle !== title) {
+    api?.setTitle(initialTitle);
+  }
 
   const handleSubmit = () => {
     if (disableTitleChange || title === initialTitle) {
@@ -113,7 +110,7 @@ export const PageHeader = ({
                 }
               )}
             >
-              <h2 className="truncate">{title}</h2>
+              <h2 className="truncate">{initialTitle}</h2>
             </button>
           )}
           {tabs && (
