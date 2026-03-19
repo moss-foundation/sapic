@@ -16,9 +16,10 @@ import { useEnvironmentItemRenamingForm } from "./hooks/useEnvironmentItemRenami
 interface EnvironmentItemProps {
   environment: EnvironmentSummary;
   offsetLeft?: number;
+  paddingRight?: number;
 }
 
-export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProps) => {
+export const EnvironmentItem = ({ environment, offsetLeft, paddingRight }: EnvironmentItemProps) => {
   const environmentItemRef = useRef<HTMLLIElement>(null);
 
   const { data: workspaceEnvironments } = useListWorkspaceEnvironments();
@@ -75,6 +76,7 @@ export const EnvironmentItem = ({ environment, offsetLeft }: EnvironmentItemProp
       ) : (
         <EnvironmentItemDetails
           offsetLeft={offsetLeft}
+          paddingRight={paddingRight}
           type={envType}
           environment={environment}
           instruction={instruction}

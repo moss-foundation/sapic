@@ -7,7 +7,7 @@ import { Tree } from "@/lib/ui/Tree";
 import { cn, sortObjectsByOrder } from "@/utils";
 import { useGetEnvironmentListItemState } from "@/workbench/adapters/tanstackQuery/environmentListItemState/useGetEnvironmentListItemState";
 
-import { NODE_OFFSET, TREE_HEADER_PADDING_LEFT } from "../../ProjectTree/constants";
+import { NODE_OFFSET, NODE_PADDING_RIGHT, TREE_HEADER_PADDING_LEFT } from "../../ProjectTree/constants";
 import { WORKSPACE_ENVIRONMENTS_LIST_ID } from "../constants";
 import { useDropTargetWorkspaceEnvironmentList } from "../dnd/hooks/useDropTargetWorkspaceEnvironmentList";
 import { WorkspaceEnvironmentAddForm } from "../EnvironmentAddForm/WorkspaceEnvironmentAddForm";
@@ -57,7 +57,12 @@ export const WorkspaceEnvironmentsListRoot = () => {
         <>
           <Tree.ListChildren>
             {sortedWorkspaceEnvironments?.map((environment) => (
-              <EnvironmentItem key={environment.id} environment={environment} offsetLeft={listItemOffset} />
+              <EnvironmentItem
+                key={environment.id}
+                environment={environment}
+                offsetLeft={listItemOffset}
+                paddingRight={NODE_PADDING_RIGHT}
+              />
             ))}
           </Tree.ListChildren>
 

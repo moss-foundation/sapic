@@ -23,6 +23,7 @@ interface EnvironmentItemDetailsProps {
   instruction: Instruction | null;
   type: ENVIRONMENT_ITEM_DRAG_TYPE;
   offsetLeft?: number;
+  paddingRight?: number;
 }
 
 export const EnvironmentItemDetails = ({
@@ -31,6 +32,7 @@ export const EnvironmentItemDetails = ({
   instruction,
   type,
   offsetLeft,
+  paddingRight,
 }: EnvironmentItemDetailsProps) => {
   const { showOrders } = useContext(ProjectTreeContext);
   const { currentWorkspaceId } = useCurrentWorkspace();
@@ -83,6 +85,7 @@ export const EnvironmentItemDetails = ({
         reorderInstruction={instruction}
         hideDragHandle
         depth={type === ENVIRONMENT_ITEM_DRAG_TYPE.PROJECT ? 0 : 1}
+        paddingRight={paddingRight}
       >
         <Tree.NodeTriggers className="cursor-pointer overflow-hidden" style={{ paddingLeft: offsetLeft }}>
           {showOrders && <Tree.RootOrder order={environment.order} />}
