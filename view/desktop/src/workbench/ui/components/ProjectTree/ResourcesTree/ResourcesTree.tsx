@@ -12,6 +12,7 @@ import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
 import { useRootResourceNodeAddForm } from "./hooks/useRootResourceNodeAddForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import { ResourcesTreeHeader } from "./ResourcesTreeHeader";
+import { countNumberOfAllNestedItems } from "./utils/countNumberOfAllNestedItems";
 
 interface ResourcesTreeProps {
   tree: ResourcesTreeRoot;
@@ -43,6 +44,10 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
 
   const isAddingToListRoot = isAddingFileNode || isAddingFolderNode;
   const shouldRenderChildren = expanded || isAddingToListRoot;
+  const totalItemsCount = tree.childNodes.reduce((acc, child) => {
+    const selfCount = child.kind === "Item" ? 1 : 0;
+    return acc + selfCount + countNumberOfAllNestedItems(child);
+  }, 0);
 
   return (
     <Tree.List combineInstruction={instruction}>
@@ -53,6 +58,7 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
         ref={projectResourcesHeaderRef}
         setIsAddingFileNode={() => setIsAddingFileNode(true)}
         setIsAddingFolderNode={() => setIsAddingFolderNode(true)}
+        totalItemsCount={totalItemsCount}
       />
 
       {shouldRenderChildren && (
