@@ -5,6 +5,7 @@ import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
+import { collectExpandedByResourceId } from "../../getters/collectExpandedByResourceId.ts";
 import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { DragResourceNodeData } from "../types.dnd";
 import { createResourceKind } from "../utils/createResourceKind.ts";
@@ -16,7 +17,6 @@ import {
 
 interface HandleNodeOnNodeToAnotherProjectProps {
   currentWorkspaceId: string;
-
   sourceTreeNodeData: DragResourceNodeData;
   locationTreeNodeData: DragResourceNodeData;
   operation: Operation;
@@ -62,15 +62,17 @@ export const handleNodeOnNodeToAnotherProject = async ({
   const sourceOrderItems: Record<string, number> = {};
   const sourceExpandedItems: Record<string, boolean> = {};
 
+  const siblingExpandedById = new Map(sourceTreeNodeData.parentNode.childNodes.map((c) => [c.id, c.expanded] as const));
+
   for (const resource of updatedSourceResourcesPayload) {
     if ("ITEM" in resource) {
-      sourceExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
+      sourceExpandedItems[resource.ITEM.id] = siblingExpandedById.get(resource.ITEM.id) ?? false;
       if ("order" in resource.ITEM) {
         sourceOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
       }
     } else if ("DIR" in resource) {
       sourceOrderItems[resource.DIR.id] = resource.DIR.order!;
-      sourceExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
+      sourceExpandedItems[resource.DIR.id] = siblingExpandedById.get(resource.DIR.id) ?? false;
     }
   }
 
@@ -93,26 +95,20 @@ export const handleNodeOnNodeToAnotherProject = async ({
   );
 
   const locationOrderItems: Record<string, number> = {};
-  const locationExpandedItems: Record<string, boolean> = {};
 
   for (const resource of locationResourcesToUpdate) {
     if ("ITEM" in resource) {
-      locationExpandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
       if ("order" in resource.ITEM) {
         locationOrderItems[resource.ITEM.id] = resource.ITEM.order as number;
       }
     } else if ("DIR" in resource) {
       locationOrderItems[resource.DIR.id] = resource.DIR.order!;
-      locationExpandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
     }
   }
 
   await Promise.all([
     Object.keys(locationOrderItems).length > 0
       ? treeItemStateService.batchPutOrder(locationOrderItems, currentWorkspaceId)
-      : Promise.resolve(),
-    Object.keys(locationExpandedItems).length > 0
-      ? treeItemStateService.batchPutExpanded(locationExpandedItems, currentWorkspaceId)
       : Promise.resolve(),
   ]);
 
@@ -160,6 +156,8 @@ export const handleNodeOnNodeToAnotherProject = async ({
     resources: batchCreateResourceInput,
   });
 
+  const expandedByOriginalId = collectExpandedByResourceId(sourceTreeNodeData.node);
+
   const newOrderItems: Record<string, number> = {};
   const newExpandedItems: Record<string, boolean> = {};
 
@@ -174,7 +172,10 @@ export const handleNodeOnNodeToAnotherProject = async ({
       if (params.order !== -1) {
         newOrderItems[created.id] = params.order;
       }
-      newExpandedItems[created.id] = sourceTreeNodeData.node.expanded;
+      const inputIndex = batchCreateResourceInput.indexOf(matchingInput);
+      const originalResource = inputIndex >= 0 ? nestedResourcesWithoutName[inputIndex] : undefined;
+      const expanded = originalResource ? (expandedByOriginalId.get(originalResource.id) ?? false) : false;
+      newExpandedItems[created.id] = expanded;
     }
   }
 

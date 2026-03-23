@@ -1,13 +1,16 @@
-import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
-import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { BatchUpdateResourceEvent } from "@repo/moss-project";
 import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
+import { collectExpandedByResourceId } from "../../getters/collectExpandedByResourceId.ts";
 import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
+import {
+  applyCrossProjectResourceRemapAfterBatchCreate,
+  snapshotResourceDetailsForResourceIds,
+} from "../utils/crossProjectResourceRecreate.ts";
 import { createResourceKind } from "../utils/createResourceKind.ts";
 import { prepareNestedDirResourcesForDrop, resolveParentPath, siblingsAfterRemovalPayload } from "../utils/path";
 
@@ -25,20 +28,13 @@ export const handleNodeOnListRootToAnotherProject = async ({
   const allResources = getAllNestedResources(sourceTreeNodeData.node);
   const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
 
+  const resourceDetailsSnapshot = snapshotResourceDetailsForResourceIds(allResources.map((r) => r.id));
+
   const newOrder = locationResourcesListData.data.rootResourcesNodes.length + 1;
 
   await resourceService.delete(sourceTreeNodeData.projectId, {
     id: sourceTreeNodeData.node.id,
   });
-
-  for (const resource of allResources) {
-    if (resourceSummariesCollection.has(resource.id)) {
-      resourceSummariesCollection.delete(resource.id);
-    }
-    if (resourceDetailsCollection.has(resource.id)) {
-      resourceDetailsCollection.delete(resource.id);
-    }
-  }
 
   const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
     nodes: sourceTreeNodeData.parentNode.childNodes,
@@ -84,6 +80,16 @@ export const handleNodeOnListRootToAnotherProject = async ({
     resources: batchCreateResourceInput,
   });
 
+  applyCrossProjectResourceRemapAfterBatchCreate({
+    allResources,
+    batchCreateResourceInput,
+    batchCreateOutput: batchCreateResourceOutput,
+    destProjectId: locationResourcesListData.data.projectId,
+    resourceDetailsSnapshot,
+  });
+
+  const expandedByOriginalId = collectExpandedByResourceId(sourceTreeNodeData.node);
+
   const orderItems: Record<string, number> = {};
   const expandedItems: Record<string, boolean> = {};
 
@@ -101,7 +107,14 @@ export const handleNodeOnListRootToAnotherProject = async ({
         ? resourceInput.ITEM.order
         : resourceInput.DIR.order
       : -1;
-    expandedItems[resource.id] = sourceTreeNodeData.node.expanded;
+
+    if (resourceInput) {
+      const inputIndex = batchCreateResourceInput.indexOf(resourceInput);
+      const originalResource = inputIndex >= 0 ? resourcesWithoutName[inputIndex] : undefined;
+      expandedItems[resource.id] = originalResource ? (expandedByOriginalId.get(originalResource.id) ?? false) : false;
+    } else {
+      expandedItems[resource.id] = false;
+    }
   }
 
   for (const resource of updatedSourceResourcesPayload) {
