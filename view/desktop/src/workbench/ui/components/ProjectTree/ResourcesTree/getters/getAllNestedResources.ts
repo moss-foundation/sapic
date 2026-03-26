@@ -1,9 +1,7 @@
-import { ListProjectResourceItem } from "@repo/ipc";
-
 import { ResourceNode } from "../types";
 
-export const getAllNestedResources = (node: ResourceNode): ListProjectResourceItem[] => {
-  const result: ListProjectResourceItem[] = [];
+export const getAllNestedResources = (node: ResourceNode): ResourceNode[] => {
+  const result: ResourceNode[] = [];
 
   result.push({
     id: node.id,
@@ -12,6 +10,9 @@ export const getAllNestedResources = (node: ResourceNode): ListProjectResourceIt
     class: node.class,
     path: node.path,
     protocol: node.protocol,
+    order: node.order,
+    expanded: node.expanded,
+    childNodes: [],
   });
 
   for (const child of node.childNodes) {

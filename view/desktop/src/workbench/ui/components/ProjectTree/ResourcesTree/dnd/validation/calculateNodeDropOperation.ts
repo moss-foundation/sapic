@@ -23,8 +23,8 @@ export const calculateNodeDropOperation = ({
 
   if (isSameProject) {
     //prettier-ignore
-    return isCombine 
-        ? NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT 
+    return isCombine
+        ? NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT
         : NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT;
   }
 
