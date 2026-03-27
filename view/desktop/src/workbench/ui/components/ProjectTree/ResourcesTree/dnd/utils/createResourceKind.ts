@@ -1,4 +1,12 @@
-import { BatchCreateResourceKind, ResourceClass, ResourceProtocol } from "@repo/moss-project";
+import {
+  BatchCreateResourceKind,
+  BodyInfo,
+  HeaderInfo,
+  PathParamInfo,
+  QueryParamInfo,
+  ResourceClass,
+  ResourceProtocol,
+} from "@repo/moss-project";
 
 interface CreateResourceKindProps {
   name: string;
@@ -6,7 +14,12 @@ interface CreateResourceKindProps {
   class: ResourceClass;
   isAddingFolder: boolean;
   order: number;
+
   protocol?: ResourceProtocol;
+  headers?: HeaderInfo[];
+  queryParams?: QueryParamInfo[];
+  pathParams?: PathParamInfo[];
+  body?: BodyInfo;
 }
 
 export const createResourceKind = ({
@@ -16,16 +29,13 @@ export const createResourceKind = ({
   class: resourceClass,
   order,
   protocol,
+  headers,
+  queryParams,
+  pathParams,
+  body,
 }: CreateResourceKindProps): BatchCreateResourceKind => {
   if (isAddingFolder) {
-    return {
-      DIR: {
-        name,
-        path,
-        class: resourceClass,
-        order,
-      },
-    };
+    return { DIR: { name, path, class: resourceClass, order } };
   }
 
   return {
@@ -34,10 +44,28 @@ export const createResourceKind = ({
       path,
       class: resourceClass,
       order,
-      headers: [],
-      queryParams: [],
-      pathParams: [],
       protocol,
+      headers:
+        headers?.map(({ name, value, order }) => ({
+          name,
+          value,
+          order: order ?? 0,
+          options: { disabled: false, propagate: false },
+        })) ?? [],
+      queryParams:
+        queryParams?.map(({ name, value, order }) => ({
+          name,
+          value,
+          order: order ?? 0,
+          options: { disabled: false, propagate: false },
+        })) ?? [],
+      pathParams:
+        pathParams?.map(({ name, value, order }) => ({
+          name,
+          value,
+          order: order ?? 0,
+          options: { disabled: false, propagate: false },
+        })) ?? [],
     },
   };
 };

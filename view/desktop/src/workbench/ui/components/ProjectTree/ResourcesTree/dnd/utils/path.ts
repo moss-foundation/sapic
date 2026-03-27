@@ -5,6 +5,7 @@ import { join } from "@tauri-apps/api/path";
 
 import { ResourcesTreeRoot } from "../../../TreeRoot/types";
 import { ResourceNode } from "../../types";
+import { ResourceNodeWithDetails } from "../types.dnd";
 
 const getPathWithoutName = async (
   node: ResourceNode | ListProjectResourceItem
@@ -68,11 +69,11 @@ export const prepareNestedDirResourcesForDrop = async (
 };
 
 export const prepareResourcesForCreation = async (
-  resources: ListProjectResourceItem[]
-): Promise<ListProjectResourceItem[]> => {
+  resources: ResourceNodeWithDetails[]
+): Promise<ResourceNodeWithDetails[]> => {
   const rootResourceName = resources[0].name;
 
-  const resourcesPreparedForDrop: ListProjectResourceItem[] = [];
+  const resourcesPreparedForDrop: ResourceNodeWithDetails[] = [];
 
   for await (const resource of resources) {
     const newResourcePath = await removePathBeforeName(resource.path, rootResourceName);

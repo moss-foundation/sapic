@@ -5,9 +5,10 @@ import { join } from "@tauri-apps/api/path";
 
 import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
 import { ResourceNode } from "../../types.ts";
-import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
+import { DragResourceNodeData, LocationResourcesListData, ResourceNodeWithDetails } from "../types.dnd";
 import { createResourceKind } from "../utils/createResourceKind.ts";
 import { prepareResourcesForCreation, resolveParentPath } from "../utils/path";
+import { remapOldIdsForDockviewLayout } from "../utils/remapResourceIdsInSerializedDockview.ts";
 
 interface HandleNodeOnListRootToAnotherProjectProps {
   currentWorkspaceId: string;
@@ -23,7 +24,10 @@ export const handleNodeOnListRootToAnotherProject = async ({
   const newRootSourceNodeOrder = locationResourcesListData.data.rootResourcesNodes.length + 1;
 
   // 1) save source nodes
-  const allFlatSourceResourceNodes = getAllNestedResources(sourceTreeNodeData.node);
+  const allFlatSourceResourceNodes = await getAllNestedResources({
+    node: sourceTreeNodeData.node,
+    projectId: sourceTreeNodeData.projectId,
+  });
 
   // 2) delete source nodes and states
   await deleteSourceNodesAndStates({
@@ -54,7 +58,14 @@ export const handleNodeOnListRootToAnotherProject = async ({
     newRootSourceNodeOrder,
   });
 
-  // 6) reload node paths
+  // 6) remap resource ids in dockview
+  remapOldIdsForDockviewLayout({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+    destProjectId: locationResourcesListData.data.projectId,
+  });
+
+  // 7) reload node paths
   await resourceService.list({ projectId: locationResourcesListData.data.projectId, mode: { "RELOAD_PATH": "" } });
   await resourceService.list({
     projectId: sourceTreeNodeData.projectId,
@@ -119,7 +130,7 @@ const createLocationNodes = async ({
   locationResourcesListData,
   newRootSourceNodeOrder,
 }: {
-  allSourceResourceNodes: ResourceNode[];
+  allSourceResourceNodes: ResourceNodeWithDetails[];
   locationResourcesListData: LocationResourcesListData;
   newRootSourceNodeOrder: number;
 }) => {
@@ -133,6 +144,10 @@ const createLocationNodes = async ({
           isAddingFolder: resource.kind === "Dir",
           order: newRootSourceNodeOrder,
           protocol: resource.protocol,
+          headers: resource.details.headers,
+          queryParams: resource.details.queryParams,
+          pathParams: resource.details.pathParams,
+          body: resource.details.body,
           class: "endpoint",
         });
       } else {
@@ -143,6 +158,10 @@ const createLocationNodes = async ({
           isAddingFolder: resource.kind === "Dir",
           order: -1,
           protocol: resource.protocol,
+          headers: resource.details.headers,
+          queryParams: resource.details.queryParams,
+          pathParams: resource.details.pathParams,
+          body: resource.details.body,
           class: "endpoint",
         });
       }

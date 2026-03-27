@@ -1,4 +1,5 @@
 import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
+import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { resourceIpc } from "@/infra/ipc/resourceIpc";
@@ -66,9 +67,30 @@ export const resourceService: IResourceService = {
       protocol: output.protocol ?? undefined,
       url: output.url ?? undefined,
       body: output.body ?? undefined,
-    };
+      queryParams: output.queryParams?.map((p) => ({
+        ...p,
+        description: p.description ?? undefined,
+      })),
+      headers: output.headers?.map((h) => ({
+        ...h,
+        description: h.description ?? undefined,
+      })),
+      pathParams: output.pathParams?.map((p) => ({
+        ...p,
+        description: p.description ?? undefined,
+      })),
+    } satisfies Omit<ResourceDetails, "id" | "metadata">;
+
     if (resourceDetailsCollection.has(resourceId)) {
       resourceDetailsCollection.update(resourceId, (draft) => {
+        if (draft.metadata.isDirty) {
+          draft.name = sanitized.name;
+          draft.class = sanitized.class;
+          draft.kind = sanitized.kind;
+          draft.protocol = sanitized.protocol;
+          draft.url = sanitized.url;
+          return;
+        }
         Object.assign(draft, sanitized);
       });
     } else {
@@ -93,8 +115,8 @@ export const resourceService: IResourceService = {
   },
   batchCreate: async (projectId, input) => {
     const output = await resourceIpc.batchCreate(projectId, input);
-    const resourceSummaries = await batchCreateInputToResourceSummary(projectId, input, output);
 
+    const resourceSummaries = await batchCreateInputToResourceSummary(projectId, input, output);
     resourceSummaries.forEach((summary) => {
       resourceSummariesCollection.insert(summary);
     });
@@ -112,6 +134,14 @@ export const resourceService: IResourceService = {
         if (input.ITEM.name) draft.name = input.ITEM.name;
         if (input.ITEM.path) draft.path = { raw: input.ITEM.path, segments: input.ITEM.path.split("/") };
         if (input.ITEM.protocol) draft.protocol = input.ITEM.protocol;
+
+        if (
+          input.ITEM.pathParamsToAdd.length > 0 ||
+          input.ITEM.pathParamsToUpdate.length > 0 ||
+          input.ITEM.pathParamsToRemove.length > 0
+        ) {
+          // draft.metadata = { isDirty: true };
+        }
       }
       if ("DIR" in input) {
         if (input.DIR.name) {
@@ -128,14 +158,14 @@ export const resourceService: IResourceService = {
       }
     });
 
-    resourceDetailsCollection.update(id, (draft) => {
-      if ("ITEM" in input) {
-        if (input.ITEM.name) draft.name = input.ITEM.name;
-      }
-      if ("DIR" in input) {
-        if (input.DIR.name) draft.name = input.DIR.name;
-      }
-    });
+    // resourceDetailsCollection.update(id, (draft) => {
+    //   if ("ITEM" in input) {
+    //     if (input.ITEM.name) draft.name = input.ITEM.name;
+    //   }
+    //   if ("DIR" in input) {
+    //     if (input.DIR.name) draft.name = input.DIR.name;
+    //   }
+    // });
 
     return output;
   },
