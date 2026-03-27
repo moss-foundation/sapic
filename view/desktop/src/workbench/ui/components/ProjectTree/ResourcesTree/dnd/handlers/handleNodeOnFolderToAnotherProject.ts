@@ -20,6 +20,7 @@ export const handleNodeOnFolderToAnotherProject = async ({
   sourceTreeNodeData,
   locationTreeNodeData,
 }: HandleNodeOnFolderToAnotherProjectProps) => {
+  const newRootSourceNodeOrder = locationTreeNodeData.node.childNodes.length + 1;
   // 1) save source nodes
   const allFlatSourceResourceNodes = getAllNestedResources(sourceTreeNodeData.node);
 
@@ -41,6 +42,7 @@ export const handleNodeOnFolderToAnotherProject = async ({
   const batchCreateResourceOutput = await createLocationNodes({
     allSourceResourceNodes: allFlatSourceResourceNodes,
     locationTreeNodeData,
+    newRootSourceNodeOrder,
   });
 
   // 5) assign source nodes states to location nodes states
@@ -48,6 +50,7 @@ export const handleNodeOnFolderToAnotherProject = async ({
     allSourceResourceNodes: allFlatSourceResourceNodes,
     batchCreateResourceOutput,
     workspaceId: currentWorkspaceId,
+    newRootSourceNodeOrder,
   });
 
   // 6) reload node paths
@@ -114,14 +117,14 @@ const updatePeerSourceNodesOrders = async ({
 };
 
 const createLocationNodes = async ({
+  newRootSourceNodeOrder,
   allSourceResourceNodes,
   locationTreeNodeData,
 }: {
+  newRootSourceNodeOrder: number;
   allSourceResourceNodes: ResourceNode[];
   locationTreeNodeData: DragResourceNodeData;
 }) => {
-  const newOrder = locationTreeNodeData.node.childNodes.length + 1;
-
   const sourceResourcesPreparedForCreation = await prepareResourcesForCreation(allSourceResourceNodes);
   const batchCreateResourceInput = await Promise.all(
     sourceResourcesPreparedForCreation.map(async (resource, index) => {
@@ -130,7 +133,7 @@ const createLocationNodes = async ({
           name: resource.name,
           path: locationTreeNodeData.node.path.raw,
           isAddingFolder: resource.kind === "Dir",
-          order: newOrder,
+          order: newRootSourceNodeOrder,
           protocol: resource.protocol,
           class: "endpoint",
         });
@@ -157,10 +160,12 @@ const assignSourceNodesStatesToLocationNodesStates = async ({
   allSourceResourceNodes,
   batchCreateResourceOutput,
   workspaceId,
+  newRootSourceNodeOrder,
 }: {
   allSourceResourceNodes: ResourceNode[];
   batchCreateResourceOutput: BatchCreateResourceOutput;
   workspaceId: string;
+  newRootSourceNodeOrder: number;
 }) => {
   const orderMap = new Map<string, number>();
   const expandedMap = new Map<string, boolean>();
@@ -168,7 +173,9 @@ const assignSourceNodesStatesToLocationNodesStates = async ({
   batchCreateResourceOutput.resources.forEach((resource, index) => {
     const sourceResourceNode = allSourceResourceNodes[index];
     if (sourceResourceNode) {
-      if (sourceResourceNode.order) {
+      if (index === 0) {
+        orderMap.set(resource.id, newRootSourceNodeOrder);
+      } else if (sourceResourceNode.order) {
         orderMap.set(resource.id, sourceResourceNode.order);
       }
       if (sourceResourceNode.expanded) {
