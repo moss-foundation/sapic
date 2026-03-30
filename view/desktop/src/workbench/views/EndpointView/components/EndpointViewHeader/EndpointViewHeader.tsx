@@ -2,6 +2,7 @@ import { DockviewPanelApi } from "moss-tabs";
 import { useCallback, useContext, useEffect, useState } from "react";
 
 import { useGetLocalResourceDetails } from "@/db/resourceDetails/hooks/useGetLocalResourceDetails";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 import { Button, Icon, MossDropdown, ToggleButton } from "@/lib/ui";
 import Select from "@/lib/ui/Select";
@@ -189,6 +190,9 @@ export const EndpointViewHeader = ({ dockviewPanelApi }: EndpointViewHeaderProps
             queryParamsToUpdate,
             queryParamsToRemove,
           },
+        });
+        resourceDetailsCollection.update(resourceId, (draft) => {
+          draft.metadata = { isDirty: false };
         });
       } else {
         console.warn(`Only "Item" kind of resources can be updated currently`);

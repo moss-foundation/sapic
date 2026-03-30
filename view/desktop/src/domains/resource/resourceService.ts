@@ -135,14 +135,6 @@ export const resourceService: IResourceService = {
         if (input.ITEM.name) draft.name = input.ITEM.name;
         if (input.ITEM.path) draft.path = { raw: input.ITEM.path, segments: input.ITEM.path.split("/") };
         if (input.ITEM.protocol) draft.protocol = input.ITEM.protocol;
-
-        if (
-          input.ITEM.pathParamsToAdd.length > 0 ||
-          input.ITEM.pathParamsToUpdate.length > 0 ||
-          input.ITEM.pathParamsToRemove.length > 0
-        ) {
-          // draft.metadata = { isDirty: true };
-        }
       }
       if ("DIR" in input) {
         if (input.DIR.name) {
@@ -158,15 +150,6 @@ export const resourceService: IResourceService = {
         if (input.DIR.expanded) draft.expanded = input.DIR.expanded;
       }
     });
-
-    // resourceDetailsCollection.update(id, (draft) => {
-    //   if ("ITEM" in input) {
-    //     if (input.ITEM.name) draft.name = input.ITEM.name;
-    //   }
-    //   if ("DIR" in input) {
-    //     if (input.DIR.name) draft.name = input.DIR.name;
-    //   }
-    // });
 
     return output;
   },
