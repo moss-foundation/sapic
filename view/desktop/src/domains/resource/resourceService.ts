@@ -62,6 +62,7 @@ export const resourceService: IResourceService = {
   },
   describe: async (projectId, resourceId) => {
     const output = await resourceIpc.describe(projectId, resourceId);
+
     const sanitized = {
       ...output,
       protocol: output.protocol ?? undefined,
