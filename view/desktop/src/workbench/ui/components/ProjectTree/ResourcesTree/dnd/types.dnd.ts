@@ -1,3 +1,4 @@
+import { ResourceDetails } from "@/db/resourceDetails/types";
 import { DescribeResourceOutput } from "@repo/moss-project";
 
 import { ProjectDragType } from "../../constants";
@@ -26,4 +27,5 @@ export interface DragResourceNodeData {
 
 export interface ResourceNodeWithDetails extends ResourceNode {
   details: DescribeResourceOutput;
+  collectionDetails: ResourceDetails | undefined;
 }

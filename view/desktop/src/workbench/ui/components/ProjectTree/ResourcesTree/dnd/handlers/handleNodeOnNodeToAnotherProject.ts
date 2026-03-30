@@ -1,3 +1,4 @@
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
@@ -69,14 +70,20 @@ export const handleNodeOnNodeToAnotherProject = async ({
     newDropOrder,
   });
 
-  // 7) remap resource ids in dockview
+  // 7) update resourceDetailsCollection
+  updateResourceDetailsCollection({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+  });
+
+  // 8) remap resource ids in dockview
   remapOldIdsForDockviewLayout({
     allFlatSourceResourceNodes,
     batchCreateResourceOutput,
     destProjectId: locationTreeNodeData.projectId,
   });
 
-  // 8) reload node paths
+  // 9) reload node paths
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
@@ -209,6 +216,22 @@ const createLocationNodes = async ({
 
   return await resourceService.batchCreate(locationTreeNodeData.projectId, {
     resources: batchCreateResourceInput,
+  });
+};
+
+const updateResourceDetailsCollection = ({
+  allFlatSourceResourceNodes,
+  batchCreateResourceOutput,
+}: {
+  allFlatSourceResourceNodes: ResourceNodeWithDetails[];
+  batchCreateResourceOutput: BatchCreateResourceOutput;
+}) => {
+  batchCreateResourceOutput.resources.forEach((newResource, index) => {
+    const sourceResource = allFlatSourceResourceNodes[index];
+    if (sourceResource?.collectionDetails) {
+      resourceDetailsCollection.insert({ ...sourceResource.collectionDetails, id: newResource.id });
+      resourceDetailsCollection.delete(sourceResource.id);
+    }
   });
 };
 

@@ -1,3 +1,4 @@
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 
 import { ResourceNodeWithDetails } from "../dnd/types.dnd";
@@ -19,6 +20,7 @@ export const getAllNestedResources = async ({
     result.push({
       ...currentNode,
       details: description,
+      collectionDetails: resourceDetailsCollection.get(currentNode.id) ?? undefined,
     });
     await Promise.all(currentNode.childNodes.map((child) => collectResources(child)));
   };

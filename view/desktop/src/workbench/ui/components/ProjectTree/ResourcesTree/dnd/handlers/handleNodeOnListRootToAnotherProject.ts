@@ -1,3 +1,4 @@
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService.ts";
 import { BatchCreateResourceOutput } from "@repo/moss-project";
@@ -58,14 +59,20 @@ export const handleNodeOnListRootToAnotherProject = async ({
     newRootSourceNodeOrder,
   });
 
-  // 6) remap resource ids in dockview
+  // 6) update resourceDetailsCollection
+  updateResourceDetailsCollection({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+  });
+
+  // 7) remap resource ids in dockview
   remapOldIdsForDockviewLayout({
     allFlatSourceResourceNodes,
     batchCreateResourceOutput,
     destProjectId: locationResourcesListData.data.projectId,
   });
 
-  // 7) reload node paths
+  // 8) reload node paths
   await resourceService.list({ projectId: locationResourcesListData.data.projectId, mode: { "RELOAD_PATH": "" } });
   await resourceService.list({
     projectId: sourceTreeNodeData.projectId,
@@ -170,6 +177,22 @@ const createLocationNodes = async ({
 
   return await resourceService.batchCreate(locationResourcesListData.data.projectId, {
     resources: batchCreateResourceInput,
+  });
+};
+
+const updateResourceDetailsCollection = ({
+  allFlatSourceResourceNodes,
+  batchCreateResourceOutput,
+}: {
+  allFlatSourceResourceNodes: ResourceNodeWithDetails[];
+  batchCreateResourceOutput: BatchCreateResourceOutput;
+}) => {
+  batchCreateResourceOutput.resources.forEach((newResource, index) => {
+    const sourceResource = allFlatSourceResourceNodes[index];
+    if (sourceResource?.collectionDetails) {
+      resourceDetailsCollection.insert({ ...sourceResource.collectionDetails, id: newResource.id });
+      resourceDetailsCollection.delete(sourceResource.id);
+    }
   });
 };
 
