@@ -23,21 +23,7 @@ export const handleNodeOnFolderWithinProject = async ({
     locationTreeNodeData,
   });
 
-  //2) update peer source nodes orders
-  await updatePeerSourceNodesOrders({
-    sourceNodes: sourceTreeNodeData.parentNode.childNodes,
-    deletedNode: sourceTreeNodeData.node,
-    workspaceId: currentWorkspaceId,
-  });
-
-  //3) update root source node order
-  await updateRootSourceNodeOrder({
-    locationTreeNodeData,
-    sourceTreeNodeData,
-    workspaceId: currentWorkspaceId,
-  });
-
-  //4) reload node path
+  //2) reload node path(reloading the path here to avoid flickering, because otherwise we update orders first and than the structure)
   await resourceService.list({
     projectId: sourceTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
@@ -45,6 +31,20 @@ export const handleNodeOnFolderWithinProject = async ({
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
+  });
+
+  //3) update peer source nodes orders
+  await updatePeerSourceNodesOrders({
+    sourceNodes: sourceTreeNodeData.parentNode.childNodes,
+    deletedNode: sourceTreeNodeData.node,
+    workspaceId: currentWorkspaceId,
+  });
+
+  //4) update root source node order
+  await updateRootSourceNodeOrder({
+    locationTreeNodeData,
+    sourceTreeNodeData,
+    workspaceId: currentWorkspaceId,
   });
 };
 

@@ -22,7 +22,7 @@ export const ProjectTree = ({
   tree,
   searchInput,
   displayMode = "LIVE",
-  showOrders = true,
+  showOrders = false,
   showTreeRootIds = false,
 }: ProjectTreeProps) => {
   const { isFullyExpanded, isFullyCollapsed } = useTrackAllProjectStates(tree);
