@@ -6,8 +6,10 @@ import { Operation } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/l
 import { UpdateResourceInput } from "@repo/moss-project";
 
 import { ResourceNode } from "../../types.ts";
+import { resolveParentPath } from "../handlerOperations/path.ts";
+import { updatePeerLocationNodesOrders } from "../handlerOperations/updatePeerLocationNodesOrders.ts";
+import { updatePeerSourceNodesOrders } from "../handlerOperations/updatePeerSourceNodesOrders.ts";
 import { DragResourceNodeData } from "../types.dnd";
-import { resolveParentPath } from "../utils/path";
 
 interface HandleNodeOnNodeWithinProjectProps {
   currentWorkspaceId: string;
@@ -132,60 +134,4 @@ const updateSourceNodePath = async ({
         };
 
   await resourceService.update(sourceTreeNodeData.projectId, updatePayload);
-};
-
-const updatePeerSourceNodesOrders = async ({
-  sourceNodes,
-  deletedNode,
-  workspaceId,
-}: {
-  sourceNodes: ResourceNode[];
-  deletedNode: ResourceNode;
-  workspaceId: string;
-}) => {
-  const updatedPeerNodes = sourceNodes
-    .filter((node) => node.id !== deletedNode.id)
-    .map((node, index) => ({
-      ...node,
-      order: index + 1,
-    }));
-
-  const nodesWithDifferentOrders = updatedPeerNodes.filter((node) => {
-    const originalNode = sourceNodes.find((n) => n.id === node.id);
-    return originalNode?.order !== node.order;
-  });
-
-  if (nodesWithDifferentOrders.length === 1) {
-    await treeItemStateService.putOrder(nodesWithDifferentOrders[0].id, nodesWithDifferentOrders[0].order, workspaceId);
-  }
-
-  if (nodesWithDifferentOrders.length > 1) {
-    await treeItemStateService.batchPutOrder(
-      Object.fromEntries(nodesWithDifferentOrders.map((node) => [node.id, node.order])),
-      workspaceId
-    );
-  }
-};
-
-const updatePeerLocationNodesOrders = async ({
-  locationNodes,
-  newDropOrder,
-  workspaceId,
-}: {
-  locationNodes: ResourceNode[];
-  newDropOrder: number;
-  workspaceId: string;
-}) => {
-  const nodesToShift = locationNodes.filter((node) => node.order! >= newDropOrder);
-
-  if (nodesToShift.length === 1) {
-    await treeItemStateService.putOrder(nodesToShift[0].id, nodesToShift[0].order! + 1, workspaceId);
-  }
-
-  if (nodesToShift.length > 1) {
-    await treeItemStateService.batchPutOrder(
-      Object.fromEntries(nodesToShift.map((node) => [node.id, node.order! + 1])),
-      workspaceId
-    );
-  }
 };

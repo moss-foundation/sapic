@@ -9,7 +9,7 @@ import { sortObjectsByOrder } from "@/utils/sortObjectsByOrder";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 import { getInstructionFromFirstLocation } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getInstructionFromFirstLocation";
 import { getSourceProjectTreeNodeData } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/getters/getSourceProjectTreeNodeData";
-import { siblingsAfterRemovalPayload } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/utils/path";
+import { siblingsAfterRemovalPayload } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/handlerOperations/path";
 import { isSourceResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/dnd/validation/isSourceResourceTreeNode";
 import { getAllNestedResources } from "@/workbench/ui/components/ProjectTree/ResourcesTree/getters/getAllNestedResources";
 import { ResourceNode } from "@/workbench/ui/components/ProjectTree/ResourcesTree/types";
