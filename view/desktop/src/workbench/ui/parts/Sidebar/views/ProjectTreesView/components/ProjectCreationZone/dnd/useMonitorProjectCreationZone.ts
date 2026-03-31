@@ -47,7 +47,7 @@ export const useMonitorProjectCreationZone = () => {
           return;
         }
 
-        const resources = getAllNestedResources(sourceData.node);
+        const resources = await getAllNestedResources({ node: sourceData.node, projectId: sourceData.projectId });
 
         const rootResource = resources[0];
         const nestedResources = resources.slice(1);

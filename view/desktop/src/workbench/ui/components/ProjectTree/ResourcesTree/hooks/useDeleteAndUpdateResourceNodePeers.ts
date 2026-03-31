@@ -25,7 +25,7 @@ export const useDeleteAndUpdateResourceNodePeers = ({
       id: node.id,
     });
 
-    const allNestedChildren = getAllNestedResources(node);
+    const allNestedChildren = await getAllNestedResources({ node, projectId });
     await treeItemStateService.batchRemoveOrder(
       allNestedChildren.map((child) => child.id),
       currentWorkspaceId

@@ -32,7 +32,6 @@ export const createResourceKind = ({
   headers,
   queryParams,
   pathParams,
-  body,
 }: CreateResourceKindProps): BatchCreateResourceKind => {
   if (isAddingFolder) {
     return { DIR: { name, path, class: resourceClass, order } };
