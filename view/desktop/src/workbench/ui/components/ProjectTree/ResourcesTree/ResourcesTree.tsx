@@ -8,6 +8,7 @@ import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
+import { useMonitorResourcesListForBlockedChildOperation } from "./dnd/hooks/useMonitorResourcesListForBlockedChildOperation";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
 import { useRootResourceNodeAddForm } from "./hooks/useRootResourceNodeAddForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
@@ -32,6 +33,10 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
     ref: projectResourcesHeaderRef,
     rootResourcesNodes: tree.childNodes,
   });
+  const { childNodeHasBlockedOperation } = useMonitorResourcesListForBlockedChildOperation({
+    listRef: projectResourcesHeaderRef,
+    tree,
+  });
 
   const {
     isAddingFileNode,
@@ -50,7 +55,7 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
   }, 0);
 
   return (
-    <Tree.List combineInstruction={instruction}>
+    <Tree.List combineInstruction={instruction} childNodeHasBlockedOperation={childNodeHasBlockedOperation}>
       <ResourcesTreeHeader
         expanded={expanded}
         offsetLeft={listHeaderOffset}
