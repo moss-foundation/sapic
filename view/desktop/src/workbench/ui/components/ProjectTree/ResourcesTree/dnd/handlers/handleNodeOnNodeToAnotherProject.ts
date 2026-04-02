@@ -10,6 +10,7 @@ import { prepareResourcesForCreation, resolveParentPath } from "../handlerOperat
 import { remapOldIdsForDockviewLayout } from "../handlerOperations/remapResourceIdsInSerializedDockview.ts";
 import { updatePeerLocationNodesOrders } from "../handlerOperations/updatePeerLocationNodesOrders.ts";
 import { updatePeerSourceNodesOrders } from "../handlerOperations/updatePeerSourceNodesOrders.ts";
+import { updateResourceDetailsCollection } from "../handlerOperations/updateResourceDetailsCollection.ts";
 import { DragResourceNodeData, ResourceNodeWithDetails } from "../types.dnd";
 
 interface HandleNodeOnNodeToAnotherProjectProps {
@@ -62,22 +63,28 @@ export const handleNodeOnNodeToAnotherProject = async ({
     newDropOrder: newRootSourceNodeOrder,
   });
 
-  // 6) assign source nodes states to location nodes states
+  // 6) update resourceDetailsCollection
+  updateResourceDetailsCollection({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+  });
+
+  // 7) assign source nodes states to location nodes states
   await assignSourceNodesStatesToLocationNodesStates({
     allSourceResourceNodes: allFlatSourceResourceNodes,
     batchCreateResourceOutput,
     workspaceId: currentWorkspaceId,
-    newRootSourceNodeOrder: newRootSourceNodeOrder,
+    newRootSourceNodeOrder,
   });
 
-  // 7) remap resource ids in dockview
+  // 8) remap resource ids in dockview
   remapOldIdsForDockviewLayout({
     allFlatSourceResourceNodes,
     batchCreateResourceOutput,
     destProjectId: locationTreeNodeData.projectId,
   });
 
-  // 8) reload node paths
+  // 9) reload node paths
   await resourceService.list({
     projectId: locationTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },

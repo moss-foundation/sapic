@@ -35,12 +35,6 @@ export const remapOldIdsForDockviewLayout = ({
     });
   });
 
-  console.log({
-    allFlatSourceResourceNodes,
-    batchCreateResourceOutput,
-    remap,
-  });
-
   const { api, setGridState } = useTabbedPaneStore.getState();
   if (!api) return;
 
