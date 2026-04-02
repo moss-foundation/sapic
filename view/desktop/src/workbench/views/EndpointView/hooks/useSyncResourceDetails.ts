@@ -1,8 +1,11 @@
 import { useEffect } from "react";
 
+import { USE_LIST_PROJECTS_QUERY_KEY } from "@/adapters/tanstackQuery/project";
+import { USE_LIST_PROJECT_RESOURCES_QUERY_KEY } from "@/adapters/tanstackQuery/resource";
 import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
 import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceService } from "@/domains/resource/resourceService";
+import { useIsFetching } from "@tanstack/react-query";
 
 interface useSyncResourceDetailsProps {
   resourceId: string;
@@ -10,13 +13,20 @@ interface useSyncResourceDetailsProps {
 }
 
 export const useSyncResourceDetails = ({ resourceId, projectId }: useSyncResourceDetailsProps) => {
+  const { isLoading: isProjectsViewLoading } = useProjectsViewFetchingTracking(projectId);
+
   useEffect(() => {
+    if (isProjectsViewLoading) return;
     try {
       syncResourceDetails({ resourceId, projectId });
     } catch (error) {
       console.error("Error syncing resource details", error);
     }
-  }, [projectId, resourceId]);
+  }, [projectId, resourceId, isProjectsViewLoading]);
+
+  return {
+    isSyncing: isProjectsViewLoading,
+  };
 };
 
 const syncResourceDetails = async ({ resourceId, projectId }: { resourceId: string; projectId: string }) => {
@@ -66,4 +76,19 @@ const syncResourceDetails = async ({ resourceId, projectId }: { resourceId: stri
       },
     });
   }
+};
+
+const useProjectsViewFetchingTracking = (projectId: string) => {
+  const projectsFetchingCount = useIsFetching({
+    queryKey: [USE_LIST_PROJECTS_QUERY_KEY],
+  });
+  const projectResourcesFetchingCount = useIsFetching({
+    queryKey: [USE_LIST_PROJECT_RESOURCES_QUERY_KEY, projectId],
+  });
+
+  const isLoading = projectsFetchingCount > 0 || projectResourcesFetchingCount > 0;
+
+  return {
+    isLoading,
+  };
 };

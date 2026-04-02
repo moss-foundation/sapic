@@ -14,9 +14,12 @@ export type EndpointViewProps = DefaultViewProps<{
 
 const EndpointView = ({ params, ...props }: EndpointViewProps) => {
   const { localResourceDetails, isLoading, isError } = useGetLocalResourceDetails(params.resourceId);
-  useSyncResourceDetails({ resourceId: params.resourceId, projectId: params.projectId });
+  const { isSyncing: isSyncingResourceDetailsLoading } = useSyncResourceDetails({
+    resourceId: params.resourceId,
+    projectId: params.projectId,
+  });
 
-  if (isLoading) {
+  if (isLoading || isSyncingResourceDetailsLoading) {
     return (
       <PageWrapper className="h-full">
         <div className="flex h-full flex-1 items-center justify-center">
