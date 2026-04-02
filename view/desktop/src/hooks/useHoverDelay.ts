@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 export const useHoverDelay = (delay = 500) => {
   const [isHovered, setIsHovered] = useState(false);
-  const hoverTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const resetHover = () => {
     if (hoverTimeoutRef.current) {

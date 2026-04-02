@@ -28,7 +28,7 @@ export const ActivityEventSimulator: React.FC<ActivityEventSimulatorProps> = ({ 
   const [priorityTestMode, setPriorityTestMode] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
 
-  const activeTimeoutsRef = useRef<NodeJS.Timeout[]>([]);
+  const activeTimeoutsRef = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   const simulationStateRef = useRef({
     isActive: false,
