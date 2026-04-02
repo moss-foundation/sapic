@@ -17,6 +17,8 @@ export const updateResourceDetailsCollection = ({
       ...sourceResource.details,
       id: newResource.id,
       metadata: { isDirty: false },
+      protocol: sourceResource.details.protocol ?? undefined,
+      url: sourceResource.details.url ?? undefined,
       queryParams: sourceResource.details.queryParams.map((qp) => ({
         ...qp,
         description: qp.description ?? undefined,
