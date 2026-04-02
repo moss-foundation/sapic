@@ -42,7 +42,11 @@ export const useMonitorResourcesListForBlockedChildOperation = ({
         }
 
         const extractedInstruction = extractInstruction(innermost.data);
-        setChildNodeHasBlockedOperation(!!extractedInstruction?.blocked);
+        if (extractedInstruction?.operation !== "combine") {
+          setChildNodeHasBlockedOperation(!!extractedInstruction?.blocked);
+        } else {
+          setChildNodeHasBlockedOperation(false);
+        }
       },
       onDrop: () => setChildNodeHasBlockedOperation(false),
     });
