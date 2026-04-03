@@ -52,7 +52,7 @@
     "@repo/template-parser": "workspace:*",
     "@repo/window": "workspace:*",
     "@tanstack/db": "^0.5.20",
-    "@tanstack/query-core": "^5.90.17",
+    "@tanstack/query-core": "5.90.2",
     "@tanstack/query-db-collection": "^1.0.16",
     "@tanstack/react-db": "^0.1.64",
     "@tanstack/react-pacer": "0.20.0",

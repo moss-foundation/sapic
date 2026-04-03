@@ -6,7 +6,7 @@ import { treeItemStateService } from "@/workbench/services/treeItemStateService"
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../../TreeRoot/types";
-import { createResourceKind } from "../dnd/utils/createResourceKind.ts";
+import { createResourceKind } from "../dnd/handlerOperations/createResourceKind.ts";
 
 interface UseRootResourceNodeAddFormProps {
   tree: ResourcesTreeRoot;

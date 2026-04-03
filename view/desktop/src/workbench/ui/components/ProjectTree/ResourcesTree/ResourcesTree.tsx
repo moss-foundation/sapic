@@ -8,10 +8,12 @@ import { NODE_OFFSET, TREE_HEADER_PADDING_RIGHT } from "../constants";
 import { ProjectTreeContext } from "../ProjectTreeContext";
 import { ResourcesTreeRoot } from "../TreeRoot/types";
 import { useDropTargetResourcesList } from "./dnd/hooks/useDropTargetResourcesList";
+import { useMonitorResourcesListForBlockedChildOperation } from "./dnd/hooks/useMonitorResourcesListForBlockedChildOperation";
 import ResourceNodeAddForm from "./forms/ResourceNodeAddForm";
 import { useRootResourceNodeAddForm } from "./hooks/useRootResourceNodeAddForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
 import { ResourcesTreeHeader } from "./ResourcesTreeHeader";
+import { countNumberOfAllNestedItems } from "./utils/countNumberOfAllNestedItems";
 
 interface ResourcesTreeProps {
   tree: ResourcesTreeRoot;
@@ -31,6 +33,10 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
     ref: projectResourcesHeaderRef,
     rootResourcesNodes: tree.childNodes,
   });
+  const { childNodeHasBlockedOperation } = useMonitorResourcesListForBlockedChildOperation({
+    listRef: projectResourcesHeaderRef,
+    tree,
+  });
 
   const {
     isAddingFileNode,
@@ -43,9 +49,13 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
 
   const isAddingToListRoot = isAddingFileNode || isAddingFolderNode;
   const shouldRenderChildren = expanded || isAddingToListRoot;
+  const totalItemsCount = tree.childNodes.reduce((acc, child) => {
+    const selfCount = child.kind === "Item" ? 1 : 0;
+    return acc + selfCount + countNumberOfAllNestedItems(child);
+  }, 0);
 
   return (
-    <Tree.List combineInstruction={instruction}>
+    <Tree.List combineInstruction={instruction} childNodeHasBlockedOperation={childNodeHasBlockedOperation}>
       <ResourcesTreeHeader
         expanded={expanded}
         offsetLeft={listHeaderOffset}
@@ -53,6 +63,7 @@ export const ResourcesTree = ({ tree }: ResourcesTreeProps) => {
         ref={projectResourcesHeaderRef}
         setIsAddingFileNode={() => setIsAddingFileNode(true)}
         setIsAddingFolderNode={() => setIsAddingFolderNode(true)}
+        totalItemsCount={totalItemsCount}
       />
 
       {shouldRenderChildren && (

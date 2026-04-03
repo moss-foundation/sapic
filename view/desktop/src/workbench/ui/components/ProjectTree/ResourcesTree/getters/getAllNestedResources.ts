@@ -1,24 +1,31 @@
-import { ListProjectResourceItem } from "@repo/ipc";
+import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
+import { resourceService } from "@/domains/resource/resourceService";
 
+import { ResourceNodeWithDetails } from "../dnd/types.dnd";
 import { ResourceNode } from "../types";
 
-export const getAllNestedResources = (node: ResourceNode): ListProjectResourceItem[] => {
-  const result: ListProjectResourceItem[] = [];
+interface GetAllNestedResourcesProps {
+  node: ResourceNode;
+  projectId: string;
+}
 
-  result.push({
-    id: node.id,
-    name: node.name,
-    kind: node.kind,
-    class: node.class,
-    path: node.path,
-    protocol: node.protocol,
-  });
+export const getAllNestedResources = async ({
+  node,
+  projectId,
+}: GetAllNestedResourcesProps): Promise<ResourceNodeWithDetails[]> => {
+  const result: ResourceNodeWithDetails[] = [];
 
-  for (const child of node.childNodes) {
-    result.push(...getAllNestedResources(child));
-  }
+  const collectResources = async (currentNode: ResourceNode) => {
+    const description = await resourceService.describe(projectId, currentNode.id);
+    result.push({
+      ...currentNode,
+      details: description,
+      collectionDetails: resourceDetailsCollection.get(currentNode.id) ?? undefined,
+    });
+    await Promise.all(currentNode.childNodes.map((child) => collectResources(child)));
+  };
 
-  const sortedResult = result.sort((a, b) => a.path.segments.length - b.path.segments.length);
+  await collectResources(node);
 
-  return sortedResult;
+  return result.sort((a, b) => a.path.segments.length - b.path.segments.length);
 };

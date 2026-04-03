@@ -5,6 +5,7 @@ import { environmentItemStateService } from "@/workbench/services/environmentIte
 import { Instruction } from "@atlaskit/pragmatic-drag-and-drop-hitbox/dist/types/list-item";
 import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
+import { remapEnvironmentIdInDockviewLayout } from "../handlerOperations/remapEnvironmentIdInSerializedDockview";
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 interface HandleMoveProjectEnvToProjectEnvProps {
@@ -69,4 +70,10 @@ export const handleMoveProjectEnvToProjectEnv = async ({
 
   await environmentItemStateService.removeOrder(sourceData.data.id, currentWorkspaceId);
   await deleteEnvironment({ id: sourceData.data.id, projectId: sourceProjectId });
+
+  remapEnvironmentIdInDockviewLayout({
+    oldEnvId: sourceData.data.id,
+    newEnvId: newEnvironment.id,
+    newTabIcon: "ProjectEnvironment",
+  });
 };

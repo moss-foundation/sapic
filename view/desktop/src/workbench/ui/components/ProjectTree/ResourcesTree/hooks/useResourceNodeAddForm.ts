@@ -5,7 +5,7 @@ import { useCurrentWorkspace } from "@/hooks";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
 
 import { ProjectTreeContext } from "../../ProjectTreeContext";
-import { createResourceKind } from "../dnd/utils/createResourceKind.ts";
+import { createResourceKind } from "../dnd/handlerOperations/createResourceKind.ts";
 import { ResourceNode } from "../types";
 
 export const useResourceNodeAddForm = (parentNode: ResourceNode) => {

@@ -13,7 +13,7 @@ import { useDeleteAndUpdateResourceNodePeers } from "./hooks/useDeleteAndUpdateR
 import { useResourceNodeAddForm } from "./hooks/useResourceNodeAddForm";
 import { useResourceNodeRenamingForm } from "./hooks/useResourceNodeRenamingForm";
 import { ResourcesTreeChildren } from "./ResourcesTreeChildren";
-import ResourcesTreeNodeDetails from "./ResourcesTreeNodeDetails";
+import { ResourcesTreeNodeDetails } from "./ResourcesTreeNodeDetails";
 import { ResourceNode } from "./types";
 
 interface ResourcesTreeNodeProps {

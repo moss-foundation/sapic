@@ -1,7 +1,7 @@
 import { WorkspaceMode } from "@repo/base";
 
-import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
 import { useTrackAllProjectStates } from "./hooks/useTrackAllProjectStates.ts";
+import { ProjectTreeContext } from "./ProjectTreeContext.tsx";
 import { TreeRoot } from "./TreeRoot/TreeRoot.tsx";
 import { ProjectTreeRoot } from "./types.ts";
 

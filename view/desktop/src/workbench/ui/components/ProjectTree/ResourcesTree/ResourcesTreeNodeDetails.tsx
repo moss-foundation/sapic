@@ -33,7 +33,7 @@ interface ResourcesTreeNodeDetailsProps {
   shouldRenderChildNodes: boolean;
 }
 
-const ResourcesTreeNodeDetails = ({
+export const ResourcesTreeNodeDetails = ({
   ref,
   node,
   parentNode,
@@ -161,5 +161,3 @@ const ResourcesTreeNodeDetails = ({
     </ActionMenu.Root>
   );
 };
-
-export default ResourcesTreeNodeDetails;

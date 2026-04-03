@@ -1,4 +1,5 @@
 import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
+import { ResourceDetails } from "@/db/resourceDetails/types";
 import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { LocalResourceSummary } from "@/db/resourceSummaries/types";
 import { resourceIpc } from "@/infra/ipc/resourceIpc";
@@ -61,14 +62,36 @@ export const resourceService: IResourceService = {
   },
   describe: async (projectId, resourceId) => {
     const output = await resourceIpc.describe(projectId, resourceId);
+
     const sanitized = {
       ...output,
       protocol: output.protocol ?? undefined,
       url: output.url ?? undefined,
       body: output.body ?? undefined,
-    };
+      queryParams: output.queryParams?.map((p) => ({
+        ...p,
+        description: p.description ?? undefined,
+      })),
+      headers: output.headers?.map((h) => ({
+        ...h,
+        description: h.description ?? undefined,
+      })),
+      pathParams: output.pathParams?.map((p) => ({
+        ...p,
+        description: p.description ?? undefined,
+      })),
+    } satisfies Omit<ResourceDetails, "id" | "metadata">;
+
     if (resourceDetailsCollection.has(resourceId)) {
       resourceDetailsCollection.update(resourceId, (draft) => {
+        if (draft.metadata.isDirty) {
+          draft.name = sanitized.name;
+          draft.class = sanitized.class;
+          draft.kind = sanitized.kind;
+          draft.protocol = sanitized.protocol;
+          draft.url = sanitized.url;
+          return;
+        }
         Object.assign(draft, sanitized);
       });
     } else {
@@ -93,8 +116,8 @@ export const resourceService: IResourceService = {
   },
   batchCreate: async (projectId, input) => {
     const output = await resourceIpc.batchCreate(projectId, input);
-    const resourceSummaries = await batchCreateInputToResourceSummary(projectId, input, output);
 
+    const resourceSummaries = await batchCreateInputToResourceSummary(projectId, input, output);
     resourceSummaries.forEach((summary) => {
       resourceSummariesCollection.insert(summary);
     });
@@ -125,15 +148,6 @@ export const resourceService: IResourceService = {
         }
         if (input.DIR.path) draft.path = { raw: input.DIR.path, segments: input.DIR.path.split("/") };
         if (input.DIR.expanded) draft.expanded = input.DIR.expanded;
-      }
-    });
-
-    resourceDetailsCollection.update(id, (draft) => {
-      if ("ITEM" in input) {
-        if (input.ITEM.name) draft.name = input.ITEM.name;
-      }
-      if ("DIR" in input) {
-        if (input.DIR.name) draft.name = input.DIR.name;
       }
     });
 

@@ -41,13 +41,13 @@ export const useMonitorResourcesNodes = () => {
           const isSameProject = sourceTreeNodeData.projectId === listRootData.data.projectId;
 
           if (isSameProject) {
-            handleNodeOnListRootWithinProject({
+            await handleNodeOnListRootWithinProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationResourcesListData: listRootData,
             });
           } else {
-            handleNodeOnListRootToAnotherProject({
+            await handleNodeOnListRootToAnotherProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationResourcesListData: listRootData,
@@ -69,7 +69,7 @@ export const useMonitorResourcesNodes = () => {
 
         switch (nodeDropOperation) {
           case NodeDropOperation.NODE_ON_NODE_WITHIN_PROJECT:
-            handleNodeOnNodeWithinProject({
+            await handleNodeOnNodeWithinProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
@@ -78,7 +78,7 @@ export const useMonitorResourcesNodes = () => {
             break;
 
           case NodeDropOperation.NODE_ON_FOLDER_WITHIN_PROJECT:
-            handleNodeOnFolderWithinProject({
+            await handleNodeOnFolderWithinProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
@@ -86,7 +86,7 @@ export const useMonitorResourcesNodes = () => {
             break;
 
           case NodeDropOperation.NODE_ON_NODE_TO_ANOTHER_PROJECT:
-            handleNodeOnNodeToAnotherProject({
+            await handleNodeOnNodeToAnotherProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,
@@ -95,7 +95,7 @@ export const useMonitorResourcesNodes = () => {
             break;
 
           case NodeDropOperation.NODE_ON_FOLDER_TO_ANOTHER_PROJECT:
-            handleNodeOnFolderToAnotherProject({
+            await handleNodeOnFolderToAnotherProject({
               currentWorkspaceId,
               sourceTreeNodeData,
               locationTreeNodeData,

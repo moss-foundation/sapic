@@ -1,15 +1,10 @@
 import { resourceService } from "@/domains/resource/resourceService";
 import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { BatchUpdateResourceEvent } from "@repo/moss-project";
-import { Channel } from "@tauri-apps/api/core";
+import { UpdateResourceInput } from "@repo/moss-project";
 
+import { resolveParentPath } from "../handlerOperations/path";
+import { updatePeerSourceNodesOrders } from "../handlerOperations/updatePeerSourceNodesOrders";
 import { DragResourceNodeData } from "../types.dnd";
-import {
-  makeDirUpdatePayload,
-  makeItemUpdatePayload,
-  resolveParentPath,
-  siblingsAfterRemovalPayload,
-} from "../utils/path";
 
 interface HandleNodeOnFolderWithinProjectProps {
   currentWorkspaceId: string;
@@ -22,68 +17,81 @@ export const handleNodeOnFolderWithinProject = async ({
   sourceTreeNodeData,
   locationTreeNodeData,
 }: HandleNodeOnFolderWithinProjectProps) => {
-  const newOrder = locationTreeNodeData.node.childNodes.length + 1;
-
-  const sourceNodeUpdate =
-    sourceTreeNodeData.node.kind === "Dir"
-      ? makeDirUpdatePayload({
-          id: sourceTreeNodeData.node.id,
-          path: locationTreeNodeData.node.path.raw,
-          order: newOrder,
-        })
-      : makeItemUpdatePayload({
-          id: sourceTreeNodeData.node.id,
-          path: locationTreeNodeData.node.path.raw,
-          order: newOrder,
-        });
-
-  const sourceParentNodes = sourceTreeNodeData.parentNode.childNodes;
-  const nodesToUpdate = siblingsAfterRemovalPayload({
-    nodes: sourceParentNodes,
-    removedNode: sourceTreeNodeData.node,
+  //1) update source node path (we don't update all nested nodes because the backend will update them by itself. Calling batchUpdate will cause an error, it will try to update the same node twice)
+  await updateSourceNodePath({
+    sourceTreeNodeData,
+    locationTreeNodeData,
   });
 
-  const allUpdates = [sourceNodeUpdate, ...nodesToUpdate];
-
-  const channelEvent = new Channel<BatchUpdateResourceEvent>();
-  await resourceService.batchUpdate(
-    sourceTreeNodeData.projectId,
-    {
-      resources: allUpdates,
-    },
-    channelEvent
-  );
-
-  const orderItems: Record<string, number> = {};
-  const expandedItems: Record<string, boolean> = {};
-
-  for (const resource of allUpdates) {
-    if ("ITEM" in resource) {
-      expandedItems[resource.ITEM.id] = sourceTreeNodeData.node.expanded;
-      if ("order" in resource.ITEM) {
-        orderItems[resource.ITEM.id] = resource.ITEM.order as number;
-      }
-    } else if ("DIR" in resource) {
-      orderItems[resource.DIR.id] = resource.DIR.order!;
-      expandedItems[resource.DIR.id] = sourceTreeNodeData.node.expanded;
-    }
-  }
-
-  await Promise.all([
-    Object.keys(orderItems).length > 0
-      ? treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId)
-      : Promise.resolve(),
-    Object.keys(expandedItems).length > 0
-      ? treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId)
-      : Promise.resolve(),
-  ]);
-
-  await resourceService.list({
-    projectId: locationTreeNodeData.projectId,
-    mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
-  });
+  //2) reload node path(reloading the path here to avoid flickering, because otherwise we update orders first and than the structure)
   await resourceService.list({
     projectId: sourceTreeNodeData.projectId,
     mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
   });
+  await resourceService.list({
+    projectId: locationTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(locationTreeNodeData.parentNode) },
+  });
+
+  //3) update peer source nodes orders
+  await updatePeerSourceNodesOrders({
+    sourceNodes: sourceTreeNodeData.parentNode.childNodes,
+    deletedNode: sourceTreeNodeData.node,
+    workspaceId: currentWorkspaceId,
+  });
+
+  //4) update root source node order
+  await updateRootSourceNodeOrder({
+    locationTreeNodeData,
+    sourceTreeNodeData,
+    workspaceId: currentWorkspaceId,
+  });
+};
+
+const updateSourceNodePath = async ({
+  sourceTreeNodeData,
+  locationTreeNodeData,
+}: {
+  sourceTreeNodeData: DragResourceNodeData;
+  locationTreeNodeData: DragResourceNodeData;
+}) => {
+  const updatePayload: UpdateResourceInput =
+    sourceTreeNodeData.node.kind === "Dir"
+      ? {
+          DIR: {
+            id: sourceTreeNodeData.node.id,
+            path: locationTreeNodeData.node.path.raw,
+          },
+        }
+      : {
+          ITEM: {
+            id: sourceTreeNodeData.node.id,
+            path: locationTreeNodeData.node.path.raw,
+            headersToAdd: [],
+            headersToUpdate: [],
+            headersToRemove: [],
+            pathParamsToAdd: [],
+            pathParamsToUpdate: [],
+            pathParamsToRemove: [],
+            queryParamsToAdd: [],
+            queryParamsToUpdate: [],
+            queryParamsToRemove: [],
+          },
+        };
+
+  await resourceService.update(sourceTreeNodeData.projectId, updatePayload);
+};
+
+const updateRootSourceNodeOrder = async ({
+  locationTreeNodeData,
+  sourceTreeNodeData,
+  workspaceId,
+}: {
+  locationTreeNodeData: DragResourceNodeData;
+  sourceTreeNodeData: DragResourceNodeData;
+  workspaceId: string;
+}) => {
+  const newOrder = locationTreeNodeData.node.childNodes.length + 1;
+
+  await treeItemStateService.putOrder(sourceTreeNodeData.node.id, newOrder, workspaceId);
 };

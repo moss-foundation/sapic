@@ -4,6 +4,7 @@ import { computeOrderUpdates } from "@/utils/computeOrderUpdates";
 import { environmentItemStateService } from "@/workbench/services/environmentItemStateService";
 import { CreateEnvironmentOutput, DeleteEnvironmentInput, DeleteEnvironmentOutput } from "@repo/ipc";
 
+import { remapEnvironmentIdInDockviewLayout } from "../handlerOperations/remapEnvironmentIdInSerializedDockview";
 import { DragEnvironmentItem, DropEnvironmentItem } from "../types.dnd";
 
 interface HandleCombineProjectEnvToWorkspaceListProps {
@@ -56,4 +57,10 @@ export const handleCombineProjectEnvToWorkspaceList = async ({
 
   await environmentItemStateService.removeOrder(sourceData.data.id, currentWorkspaceId);
   await deleteEnvironment({ id: sourceData.data.id, projectId: sourceProjectId });
+
+  remapEnvironmentIdInDockviewLayout({
+    oldEnvId: sourceData.data.id,
+    newEnvId: newEnvironment.id,
+    newTabIcon: "WorkspaceEnvironment",
+  });
 };

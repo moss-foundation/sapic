@@ -1,15 +1,15 @@
-import { resourceDetailsCollection } from "@/db/resourceDetails/resourceDetailsCollection";
-import { resourceSummariesCollection } from "@/db/resourceSummaries/resourceSummariesCollection";
 import { resourceService } from "@/domains/resource/resourceService";
-import { treeItemStateService } from "@/workbench/services/treeItemStateService";
-import { BatchUpdateResourceEvent } from "@repo/moss-project";
-import { Channel } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 
 import { getAllNestedResources } from "../../getters/getAllNestedResources.ts";
-import { DragResourceNodeData, LocationResourcesListData } from "../types.dnd";
-import { createResourceKind } from "../utils/createResourceKind.ts";
-import { prepareNestedDirResourcesForDrop, resolveParentPath, siblingsAfterRemovalPayload } from "../utils/path";
+import { assignSourceNodesStatesToLocationNodesStates } from "../handlerOperations/assignSourceNodesStatesToLocationNodesStates.ts";
+import { createResourceKind } from "../handlerOperations/createResourceKind.ts";
+import { deleteSourceNodesAndStates } from "../handlerOperations/deleteSourceNodesAndStates.ts";
+import { prepareResourcesForCreation, resolveParentPath } from "../handlerOperations/path.ts";
+import { remapOldIdsForDockviewLayout } from "../handlerOperations/remapResourceIdsInSerializedDockview.ts";
+import { updatePeerSourceNodesOrders } from "../handlerOperations/updatePeerSourceNodesOrders.ts";
+import { updateResourceDetailsCollection } from "../handlerOperations/updateResourceDetailsCollection.ts";
+import { DragResourceNodeData, LocationResourcesListData, ResourceNodeWithDetails } from "../types.dnd";
 
 interface HandleNodeOnListRootToAnotherProjectProps {
   currentWorkspaceId: string;
@@ -22,104 +22,108 @@ export const handleNodeOnListRootToAnotherProject = async ({
   sourceTreeNodeData,
   locationResourcesListData,
 }: HandleNodeOnListRootToAnotherProjectProps) => {
-  const allResources = getAllNestedResources(sourceTreeNodeData.node);
-  const resourcesWithoutName = await prepareNestedDirResourcesForDrop(allResources);
+  const newRootSourceNodeOrder = locationResourcesListData.data.rootResourcesNodes.length + 1;
 
-  const newOrder = locationResourcesListData.data.rootResourcesNodes.length + 1;
-
-  await resourceService.delete(sourceTreeNodeData.projectId, {
-    id: sourceTreeNodeData.node.id,
+  // 1) save source nodes
+  const allFlatSourceResourceNodes = await getAllNestedResources({
+    node: sourceTreeNodeData.node,
+    projectId: sourceTreeNodeData.projectId,
   });
 
-  for (const resource of allResources) {
-    if (resourceSummariesCollection.has(resource.id)) {
-      resourceSummariesCollection.delete(resource.id);
-    }
-    if (resourceDetailsCollection.has(resource.id)) {
-      resourceDetailsCollection.delete(resource.id);
-    }
-  }
-
-  const updatedSourceResourcesPayload = siblingsAfterRemovalPayload({
-    nodes: sourceTreeNodeData.parentNode.childNodes,
-    removedNode: sourceTreeNodeData.node,
+  // 2) delete source nodes and states
+  await deleteSourceNodesAndStates({
+    sourceTreeNodeData,
+    allFlatSourceResourceNodes,
+    workspaceId: currentWorkspaceId,
   });
 
+  // 3) update peer source nodes orders
+  await updatePeerSourceNodesOrders({
+    sourceNodes: sourceTreeNodeData.parentNode.childNodes,
+    deletedNode: sourceTreeNodeData.node,
+    workspaceId: currentWorkspaceId,
+  });
+
+  // 4) create location nodes
+  const batchCreateResourceOutput = await createLocationNodes({
+    allSourceResourceNodes: allFlatSourceResourceNodes,
+    locationResourcesListData,
+    newRootSourceNodeOrder,
+  });
+
+  // 5) assign source nodes states to location nodes states
+  await assignSourceNodesStatesToLocationNodesStates({
+    allSourceResourceNodes: allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+    workspaceId: currentWorkspaceId,
+    newRootSourceNodeOrder,
+  });
+
+  // 6) update resourceDetailsCollection
+  updateResourceDetailsCollection({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+  });
+
+  // 7) remap resource ids in dockview
+  remapOldIdsForDockviewLayout({
+    allFlatSourceResourceNodes,
+    batchCreateResourceOutput,
+    destProjectId: locationResourcesListData.data.projectId,
+  });
+
+  // 8) reload node paths
+  await resourceService.list({ projectId: locationResourcesListData.data.projectId, mode: { "RELOAD_PATH": "" } });
+  await resourceService.list({
+    projectId: sourceTreeNodeData.projectId,
+    mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
+  });
+};
+
+const createLocationNodes = async ({
+  allSourceResourceNodes,
+  locationResourcesListData,
+  newRootSourceNodeOrder,
+}: {
+  allSourceResourceNodes: ResourceNodeWithDetails[];
+  locationResourcesListData: LocationResourcesListData;
+  newRootSourceNodeOrder: number;
+}) => {
+  const sourceResourcesPreparedForCreation = await prepareResourcesForCreation(allSourceResourceNodes);
   const batchCreateResourceInput = await Promise.all(
-    resourcesWithoutName.map(async (resource, index) => {
-      const newResourcePath = await join(resource.path.raw);
-
+    sourceResourcesPreparedForCreation.map(async (resource, index) => {
       if (index === 0) {
         return createResourceKind({
           name: resource.name,
           path: "",
-          class: "endpoint",
           isAddingFolder: resource.kind === "Dir",
-          order: newOrder,
+          order: newRootSourceNodeOrder,
           protocol: resource.protocol,
+          headers: resource.details.headers,
+          queryParams: resource.details.queryParams,
+          pathParams: resource.details.pathParams,
+          body: resource.details.body,
+          class: "endpoint",
         });
       } else {
+        const newResourcePath = await join("", resource.path.raw);
         return createResourceKind({
           name: resource.name,
           path: newResourcePath,
-          class: "endpoint",
           isAddingFolder: resource.kind === "Dir",
           order: -1,
           protocol: resource.protocol,
+          headers: resource.details.headers,
+          queryParams: resource.details.queryParams,
+          pathParams: resource.details.pathParams,
+          body: resource.details.body,
+          class: "endpoint",
         });
       }
     })
   );
 
-  const channelEvent = new Channel<BatchUpdateResourceEvent>();
-  await resourceService.batchUpdate(
-    sourceTreeNodeData.projectId,
-    {
-      resources: updatedSourceResourcesPayload,
-    },
-    channelEvent
-  );
-
-  const batchCreateResourceOutput = await resourceService.batchCreate(locationResourcesListData.data.projectId, {
+  return await resourceService.batchCreate(locationResourcesListData.data.projectId, {
     resources: batchCreateResourceInput,
-  });
-
-  const orderItems: Record<string, number> = {};
-  const expandedItems: Record<string, boolean> = {};
-
-  for (const resource of batchCreateResourceOutput.resources) {
-    const resourceInput = batchCreateResourceInput.find((input) => {
-      if ("ITEM" in input) {
-        return input.ITEM.path === resource.path.raw && input.ITEM.name === resource.name;
-      } else {
-        return input.DIR.path === resource.path.raw && input.DIR.name === resource.name;
-      }
-    });
-
-    orderItems[resource.id] = resourceInput
-      ? "ITEM" in resourceInput
-        ? resourceInput.ITEM.order
-        : resourceInput.DIR.order
-      : -1;
-    expandedItems[resource.id] = sourceTreeNodeData.node.expanded;
-  }
-
-  for (const resource of updatedSourceResourcesPayload) {
-    if ("ITEM" in resource) {
-      if ("order" in resource.ITEM) {
-        orderItems[resource.ITEM.id] = resource.ITEM.order as number;
-      }
-    } else if ("DIR" in resource) {
-      orderItems[resource.DIR.id] = resource.DIR.order!;
-    }
-  }
-
-  await treeItemStateService.batchPutOrder(orderItems, currentWorkspaceId);
-  await treeItemStateService.batchPutExpanded(expandedItems, currentWorkspaceId);
-
-  await resourceService.list({ projectId: locationResourcesListData.data.projectId, mode: { "RELOAD_PATH": "" } });
-  await resourceService.list({
-    projectId: sourceTreeNodeData.projectId,
-    mode: { "RELOAD_PATH": resolveParentPath(sourceTreeNodeData.parentNode) },
   });
 };

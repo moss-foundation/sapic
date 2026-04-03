@@ -16,6 +16,7 @@ interface ResourcesTreeHeaderProps {
   offsetRight: number;
   setIsAddingFileNode: () => void;
   setIsAddingFolderNode: () => void;
+  totalItemsCount: number;
 }
 
 export const ResourcesTreeHeader = ({
@@ -25,6 +26,7 @@ export const ResourcesTreeHeader = ({
   offsetRight,
   setIsAddingFileNode,
   setIsAddingFolderNode,
+  totalItemsCount,
 }: ResourcesTreeHeaderProps) => {
   const { currentWorkspaceId } = useCurrentWorkspace();
   const { id } = useContext(ProjectTreeContext);
@@ -58,7 +60,7 @@ export const ResourcesTreeHeader = ({
         </button>
 
         <Tree.ListLabel label="Resources" />
-        <Tree.ListDirCount count={-1} />
+        <Tree.ListDirCount count={totalItemsCount} />
       </Tree.ListHeaderDetails>
 
       <ResourcesTreeActions setIsAddingFileNode={setIsAddingFileNode} setIsAddingFolderNode={setIsAddingFolderNode} />

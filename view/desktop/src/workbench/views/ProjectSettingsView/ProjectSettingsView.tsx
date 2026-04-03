@@ -105,7 +105,6 @@ export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
       content: <PostRequestTabContent {...props} />,
     },
   ];
-
   return (
     <PageView>
       <PageHeader
@@ -131,7 +130,7 @@ export const ProjectSettingsView = ({ ...props }: ProjectSettingsViewProps) => {
             <FolderTabs.Content key={tab.id} value={tab.id} className="flex flex-1">
               <PageWrapper className="flex flex-1 flex-col">{tab.content}</PageWrapper>
             </FolderTabs.Content>
-          ))}{" "}
+          ))}
         </FolderTabs.Root>
       </PageWrapper>
     </PageView>
