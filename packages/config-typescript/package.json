@@ -7,6 +7,6 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "25.4.0"
+    "@types/node": "25.5.0"
   }
 }
