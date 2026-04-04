@@ -12,7 +12,7 @@ jobs:
           fetch-depth: "0"
 
       - name: Set Up Node.js
-        uses: actions/setup-node@2028fbc5c25fe9cf00d9f06a71cc4710d4507903 # v6.0.0
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version-file: "package.json"
 
@@ -25,7 +25,7 @@ jobs:
           cdxgen -r -o bom.json
 
       - name: Run vulnerability scanning with trivy
-        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # v0.33.1
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # v0.35.0
         with:
           scan-type: "sbom"
           scan-ref: bom.json
