@@ -1,5 +1,4 @@
-import { eq } from "@tanstack/db";
-import { useLiveQuery } from "@tanstack/react-db";
+import { eq, useLiveQuery } from "@tanstack/react-db";
 
 import { resourceSummariesCollection } from "../resourceSummariesCollection";
 

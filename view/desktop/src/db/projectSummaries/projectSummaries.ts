@@ -1,4 +1,4 @@
-import { createCollection, localOnlyCollectionOptions } from "@tanstack/db";
+import { createCollection, localOnlyCollectionOptions } from "@tanstack/react-db";
 
 import { projectSummarySchema } from "./schemas/projectSummarySchema";
 
