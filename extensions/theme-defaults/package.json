@@ -2,5 +2,8 @@
   "name": "@repo/theme-defaults",
   "scripts": {
     "build": "ts-node src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "25.5.0"
   }
 }
