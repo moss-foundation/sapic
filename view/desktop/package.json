@@ -67,7 +67,7 @@
     "class-variance-authority": "0.7.1",
     "codemirror": "^6.0.2",
     "es-toolkit": "^1.45.1",
-    "i18next": "25.10.10",
+    "i18next": "26.0.3",
     "moss-tabs": "github:moss-foundation/moss-tabs#v1.0.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
