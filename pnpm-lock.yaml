@@ -78,8 +78,8 @@ importers:
         specifier: 2.8.16
         version: 2.8.16
       typedoc:
-        specifier: 0.28.14
-        version: 0.28.14(typescript@6.0.2)
+        specifier: 0.28.19
+        version: 0.28.19(typescript@6.0.2)
       typescript:
         specifier: 6.0.2
         version: 6.0.2
@@ -96,8 +96,8 @@ importers:
   crates/base:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -109,8 +109,8 @@ importers:
   crates/ipc:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/base':
         specifier: workspace:*
@@ -125,8 +125,8 @@ importers:
   crates/moss-activity-broadcaster:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -135,8 +135,8 @@ importers:
   crates/moss-bindingutils:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -145,8 +145,8 @@ importers:
   crates/moss-common:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -155,8 +155,8 @@ importers:
   crates/moss-environment:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -168,8 +168,8 @@ importers:
   crates/moss-git:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -181,8 +181,8 @@ importers:
   crates/moss-project:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -194,8 +194,8 @@ importers:
   crates/moss-text:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -204,8 +204,8 @@ importers:
   crates/moss-workspace:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/base':
         specifier: workspace:*
@@ -226,8 +226,8 @@ importers:
   crates/window:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/base':
         specifier: workspace:*
@@ -313,8 +313,8 @@ importers:
   plugins/settings-storage:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -326,8 +326,8 @@ importers:
   plugins/shared_storage:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -339,8 +339,8 @@ importers:
   plugins/template-parser:
     dependencies:
       typescript:
-        specifier: 5.9.2
-        version: 5.9.2
+        specifier: 6.0.2
+        version: 6.0.2
     devDependencies:
       '@repo/moss-bindingutils':
         specifier: workspace:*
@@ -1195,8 +1195,8 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@gerrit0/mini-shiki@3.20.0':
-    resolution: {integrity: sha512-Wa57i+bMpK6PGJZ1f2myxo3iO+K/kZikcyvH8NIqNNZhQUbDav7V9LQmWOXhf946mz5c1NZ19WMsGYiDKTryzQ==}
+  '@gerrit0/mini-shiki@3.23.0':
+    resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
   '@getgrit/cli@0.1.0-alpha.1743007075':
     resolution: {integrity: sha512-IvAa0QPrgiEQCjtWPpNucvnLUW7l6uR5P55tBC/NlIl36vZzoffLsEcQSIHR9gJmyURbCFcvb+Oaq33Z8WlOWA==}
@@ -2361,17 +2361,17 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@shikijs/engine-oniguruma@3.20.0':
-    resolution: {integrity: sha512-Yx3gy7xLzM0ZOjqoxciHjA7dAt5tyzJE3L4uQoM83agahy+PlW244XJSrmJRSBvGYELDhYXPacD4R/cauV5bzQ==}
+  '@shikijs/engine-oniguruma@3.23.0':
+    resolution: {integrity: sha512-1nWINwKXxKKLqPibT5f4pAFLej9oZzQTsby8942OTlsJzOBZ0MWKiwzMsd+jhzu8YPCHAswGnnN1YtQfirL35g==}
 
-  '@shikijs/langs@3.20.0':
-    resolution: {integrity: sha512-le+bssCxcSHrygCWuOrYJHvjus6zhQ2K7q/0mgjiffRbkhM4o1EWu2m+29l0yEsHDbWaWPNnDUTRVVBvBBeKaA==}
+  '@shikijs/langs@3.23.0':
+    resolution: {integrity: sha512-2Ep4W3Re5aB1/62RSYQInK9mM3HsLeB91cHqznAJMuylqjzNVAVCMnNWRHFtcNHXsoNRayP9z1qj4Sq3nMqYXg==}
 
-  '@shikijs/themes@3.20.0':
-    resolution: {integrity: sha512-U1NSU7Sl26Q7ErRvJUouArxfM2euWqq1xaSrbqMu2iqa+tSp0D1Yah8216sDYbdDHw4C8b75UpE65eWorm2erQ==}
+  '@shikijs/themes@3.23.0':
+    resolution: {integrity: sha512-5qySYa1ZgAT18HR/ypENL9cUSGOeI2x+4IvYJu4JgVJdizn6kG4ia5Q1jDEOi7gTbN4RbuYtmHh0W3eccOrjMA==}
 
-  '@shikijs/types@3.20.0':
-    resolution: {integrity: sha512-lhYAATn10nkZcBQ0BlzSbJA3wcmL5MXUUF8d2Zzon6saZDlToKaiRX60n2+ZaHJCmXEcZRWNzn+k9vplr8Jhsw==}
+  '@shikijs/types@3.23.0':
+    resolution: {integrity: sha512-3JZ5HXOZfYjsYSk0yPwBrkupyYSLpAE26Qc0HLghhZNGTZg/SKxXIIgoxOpmmeQP0RRSDJTk1/vPfw9tbw+jSQ==}
 
   '@shikijs/vscode-textmate@10.0.2':
     resolution: {integrity: sha512-83yeghZ2xxin3Nj8z1NMd/NCuca+gsYXswywDy5bHvwlWL8tpTQmzGeUuHd9FC3E/SBEMvzJRwWEOz5gGes9Qg==}
@@ -3163,9 +3163,6 @@ packages:
   bl@4.1.0:
     resolution: {integrity: sha512-1W07cM9gS6DcLperZfFSj+bWLtaPGSOHWhPiGzXmvVJbRLdG82sH/Kn8EtW1VqWVA54AKf2h5k5BbnIbwF3h6w==}
 
-  brace-expansion@2.0.2:
-    resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
-
   brace-expansion@2.0.3:
     resolution: {integrity: sha512-MCV/fYJEbqx68aE58kv2cA/kiky1G8vux3OR6/jbS+jIMe/6fJWa0DTzJU7dqijOWYwHi1t29FlfYI9uytqlpA==}
 
@@ -3700,6 +3697,9 @@ packages:
 
   get-tsconfig@4.13.7:
     resolution: {integrity: sha512-7tN6rFgBlMgpBML5j8typ92BKFi2sFQvIdpAqLA2beia5avZDrMs0FLZiM5etShWq5irVyGcGMEA1jcDaK7A/Q==}
+
+  get-tsconfig@4.14.0:
+    resolution: {integrity: sha512-yTb+8DXzDREzgvYmh6s9vHsSVCHeC0G3PI5bEXNBHtmshPnO+S5O7qgLEOn0I5QvMy6kpZN8K1NKGyilLb93wA==}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -4241,8 +4241,8 @@ packages:
   make-error@1.3.6:
     resolution: {integrity: sha512-s8UhlNe7vPKomQhC1qFelMokr/Sc3AgNbso3n74mVPA5LTZwkB9NlXf4XPamLxJE8h0gh73rM94xvwRT2CVInw==}
 
-  markdown-it@14.1.0:
-    resolution: {integrity: sha512-a54IwgWPaeBCAAsv13YgmALOF1elABB08FxO9i+r4VFk5Vl4pKokRPeX8u5TCgSsPi6ec1otfLjdOpVcgbpshg==}
+  markdown-it@14.1.1:
+    resolution: {integrity: sha512-BuU2qnTti9YKgK5N+IeMubp14ZUKUUw7yeJbkjtosvHiP0AZ5c8IAgEMk79D0eC8F23r4Ac/q8cAIFdm2FtyoA==}
     hasBin: true
 
   math-intrinsics@1.1.0:
@@ -4278,10 +4278,6 @@ packages:
   minimatch@5.1.9:
     resolution: {integrity: sha512-7o1wEA2RyMP7Iu7GNba9vc0RWWGACJOCZBJX2GJWip0ikV+wcOsgVuY9uE8CPiyQhkGFSlhuSkZPavN7u1c2Fw==}
     engines: {node: '>=10'}
-
-  minimatch@9.0.5:
-    resolution: {integrity: sha512-G6T0ZX48xgozx7587koeX9Ys2NYy6Gmv//P89sEte9V9whIapMNF4idKxnW2QtCcLiTWlb/wfCabAtAFWhhBow==}
-    engines: {node: '>=16 || 14 >=14.17'}
 
   minimatch@9.0.9:
     resolution: {integrity: sha512-OBwBN9AL4dqmETlpS2zasx+vTeWclWzkblfZk7KTA5j3jeOONz/tRCnZomUyvNg83wL5Zv9Ss6HMJXAgL8R2Yg==}
@@ -5031,12 +5027,12 @@ packages:
     resolution: {integrity: sha512-t0rzBq87m3fVcduHDUFhKmyyX+9eo6WQjZvf51Ea/M0Q7+T374Jp1aUiyUl0GKxp8M/OETVHSDvmkyPgvX+X2w==}
     engines: {node: '>=10'}
 
-  typedoc@0.28.14:
-    resolution: {integrity: sha512-ftJYPvpVfQvFzpkoSfHLkJybdA/geDJ8BGQt/ZnkkhnBYoYW6lBgPQXu6vqLxO4X75dA55hX8Af847H5KXlEFA==}
+  typedoc@0.28.19:
+    resolution: {integrity: sha512-wKh+lhdmMFivMlc6vRRcMGXeGEHGU2g8a2CkPTJjJlwRf1iXbimWIPcFolCqe4E0d/FRtGszpIrsp3WLpDB8Pw==}
     engines: {node: '>= 18', pnpm: '>= 10'}
     hasBin: true
     peerDependencies:
-      typescript: 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x || 5.8.x || 5.9.x
+      typescript: 5.0.x || 5.1.x || 5.2.x || 5.3.x || 5.4.x || 5.5.x || 5.6.x || 5.7.x || 5.8.x || 5.9.x || 6.0.x
 
   typescript-eslint@8.57.1:
     resolution: {integrity: sha512-fLvZWf+cAGw3tqMCYzGIU6yR8K+Y9NT2z23RwOjlNFF2HwSB3KhdEFI5lSBv8tNmFkkBShSjsCjzx1vahZfISA==}
@@ -5045,8 +5041,8 @@ packages:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
       typescript: '>=4.8.4 <6.0.0'
 
-  typescript@5.9.2:
-    resolution: {integrity: sha512-CWBzXQrc/qOkhidw1OzBTQuYRbfyxDXJMVJ1XNwUHGROVmuaeiEm3OslpZ1RV96d7SKKjZKrSJu3+t/xlw3R9A==}
+  typescript@5.9.3:
+    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -5124,6 +5120,7 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@13.0.0:
@@ -5307,11 +5304,6 @@ packages:
   yallist@5.0.0:
     resolution: {integrity: sha512-YgvUTfwqyc7UXVMrB+SImsVYSmTS8X/tSrtdNZMImM+n7+QTriRXyXim0mBrTXNeqzVF0KWGgHPeiyViFFrNDw==}
     engines: {node: '>=18'}
-
-  yaml@2.8.2:
-    resolution: {integrity: sha512-mplynKqc1C2hTVYxd0PU2xQAc22TI1vShAYGksCCfxbn/dFwnHTNi1bvYsBTkhdUNtGIf5xNOg938rrSSYvS9A==}
-    engines: {node: '>= 14.6'}
-    hasBin: true
 
   yaml@2.8.3:
     resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
@@ -5910,12 +5902,12 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@gerrit0/mini-shiki@3.20.0':
+  '@gerrit0/mini-shiki@3.23.0':
     dependencies:
-      '@shikijs/engine-oniguruma': 3.20.0
-      '@shikijs/langs': 3.20.0
-      '@shikijs/themes': 3.20.0
-      '@shikijs/types': 3.20.0
+      '@shikijs/engine-oniguruma': 3.23.0
+      '@shikijs/langs': 3.23.0
+      '@shikijs/themes': 3.23.0
+      '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
   '@getgrit/cli@0.1.0-alpha.1743007075':
@@ -6963,20 +6955,20 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.60.0':
     optional: true
 
-  '@shikijs/engine-oniguruma@3.20.0':
+  '@shikijs/engine-oniguruma@3.23.0':
     dependencies:
-      '@shikijs/types': 3.20.0
+      '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@shikijs/langs@3.20.0':
+  '@shikijs/langs@3.23.0':
     dependencies:
-      '@shikijs/types': 3.20.0
+      '@shikijs/types': 3.23.0
 
-  '@shikijs/themes@3.20.0':
+  '@shikijs/themes@3.23.0':
     dependencies:
-      '@shikijs/types': 3.20.0
+      '@shikijs/types': 3.23.0
 
-  '@shikijs/types@3.20.0':
+  '@shikijs/types@3.23.0':
     dependencies:
       '@shikijs/vscode-textmate': 10.0.2
       '@types/hast': 3.0.4
@@ -7498,10 +7490,10 @@ snapshots:
       '@typescript-eslint/types': 8.57.1
       eslint-visitor-keys: 5.0.1
 
-  '@typescript/vfs@1.6.2(typescript@5.9.2)':
+  '@typescript/vfs@1.6.2(typescript@5.9.3)':
     dependencies:
       debug: 4.4.3(supports-color@8.1.1)
-      typescript: 5.9.2
+      typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
@@ -7774,10 +7766,6 @@ snapshots:
       buffer: 5.7.1
       inherits: 2.0.4
       readable-stream: 3.6.2
-
-  brace-expansion@2.0.2:
-    dependencies:
-      balanced-match: 1.0.2
 
   brace-expansion@2.0.3:
     dependencies:
@@ -8348,6 +8336,11 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
+  get-tsconfig@4.14.0:
+    dependencies:
+      resolve-pkg-maps: 1.0.0
+    optional: true
+
   glob-parent@5.1.2:
     dependencies:
       is-glob: 4.0.3
@@ -8824,7 +8817,7 @@ snapshots:
 
   make-error@1.3.6: {}
 
-  markdown-it@14.1.0:
+  markdown-it@14.1.1:
     dependencies:
       argparse: 2.0.1
       entities: 4.5.0
@@ -8856,10 +8849,6 @@ snapshots:
   minimatch@5.1.9:
     dependencies:
       brace-expansion: 2.0.3
-
-  minimatch@9.0.5:
-    dependencies:
-      brace-expansion: 2.0.2
 
   minimatch@9.0.9:
     dependencies:
@@ -9486,7 +9475,7 @@ snapshots:
   ts-to-zod@3.15.0(@types/node@25.5.0):
     dependencies:
       '@oclif/core': 4.8.0
-      '@typescript/vfs': 1.6.2(typescript@5.9.2)
+      '@typescript/vfs': 1.6.2(typescript@5.9.3)
       case: 1.6.3
       chokidar: 3.6.0
       fs-extra: 11.3.2
@@ -9498,8 +9487,8 @@ snapshots:
       slash: 3.0.0
       threads: 1.7.0
       tslib: 2.8.1
-      tsutils: 3.21.0(typescript@5.9.2)
-      typescript: 5.9.2
+      tsutils: 3.21.0(typescript@5.9.3)
+      typescript: 5.9.3
       zod: 3.25.32
     transitivePeerDependencies:
       - '@types/node'
@@ -9509,15 +9498,15 @@ snapshots:
 
   tslib@2.8.1: {}
 
-  tsutils@3.21.0(typescript@5.9.2):
+  tsutils@3.21.0(typescript@5.9.3):
     dependencies:
       tslib: 1.14.1
-      typescript: 5.9.2
+      typescript: 5.9.3
 
   tsx@4.21.0:
     dependencies:
       esbuild: 0.27.4
-      get-tsconfig: 4.13.7
+      get-tsconfig: 4.14.0
     optionalDependencies:
       fsevents: 2.3.3
     optional: true
@@ -9557,14 +9546,14 @@ snapshots:
 
   type-fest@0.21.3: {}
 
-  typedoc@0.28.14(typescript@6.0.2):
+  typedoc@0.28.19(typescript@6.0.2):
     dependencies:
-      '@gerrit0/mini-shiki': 3.20.0
+      '@gerrit0/mini-shiki': 3.23.0
       lunr: 2.3.9
-      markdown-it: 14.1.0
-      minimatch: 9.0.5
+      markdown-it: 14.1.1
+      minimatch: 10.2.5
       typescript: 6.0.2
-      yaml: 2.8.2
+      yaml: 2.8.3
 
   typescript-eslint@8.57.1(eslint@10.1.0(jiti@2.6.1))(typescript@6.0.2):
     dependencies:
@@ -9577,7 +9566,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  typescript@5.9.2: {}
+  typescript@5.9.3: {}
 
   typescript@6.0.2: {}
 
@@ -9798,8 +9787,6 @@ snapshots:
   yallist@3.1.1: {}
 
   yallist@5.0.0: {}
-
-  yaml@2.8.2: {}
 
   yaml@2.8.3: {}
 
