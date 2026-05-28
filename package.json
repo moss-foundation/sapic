@@ -38,7 +38,7 @@
     "tailwind-merge": "3.5.0",
     "tailwindcss": "4.2.1",
     "ts-node": "10.9.2",
-    "turbo": "2.8.16",
+    "turbo": "2.9.14",
     "typedoc": "0.28.14",
     "typescript": "6.0.2",
     "vite": "8.0.5",
